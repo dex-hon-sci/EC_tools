@@ -9,9 +9,13 @@ This is a list of strategy that can be implemented in other scripts.
 """
 import numpy as np
 
-class MeanReversionStrategy():
+class MeanReversionStrategy(object):
     
-    def make_signal_bucket():
+    def __init__(self):
+        self.strategy_1 = True
+        return None
+    
+    def make_signal_bucket(self):
         # a function that make data bucket for a particular strategy
 
         signal_columns = ['APC forecast period', 'APC Contract Symbol']
@@ -60,15 +64,23 @@ class MeanReversionStrategy():
     
 
     #@loop_signal
-    def argus_benchmark_strategy(price_330, history_data_lag5, apc_curve_lag5,
+    def argus_benchmark_strategy(self, price_330, history_data_lag5, apc_curve_lag5,
                                  curve_today):
         """
-        The benchmark mean reversion strategy
+        The benchmark mean reversion strategy.
+        
+        Have to make sure the master history and the lag history is extracted accordingly.
 
         Parameters
         ----------
         price_330 : float
             DESCRIPTION.
+            
+        history_data_lag5:
+            
+        apc_curve_lag5:
+            
+        curve_today: 
 
         Returns
         -------
@@ -79,9 +91,10 @@ class MeanReversionStrategy():
         # inputs
         quant_330UKtime = price_330
         lag5_price = history_data_lag5['Settle']
+        
         # Match the date just to be sure
-        
-        
+
+        # define the lag 2 days settlement prices
         history_data_lag2_close = lag5_price[-2]
         history_data_lag1_close = lag5_price[-1]
         

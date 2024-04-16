@@ -83,10 +83,27 @@ def convert_csv_to_npy(filename):
 
 
 def find_quant(curve_today, price):
-    # This is an inverse Spline interpolation treating the pdf as the x-axis
-    # This is meant to find the corresponding quantile with a given price
-    # Assume the range of APC is between 0.0025 and 0.9975 qantiles that has a 
-    # 0.0025 interval
+    """
+    This is an inverse Spline interpolation treating the pdf as the x-axis.
+    This is meant to find the corresponding quantile with a given price.
+    
+    This function assumes a range of probability distribution function in
+    between 0.0025 and 0.9975 qantiles that has a 0.0025 interval
+
+    Parameters
+    ----------
+    curve_today : 1D pandas dataframe
+        A 1D array that contains a discrete number of pdf points.
+    price : float
+        The given price.
+
+    Returns
+    -------
+    quant : float
+        The corresponding quantile.
+
+    """
+
     spline_apc = CubicSpline(curve_today.to_numpy()[1:-1], 
                             np.arange(0.0025, 0.9975, 0.0025))
     quant = spline_apc(price)
@@ -469,82 +486,156 @@ def make_signal_bucket():
     
     return dict_futures_quant_signals
 
-def make_quantile():
-    
-    
-    return None
+def argus_benchmark_strategy(price_330, history_data_lag5, apc_curve_lag5,
+                                 curve_today):
+        """
+        The benchmark mean reversion strategy
 
-def lag_conditions():
-    # now moving on to finding the quantiles for lag settlement prices 
-    lag = 0 # number of days lag 
-    lag_apc_data = []
-    lag_settlement_data = []
-            
-    portara_dat_filtered = portara_dat[portara_dat['Contract Symbol'].apply(lambda x: str(x)[:-3] == symbol)]
-    portara_dat_filtered = portara_dat_filtered.reset_index(drop=True)
-    
-    index_thisapc = portara_dat_filtered[portara_dat_filtered['Date only'] == (forecast_date)] 
-    if not index_thisapc.shape[0] > 0: 
-        pass
-#        continue 
-           
-    full_contract_symbol = index_thisapc.to_numpy()[0][-1]
-    full_price_code = index_thisapc.to_numpy()[0][-2]
-    index_thisapc = index_thisapc.index[0]
-            
-    looplength = 5 
-    if use_OB_OS_levels_for_lag_conditions: 
-        looplength = 2 
+        Parameters
+        ----------
+        price_330 : float
+            DESCRIPTION.
+
+        Returns
+        -------
+        dict
+            A dictionary.
+
+        """
+        # inputs
+        quant_330UKtime = price_330
+        lag5_price = history_data_lag5['Settle']
         
-    for k in np.arange(looplength): # get the APC for the same contract symbol, but forecast date lag # of days before 
-                
-        check = False 
-        dataexists = True 
-                
-        while (not check):
-            lag -= 1 
-                   
-            index = index_thisapc + lag 
-                   
-            try: 
-                settledatdata = portara_dat_filtered.iloc[index]
-            except:
-                check = True # breaks out of loop 
-                dataexists = False   
-                continue 
-                    
-            date_thisapc = settledatdata.to_numpy()[0] # get the date for this lag 
-                    
-            # if forecast_date == pd.to_datetime('2022-05-27') and symbol == 'QO':
-                #     print(date_thisapc)
-                    
-            relevant_APC_lag = APCs_dat[np.logical_and(APCs_dat['APC symbol'] == symbol, 
-            APCs_dat['APC Forecast Period'] == date_thisapc)] #<----???? both these two columns being true?
-                
-            check = relevant_APC_lag.shape[0] > 0
-                            
-            if lag > 14: # probably dont have data for this contract so move on 
-                check = True # break out of while loop 
-                dataexists = False # we dont have the data to add yet 
-                    
-        if dataexists:  # add data for date to list to get settlement prices for lags 
-            lag_apc_data.append(relevant_APC_lag)
-            lag_settlement_data.append(settledatdata)
-                  
-                
-    if len(lag_apc_data) < looplength: # we don't have all the APC data that we need for this contract symbol and forecast date in benchmark strategy 
-        count_no_apc_data += 1 
-        pass 
-                
+        # Match the date just to be sure
 
+        # define the lag 2 days settlement prices
+        history_data_lag2_close = lag5_price.iloc[-2]
+        history_data_lag1_close = lag5_price.iloc[-1]
+        
+        # The APC two days (lag2) before this date
+        signal_data_lag2_median =  apc_curve_lag5.iloc[-2]['0.5'] 
+        # The APC one day1 (lag1) before this date
+        signal_data_lag1_median =  apc_curve_lag5.iloc[-1]['0.5']
+
+        
+        # pulling directly from a list is a factor of 3 faster than doing spline everytime
+        
+        # calculate the 5 days average for closing price
+        rollinglagq5day = np.average(lag5_price)         
+                
+        # calculate the median of the apc for the last five days
+        median_apc_5days = np.median([apc_curve_lag5.iloc[-5]['0.5'],
+                                      apc_curve_lag5.iloc[-4]['0.5'],
+                                      apc_curve_lag5.iloc[-3]['0.5'],
+                                      apc_curve_lag5.iloc[-2]['0.5'],
+                                      apc_curve_lag5.iloc[-1]['0.5']])
+
+        # "BUY" condition
+        # (1) Two consecutive days of closing price lower than the signal median
+        cond1_buy = (history_data_lag2_close < signal_data_lag2_median)
+        cond2_buy = (history_data_lag1_close < signal_data_lag1_median)
+        # (2) rolling 5 days average lower than the media apc 
+        cond3_buy = rollinglagq5day < median_apc_5days
+        # (3) price at today's opening hour above the 0.1 quantile of today's apc
+        cond4_buy = quant_330UKtime >= curve_today['0.1']
+        
+        # "SELL" condition
+        # (1) Two consecutive days of closing price higher than the signal median
+        cond1_sell = (history_data_lag2_close > signal_data_lag2_median)
+        cond2_sell = (history_data_lag1_close < signal_data_lag1_median)    
+        # (2) rolling 5 days average higher than the media apc 
+        cond3_sell = rollinglagq5day > median_apc_5days
+        # (3) price at today's opening hour below the 0.9 quantile of today's apc
+        cond4_sell = quant_330UKtime <= curve_today['0.9']
+        
+        # Find the boolean value of strategy conditions
+        Buy_cond = cond1_buy and cond2_buy and cond3_buy and cond4_buy
+        Sell_cond =  cond1_sell and cond2_sell and cond3_sell and cond4_sell
+        Neutral_cond = not (Buy_cond and Sell_cond)
+        
+        # make direction dictionary
+        direction_dict = {"Buy": Buy_cond, "Sell": Sell_cond, "Neutral": Neutral_cond}
+        
+        for i in direction_dict:
+            if direction_dict[i] == True:
+                direction = i
+        
+        return direction
     
+def set_entry_price(cond, curve_today,buy_cond=(0.4,0.1) , sell_cond =(0.6,0.9)):
+        
+        if cond=="Buy":
+            # (A) Entry region at price < APC p=0.4 and 
+            entry_price = curve_today['0.4']
+            # (B) Stop loss at APC p=0.1
+            stop_loss = curve_today['0.1']
+        elif cond=="Sell":
+            # (A) Entry region at price > APC p=0.6 and 
+            entry_price = curve_today['0.6']
+            # (B) Stop loss at APC p=0.9
+            stop_loss = curve_today['0.9']
+        elif cond == "Neutral":
+            # (A) Entry region at price > APC p=0.6 and 
+            entry_price = "NA"
+            # (B) Stop loss at APC p=0.9
+            stop_loss = "NA"
+        return {entry_price, stop_loss}
 
+#tested
+def extract_lag_data(signal_data, history_data, date, lag_size=5):
+    """
+    Extract the Lag data based on a given date.
 
-def loop_signal(signal_data, history_data, dict_contracts_quant_signals):
+    Parameters
+    ----------
+    signal_data : pandas dataframe
+        The signal data.
+    history_data : pandas dataframe
+        The historical data.
+    date : str
+        The date of interest, format like this "2024-01-10".
+    lag_size : TYPE, optional
+        The size of the lag window. The default is 5 (days).
+
+    Returns
+    -------
+    signal_data_lag : pandas data frame
+        The signal data five (lag_size) days prior to the given date.
+    history_data_lag : pandas data frame
+        The historical data five (lag_size) days prior to the given date.
+
+    """
+
+    # Find the row index of the history data first
+    row_index = history_data.index[history_data['Date only'] == date].tolist()[0]
     
-    #def wrapper(*args, **kwargs):
-    APCs_dat = signal_data
-    portara_dat = history_data
+    # extract exactly 5 (default) lag days array
+    history_data_lag = history_data.loc[row_index-lag_size:row_index-1]
+
+    # use the relevant date from history data to get signal data to ensure matching date
+    window = history_data_lag['Date only'].tolist()
+    
+    #Store the lag signal data in a list
+    signal_data_lag = signal_data[signal_data['Forecast Period'] == window[0]]
+    
+    for i in range(lag_size-1):
+        curve = signal_data[signal_data['Forecast Period'] == window[i+1]]
+        signal_data_lag = pd.concat([signal_data_lag, curve])
+        
+    return signal_data_lag, history_data_lag
+
+
+def loop_signal(signal_data, history_data, dict_contracts_quant_signals, history_data_daily,
+                loop_start_date="2024-01-10"):
+    
+    start_date = loop_start_date
+        
+    # success
+    APCs_dat = signal_data[signal_data['Forecast Period'] > start_date]
+    portara_dat = history_data[history_data["Date only"] > start_date]
+    
+    print(APCs_dat['Forecast Period'])
+    # where to start
     
     for i in np.arange(len(APCs_dat)): # loop through every forecast date and contract symbol 
         
@@ -553,7 +644,7 @@ def loop_signal(signal_data, history_data, dict_contracts_quant_signals):
         forecast_date = APCs_this_date_and_contract.to_numpy()[0]
         symbol = APCs_this_date_and_contract.to_numpy()[-1]
         
-                ###############################
+        ###############################
         # select for only rows in the history data with date matching the signal data
         dat_330 = portara_dat[portara_dat['Date only'] == forecast_date]
         
@@ -581,8 +672,18 @@ def loop_signal(signal_data, history_data, dict_contracts_quant_signals):
         wanted_quantiles = CubicSpline(np.arange(0.0025, 0.9975, 0.0025),   # wanted quantiles for benchmark algorithm entry/exit/stop loss 
                 APCs_this_date_and_contract.to_numpy()[1:end_prices])(quantiles_forwantedprices)
         
-        print("dat_330",dat_330)
-        print("wanted_quantiles", wanted_quantiles)
+        ###############################
+        
+        portara_dat_filtered = portara_dat[portara_dat['Contract Symbol'].apply(lambda x: str(x)[:-3] == symbol)]
+        portara_dat_filtered = portara_dat_filtered.reset_index(drop=True)
+        index_thisapc = portara_dat_filtered[portara_dat_filtered['Date only'] == (forecast_date)] 
+        
+        #print("index_thisapc",index_thisapc)
+
+        
+        full_contract_symbol = index_thisapc.to_numpy()[0][-1]
+        full_price_code = index_thisapc.to_numpy()[0][-2]
+        index_thisapc = index_thisapc.index[0]
         
         ###############################   
         # calculate the quantile where the starting pice (3:30am UK) sits
@@ -600,55 +701,38 @@ def loop_signal(signal_data, history_data, dict_contracts_quant_signals):
         elif quant_330UKtime < 0.0:
             quant_330UKtime = 0.000001
             
-        ###############################
-        # This part is to select out the relevant Portara data for this loop
-        # make an function for the matching
-        portara_dat_filtered = portara_dat[portara_dat['Contract Symbol'].apply(lambda x: str(x)[:-3] == symbol)]
-        portara_dat_filtered = portara_dat_filtered.reset_index(drop=True)
-    
-        index_thisapc = portara_dat_filtered[portara_dat_filtered['Date only'] == (forecast_date)] 
-        full_contract_symbol = index_thisapc.to_numpy()[0][-1]
-        full_price_code = index_thisapc.to_numpy()[0][-2]
-        index_thisapc = index_thisapc.index[0]
-        ################################     
-        #scan with strategy 1
-        
-        apc_curve_lag5 = APCs_dat.iloc[i-6:i-1]
-        
-        print("apc_curve_lag5", apc_curve_lag5)
-        
-        curve_today= APCs_this_date_and_contract 
         
         # input for strategy
         price_330 = quant_330UKtime
-        #---------
-        # need to make sure there is at least 5 days prior data
+        curve_today = APCs_this_date_and_contract
+        ###############################
         
-        # match the date by APC because there may be weekends and gap data
-        history_data_lag5 = portara_dat_filtered[portara_dat_filtered['Date only'] == (forecast_date)] 
+        # Get the extracted 5 days Lag data 
+        apc_curve_lag5, history_data_lag5 = extract_lag_data(signal_data, 
+                                                             history_data_daily, 
+                                                             forecast_date)
         
-        print("forecast_date.date()", forecast_date.date())
+        print(apc_curve_lag5)
+        print(history_data_lag5)
+        # Run the strategy        
+        direction = argus_benchmark_strategy(
+             price_330, history_data_lag5, apc_curve_lag5, curve_today)
+        
+        print("direction done", i, direction, forecast_date)
 
-        
-        day5 = forecast_date.date() - datetime.date(days=5)
-        
-        #---------
+        history_data_lag2_close = history_data_lag5["Settle"].iloc[-2]
+        history_data_lag1_close = history_data_lag5["Settle"].iloc[-1]
 
-        
-        
-        # Run the strategy
-        # direction = strategy()
-        
-        direction = EC_strategy.MeanReversionStrategy.argus_benchmark_strategy(
-            price_330, history_data_lag5, apc_curve_lag5, curve_today)
+        #print("lag1q,lag2q", lag1q,lag2q)
 
         # Find the quantile of the relevant price for the last two dats
-        lag1q = find_quant(curve_today, curve_today['0.5'])  
-        lag2q = find_quant(curve_today, curve_today['0.5'])
+        lag1q = find_quant(curve_today, history_data_lag2_close)  
+        lag2q = find_quant(curve_today, history_data_lag1_close)
         
-        rollinglagq5day = np.average(history_data_lag5)
+        rollinglagq5day = np.average(history_data_lag5["Settle"].to_numpy())
         
-        ################################
+    
+        ##################################################################################
         # Make a function later to do this 
         # based on the strategy chosen, the setup of the bucket should be different
         # (make_buket)-> Strategy (loop)->(store_to_bucket)
@@ -684,90 +768,7 @@ def loop_signal(signal_data, history_data, dict_contracts_quant_signals):
     #dict_contracts_quant_signals.to_csv(save_signals_name_prefix + file_save_suffices[a], index=False) 
     return dict_contracts_quant_signals
 
-def simple_plot(x,y):
-    
-    plt.plot(x,y,'o-')
-    plt.show()
-    return None
 
-def conditions():
-    
-
-    portara_dat_filtered = portara_dat[portara_dat['Contract Symbol'].apply(lambda x: str(x)[:-3] == symbol)]
-    portara_dat_filtered = portara_dat_filtered.reset_index(drop=True)
-    
-    lag = 0 # number of days lag 
-    end_prices = -1
-
-    lag_settlement_data = []
-    lag_apc_data = []
-    
-    spline_apc_lag1 = CubicSpline(lag_apc_data[0].to_numpy()[0][1:end_prices], 
-                            np.arange(0.0025, 0.9975, 0.0025))
-    spline_apc_lag2 = CubicSpline(lag_apc_data[1].to_numpy()[0][1:end_prices], 
-                            np.arange(0.0025, 0.9975, 0.00225))
-
-    spline_apc_lag3 = CubicSpline(lag_apc_data[2].to_numpy()[0][1:end_prices], 
-                            np.arange(0.0025, 0.9975, 0.00225))
-    spline_apc_lag4 = CubicSpline(lag_apc_data[3].to_numpy()[0][1:end_prices], 
-                            np.arange(0.0025, 0.9975, 0.00225))
-    spline_apc_lag5 = CubicSpline(lag_apc_data[4].to_numpy()[0][1:end_prices], 
-                            np.arange(0.0025, 0.9975, 0.00225))
-
-
-    #spline_apc_lag1 = spline_apc_lag1([lag_settlement_data[0].to_numpy()[2]])
-    #spline_apc_lag2 = spline_apc_lag2([lag_settlement_data[1].to_numpy()[2]])
-    #spline_apc_lag3 = spline_apc_lag3([lag_settlement_data[2].to_numpy()[2]])
-    #spline_apc_lag4 = spline_apc_lag4([lag_settlement_data[3].to_numpy()[2]])
-    #spline_apc_lag5 = spline_apc_lag5([lag_settlement_data[4].to_numpy()[2]])
-
-    lag1q = spline_apc_lag1[0]
-    if lag1q < 0.0:
-        lag1q = 0.00001
-    if lag1q > 1.0:
-        lag1q = 0.99999
-    lag2q = spline_apc_lag2[0]
-    if lag2q < 0.0:
-        lag2q = 0.00001
-    if lag2q > 1.0:
-        lag2q = 0.99999
-    lag3q = spline_apc_lag3[0]
-    if lag3q < 0.0:
-        lag3q = 0.00001
-    if lag3q > 1.0:
-        lag3q = 0.99999
-    lag4q = spline_apc_lag4[0]
-    if lag4q < 0.0:
-        lag4q = 0.00001
-    if lag4q > 1.0:
-        lag4q = 0.99999
-    lag5q = spline_apc_lag5[0]
-    if lag5q < 0.0:
-        lag5q = 0.00001
-    if lag5q > 1.0:
-        lag5q = 0.99999
-        
-    rollinglagq5day = (lag1q+lag2q+lag3q+lag4q+lag5q)/5.0 
-
-    cond1_buy = lag1q < 0.5
-    cond2_buy = lag2q < 0.5
-    cond3_buy = rollinglagq5day < 0.5
-    cond4_buy = quant_330UKtime >= 0.1
-    cond_extra_OBOS_buy = True 
-    cond_skewness_buy = True # skewness_this_apc > skewness_this_apc_lag1 # increased volatility 
-    cond_IQR_buy = True 
-           
-    cond1_sell = lag1q > 0.5
-    cond2_sell = lag2q > 0.5
-    cond3_sell = rollinglagq5day > 0.5
-    cond4_sell = quant_330UKtime <= 0.9
-    cond_extra_OBOS_sell = True 
-    cond_skewness_sell = True # skewness_this_apc < skewness_this_apc_lag1 # increased volatility 
-    cond_IQR_sell = True 
-    
-def get_today_signal():
-    
-    return None
 
 
 @time_it
@@ -789,7 +790,8 @@ def run_generate_MR_signals():
     username = "dexter@eulercapital.com.au"
     password = "76tileArg56!"
     start_date = "2024-01-10"
-    end_date = "2024-01-18"
+    start_date_2 = "2024-01-01"
+    end_date = "2024-01-30"
     categories = 'Argus Nymex WTI month 1, Daily'
     keywords = "WTI"
     symbol = "CL"
@@ -799,37 +801,44 @@ def run_generate_MR_signals():
     
     # load the table in memory and test multple strategies
     # input APC file
-    signal_data = get_apc_from_server(username, password, start_date, 
+    signal_data = get_apc_from_server(username, password, start_date_2, 
                                       end_date, categories,
                             keywords=keywords,symbol=symbol)
     
     # input history file
+    # start_date2 is a temporary solution
     history_data_daily = read_portara_daily_data(filename_daily,symbol,
-                                                 start_date,end_date)
+                                                 start_date_2,end_date)
     history_data_minute = read_portara_minute_data(filename_minute,symbol, 
-                                                   start_date, end_date,
+                                                   start_date_2, end_date,
                                                    start_filter_hour=30, 
                                                    end_filter_hour=331)
     history_data = merge_portara_data(history_data_daily, history_data_minute)
 
+    # need to make sure start date of portara is at least 5days ahead of APC data
+    # need to make sure the 5 days lag of the APC and history data matches
+
     # Deal with the date problem in Portara data
     history_data = portara_data_handling(history_data)
     
-    
     # Checking function to make sure the input of the strategy is valid (maybe dumb them in a class)
+    # check date and stuff
     
     # make an empty signal dictionary for storage
     dict_contracts_quant_signals = make_signal_bucket()
     
+    # experiment with lag data extraction
+    #extract_lag_data(signal_data, history_data_daily, "2024-01-10")
+    
     # The strategy will be ran in loop_signal decorator
     dict_contracts_quant_signals = loop_signal(signal_data, history_data, 
-                                               dict_contracts_quant_signals)
+                                               dict_contracts_quant_signals, history_data_daily)
     
     
-    # Manual input for filename management
+    # Manual input for filename management (save)
     
     return dict_contracts_quant_signals
 
+dict_contracts_quant_signals = run_generate_MR_signals()
 
-#convert_csv_to_npy("./APC_front_months.csv")
 
