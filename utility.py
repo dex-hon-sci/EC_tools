@@ -24,9 +24,10 @@ def save_csv(savefilename, save_or_not = True):
         def wrapper(*args, **kwargs):
             data = func(*args, **kwargs)
             if save_or_not:
-                return data.to_csv(savefilename, index=False)
+                data.to_csv(savefilename, index=False)
+                return data
             elif not save_or_not:
-                return None
+                return data
         return wrapper
     return decorator
          
@@ -46,11 +47,21 @@ def date_matching_list(date_list1, date_list2):
         raise Exception("Date list missmatch dimenstion")
     for i in range(len(date_list1)):
         date_matching(date_list1[i], date_list2[i])
-  
-    
-#check today and see if things are up to date.
-def check_format():
-    return None
+        
+def list_match(list1,list2):
+    if list1 == list2:
+        pass
+    else:
+        # Find the exception
+        bool_list = list( map(lambda x, y: x==y, list1, list2)) 
+        
+        mismatch_index = []
+        for i in range(len(bool_list)):
+            if bool_list[i] == False:         
+                mismatch_index.append(i)
+        
+        raise Exception(
+            "Mismatch at the following positions:{}".format(mismatch_index))
 
 
 

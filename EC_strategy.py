@@ -15,77 +15,92 @@ class MeanReversionStrategy(object):
         self.strategy_1 = True
         return None
     
-    def make_signal_bucket(self):
+    def make_signal_bucket(strategy_name="benchmark"):
         # a function that make data bucket for a particular strategy
-
+        
         signal_columns = ['APC forecast period', 'APC Contract Symbol']
         
         # usemaxofpdf_insteadof_medianpdf
         A = ["Q0.1","Q0.4","Q0.5","Q0.6","Q0.9"]
         
         B = ["Q0.1", "Qmax-0.1", "Qmax","Qmax+0.1","Q0.9"]
-        
+    
         # use_OB_OS_levels_for_lag_conditions
         C = ["Close price lag 1", "Close price lag 2", "OB level 1 lag 1", 
-             "OB level 1 lag 2", "OS level 1 lag 1", "OS level 1 lag 2", 
-             "OB level 3", "OS level 3", "Price 3:30 UK time"]
-        
+         "OB level 1 lag 2", "OS level 1 lag 1", "OS level 1 lag 2", 
+         "OB level 3", "OS level 3", "Price 3:30 UK time"]
+    
         D = ['Quant close lag 1', 'Quant close lag 2', 'mean Quant close n = 5',
-             'Quant 3:30 UK time']
-        
+         'Quant 3:30 UK time']
+    
         # abs(entry_region_exit_region_range[0]) > 0
         E = ['target entry lower', 'target entry upper']
-        
+    
         F = ['target entry']
-        
+    
         # abs(entry_region_exit_region_range[1]) > 0:
-        G= ['target entry lower', 'target entry upper']
+        G = ['target entry lower', 'target entry upper']
 
         H = ['target exit']
-        
+    
         End = ['stop exit', 'direction', 'price code']
+    
         
-        # Base form of column, benchmark
-        # Old + A + D + F + H + end
+        # a dictionary for column combination
+        strategy_dict = {
+            "benchmark": signal_columns + A + D + F + H + End, 
+            "mode": signal_columns + B + D + F + H + End 
+                   }
+   
+        # Define the empty bucket keys
+        bucket_keys = strategy_dict[strategy_name]
         
-        I1 = signal_columns + A + D + F + H + End
-        
-        #I1 = ['APC forecast period', 'APC Contract Symbol', "Q0.1", "Qmax-0.1", 
-        #     "Qmax","Qmax+0.1","Q0.9", 'Quant close lag 1', 'Quant close lag 2', 
-        #     'mean Quant close n = 5', 'Quant 3:30 UK time', 'target entry', 
-        #     'target exit', 'stop exit', 'direction', 'price code']
-        
-        dictionary_futures_contracts_quantiles_for_signals = dict()
-
-        for i in I1:
-            dictionary_futures_contracts_quantiles_for_signals[i] = []
-        
-        return dictionary_futures_contracts_quantiles_for_signals
+        dict_futures_quant_signals = dict()
+        for i in bucket_keys:
+            dict_futures_quant_signals[i] = []
+            
+        return dict_futures_quant_signals
     
 
-    #@loop_signal
-    def argus_benchmark_strategy(self, price_330, history_data_lag5, apc_curve_lag5,
-                                 curve_today):
+    def argus_benchmark_strategy(price_330, history_data_lag5, apc_curve_lag5,
+                                     curve_today):
         """
-        The benchmark mean reversion strategy.
+        This function takes in one single day worth of data and 
+        produce a string of "Buy/Sell" signal.
+    
+        The benchmark mean reversion strategy from Argus media. This is our 
+        baseline MR strategy. It generate a "Buy/Sell" signal base on the followiing:
         
-        Have to make sure the master history and the lag history is extracted accordingly.
+            IF (1) Two consecutive days of closing price lower than the signal median
+                (2) rolling 5 days average lower than the median apc 
+                (3) price at today's opening hour above the 0.1 quantile of today's apc
+            Then,
+                produce "Buy" signal.
+            
+            IF (1) Two consecutive days of closing price higher than the signal median
+                (2) rolling 5 days average higher than the median apc 
+                (3) price at today's opening hour below the 0.9 quantile of today's apc
+            Then,
+                 produce "Sell" signal.
+    
+        Note that the neutral signal is given by a xnor gate. It means that if 
+        both Buy_cond and Sell_cond are the same, Neutral_cond return True.
 
         Parameters
         ----------
         price_330 : float
+            The starting price of the day.
+        history_data_lag5 : pandas dataframe table
+            The last 5 days of historical data.
+        apc_curve_lag5 : pandas dataframe table
+            The last 5 days of APC data.
+        curve_today : 1D pandas dataframe
             DESCRIPTION.
-            
-        history_data_lag5:
-            
-        apc_curve_lag5:
-            
-        curve_today: 
 
         Returns
         -------
-        dict
-            A dictionary.
+        direction : str
+            "Buy/Sell" signal.
 
         """
         # inputs
@@ -93,52 +108,66 @@ class MeanReversionStrategy(object):
         lag5_price = history_data_lag5['Settle']
         
         # Match the date just to be sure
-
+        # To be added
+    
         # define the lag 2 days settlement prices
-        history_data_lag2_close = lag5_price[-2]
-        history_data_lag1_close = lag5_price[-1]
+        history_data_lag2_close = lag5_price.iloc[-2]
+        history_data_lag1_close = lag5_price.iloc[-1]
         
         # The APC two days (lag2) before this date
-        signal_data_lag2_median =  apc_curve_lag5[-2]['0.5'] 
+        signal_data_lag2_median =  apc_curve_lag5.iloc[-2]['0.5'] 
         # The APC one day1 (lag1) before this date
-        signal_data_lag1_median =  apc_curve_lag5[-1]['0.5']
+        signal_data_lag1_median =  apc_curve_lag5.iloc[-1]['0.5']
 
-        
-        # pulling directly from a list is a factor of 3 faster than doing spline everytime
+        # Reminder: pulling directly from a list is a factor of 3 faster than doing 
+        # spline everytime
         
         # calculate the 5 days average for closing price
         rollinglagq5day = np.average(lag5_price)         
-        
+                
         # calculate the median of the apc for the last five days
-        median_apc_5days = np.median([apc_curve_lag5[-5]['0.5'],
-                                      apc_curve_lag5[-4]['0.5'],
-                                      apc_curve_lag5[-3]['0.5'],
-                                      apc_curve_lag5[-2]['0.5'],
-                                      apc_curve_lag5[-1]['0.5']])
+        median_apc_5days = np.median([apc_curve_lag5.iloc[-5]['0.5'],
+                                      apc_curve_lag5.iloc[-4]['0.5'],
+                                      apc_curve_lag5.iloc[-3]['0.5'],
+                                      apc_curve_lag5.iloc[-2]['0.5'],
+                                      apc_curve_lag5.iloc[-1]['0.5']])
 
         # "BUY" condition
         # (1) Two consecutive days of closing price lower than the signal median
         cond1_buy = (history_data_lag2_close < signal_data_lag2_median)
         cond2_buy = (history_data_lag1_close < signal_data_lag1_median)
-        # (2) rolling 5 days average lower than the media apc 
+        # (2) rolling 5 days average lower than the median apc 
         cond3_buy = rollinglagq5day < median_apc_5days
         # (3) price at today's opening hour above the 0.1 quantile of today's apc
         cond4_buy = quant_330UKtime >= curve_today['0.1']
-        
+    
         # "SELL" condition
         # (1) Two consecutive days of closing price higher than the signal median
         cond1_sell = (history_data_lag2_close > signal_data_lag2_median)
-        cond2_sell = (history_data_lag1_close < signal_data_lag1_median)    
-        # (2) rolling 5 days average higher than the media apc 
+        cond2_sell = (history_data_lag1_close > signal_data_lag1_median)    
+        # (2) rolling 5 days average higher than the median apc 
         cond3_sell = rollinglagq5day > median_apc_5days
         # (3) price at today's opening hour below the 0.9 quantile of today's apc
         cond4_sell = quant_330UKtime <= curve_today['0.9']
         
+        print("======================")  
+        print("cond1_buy", cond1_buy, history_data_lag2_close, signal_data_lag2_median)
+        print("cond2_buy", cond2_buy, history_data_lag1_close, signal_data_lag1_median)
+        print("cond3_buy", cond3_buy, rollinglagq5day,  median_apc_5days)
+        print("cond4_buy", cond4_buy, quant_330UKtime, curve_today['0.1'])
+        print("====================")
+        print("cond1_sell", cond1_sell, history_data_lag2_close, signal_data_lag2_median)
+        print("cond2_sell", cond2_sell, history_data_lag1_close, signal_data_lag1_median)
+        print("cond3_sell", cond3_sell, rollinglagq5day,  median_apc_5days)
+        print("cond4_sell", cond4_sell, quant_330UKtime, curve_today['0.1'])
+        print("======================")
+
         # Find the boolean value of strategy conditions
         Buy_cond = cond1_buy and cond2_buy and cond3_buy and cond4_buy
         Sell_cond =  cond1_sell and cond2_sell and cond3_sell and cond4_sell
-        Neutral_cond = not (Buy_cond and Sell_cond)
         
+        Neutral_cond = not (Buy_cond ^ Sell_cond) #xnor gate
+    
         # make direction dictionary
         direction_dict = {"Buy": Buy_cond, "Sell": Sell_cond, "Neutral": Neutral_cond}
         
@@ -147,25 +176,70 @@ class MeanReversionStrategy(object):
                 direction = i
         
         return direction
-    
-    def set_entry_price(cond, curve_today,buy_cond=(0.4,0.1) , sell_cond =(0.6,0.9)):
-        
-        if cond=="Buy":
-            # (A) Entry region at price < APC p=0.4 and 
-            entry_price = curve_today['0.4']
-            # (B) Stop loss at APC p=0.1
-            stop_loss = curve_today['0.1']
-        elif cond=="Sell":
-            # (A) Entry region at price > APC p=0.6 and 
-            entry_price = curve_today['0.6']
-            # (B) Stop loss at APC p=0.9
-            stop_loss = curve_today['0.9']
-        elif cond == "Neutral":
-            # (A) Entry region at price > APC p=0.6 and 
-            entry_price = "NA"
-            # (B) Stop loss at APC p=0.9
-            stop_loss = "NA"
-        return {entry_price, stop_loss}
-    
+
     def modified_benchmark():
         return None
+    
+def set_entry_price_APC(cond, curve_today, buy_cond=(0.4,0.6,0.1), 
+                    sell_cond =(0.6,0.4,0.9)):
+    """
+    A generic method to set the entry, exit, and stop loss price base on an
+    APC. 
+
+    Parameters
+    ----------
+    cond : str
+        Only accept "Buy", "Sell", or "Neutral".
+    curve_today : 1D pandas dataframe
+        The APC for one single day.
+    buy_cond : 3 elements tuple, optional
+        The quantile for extracting the price of the APC for a "Buy" signal. 
+        This has to be a 3-element tuple: 
+            (entry quant, exit quant, stop loss quant)
+        The default is (0.4,0.6,0.1).
+    sell_cond : 3 elements tuple, optional
+        The quantile for extracting the price of the APC for a "Buy" signal. 
+        This has to be a 3-element tuple: 
+            (entry quant, exit quant, stop loss quant)
+        The default is (0.6,0.4,0.9).
+
+    Returns
+    -------
+    entry_price : float
+        entry_price.
+    exit_price : float
+        exit_price.
+    stop_loss : float
+        stop_loss.
+
+    """
+    if cond == "Buy":
+        # (A) Entry region at price < APC p=0.4 and 
+        entry_price = curve_today[str(buy_cond[0])]
+        # (B) Exit price
+        exit_price = curve_today[str(buy_cond[1])]
+        # (C) Stop loss at APC p=0.1
+        stop_loss = curve_today[str(buy_cond[2])]
+
+            
+    elif cond == "Sell":
+        # (A) Entry region at price > APC p=0.6 and 
+        entry_price = curve_today[str(sell_cond[0])]
+        # (B) Exit price
+        exit_price = curve_today[str(sell_cond[1])]
+        # (C) Stop loss at APC p=0.9
+        stop_loss = curve_today[str(sell_cond[2])]
+            
+    elif cond == "Neutral":
+        # (A) Entry region at price > APC p=0.6 and 
+        entry_price = "NA"
+        # (B) Exit price
+        exit_price = "NA"
+        # (C) Stop loss at APC p=0.9
+        stop_loss = "NA"
+    else:
+        raise Exception(
+            'Unaccepted input, condition needs to be either Buy, Sell, or Neutral.')
+            
+    return entry_price, exit_price, stop_loss
+    

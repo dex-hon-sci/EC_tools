@@ -341,3 +341,46 @@ def portara_data_handling(portara_dat):
     portara_dat = portara_dat.sort_values(by='Date only') # dates in ascending order 
         
     return portara_dat
+
+#tested
+def extract_lag_data(signal_data, history_data, date, lag_size=5):
+    """
+    Extract the Lag data based on a given date.
+
+    Parameters
+    ----------
+    signal_data : pandas dataframe
+        The signal data.
+    history_data : pandas dataframe
+        The historical data.
+    date : str
+        The date of interest, format like this "2024-01-10".
+    lag_size : TYPE, optional
+        The size of the lag window. The default is 5 (days).
+
+    Returns
+    -------
+    signal_data_lag : pandas data frame
+        The signal data five (lag_size) days prior to the given date.
+    history_data_lag : pandas data frame
+        The historical data five (lag_size) days prior to the given date.
+
+    """
+
+    # Find the row index of the history data first
+    row_index = history_data.index[history_data['Date only'] == date].tolist()[0]
+    
+    # extract exactly 5 (default) lag days array
+    history_data_lag = history_data.loc[row_index-lag_size:row_index-1]
+
+    # use the relevant date from history data to get signal data to ensure matching date
+    window = history_data_lag['Date only'].tolist()
+    
+    #Store the lag signal data in a list
+    signal_data_lag = signal_data[signal_data['Forecast Period'] == window[0]]
+    
+    for i in range(lag_size-1):
+        curve = signal_data[signal_data['Forecast Period'] == window[i+1]]
+        signal_data_lag = pd.concat([signal_data_lag, curve])
+        
+    return signal_data_lag, history_data_lag
