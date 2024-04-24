@@ -12,7 +12,7 @@ import numpy as np
 class MeanReversionStrategy(object):
     
     def __init__(self):
-        self.strategy_1 = True
+        self._cond_1 = False
         return None
     
     def make_signal_bucket(strategy_name="benchmark"):
@@ -25,7 +25,7 @@ class MeanReversionStrategy(object):
         
         B = ["Q0.1", "Qmax-0.1", "Qmax","Qmax+0.1","Q0.9"]
     
-        # use_OB_OS_levels_for_lag_conditions
+        #use_OB_OS_levels_for_lag_conditions
         C = ["Close price lag 1", "Close price lag 2", "OB level 1 lag 1", 
          "OB level 1 lag 2", "OS level 1 lag 1", "OS level 1 lag 2", 
          "OB level 3", "OS level 3", "Price 3:30 UK time"]
@@ -60,7 +60,17 @@ class MeanReversionStrategy(object):
             dict_futures_quant_signals[i] = []
             
         return dict_futures_quant_signals
-    
+   
+
+    def store_to_bucket_single(bucket, data):
+    # This function should be used in adjacent to make_signal_bucket
+    # Check the if the columns mathces? and the input list dimension
+
+    # Storing the data    
+        for i, key in enumerate(bucket):
+            bucket[key].append(data[i])   
+
+        return bucket
 
     def argus_benchmark_strategy(price_330, history_data_lag5, apc_curve_lag5,
                                      curve_today):
@@ -150,7 +160,7 @@ class MeanReversionStrategy(object):
         # (3) price at today's opening hour below the 0.9 quantile of today's apc
         cond4_sell = quant_330UKtime <= curve_today['0.9']
         
-        print("======================")  
+        print("===================This is in the package")  
         print("cond1_buy", cond1_buy, history_data_lag2_close, signal_data_lag2_median)
         print("cond2_buy", cond2_buy, history_data_lag1_close, signal_data_lag1_median)
         print("cond3_buy", cond3_buy, rollinglagq5day,  median_apc_5days)
@@ -177,69 +187,71 @@ class MeanReversionStrategy(object):
         
         return direction
 
-    def modified_benchmark():
+    def mod_benchmark_mode():
+        
+        
         return None
     
-def set_entry_price_APC(cond, curve_today, buy_cond=(0.4,0.6,0.1), 
-                    sell_cond =(0.6,0.4,0.9)):
-    """
-    A generic method to set the entry, exit, and stop loss price base on an
-    APC. 
+    def set_entry_price_APC(cond, curve_today, buy_cond=(0.4,0.6,0.1), 
+                            sell_cond =(0.6,0.4,0.9)):
+        """
+        A generic method to set the entry, exit, and stop loss price base on an
+        APC. 
+        
+        Parameters
+        ----------
+        cond : str
+            Only accept "Buy", "Sell", or "Neutral".
+        curve_today : 1D pandas dataframe
+            The APC for one single day.
+        buy_cond : 3 elements tuple, optional
+            The quantile for extracting the price of the APC for a "Buy" signal. 
+            This has to be a 3-element tuple: 
+                (entry quant, exit quant, stop loss quant)
+                The default is (0.4,0.6,0.1).
+        sell_cond : 3 elements tuple, optional
+            The quantile for extracting the price of the APC for a "Buy" signal. 
+            This has to be a 3-element tuple: 
+                (entry quant, exit quant, stop loss quant)
+                The default is (0.6,0.4,0.9).
 
-    Parameters
-    ----------
-    cond : str
-        Only accept "Buy", "Sell", or "Neutral".
-    curve_today : 1D pandas dataframe
-        The APC for one single day.
-    buy_cond : 3 elements tuple, optional
-        The quantile for extracting the price of the APC for a "Buy" signal. 
-        This has to be a 3-element tuple: 
-            (entry quant, exit quant, stop loss quant)
-        The default is (0.4,0.6,0.1).
-    sell_cond : 3 elements tuple, optional
-        The quantile for extracting the price of the APC for a "Buy" signal. 
-        This has to be a 3-element tuple: 
-            (entry quant, exit quant, stop loss quant)
-        The default is (0.6,0.4,0.9).
+        Returns
+        -------
+        entry_price : float
+            entry_price.
+        exit_price : float
+            exit_price.
+        stop_loss : float
+            stop_loss.
 
-    Returns
-    -------
-    entry_price : float
-        entry_price.
-    exit_price : float
-        exit_price.
-    stop_loss : float
-        stop_loss.
-
-    """
-    if cond == "Buy":
-        # (A) Entry region at price < APC p=0.4 and 
-        entry_price = curve_today[str(buy_cond[0])]
-        # (B) Exit price
-        exit_price = curve_today[str(buy_cond[1])]
-        # (C) Stop loss at APC p=0.1
-        stop_loss = curve_today[str(buy_cond[2])]
+        """
+        if cond == "Buy":
+            # (A) Entry region at price < APC p=0.4 and 
+            entry_price = curve_today[str(buy_cond[0])]
+            # (B) Exit price
+            exit_price = curve_today[str(buy_cond[1])]
+            # (C) Stop loss at APC p=0.1
+            stop_loss = curve_today[str(buy_cond[2])]
 
             
-    elif cond == "Sell":
-        # (A) Entry region at price > APC p=0.6 and 
-        entry_price = curve_today[str(sell_cond[0])]
-        # (B) Exit price
-        exit_price = curve_today[str(sell_cond[1])]
-        # (C) Stop loss at APC p=0.9
-        stop_loss = curve_today[str(sell_cond[2])]
+        elif cond == "Sell":
+            # (A) Entry region at price > APC p=0.6 and 
+            entry_price = curve_today[str(sell_cond[0])]
+            # (B) Exit price
+            exit_price = curve_today[str(sell_cond[1])]
+            # (C) Stop loss at APC p=0.9
+            stop_loss = curve_today[str(sell_cond[2])]
             
-    elif cond == "Neutral":
-        # (A) Entry region at price > APC p=0.6 and 
-        entry_price = "NA"
-        # (B) Exit price
-        exit_price = "NA"
-        # (C) Stop loss at APC p=0.9
-        stop_loss = "NA"
-    else:
-        raise Exception(
-            'Unaccepted input, condition needs to be either Buy, Sell, or Neutral.')
+        elif cond == "Neutral":
+            # (A) Entry region at price > APC p=0.6 and 
+            entry_price = "NA"
+            # (B) Exit price
+            exit_price = "NA"
+            # (C) Stop loss at APC p=0.9
+            stop_loss = "NA"
+        else:
+            raise Exception(
+                'Unaccepted input, condition needs to be either Buy, Sell, or Neutral.')
             
-    return entry_price, exit_price, stop_loss
+        return entry_price, exit_price, stop_loss
     

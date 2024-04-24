@@ -9,6 +9,7 @@ Created on Thu Mar 28 22:46:34 2024
 import time
 import datetime
 import numpy as np
+
 def time_it(func):
     # simple timing function
     def wrapper(*args, **kwargs):
@@ -62,8 +63,6 @@ def list_match(list1,list2):
         
         raise Exception(
             "Mismatch at the following positions:{}".format(mismatch_index))
-
-
 
 # Convert file from CSV to HDF5, npy? Npy might be faster
 def convert_csv_to_npy(filename):

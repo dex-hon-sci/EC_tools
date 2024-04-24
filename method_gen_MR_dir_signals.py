@@ -19,6 +19,8 @@ import datetime
 import findiff as fd 
 
 import EC_strategy as EC_strategy
+import EC_read as EC_read
+
 from ArgusPossibilityCurves2 import ArgusPossibilityCurves
 
 __all__ = []
@@ -47,7 +49,6 @@ def save_csv(savefilename, save_or_not = True):
         return wrapper
     return decorator
          
-@time_it
 def date_matching(date1,date2):
     # A simple function that ensure the date from two data sources match
     if date1 == date2:
@@ -81,7 +82,22 @@ def list_match(list1,list2):
   
 def check_format():
     return None
+#%%
 
+def cal_APC_pdf(apc_prices):
+    #cdf
+    even_spaced_prices = np.arange(np.min(apc_prices), np.max(apc_prices), 0.005)
+    spline_apc_rev = UnivariateSpline(apc_prices, np.arange(0.0025, 0.9975, 0.0025), s = 0)
+    quantiles_even_prices = spline_apc_rev(even_spaced_prices)
+
+    dq = even_spaced_prices[1]-even_spaced_prices[0]
+    deriv = fd.FinDiff(0, dq, 1)
+    pdf = deriv(quantiles_even_prices)
+    spline_pdf = UnivariateSpline(even_spaced_prices, pdf,  s = 0.0015)
+    pdf = spline_pdf(even_spaced_prices)
+    
+    return pdf
+    
 # Convert file from CSV to HDF5, npy? Npy might be faster
 def convert_csv_to_npy(filename):
     # A function that turn big csv to npy file for faster read-time
@@ -121,7 +137,7 @@ def find_quant_APC(curve_today, price):
     quant = spline_apc(price)
     return quant
     
-
+#%%
 # somewhat tested.
 @time_it
 @save_csv("APC_test.csv",save_or_not = False)
@@ -212,10 +228,6 @@ def get_apc_from_server(username, password, start_date, end_date, categories,
 
     return apc_data
 
-def read_apc_data(filename):
-    apc_dat = pd.read_csv(filename)
-
-    return apc_dat    
 
 # tested.
 def read_portara_daily_data(filename, symbol, start_date, end_date, 
@@ -502,7 +514,7 @@ def make_signal_bucket(strategy_name="benchmark"):
     
     return dict_futures_quant_signals
 
-def store_to_bucket_single(bucket, data, strategy_name="benchmark"):
+def store_to_bucket_single(bucket, data):
     # THis function should be used in adjacent to make_signal_bucket
     
     # Check the if the columns mathces? and the input list dimension
@@ -582,13 +594,22 @@ def argus_benchmark_strategy(price_330, history_data_lag5, apc_curve_lag5,
                                       apc_curve_lag5.iloc[-3]['0.5'],
                                       apc_curve_lag5.iloc[-2]['0.5'],
                                       apc_curve_lag5.iloc[-1]['0.5']])
+    
+    lag1q = find_quant_APC( apc_curve_lag5.iloc[-1], lag5_price.iloc[-1])
+    lag2q = find_quant_APC( apc_curve_lag5.iloc[-2], lag5_price.iloc[-2])
+    lag3q = find_quant_APC( apc_curve_lag5.iloc[-3], lag5_price.iloc[-3])
+    lag4q = find_quant_APC( apc_curve_lag5.iloc[-4], lag5_price.iloc[-4])
+    lag5q = find_quant_APC( apc_curve_lag5.iloc[-5], lag5_price.iloc[-5])
+    
+    rol5q = (lag1q+lag2q+lag3q+lag4q+lag5q)/5.0
 
     # "BUY" condition
     # (1) Two consecutive days of closing price lower than the signal median
     cond1_buy = (history_data_lag2_close < signal_data_lag2_median)
     cond2_buy = (history_data_lag1_close < signal_data_lag1_median)
     # (2) rolling 5 days average lower than the median apc 
-    cond3_buy = rollinglagq5day < median_apc_5days
+    #cond3_buy = rollinglagq5day < median_apc_5days
+    cond3_buy = rol5q < 0.5
     # (3) price at today's opening hour above the 0.1 quantile of today's apc
     cond4_buy = quant_330UKtime >= curve_today['0.1']
     
@@ -597,7 +618,9 @@ def argus_benchmark_strategy(price_330, history_data_lag5, apc_curve_lag5,
     cond1_sell = (history_data_lag2_close > signal_data_lag2_median)
     cond2_sell = (history_data_lag1_close > signal_data_lag1_median)    
     # (2) rolling 5 days average higher than the median apc 
-    cond3_sell = rollinglagq5day > median_apc_5days
+    # cond3_sell = rollinglagq5day > median_apc_5days
+    cond3_sell = rol5q > 0.5
+
     # (3) price at today's opening hour below the 0.9 quantile of today's apc
     cond4_sell = quant_330UKtime <= curve_today['0.9']
         
@@ -611,6 +634,8 @@ def argus_benchmark_strategy(price_330, history_data_lag5, apc_curve_lag5,
     print("cond2_sell", cond2_sell, history_data_lag1_close, signal_data_lag1_median)
     print("cond3_sell", cond3_sell, rollinglagq5day,  median_apc_5days)
     print("cond4_sell", cond4_sell, quant_330UKtime, curve_today['0.1'])
+    print("======================")
+    print("lag1q,lag2q, inside",lag1q,lag2q,rol5q)
     print("======================")
 
     # Find the boolean value of strategy conditions
@@ -626,6 +651,143 @@ def argus_benchmark_strategy(price_330, history_data_lag5, apc_curve_lag5,
         if direction_dict[i] == True:
             direction = i
         
+    return direction
+
+def MR_mode_strategy(price_330, history_data_lag5, apc_curve_lag5, curve_today):
+    
+    # inputs
+    quant_330UKtime = price_330
+    lag5_price = history_data_lag5['Settle']
+   
+    # define the lag 2 days settlement prices
+    history_data_lag2_close = lag5_price.iloc[-2]
+    history_data_lag1_close = lag5_price.iloc[-1]
+        
+    #Find the mode of the curve and find the quantile
+    pdf_lag1, even_spaced_prices_lag1, spline_apc_lag1 = get_APC_spline_for_APC_pdf(lag_apc_data[0].to_numpy()[0][1:end_prices])
+
+    price_max_prob_lag1 = even_spaced_prices_lag1[np.argmin(abs(pdf_lag1-np.max(pdf_lag1)))]
+    q_price_max_prob_lag1 = spline_apc_lag1(price_max_prob_lag1) 
+    
+    
+    # The APC two days (lag2) before this date
+    signal_data_lag2_mode =  max(apc_curve_lag5.iloc[-2][1:-1])
+    # The APC one day1 (lag1) before this date
+    signal_data_lag1_mode =  max(apc_curve_lag5.iloc[-1][1:-1])
+    
+    lag1q = find_quant_APC(apc_curve_lag5.iloc[-2], signal_data_lag2_mode)
+    lag2q = find_quant_APC(apc_curve_lag5.iloc[-1], signal_data_lag1_mode)
+
+    print("lag1q, lag2q", lag1q, lag2q)
+    # Reminder: pulling directly from a list is a factor of 3 faster than doing 
+    # spline everytime
+        
+    # calculate the 5 days average for closing price
+    rollinglagq5day = np.average(lag5_price)         
+                
+    # calculate the median of the apc for the last five days
+    mode_apc_5days = np.median([max(apc_curve_lag5.iloc[-5][1:-1]),
+                                      max(apc_curve_lag5.iloc[-4][1:-1]),
+                                      max(apc_curve_lag5.iloc[-3][1:-1]),
+                                      max(apc_curve_lag5.iloc[-2][1:-1]),
+                                      max(apc_curve_lag5.iloc[-1][1:-1])])
+    
+    # "BUY" condition
+    # (1) Two consecutive days of closing price lower than the signal median
+    cond1_buy = (history_data_lag2_close < signal_data_lag2_mode)
+    cond2_buy = (history_data_lag1_close < signal_data_lag1_mode)
+    # (2) rolling 5 days average lower than the median apc 
+    cond3_buy = rollinglagq5day < mode_apc_5days
+    # (3) price at today's opening hour above the 0.1 quantile of today's apc
+    cond4_buy = quant_330UKtime >= curve_today['0.1']
+    argus_benchmark_strategy
+    # "SELL" condition
+    # (1) Two consecutive days of closing price higher than the signal median
+    cond1_sell = (history_data_lag2_close > signal_data_lag2_mode)
+    cond2_sell = (history_data_lag1_close > signal_data_lag1_mode)    
+    # (2) rolling 5 days average higher than the median apc 
+    cond3_sell = rollinglagq5day > mode_apc_5days
+    # (3) price at today's opening hour below the 0.9 quantile of today's apc
+    cond4_sell = quant_330UKtime <= curve_today['0.9']
+
+    # Find the boolean value of strategy conditions
+    Buy_cond = cond1_buy and cond2_buy and cond3_buy and cond4_buy
+    Sell_cond =  cond1_sell and cond2_sell and cond3_sell and cond4_sell
+        
+    Neutral_cond = not (Buy_cond ^ Sell_cond) #xnor gate
+    
+    # make direction dictionary
+    direction_dict = {"Buy": Buy_cond, "Sell": Sell_cond, "Neutral": Neutral_cond}
+        
+    for i in direction_dict:
+        if direction_dict[i] == True:
+            direction = i
+    
+    return direction
+
+def generic_MR_strategy(price_330, history_data_lag5, apc_curve_lag5, curve_today):
+    # Under construction
+    # Strategy dictionary
+    
+    # inputs
+    quant_330UKtime = price_330
+    lag5_price = history_data_lag5['Settle']
+   
+    # define the lag 2 days settlement prices
+    history_data_lag2_close = lag5_price.iloc[-2]
+    history_data_lag1_close = lag5_price.iloc[-1]
+        
+    #Find the mode of the curve and find the quantile
+    
+    # The APC two days (lag2) before this date
+    signal_data_lag2_mode =  max(apc_curve_lag5.iloc[-2])
+    # The APC one day1 (lag1) before this date
+    signal_data_lag1_mode =  max(apc_curve_lag5.iloc[-1])
+
+    # Reminder: pulling directly from a list is a factor of 3 faster than doing 
+    # spline everytime
+        
+    # calculate the 5 days average for closing price
+    rollinglagq5day = np.average(lag5_price)         
+                
+    # calculate the median of the apc for the last five days
+    mode_apc_5days = np.median([apc_curve_lag5.iloc[-5]['0.5'],
+                                      apc_curve_lag5.iloc[-4]['0.5'],
+                                      apc_curve_lag5.iloc[-3]['0.5'],
+                                      apc_curve_lag5.iloc[-2]['0.5'],
+                                      apc_curve_lag5.iloc[-1]['0.5']])
+    
+    # "BUY" condition
+    # (1) Two consecutive days of closing price lower than the signal median
+    cond1_buy = (history_data_lag2_close < signal_data_lag2_mode)
+    cond2_buy = (history_data_lag1_close < signal_data_lag1_mode)
+    # (2) rolling 5 days average lower than the median apc 
+    cond3_buy = rollinglagq5day < mode_apc_5days
+    # (3) price at today's opening hour above the 0.1 quantile of today's apc
+    cond4_buy = quant_330UKtime >= curve_today['0.1']
+    
+    # "SELL" condition
+    # (1) Two consecutive days of closing price higher than the signal median
+    cond1_sell = (history_data_lag2_close > signal_data_lag2_mode)
+    cond2_sell = (history_data_lag1_close > signal_data_lag1_mode)    
+    # (2) rolling 5 days average higher than the median apc 
+    cond3_sell = rollinglagq5day > mode_apc_5days
+    # (3) price at today's opening hour below the 0.9 quantile of today's apc
+    cond4_sell = quant_330UKtime <= curve_today['0.9']
+
+    # Find the boolean value of strategy conditions
+    Buy_cond = cond1_buy and cond2_buy and cond3_buy and cond4_buy
+    Sell_cond =  cond1_sell and cond2_sell and cond3_sell and cond4_sell
+        
+    Neutral_cond = not (Buy_cond ^ Sell_cond) #xnor gate
+    
+    # make direction dictionary
+    direction_dict = {"Buy": Buy_cond, "Sell": Sell_cond, "Neutral": Neutral_cond}
+        
+    for i in direction_dict:
+        if direction_dict[i] == True:
+            direction = i
+    
     return direction
     
 def set_entry_price_APC(cond, curve_today, buy_cond=(0.4,0.6,0.1), 
@@ -661,6 +823,8 @@ def set_entry_price_APC(cond, curve_today, buy_cond=(0.4,0.6,0.1),
         stop_loss.
 
     """
+    # actually, I can make a spline first and call it later
+    
     if cond == "Buy":
         # (A) Entry region at price < APC p=0.4 and 
         entry_price = curve_today[str(buy_cond[0])]
@@ -733,6 +897,11 @@ def extract_lag_data(signal_data, history_data, date, lag_size=5):
         signal_data_lag = pd.concat([signal_data_lag, curve])
         
     return signal_data_lag, history_data_lag
+
+def extract_lag_data_to_list(signal_data, history_data_daily):
+    
+    return None
+    #extract_lag_data(signal_data, history_data_daily, "2024-01-10")
 
 
 def loop_signal(signal_data, history_data, dict_contracts_quant_signals, history_data_daily,
@@ -845,7 +1014,7 @@ def loop_signal(signal_data, history_data, dict_contracts_quant_signals, history
         # Make data for later storage in signal bucket.
         
         # Get the extracted 5 days Lag data 
-        apc_curve_lag5, history_data_lag5 = extract_lag_data(signal_data, 
+        apc_curve_lag5, history_data_lag5 = EC_read.extract_lag_data(signal_data, 
                                                              history_data_daily, 
                                                              forecast_date)
         
@@ -853,8 +1022,13 @@ def loop_signal(signal_data, history_data, dict_contracts_quant_signals, history
         print(history_data_lag5)
         
         # Run the strategy        
-        direction = argus_benchmark_strategy(
+        #direction = argus_benchmark_strategy(
+        #     price_330, history_data_lag5, apc_curve_lag5, curve_today)
+        direction = EC_strategy.MeanReversionStrategy.argus_benchmark_strategy(
              price_330, history_data_lag5, apc_curve_lag5, curve_today)
+       # direction = MR_mode_strategy(
+       #      price_330, history_data_lag5, apc_curve_lag5, curve_today)
+        
         
         print("direction done", i, direction, forecast_date)
         print("curve_today", curve_today["Forecast Period"])
@@ -872,12 +1046,11 @@ def loop_signal(signal_data, history_data, dict_contracts_quant_signals, history
         print("lag1q,lag2q",lag1q,lag2q,roll5q)
 
         # set resposne price.
-        entry_price, exit_price, stop_loss = set_entry_price_APC(direction, curve_today)
+        entry_price, exit_price, stop_loss = EC_strategy.MeanReversionStrategy.set_entry_price_APC(direction, curve_today)
         
         ##################################################################################
 
         # Storing the data    
-
         bucket = dict_contracts_quant_signals
         data = [forecast_date, 
                 full_contract_symbol,
@@ -891,7 +1064,7 @@ def loop_signal(signal_data, history_data, dict_contracts_quant_signals, history
                 direction, full_price_code
                 ]
         
-        dict_contracts_quant_signals = store_to_bucket_single(bucket, data)
+        dict_contracts_quant_signals = EC_strategy.MeanReversionStrategy.store_to_bucket_single(bucket, data)
 
     dict_contracts_quant_signals = pd.DataFrame(dict_contracts_quant_signals)
     
@@ -899,9 +1072,30 @@ def loop_signal(signal_data, history_data, dict_contracts_quant_signals, history
     #XXXX
     return dict_contracts_quant_signals
 
-def signal_generation_vector():
+def signal_gen_vector(signal_data, history_data, loop_start_date = ""):
     # a method to generate signal assuming the input are vectors
-    return None
+    
+    start_date = loop_start_date
+    
+    APCs_dat = signal_data[signal_data['Forecast Period'] > start_date]
+    portara_dat = history_data[history_data["Date only"] > start_date]
+    
+    # generate a list of 5 days lag data
+    
+    # make a list of lag1q
+    # make a list of lag2q
+    # make a list of median APC
+    
+    #make a list of rolling5days
+    #make a list of median APC for 5 days
+    
+    # make a list of 0.1, 0.9 quantiles
+    
+    # Turn the list into numpy array, then run condition 1-4 through it, get a list of true or false.
+    
+    dict_contracts_quant_signals = []
+    
+    return dict_contracts_quant_signals
 # make a vectoralised way to perform signal generation
 
 
@@ -914,12 +1108,6 @@ def run_generate_MR_signals():
     # Loop the whole list in one go with all the contracts or Loop it one contract at a time?
     
     #inputs: Portara data (1 Minute and Daily), APC
-    
-    # 1) Exception case check
-    # 2) File name management
-    # 3) Read in CSV Argus curve
-    # 4) Read Portara data
-    # 5) Create pricing 
     
     username = "dexter@eulercapital.com.au"
     password = "76tileArg56!"
@@ -936,31 +1124,32 @@ def run_generate_MR_signals():
     
     # load the table in memory and test multple strategies
     # input APC file
-    signal_data = get_apc_from_server(username, password, start_date_2, 
+    # download the relevant APC data from the server
+    signal_data = EC_read.get_apc_from_server(username, password, start_date_2, 
                                       end_date, categories,
                             keywords=keywords,symbol=symbol)
     
     # input history file
     # start_date2 is a temporary solution
-    history_data_daily = read_portara_daily_data(filename_daily,symbol,
+    history_data_daily = EC_read.read_portara_daily_data(filename_daily,symbol,
                                                  start_date_2,end_date)
-    history_data_minute = read_portara_minute_data(filename_minute,symbol, 
+    history_data_minute = EC_read.read_portara_minute_data(filename_minute,symbol, 
                                                    start_date_2, end_date,
                                                    start_filter_hour=30, 
                                                    end_filter_hour=331)
-    history_data = merge_portara_data(history_data_daily, history_data_minute)
+    history_data = EC_read.merge_portara_data(history_data_daily, history_data_minute)
 
     # need to make sure start date of portara is at least 5days ahead of APC data
     # need to make sure the 5 days lag of the APC and history data matches
 
     # Deal with the date problem in Portara data
-    history_data = portara_data_handling(history_data)
+    history_data = EC_read.portara_data_handling(history_data)
     
     # Checking function to make sure the input of the strategy is valid (maybe dumb them in a class)
     # check date and stuff
     
     # make an empty signal dictionary for storage
-    dict_contracts_quant_signals = make_signal_bucket()
+    dict_contracts_quant_signals = EC_strategy.MeanReversionStrategy.make_signal_bucket()
     
     # experiment with lag data extraction
     #extract_lag_data(signal_data, history_data_daily, "2024-01-10")
@@ -970,6 +1159,7 @@ def run_generate_MR_signals():
                                                dict_contracts_quant_signals, 
                                                history_data_daily)
     
+    # there are better ways than looping. here is a vectoralised method
     
     # Manual input for filename management (save)
     
