@@ -12,11 +12,14 @@ import numpy as np
 from scipy.interpolate import CubicSpline, UnivariateSpline
 import findiff as fd 
 
+__all__ = ['generic_interpolate','find_quant','cal_pdf']
+__author__="Dexter S.-H. Hon"
+
 def generic_interpolate():
     # generic interpolate method Cubic spline and what not
     return None
 
-def find_quant(curve, price):
+def find_quant(curve, quant, price):
     """
     This is an inverse Spline interpolation treating the cdf as the x-axis.
     This is meant to find the corresponding quantile with a given price.
@@ -38,19 +41,18 @@ def find_quant(curve, price):
 
     """
 
-    spline_apc = CubicSpline(curve, 
-                            np.arange(0.0025, 0.9975, 0.0025))
+    spline_apc = CubicSpline(curve, quant)
     quant = spline_apc(price)
     return quant
     
 
-def cal_pdf(x,apc_prices):
+def cal_pdf(x,cdf):
     #cdf
-    even_spaced_prices = np.arange(np.min(apc_prices), np.max(apc_prices), 0.005)
+    even_spaced_prices = np.arange(np.min(cdf), np.max(cdf), 0.005)
     
     print(len(even_spaced_prices))
     
-    spline_apc_rev = UnivariateSpline(apc_prices, np.arange(0.0025, 0.9975, 0.0025), s = 0)
+    spline_apc_rev = UnivariateSpline(cdf, np.arange(0.0025, 0.9975, 0.0025), s = 0)
     quantiles_even_prices = spline_apc_rev(even_spaced_prices)
 
     dq = even_spaced_prices[1]-even_spaced_prices[0]

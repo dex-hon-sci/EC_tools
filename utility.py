@@ -50,6 +50,7 @@ def date_matching_list(date_list1, date_list2):
         date_matching(date_list1[i], date_list2[i])
         
 def list_match(list1,list2):
+    # A function to check if two list are identical
     if list1 == list2:
         pass
     else:

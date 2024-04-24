@@ -62,7 +62,3 @@ def BBB():
         wanted_quantiles.append(APCs_this_date_and_contract[str(i)])
         
     return wanted_quantiles 
-
-
-AAA()
-BBB()

@@ -9,11 +9,12 @@ import numpy as np
 import pandas as pd
 import time
 import datetime
+import utility as util
 
 from ArgusPossibilityCurves2 import ArgusPossibilityCurves
 
-#@time_it
-#@save_csv("APC_test.csv",save_or_not = False)
+#@util.time_it
+#@util.save_csv("APC_test.csv",save_or_not = False)
 def get_apc_from_server(username, password, start_date, end_date, categories,
                         keywords=None, symbol=None):
     """
@@ -106,7 +107,9 @@ def get_apc_from_server(username, password, start_date, end_date, categories,
 def read_apc_data(filename):
     # This function should be used in conjuction with get_apc_from_server(). 
     # The data should be pulled from the server using that function
-    return None    
+    data = pd.read_csv(filename)
+
+    return data    
 
 # tested.
 def read_portara_daily_data(filename, symbol, start_date, end_date, 

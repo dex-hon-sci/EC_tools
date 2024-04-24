@@ -8,6 +8,7 @@ Created on Fri Apr  5 03:19:59 2024
 This is a list of strategy that can be implemented in other scripts.
 """
 import numpy as np
+import math_func as func
 
 class MeanReversionStrategy(object):
     
@@ -187,10 +188,91 @@ class MeanReversionStrategy(object):
         
         return direction
 
-    def mod_benchmark_mode():
+    def mod_benchmark_mode(price_330, history_data_lag5, apc_curve_lag5,
+                                     curve_today):
+        # inputs
+        quant_330UKtime = price_330
+        lag5_price = history_data_lag5['Settle']
         
+        # Match the date just to be sure
+        # To be added
+    
+        # define the lag 2 days settlement prices
+        history_data_lag2_close = lag5_price.iloc[-2]
+        history_data_lag1_close = lag5_price.iloc[-1]
         
-        return None
+        #Find the mode of the curve and find the quantile
+        pdf_lag1, even_spaced_prices_lag1, spline_apc_lag1 = get_APC_spline_for_APC_pdf(lag_apc_data[0].to_numpy()[0][1:end_prices])
+
+        price_max_prob_lag1 = even_spaced_prices_lag1[np.argmin(abs(pdf_lag1-np.max(pdf_lag1)))]
+        q_price_max_prob_lag1 = spline_apc_lag1(price_max_prob_lag1)        
+        
+        # The APC two days (lag2) before this date
+        signal_data_lag2_mode =  max(apc_curve_lag5.iloc[-2][1:-1])
+        # The APC one day1 (lag1) before this date
+        signal_data_lag1_mode =  max(apc_curve_lag5.iloc[-1][1:-1])
+        
+        lag1q = func.find_quant_APC(apc_curve_lag5.iloc[-2], signal_data_lag2_mode)
+        lag2q = func.find_quant_APC(apc_curve_lag5.iloc[-1], signal_data_lag1_mode)
+
+        print("lag1q, lag2q", lag1q, lag2q)
+        # Reminder: pulling directly from a list is a factor of 3 faster than doing 
+        # spline everytime
+            
+        # calculate the 5 days average for closing price
+        rollinglagq5day = np.average(lag5_price)         
+                    
+        # calculate the median of the apc for the last five days
+        mode_apc_5days = np.median([max(apc_curve_lag5.iloc[-5][1:-1]),
+                                          max(apc_curve_lag5.iloc[-4][1:-1]),
+                                          max(apc_curve_lag5.iloc[-3][1:-1]),
+                                          max(apc_curve_lag5.iloc[-2][1:-1]),
+                                          max(apc_curve_lag5.iloc[-1][1:-1])])
+        
+        # "BUY" condition
+        # (1) Two consecutive days of closing price lower than the signal median
+        cond1_buy = (history_data_lag2_close < signal_data_lag2_mode)
+        cond2_buy = (history_data_lag1_close < signal_data_lag1_mode)
+        # (2) rolling 5 days average lower than the median apc 
+        cond3_buy = rollinglagq5day < mode_apc_5days
+        # (3) price at today's opening hour above the 0.1 quantile of today's apc
+        cond4_buy = quant_330UKtime >= curve_today['0.1']
+        
+        # "SELL" condition
+        # (1) Two consecutive days of closing price higher than the signal median
+        cond1_sell = (history_data_lag2_close > signal_data_lag2_mode)
+        cond2_sell = (history_data_lag1_close > signal_data_lag1_mode)    
+        # (2) rolling 5 days average higher than the median apc 
+        cond3_sell = rollinglagq5day > mode_apc_5days
+        # (3) price at today's opening hour below the 0.9 quantile of today's apc
+        cond4_sell = quant_330UKtime <= curve_today['0.9']   
+        
+        print("===================This is in the package")  
+        print("cond1_buy", cond1_buy, history_data_lag2_close, signal_data_lag2_mode)
+        print("cond2_buy", cond2_buy, history_data_lag1_close, signal_data_lag1_mode)
+        print("cond3_buy", cond3_buy, rollinglagq5day,  mode_apc_5days)
+        print("cond4_buy", cond4_buy, quant_330UKtime, curve_today['0.1'])
+        print("====================")
+        print("cond1_sell", cond1_sell, history_data_lag2_close, signal_data_lag2_mode)
+        print("cond2_sell", cond2_sell, history_data_lag1_close, signal_data_lag1_mode)
+        print("cond3_sell", cond3_sell, rollinglagq5day,  mode_apc_5days)
+        print("cond4_sell", cond4_sell, quant_330UKtime, curve_today['0.1'])
+        print("======================")
+
+        # Find the boolean value of strategy conditions
+        Buy_cond = cond1_buy and cond2_buy and cond3_buy and cond4_buy
+        Sell_cond =  cond1_sell and cond2_sell and cond3_sell and cond4_sell
+        
+        Neutral_cond = not (Buy_cond ^ Sell_cond) #xnor gate
+    
+        # make direction dictionary
+        direction_dict = {"Buy": Buy_cond, "Sell": Sell_cond, "Neutral": Neutral_cond}
+        
+        for i in direction_dict:
+            if direction_dict[i] == True:
+                direction = i
+                
+        return direction
     
     def set_entry_price_APC(cond, curve_today, buy_cond=(0.4,0.6,0.1), 
                             sell_cond =(0.6,0.4,0.9)):
