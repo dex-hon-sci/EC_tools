@@ -501,3 +501,60 @@ def gen_signal_simple(signal_data, history_data, price_330):
         print("Sell")
     elif not Buy_cond and not Sell_cond:
         print("Neutral")
+        
+
+def cal_APC_pdf(apc_prices):
+    #cdf
+    even_spaced_prices = np.arange(np.min(apc_prices), np.max(apc_prices), 0.005)
+    
+    print(len(even_spaced_prices))
+    
+    spline_apc_rev = UnivariateSpline(apc_prices, np.arange(0.0025, 0.9975, 0.0025), s = 0)
+    quantiles_even_prices = spline_apc_rev(even_spaced_prices)
+
+    dq = even_spaced_prices[1]-even_spaced_prices[0]
+    deriv = fd.FinDiff(0, dq, 1)
+    pdf = deriv(quantiles_even_prices)
+    
+    print(len(pdf))
+    
+    spline_pdf = UnivariateSpline(even_spaced_prices, pdf,  s = 0.0015)
+    pdf = spline_pdf(even_spaced_prices)
+    
+    print(len(pdf))
+    return even_spaced_prices, pdf
+
+def cal_APC_pdf_2(apc_prices):
+    #cdf
+    x = np.arange(0.0025, 0.9975, 0.0025)
+    print(len(x))
+    
+    spline_apc = UnivariateSpline(x, apc_prices, s = 0)
+    
+    quantiles_even_prices = spline_apc(x)
+    print(quantiles_even_prices)
+    
+    dq = x[1]-x[0]
+    deriv = fd.FinDiff(0, dq, 1)
+    pdf = deriv(quantiles_even_prices)
+        
+    #spline_pdf = UnivariateSpline(x, pdf,  s = 0.0015)
+    #pdf = spline_pdf(x)
+    
+    print(len(pdf))
+    return pdf
+    
+
+def cal_APC_pdf(apc_prices):
+    #cdf
+    even_spaced_prices = np.arange(np.min(apc_prices), np.max(apc_prices), 0.005)
+    spline_apc_rev = UnivariateSpline(apc_prices, np.arange(0.0025, 0.9975, 0.0025), s = 0)
+    quantiles_even_prices = spline_apc_rev(even_spaced_prices)
+
+    dq = even_spaced_prices[1]-even_spaced_prices[0]
+    deriv = fd.FinDiff(0, dq, 1)
+    pdf = deriv(quantiles_even_prices)
+    spline_pdf = UnivariateSpline(even_spaced_prices, pdf,  s = 0.0015)
+    pdf = spline_pdf(even_spaced_prices)
+    
+    return pdf

@@ -11,7 +11,6 @@ A modified script based on the Mean-Reversion Method developed by Abbe Whitford.
 # import libraries
 import pandas as pd 
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy.interpolate import CubicSpline, UnivariateSpline
 import getpass 
 import time
@@ -21,56 +20,14 @@ import findiff as fd
 import EC_strategy as EC_strategy
 import EC_read as EC_read
 import utility as util
+import math_func as mfunc
 
-from ArgusPossibilityCurves2 import ArgusPossibilityCurves
 
 __all__ = ['loop_signal','signal_gen_vector','run_gen_MR_signals']
 
 __author__="Dexter S.-H. Hon"
 
 #%%
-
-def cal_APC_pdf(apc_prices):
-    #cdf
-    even_spaced_prices = np.arange(np.min(apc_prices), np.max(apc_prices), 0.005)
-    spline_apc_rev = UnivariateSpline(apc_prices, np.arange(0.0025, 0.9975, 0.0025), s = 0)
-    quantiles_even_prices = spline_apc_rev(even_spaced_prices)
-
-    dq = even_spaced_prices[1]-even_spaced_prices[0]
-    deriv = fd.FinDiff(0, dq, 1)
-    pdf = deriv(quantiles_even_prices)
-    spline_pdf = UnivariateSpline(even_spaced_prices, pdf,  s = 0.0015)
-    pdf = spline_pdf(even_spaced_prices)
-    
-    return pdf
-
-def find_quant_APC(curve_today, price):
-    """
-    This is an inverse Spline interpolation treating the pdf as the x-axis.
-    This is meant to find the corresponding quantile with a given price.
-    
-    This function assumes a range of probability distribution function in
-    between 0.0025 and 0.9975 qantiles that has a 0.0025 interval
-
-    Parameters
-    ----------
-    curve_today : 1D pandas dataframe
-        A 1D array that contains a discrete number of pdf points.
-    price : float
-        The given price.
-
-    Returns
-    -------
-    quant : float
-        The corresponding quantile.
-
-    """
-
-    spline_apc = CubicSpline(curve_today.to_numpy()[1:-1], 
-                            np.arange(0.0025, 0.9975, 0.0025))
-    quant = spline_apc(price)
-    return quant
-
 
 #tested
 def extract_lag_data(signal_data, history_data, date, lag_size=5):
@@ -116,13 +73,14 @@ def extract_lag_data(signal_data, history_data, date, lag_size=5):
     return signal_data_lag, history_data_lag
 
 def extract_lag_data_to_list(signal_data, history_data_daily):
+    # make a list of lag data with a nested data structure.
     
     return None
     #extract_lag_data(signal_data, history_data_daily, "2024-01-10")
 
 #%%
 def loop_signal(signal_data, history_data, dict_contracts_quant_signals, history_data_daily,
-                loop_start_date="2024-01-10"):
+                start_date, end_date):
     """
     A method taken from Abbe's original method. It is not necessary to loop 
     through each date and run evaluation one by one. But this is a rudamentary 
@@ -138,25 +96,31 @@ def loop_signal(signal_data, history_data, dict_contracts_quant_signals, history
         An empty bucket for final data storage.
     history_data_daily : pandas dataframe table
         The historical data (assuming the data is from Portara).
-    loop_start_date : TYPE, optional
-        DESCRIPTION. The default is "2024-01-10".
+    start_date : str
+        The start date for looping.
+    end_date: str
+        The end date for looping.
 
     Returns
     -------
-    dict_contracts_quant_signals : TYPE
-        DESCRIPTION.
+    dict_contracts_quant_signals : dict
+        A dictionary for storing the signals and wanted quantiles.
 
     """
-    start_date = loop_start_date
-        
-    # success
+    # Define a small window of interest
     APCs_dat = signal_data[signal_data['Forecast Period'] > start_date]
+    # APCs_dat = signal_data[signal_data['Forecast Period'] < end_date] 
+
+    # leave the end date open because on some date there are no APC published, 
+    # leading to a mismatch of history and signal data. Now this method use the 
+    # history data as anchor to search for relevant APC date.
+    
     portara_dat = history_data[history_data["Date only"] > start_date]
+    #portara_dat = history_data[history_data["Date only"] < end_date]
     
-    print(APCs_dat['Forecast Period'])
-    # where to start
-    
-    for i in np.arange(len(APCs_dat)): # loop through every forecast date and contract symbol 
+    print("length", len(portara_dat), len(APCs_dat))
+        
+    for i in np.arange(len(portara_dat)): # loop through every forecast date and contract symbol 
         
         APCs_this_date_and_contract = APCs_dat.iloc[i] # get the ith row 
         
@@ -235,31 +199,30 @@ def loop_signal(signal_data, history_data, dict_contracts_quant_signals, history
                                                              history_data_daily, 
                                                              forecast_date)
         
-        print(apc_curve_lag5[['Forecast Period','0.5']])
-        print(history_data_lag5)
+        print("apc_curve_lag5[['Forecast Period','0.5']]", 
+              apc_curve_lag5[['Forecast Period','0.5']])
+        print("history_data_lag5", history_data_lag5)
         
         # Run the strategy        
-        #direction = argus_benchmark_strategy(
-        #     price_330, history_data_lag5, apc_curve_lag5, curve_today)
         direction = EC_strategy.MeanReversionStrategy.argus_benchmark_strategy(
              price_330, history_data_lag5, apc_curve_lag5, curve_today)
-       # direction = MR_mode_strategy(
-       #      price_330, history_data_lag5, apc_curve_lag5, curve_today)
-        
         
         print("direction done", i, direction, forecast_date)
         print("curve_today", curve_today["Forecast Period"])
         history_data_lag2_close = history_data_lag5["Settle"].iloc[-2]
         history_data_lag1_close = history_data_lag5["Settle"].iloc[-1]
 
-
+        x0 = np.arange(0.0025, 0.9975, 0.0025)
         # Find the quantile of the relevant price for the last two dates
-        lag2q = find_quant_APC(curve_today, history_data_lag2_close)  
-        lag1q = find_quant_APC(curve_today, history_data_lag1_close)
+        #lag2q = find_quant_APC(curve_today, history_data_lag2_close)  
+        #lag1q = find_quant_APC(curve_today, history_data_lag1_close)
+        lag2q = mfunc.find_quant(curve_today[1:-1], x0, history_data_lag2_close)  
+        lag1q = mfunc.find_quant(curve_today[1:-1], x0, history_data_lag1_close)   
         
         rollinglagq5day = np.average(history_data_lag5["Settle"].to_numpy())
         
-        roll5q = find_quant_APC(curve_today, rollinglagq5day) 
+        #roll5q = find_quant_APC(curve_today, rollinglagq5day) 
+        roll5q = mfunc.find_quant(curve_today[1:-1], x0, rollinglagq5day) 
         print("lag1q,lag2q",lag1q,lag2q,roll5q)
 
         # set resposne price.
@@ -286,10 +249,13 @@ def loop_signal(signal_data, history_data, dict_contracts_quant_signals, history
     dict_contracts_quant_signals = pd.DataFrame(dict_contracts_quant_signals)
     
     #sort by date
-    #XXXX
+    dict_contracts_quant_signals = dict_contracts_quant_signals.sort_values(by='APC forecast period')
+    
     return dict_contracts_quant_signals
 
 def signal_gen_vector(signal_data, history_data, loop_start_date = ""):
+    # make a vectoralised way to perform signal generation
+
     # a method to generate signal assuming the input are vectors
     
     start_date = loop_start_date
@@ -313,7 +279,6 @@ def signal_gen_vector(signal_data, history_data, loop_start_date = ""):
     dict_contracts_quant_signals = []
     
     return dict_contracts_quant_signals
-# make a vectoralised way to perform signal generation
 
 
 @util.time_it
@@ -329,6 +294,7 @@ def run_gen_MR_signals():
     username = "dexter@eulercapital.com.au"
     password = "76tileArg56!"
     
+    signal_filename = "./APC_latest_CL.csv"
     filename_daily = "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL.day"
     filename_minute = "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL.001"
 
@@ -339,13 +305,16 @@ def run_gen_MR_signals():
     keywords = "WTI"
     symbol = "CL"
     
-    # load the table in memory and test multple strategies
-    # input APC file
-    # download the relevant APC data from the server
-    signal_data = EC_read.get_apc_from_server(username, password, start_date_2, 
-                                      end_date, categories,
-                            keywords=keywords,symbol=symbol)
     
+    # download the relevant APC data from the server
+    ##signal_data = EC_read.get_apc_from_server(username, password, start_date_2, 
+    ##                                  end_date, categories,
+    ##                        keywords=keywords,symbol=symbol)
+    
+    # load the master table in memory and test multple strategies
+    # input APC file
+    signal_data = EC_read.read_apc_data(signal_filename)
+   
     # input history file
     # start_date2 is a temporary solution
     history_data_daily = EC_read.read_portara_daily_data(filename_daily,symbol,
@@ -374,15 +343,14 @@ def run_gen_MR_signals():
     # The strategy will be ran in loop_signal decorator
     dict_contracts_quant_signals = loop_signal(signal_data, history_data, 
                                                dict_contracts_quant_signals, 
-                                               history_data_daily)
+                                               history_data_daily, 
+                                               start_date, end_date)
     
     # there are better ways than looping. here is a vectoralised method
-    
-    # Manual input for filename management (save)
-    
+        
     return dict_contracts_quant_signals
 
-
-dict_contracts_quant_signals = run_gen_MR_signals()
+if __name__ == "__main__":
+    dict_contracts_quant_signals = run_gen_MR_signals()
 
 

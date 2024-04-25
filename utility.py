@@ -10,6 +10,7 @@ import time
 import datetime
 import numpy as np
 
+
 def time_it(func):
     # simple timing function
     def wrapper(*args, **kwargs):
@@ -17,7 +18,7 @@ def time_it(func):
         result = func(*args, **kwargs)
         t2 = time.time()-t1
         print(f"{func.__name__} ran in {t2} seconds.")
-        return result
+        return t2, result, func.__name__
     return wrapper
 
 def save_csv(savefilename, save_or_not = True):
@@ -32,7 +33,6 @@ def save_csv(savefilename, save_or_not = True):
         return wrapper
     return decorator
          
-@time_it
 def date_matching(date1,date2):
     # A simple function that ensure the date from two data sources match
     if date1 == date2:

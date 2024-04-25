@@ -9,12 +9,11 @@ import numpy as np
 import pandas as pd
 import time
 import datetime
-import utility as util
 
 from ArgusPossibilityCurves2 import ArgusPossibilityCurves
 
-#@util.time_it
-#@util.save_csv("APC_test.csv",save_or_not = False)
+#@time_it
+#@save_csv("APC_test.csv",save_or_not = False)
 def get_apc_from_server(username, password, start_date, end_date, categories,
                         keywords=None, symbol=None):
     """
@@ -100,8 +99,6 @@ def get_apc_from_server(username, password, start_date, end_date, categories,
     # Drop the Category column
     apc_data = apc_data.drop(columns=['CATEGORY'])
 
-    # Universal saving function
-
     return apc_data
 
 def read_apc_data(filename):
@@ -135,8 +132,8 @@ def read_portara_daily_data(filename, symbol, start_date, end_date,
         
     Returns
     -------
-    portara_dat: 2D pandas data frame
-
+    portara_dat: 2D pandas dataframe
+        The Portara daily data
     """
     # Read downloaded data using panda
     portara_dat = pd.read_csv(filename)
@@ -169,7 +166,7 @@ def read_portara_daily_data(filename, symbol, start_date, end_date,
 
     # Select for only the following 4 columns because the others are not relevant to us
     portara_dat = portara_dat[column_select]
-    print("portara_dat",type(portara_dat))
+
     return portara_dat
 
 # tested some what
@@ -199,7 +196,7 @@ def read_portara_minute_data(filename, symbol, start_date, end_date,
     Returns
     -------
     portara_dat_2 : 2D panda dataframe
-        DESCRIPTION.
+        The Portara minute data.
 
     """
     # Maybe first select for date then select for time?
@@ -259,15 +256,15 @@ def merge_portara_data(table1, table2):
 
     Parameters
     ----------
-    table1 : TYPE
-        The Portara Daily pricing data.
+    table1 : pandas dataframe
+        The pandas dataframe Daily pricing data.
     table2 : TYPE
         The Portara Minute pricing data.
 
     Returns
     -------
-    new_table : TYPE
-        DESCRIPTION.
+    new_table : pandas dataframe
+        The new merged table.
 
     """
     # A function that merges 
@@ -296,13 +293,13 @@ def portara_data_handling(portara_dat):
 
     Parameters
     ----------
-    portara_dat : TYPE
-        DESCRIPTION.
+    portara_dat : pandas dataframe 
+        Input Portara data.
 
     Returns
     -------
-    portara_dat : TYPE
-        DESCRIPTION.
+    portara_dat : pandas dataframe
+        Output post-processed Portara data.
 
     """
     
@@ -358,7 +355,7 @@ def extract_lag_data(signal_data, history_data, date, lag_size=5):
         The historical data.
     date : str
         The date of interest, format like this "2024-01-10".
-    lag_size : TYPE, optional
+    lag_size : int, optional
         The size of the lag window. The default is 5 (days).
 
     Returns
@@ -372,13 +369,17 @@ def extract_lag_data(signal_data, history_data, date, lag_size=5):
 
     # Find the row index of the history data first
     row_index = history_data.index[history_data['Date only'] == date].tolist()[0]
-    
+    print("row_index",row_index)
     # extract exactly 5 (default) lag days array
     history_data_lag = history_data.loc[row_index-lag_size:row_index-1]
+    print("history_data_lag",history_data_lag)
 
     # use the relevant date from history data to get signal data to ensure matching date
     window = history_data_lag['Date only'].tolist()
+    # turn Timstamp into string
+    window = [str(window[i])[0:10] for i in range(lag_size)]
     
+    print("window",window)
     #Store the lag signal data in a list
     signal_data_lag = signal_data[signal_data['Forecast Period'] == window[0]]
     
@@ -387,3 +388,53 @@ def extract_lag_data(signal_data, history_data, date, lag_size=5):
         signal_data_lag = pd.concat([signal_data_lag, curve])
         
     return signal_data_lag, history_data_lag
+
+def render_PNL_xlsx(filename):
+    #WIP
+    
+    # the function read in the backtest result to generate an xlsx file with PNL
+    
+    round_turn_fees = {
+    'CLc1': 24.0,
+    'CLc2': 24.0,
+    'HOc1': 25.2,
+    'HOc2': 25.2,
+    'RBc1': 25.2,
+    'RBc2': 25.2,
+    'QOc1': 24.0,
+    'QOc2': 24.0,
+    'QPc1': 24.0,
+    'QPc2': 24.0,
+    }
+
+    num_per_contract = {
+        'CLc1': 1000.0,
+        'CLc2': 1000.0,
+        'HOc1': 42000.0,
+        'HOc2': 42000.0,
+        'RBc1': 42000.0,
+        'RBc2': 42000.0,
+        'QOc1': 1000.0,
+        'QOc2': 1000.0,
+        'QPc1': 100.0,
+        'QPc2': 100.0,
+    }
+    
+    price_codes = ['CLc1', 'CLc2', 'HOc1', 'HOc2', 'RBc1', 'RBc2', 'QOc1', 'QOc2', 'QPc1', 'QPc2']
+    number_barrels_per_contract = [1000, 1000, 42000, 42000, 42000, 42000, 1000, 1000, 100, 100] # https://www.cmegroup.com/trading/energy/crude-and-refined-products.html (useful info)
+   
+    number_contracts = 50 
+    fees_per_contract = [24.0, 24.0, 25.2, 25.2, 25.2, 25.2, 24.0, 24.0, 24.0, 24.0]
+    
+    dat = pd.read_csv(filename)
+    
+    with pd.ExcelWriter(filename[:-4]+'_.xlsx') as excel_writer: 
+        
+        dattotal = dat
+        dattotal = dattotal.sort_values(by='date')
+        dattotal['number barrels/gallons'] = dattotal['Price Code'].apply(lambda x: num_per_contract[x])
+        dattotal['fees'] = dattotal['Price Code'].apply(lambda x: round_turn_fees[x])
+        dattotal['fees'] = np.where(np.isnan(dattotal['entry price']), 0.0, dattotal['fees'])
+        dattotal['scaled returns from trades'] =  dattotal['return from trades']*dattotal['number barrels/gallons'] - dattotal['fees']
+
+    return dattotal

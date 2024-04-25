@@ -19,7 +19,7 @@ def generic_interpolate():
     # generic interpolate method Cubic spline and what not
     return None
 
-def find_quant(curve, quant, price):
+def find_quant(curve, quant_list, price):
     """
     This is an inverse Spline interpolation treating the cdf as the x-axis.
     This is meant to find the corresponding quantile with a given price.
@@ -40,29 +40,50 @@ def find_quant(curve, quant, price):
         The corresponding quantile.
 
     """
-
-    spline_apc = CubicSpline(curve, quant)
+    spline_apc = CubicSpline(curve, quant_list)
     quant = spline_apc(price)
     return quant
     
 
-def cal_pdf(x,cdf):
-    #cdf
-    even_spaced_prices = np.arange(np.min(cdf), np.max(cdf), 0.005)
-    
-    print(len(even_spaced_prices))
-    
-    spline_apc_rev = UnivariateSpline(cdf, np.arange(0.0025, 0.9975, 0.0025), s = 0)
-    quantiles_even_prices = spline_apc_rev(even_spaced_prices)
+def cal_pdf(quant, cdf):
+    """
+    Calcualte the probability distribution function (pdf) from a cumulative 
+    probability distribution function (cdf).
 
-    dq = even_spaced_prices[1]-even_spaced_prices[0]
-    deriv = fd.FinDiff(0, dq, 1)
-    pdf = deriv(quantiles_even_prices)
+    Parameters
+    ----------
+    quant : 1D list
+        The distribution of the events.
+    cdf : 1D list
+        The value of the cdf.
+
+    Returns
+    -------
+    spaced_events : 1D list
+        The value of the events.
+    pdf : 1D list
+        The probability of the events.
+
+    """
+    # Define the evenly spaced events for the cdf
+    spaced_events = np.arange(np.min(cdf), np.max(cdf), 0.005)
+    
+    print(len(spaced_events))
+    
+    # interpolate the qunatile given the cdf
+    spline_apc_rev = UnivariateSpline(cdf, quant, s = 0)
+    quant_even_prices = spline_apc_rev(spaced_events) # get the corresponding quantile
+
+    # make the differential dq using the 1st and 2nd elements
+    dq = spaced_events[1]-spaced_events[0]
+    deriv = fd.FinDiff(0, dq, 1) 
+    pdf = deriv(quant_even_prices) # perform the differentiation on cdf, outcome the pdf
     
     print(len(pdf))
     
-    spline_pdf = UnivariateSpline(even_spaced_prices, pdf,  s = 0.0015)
-    pdf = spline_pdf(even_spaced_prices)
+    # interpolate the pdf with the spaced events
+    spline_pdf = UnivariateSpline(spaced_events, pdf,  s = 0.0015)
+    pdf = spline_pdf(spaced_events)
     
     print(len(pdf))
-    return even_spaced_prices, pdf
+    return spaced_events, pdf
