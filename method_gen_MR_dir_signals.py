@@ -12,13 +12,11 @@ A modified script based on the Mean-Reversion Method developed by Abbe Whitford.
 import pandas as pd 
 import numpy as np
 from scipy.interpolate import CubicSpline, UnivariateSpline
-import getpass 
-import time
-import datetime
-import findiff as fd 
+
 
 import EC_strategy as EC_strategy
 import EC_read as EC_read
+import update_db as update_db
 import utility as util
 import math_func as mfunc
 
@@ -28,7 +26,6 @@ __all__ = ['loop_signal','signal_gen_vector','run_gen_MR_signals']
 __author__="Dexter S.-H. Hon"
 
 #%%
-
 #tested
 def extract_lag_data(signal_data, history_data, date, lag_size=5):
     """
@@ -204,7 +201,10 @@ def loop_signal(signal_data, history_data, dict_contracts_quant_signals, history
         print("history_data_lag5", history_data_lag5)
         
         # Run the strategy        
-        direction = EC_strategy.MeanReversionStrategy.argus_benchmark_strategy(
+        #direction = EC_strategy.MRStrategy.argus_benchmark_strategy(
+        #     price_330, history_data_lag5, apc_curve_lag5, curve_today)
+        
+        direction = EC_strategy.MRStrategy.argus_benchmark_mode(
              price_330, history_data_lag5, apc_curve_lag5, curve_today)
         
         print("direction done", i, direction, forecast_date)
@@ -226,7 +226,7 @@ def loop_signal(signal_data, history_data, dict_contracts_quant_signals, history
         print("lag1q,lag2q",lag1q,lag2q,roll5q)
 
         # set resposne price.
-        entry_price, exit_price, stop_loss = EC_strategy.MeanReversionStrategy.set_entry_price_APC(direction, curve_today)
+        entry_price, exit_price, stop_loss = EC_strategy.MRStrategy.set_EES_APC(direction, curve_today)
         
         ##################################################################################
 
@@ -244,7 +244,7 @@ def loop_signal(signal_data, history_data, dict_contracts_quant_signals, history
                 direction, full_price_code
                 ]
         
-        dict_contracts_quant_signals = EC_strategy.MeanReversionStrategy.store_to_bucket_single(bucket, data)
+        dict_contracts_quant_signals = EC_strategy.MRStrategy.store_to_bucket_single(bucket, data)
 
     dict_contracts_quant_signals = pd.DataFrame(dict_contracts_quant_signals)
     
@@ -291,9 +291,6 @@ def run_gen_MR_signals():
     
     #inputs: Portara data (1 Minute and Daily), APC
     
-    username = "dexter@eulercapital.com.au"
-    password = "76tileArg56!"
-    
     signal_filename = "./APC_latest_CL.csv"
     filename_daily = "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL.day"
     filename_minute = "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL.001"
@@ -307,10 +304,9 @@ def run_gen_MR_signals():
     
     
     # download the relevant APC data from the server
-    ##signal_data = EC_read.get_apc_from_server(username, password, start_date_2, 
-    ##                                  end_date, categories,
-    ##                        keywords=keywords,symbol=symbol)
-    
+    #if update == True:
+    #    update_db.download_latest_APC_list() #something like that
+
     # load the master table in memory and test multple strategies
     # input APC file
     signal_data = EC_read.read_apc_data(signal_filename)
@@ -335,7 +331,8 @@ def run_gen_MR_signals():
     # check date and stuff
     
     # make an empty signal dictionary for storage
-    dict_contracts_quant_signals = EC_strategy.MeanReversionStrategy.make_signal_bucket()
+    #dict_contracts_quant_signals = EC_strategy.MRStrategy.make_signal_bucket(strategy_name='benchmark')
+    dict_contracts_quant_signals = EC_strategy.MRStrategy.make_signal_bucket(strategy_name='mode')
     
     # experiment with lag data extraction
     #extract_lag_data(signal_data, history_data_daily, "2024-01-10")

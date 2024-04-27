@@ -8,12 +8,16 @@ Created on Fri Apr  5 03:19:59 2024
 This is a list of strategy that can be implemented in other scripts.
 """
 import numpy as np
-import math_func as func
+import math_func as mfunc
 
-class MeanReversionStrategy(object):
+
+__author__="Dexter S.-H. Hon"
+
+class MRStrategy(object):
     
     def __init__(self):
-        self._cond_1 = False
+        self._buy_cond_list = []
+        self._sell_cond_list = []
         return None
     
     def make_signal_bucket(strategy_name="benchmark"):
@@ -188,7 +192,7 @@ class MeanReversionStrategy(object):
         
         return direction
 
-    def mod_benchmark_mode(price_330, history_data_lag5, apc_curve_lag5,
+    def argus_benchmark_mode(price_330, history_data_lag5, apc_curve_lag5,
                                      curve_today):
         # inputs
         quant_330UKtime = price_330
@@ -201,19 +205,28 @@ class MeanReversionStrategy(object):
         history_data_lag2_close = lag5_price.iloc[-2]
         history_data_lag1_close = lag5_price.iloc[-1]
         
+        ########################################################################
         #Find the mode of the curve and find the quantile
-        pdf_lag1, even_spaced_prices_lag1, spline_apc_lag1 = get_APC_spline_for_APC_pdf(lag_apc_data[0].to_numpy()[0][1:end_prices])
-
+        #pdf_lag1, even_spaced_prices_lag1, spline_apc_lag1 = get_APC_spline_for_APC_pdf(lag_apc_data[0].to_numpy()[0][1:end_prices])
+        quant0 = np.arange(0.0025, 0.9975, 0.0025)
+        even_spaced_prices_lag1, pdf_lag1 = mfunc.cal_pdf(quant0, curve_today.to_numpy()[0][1:-1])
+        
+        spline_apc_lag1 = CubicSpline(lag_apc_data[0].to_numpy()[0][1:end_prices], 
+                         np.arange(0.0025, 0.9975, 0.0025))
+        
         price_max_prob_lag1 = even_spaced_prices_lag1[np.argmin(abs(pdf_lag1-np.max(pdf_lag1)))]
         q_price_max_prob_lag1 = spline_apc_lag1(price_max_prob_lag1)        
+        #######################################################################
+        
         
         # The APC two days (lag2) before this date
         signal_data_lag2_mode =  max(apc_curve_lag5.iloc[-2][1:-1])
         # The APC one day1 (lag1) before this date
         signal_data_lag1_mode =  max(apc_curve_lag5.iloc[-1][1:-1])
-        
-        lag1q = func.find_quant_APC(apc_curve_lag5.iloc[-2], signal_data_lag2_mode)
-        lag2q = func.find_quant_APC(apc_curve_lag5.iloc[-1], signal_data_lag1_mode)
+
+        # Find the quantile of the mode of the lag2days apc    
+        lag1q = mfunc.find_quant(apc_curve_lag5.iloc[-2], quant0, signal_data_lag2_mode)
+        lag2q = mfunc.find_quant(apc_curve_lag5.iloc[-1], quant0, signal_data_lag1_mode)
 
         print("lag1q, lag2q", lag1q, lag2q)
         # Reminder: pulling directly from a list is a factor of 3 faster than doing 
@@ -274,11 +287,11 @@ class MeanReversionStrategy(object):
                 
         return direction
     
-    def set_entry_price_APC(cond, curve_today, buy_cond=(0.4,0.6,0.1), 
+    def set_EES_APC(cond, curve_today, buy_cond=(0.4,0.6,0.1), 
                             sell_cond =(0.6,0.4,0.9)):
         """
-        A generic method to set the entry, exit, and stop loss price base on an
-        APC. 
+        A generic method to set the entry, exit, and stop loss (ESS) prices 
+        base on an APC. 
         
         Parameters
         ----------
@@ -333,7 +346,8 @@ class MeanReversionStrategy(object):
             stop_loss = "NA"
         else:
             raise Exception(
-                'Unaccepted input, condition needs to be either Buy, Sell, or Neutral.')
+                'Unaccepted input, condition needs to be either Buy, \
+                    Sell, or Neutral.')
             
         return entry_price, exit_price, stop_loss
     
