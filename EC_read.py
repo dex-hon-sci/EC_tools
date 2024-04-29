@@ -14,7 +14,9 @@ from ArgusPossibilityCurves2 import ArgusPossibilityCurves
 
 __all__ = ['get_apc_from_server','read_apc_data','read_portara_daily_data', 
            'read_portara_minute_data','merge_portara_data',
-           'portara_data_handling', 'extract_lag_data', 'render_PNL_xlsx']
+           'portara_data_handling', 'extract_lag_data', 
+           'read_reformat_Portara_minute_data',
+           'render_PNL_xlsx']
 __author__="Dexter S.-H. Hon"
 
 
@@ -345,6 +347,29 @@ def portara_data_handling(portara_dat):
     portara_dat = portara_dat.sort_values(by='Date only') # dates in ascending order 
         
     return portara_dat
+
+#tested
+def read_reformat_Portara_minute_data(filename):
+    """
+    Reformat the Portara minute data in a format readable by the scripts.
+
+    Parameters
+    ----------
+    filename : str
+        The filename of the Portara minute data.
+
+    Returns
+    -------
+    history_data : pandas dataframe
+        The reformatted table.
+
+    """
+    history_data =  pd.read_csv(filename)
+    history_data.columns = ['Date', 'Time', 'Open', 'High', 'Low', 
+                            'Settle', 'Volume', 'Contract Code']
+    history_data['Date'] = [str(x)[0:4] + '-' + str(x)[4:6] + '-' + str(x)[6:] 
+                            for x in history_data['Date']]
+    return history_data
 
 #tested
 def extract_lag_data(signal_data, history_data, date, lag_size=5):

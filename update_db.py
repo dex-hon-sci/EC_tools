@@ -29,36 +29,26 @@ asset_pack = {'categories': 'Argus Nymex WTI month 1, Daily',
 
 # checking function to see if the table is up to date
 
-@util.time_it
-@util.save_csv("APC_latest_CL.csv")
-def download_latest_APC():
+
+def download_latest_APC(categories,keywords,symbol):
     # input is a dictionary or json file
-    
-    # run meanreversion signal generation on the basis of individual programme  
-    # Loop the whole list in one go with all the contracts or Loop it one contract at a time?
-    
-    #inputs: Portara data (1 Minute and Daily), APC
     
     username = "dexter@eulercapital.com.au"
     password = "76tileArg56!"
-    
-    filename_daily = "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL.day"
-    filename_minute = "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL.001"
 
     start_date = "2021-01-01"
-    #start_date_2 = "2024-01-01"
-    end_date = "2024-04-25"
-    categories = 'Argus Nymex WTI month 1, Daily'
-    keywords = "WTI"
-    symbol = "CL"
+    end_date = datetime.date.today().strftime("%Y-%m-%d")
+    #categories = 'Argus Nymex WTI month 1, Daily'
+    #keywords = "WTI"
+    #symbol = "CL"
     
     # load the table in memory and test multple strategies
-    # input APC file
+    
     # download the relevant APC data from the server
     signal_data = EC_read.get_apc_from_server(username, password, start_date, 
                                       end_date, categories,
                             keywords=keywords,symbol=symbol)
-    
+    print('signal_data', type(signal_data), signal_data)
     return signal_data
 
 def download_latest_Portara():
@@ -66,23 +56,40 @@ def download_latest_Portara():
     return None
 
 def download_latest_APC_list():
-    
+    # a function to download the APC of a list of asset
     # input username and password.json
-    # start_date and end_date.json
     
-    file_list = []
-    categories = []
-    keywords = []
-    symbol = []
+    filename_list = ["APC_latest_CL.csv", 
+                     "APC_latest_HO.csv", 
+                     "APC_latest_RB.csv", 
+                     "APC_latest_QO.csv",
+                     "APC_latest_QP.csv" ]
+
+    categories = ['Argus Nymex WTI month 1, Daily', 
+                   'Argus Nymex Heating oil month 1, Daily', 
+                   'Argus Nymex RBOB Gasoline month 1, Daily', 
+                   'Argus Brent month 1, Daily', 
+                   'Argus ICE gasoil month 1, Daily']
+
+    keywords = ["WTI","Heating", "Gasoline","gasoil",'Brent']
+    symbol = ['CL', 'HO', 'RB', 'QO', 'QP']
+
     
-    for i in file_list:  
-        @util.save_csv("{}".format(file_list))
-        def download_latest_APC_indi():
-            signal_data = download_latest_APC()
+    for filename, cat, key, sym in zip(filename_list, categories, keywords, 
+                                       symbol):
+        @util.time_it
+        @util.save_csv("{}".format(filename))
+        def download_latest_APC_indi(cat, key, sym):
+            signal_data = download_latest_APC(cat, key, sym)
+            print("name {}".format(filename))
+            print("2",type(signal_data),signal_data)
+
             return signal_data
+        
+        download_latest_APC_indi(cat, key, sym)
     
-    return None
+    return "All APC files downloaded!"
 
 if __name__ == "__main__": 
-    download_latest_APC()
+    download_latest_APC_list()
     
