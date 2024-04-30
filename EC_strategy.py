@@ -11,7 +11,7 @@ import numpy as np
 import math_func as mfunc
 from scipy.interpolate import CubicSpline, UnivariateSpline
 
-
+# round trip fee 15 dollars
 __author__="Dexter S.-H. Hon"
 
 class MRStrategy(object):
@@ -19,6 +19,9 @@ class MRStrategy(object):
     def __init__(self):
         self._buy_cond_list = []
         self._sell_cond_list = []
+        return None
+    
+    def set_buy_cond(self):
         return None
     
     def make_signal_bucket(strategy_name="benchmark"):
@@ -148,8 +151,8 @@ class MRStrategy(object):
         # The APC one day1 (lag1) before this date
         signal_data_lag1_median =  apc_curve_lag5.iloc[-1]['0.5']
 
-        # Reminder: pulling directly from a list is a factor of 3 faster than doing 
-        # spline everytime
+        # Reminder: pulling directly from a list is a factor of 3 faster than   
+        # doing spline everytime
         
         # calculate the 5 days average for closing price
         rollinglagq5day = np.average(lag5_price)         
@@ -160,36 +163,6 @@ class MRStrategy(object):
                                       apc_curve_lag5.iloc[-3]['0.5'],
                                       apc_curve_lag5.iloc[-2]['0.5'],
                                       apc_curve_lag5.iloc[-1]['0.5']])
-        
-        
-        def gen_strategy_data():
-            quant0 = np.arange(0.0025, 0.9975, 0.0025)
-            quantiles_forwantedprices = [0.1, 0.4, 0.5, 0.6, 0.9] 
-
-            # Here it get the probabilty at different x axis            
-            wanted_quantiles = mfunc.generic_spline(
-                quant0, curve_today.to_numpy()[1:-1])(quantiles_forwantedprices)
-            
-            history_data_lag2_close = history_data_lag5["Settle"].iloc[-2]
-            history_data_lag1_close = history_data_lag5["Settle"].iloc[-1]   
-            
-            lag2q = mfunc.find_quant(curve_today[1:-1], quant0, history_data_lag2_close)  
-            lag1q = mfunc.find_quant(curve_today[1:-1], quant0, history_data_lag1_close) 
-            
-            rollinglagq5day = np.average(history_data_lag5["Settle"].to_numpy())
-            
-            roll5q = mfunc.find_quant(curve_today[1:-1], quant0, rollinglagq5day) 
-            
-            data0 = [
-                wanted_quantiles[0],
-                wanted_quantiles[1],
-                wanted_quantiles[2],
-                wanted_quantiles[3],
-                wanted_quantiles[4],
-                lag1q, lag2q, roll5q
-                ]            
-            
-            return data0
 
         # "BUY" condition
         # (1) Two consecutive days of closing price lower than the signal median
@@ -260,7 +233,7 @@ class MRStrategy(object):
             spaced_events, pdf_lag = mfunc.cal_pdf(quant0, apc_curve_lag5[i].to_numpy()[1:-1])
         
         #[ ["date", price0.01 ...., contract code],[...],...   ]
-        # []
+        # [{}]
         
         # get the one with max probability
 
@@ -334,7 +307,7 @@ class MRStrategy(object):
         Buy_cond = cond1_buy and cond2_buy and cond3_buy and cond4_buy
         Sell_cond =  cond1_sell and cond2_sell and cond3_sell and cond4_sell
         
-        Neutral_cond = not (Buy_cond ^ Sell_cond) #xnor gate
+        Neutral_cond = not (Buy_cond ^ Sell_cond) # xnor gate
     
         # make direction dictionary
         direction_dict = {"Buy": Buy_cond, "Sell": Sell_cond, "Neutral": Neutral_cond}
@@ -359,13 +332,13 @@ class MRStrategy(object):
             The last 5 days of APC data.
         curve_today : 1D pandas dataframe
             The APC curve of the date of interest.
-        strategy_name : TYPE, optional
-            DESCRIPTION. The default is "benchmark".
+        strategy_name : str, optional
+            The relevant strategy name. The default is "benchmark".
 
         Returns
         -------
-        data0 : TYPE
-            DESCRIPTION.
+        data0 : list
+            A list of relevant data.
 
         """
         quant0 = np.arange(0.0025, 0.9975, 0.0025)

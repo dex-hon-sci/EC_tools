@@ -4,6 +4,7 @@
 Created on Tue Apr 23 23:44:17 2024
 
 @author: dexter
+
 """
 import pandas as pd
 import numpy as np
@@ -21,14 +22,7 @@ import math_func as mfunc
 color_dict_light_mode = {}
 color_dict_dark_mode = {}
 
-class PlotPricing(object):
-    
-    def __init__(self):
-        self._color_mode = None
-        return None
-    
-    def A():
-        return None
+
 
 def plot_distribution(x,y, color = 'k', title = "",
                       xlabel = 'quantile', ylabel = 'Price'):
@@ -62,7 +56,6 @@ def plot_distribution_2(x,y,x1,y1):
 
     return fig
 
-
 def plot_price(df):
     # plot a price chart with minute data
     # subplot 2 volume and price
@@ -76,14 +69,30 @@ def plot_price(df):
                     close=df['Settle']))
     fig.update(layout_xaxis_rangeslider_visible=False)
     fig.show(renderer="browser")
-    #iplot(fig)
     return fig
+
+
+
+class PlotPricing(object):
+    
+    def __init__(self):
+        self._color_mode = None
+        self._add_quant_lines = None
+        self._add_EES_regions = None
+        self._add_entry_exit_points = None
+        return None
+    
+    def A(object):
+        return None
+
 
 def plot_price_BIG(x,y, events, pdf, 
                    quant_list, quant_price_list, direction="Neutral",
                    price_chart_title = "Date", 
                    open_hr = 300, close_hr=1900,
-                   events_lower_limit=70, events_upper_limit =78):
+                   events_lower_limit=70, events_upper_limit =78,
+                   buy_time = 1281, buy_price =  86.05,
+                   sell_time = 1900, sell_price = 85.70):
     """
     A function that plot the intraday minute pricing chart alongside the APC.
 
@@ -116,19 +125,16 @@ def plot_price_BIG(x,y, events, pdf,
 
     Returns
     -------
-    fig : TYPE
-        DESCRIPTION.
+    fig : <class 'matplotlib.figure.Figure'>
+        The figure.
 
     """
-    
-    
     fig = plt.figure(figsize=(10,4))
     gs = fig.add_gridspec(nrows=1, ncols = 2, width_ratios = [4,1])
 
     ax1 = fig.add_subplot(gs[0])
     #plot_candlestick_chart(price,ax1)
 
-    print("ax1",type(ax1))
     ax1.plot(x, y,'o--', ms=2, c='k')
     
     # fill the closed trading hours with shade
@@ -172,12 +178,15 @@ def plot_price_BIG(x,y, events, pdf,
         exit_price = np.nan
         stop_loss = np.nan
         
+    # add the EES regions
     add_EES_region(ax1, entry_price, exit_price ,stop_loss, 
                    txt_shift_x, txt_shift_y,
                    direction = direction)
+    
+    # add the buying and selling points
+    add_buysell_points(ax1, buy_time, buy_price, sell_time, sell_price)
 
     ax2.set_xlim([-0.005, max(pdf)+ np.std(pdf)/4])
-
     ax2.set_title('APC')
     ax2.set_xlabel("Probability")
     ax2.invert_xaxis()
@@ -187,7 +196,6 @@ def plot_price_BIG(x,y, events, pdf,
     
     return fig
 
-# make a class for plotting minute data
 # Strategy on off button and it changes all plots moving forwards
 
 def add_quant_lines(ax, quant_list, quant_price_list, txt_shift_x, txt_shift_y, 
@@ -269,9 +277,17 @@ def add_EES_region(ax,entry_price, exit_price, stop_loss,
     ax.text(2150.0 + txt_shift_x, stop_loss + txt_shift_y, "Stop Loss", 
              fontsize=8, color='#80271B')
     
-def add_buysell_points(ax, entry_price, exit_price):
+def add_buysell_points(ax, entry_time, entry_price,exit_time, exit_price):
     
-    return None
+    # draw a line between entry and exit
+    line_x, line_y = [entry_time,exit_time], [entry_price, exit_price]
+    ax.plot(line_x, line_y, '--', color='blue')
+    
+    ax.plot(entry_time, entry_price, 'o', ms = 12, color='#206829', 
+            markeredgecolor='k', alpha = 0.6)
+    ax.plot(exit_time, exit_price, 'o', ms = 12, color='#206829', 
+            markeredgecolor='k', alpha = 0.6)
+
     
 def plot_candlestick_chart(prices,ax):
 
@@ -306,7 +322,7 @@ def plot_candlestick_chart(prices,ax):
     ax.bar(down.index, down.Low-down.Settle, width2, bottom=down.Settle, color=col2) 
     
            
-def plot_minute(filename_minute, signal_filename, 
+def plot_minute(filename_minute, signal_filename, price_approx = 'Settle',
                 date_interest = "2022-05-19", direction = "Buy"):
     
     # read the reformatted minute history data
@@ -314,7 +330,7 @@ def plot_minute(filename_minute, signal_filename,
     
     # Get the history data on the date of interest
     interest = history_data[history_data['Date']  == date_interest]
-    x, y = interest['Time'], interest['Settle']
+    x, y = interest['Time'], interest[price_approx]
     
     #read the APC file on the relevant date
     curve = EC_read.read_apc_data(signal_filename)

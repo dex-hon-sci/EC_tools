@@ -12,12 +12,18 @@ import numpy as np
 from scipy.interpolate import CubicSpline, UnivariateSpline
 import findiff as fd 
 
-__all__ = ['generic_interpolate','find_quant','cal_pdf']
+__all__ = ['generic_spline','find_quant','cal_pdf']
 __author__="Dexter S.-H. Hon"
 
-def generic_interpolate():
+def generic_spline(x,y, method="cubic", **kwargs):
     # generic interpolate method Cubic spline and what not
-    return None
+    
+    if method == "cubic":
+        func = CubicSpline(x, y) 
+    elif method =="univariate":
+        func = UnivariateSpline(x, y, s=0) 
+
+    return func
 
 def find_quant(curve, quant_list, price):
     """
@@ -68,7 +74,7 @@ def cal_pdf(quant, cdf):
     # Define the evenly spaced events for the cdf
     spaced_events = np.arange(np.min(cdf), np.max(cdf), 0.005)
     
-    print(len(spaced_events))
+    #print(len(spaced_events))
     
     # interpolate the qunatile given the cdf
     spline_apc_rev = UnivariateSpline(cdf, quant, s = 0)
@@ -79,11 +85,11 @@ def cal_pdf(quant, cdf):
     deriv = fd.FinDiff(0, dq, 1) 
     pdf = deriv(quant_even_prices) # perform the differentiation on cdf, outcome the pdf
     
-    print(len(pdf))
+    #print(len(pdf))
     
     # interpolate the pdf with the spaced events
     spline_pdf = UnivariateSpline(spaced_events, pdf,  s = 0.0015)
     pdf = spline_pdf(spaced_events)
     
-    print(len(pdf))
+    #print(len(pdf))
     return spaced_events, pdf

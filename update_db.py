@@ -30,30 +30,24 @@ asset_pack = {'categories': 'Argus Nymex WTI month 1, Daily',
 # checking function to see if the table is up to date
 
 
-def download_latest_APC(categories,keywords,symbol):
+def download_latest_APC(auth_pack,categories,keywords,symbol):
     # input is a dictionary or json file
     
-    username = "dexter@eulercapital.com.au"
-    password = "76tileArg56!"
+    #username = "dexter@eulercapital.com.au"
+    #password = "76tileArg56!"
+
+    username = auth_pack['username']
+    password = auth_pack['password']
 
     start_date = "2021-01-01"
     end_date = datetime.date.today().strftime("%Y-%m-%d")
-    #categories = 'Argus Nymex WTI month 1, Daily'
-    #keywords = "WTI"
-    #symbol = "CL"
-    
-    # load the table in memory and test multple strategies
-    
+        
     # download the relevant APC data from the server
     signal_data = EC_read.get_apc_from_server(username, password, start_date, 
                                       end_date, categories,
                             keywords=keywords,symbol=symbol)
-    print('signal_data', type(signal_data), signal_data)
     return signal_data
 
-def download_latest_Portara():
-    # a function to download the newest Portara data
-    return None
 
 def download_latest_APC_list():
     # a function to download the APC of a list of asset
@@ -80,15 +74,21 @@ def download_latest_APC_list():
         @util.time_it
         @util.save_csv("{}".format(filename))
         def download_latest_APC_indi(cat, key, sym):
-            signal_data = download_latest_APC(cat, key, sym)
+            signal_data = download_latest_APC(auth_pack, cat, key, sym)
             print("name {}".format(filename))
-            print("2",type(signal_data),signal_data)
+            #print("2",type(signal_data),signal_data)
 
             return signal_data
         
         download_latest_APC_indi(cat, key, sym)
     
     return "All APC files downloaded!"
+
+
+def download_latest_Portara():
+    # WIP
+    # a function to download the newest Portara data
+    return None
 
 if __name__ == "__main__": 
     download_latest_APC_list()
