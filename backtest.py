@@ -130,7 +130,8 @@ def prepare_data(filename_buysell_signals, direction=["Buy", "Sell"], trim = Fal
     # This may cut down the computing and memory cost when dealing with large 
     # table.
     if trim == True:
-        buysell_signals_data = buysell_signals_data[['APC forecast period', 'direction']]
+        buysell_signals_data = buysell_signals_data[['APC forecast period', 
+                                                     'direction']]
     elif trim == False:
         pass
     
@@ -145,7 +146,8 @@ def prepare_data(filename_buysell_signals, direction=["Buy", "Sell"], trim = Fal
     data = pd.concat(signal_data, ignore_index=True)
 
     # make a column with Timestamp as its content
-    data['Date'] = pd.to_datetime(data["APC forecast period"], format='%Y-%m-%d')
+    data['Date'] = pd.to_datetime(data["APC forecast period"], 
+                                  format='%Y-%m-%d')
                                   
     # sort the table by Date
     data.sort_values(by='Date', inplace=True)
@@ -259,7 +261,7 @@ def run_backtest():
     trade_date_table = prepare_data(filename_buysell_signals, trim = True)
     
     # loop through the date and extract the signals
-    loop_date(trade_date_table, history_data)    
+    loop_date(trade_date_table, history_data, plot_or_not = True)    
 
     
 # =============================================================================

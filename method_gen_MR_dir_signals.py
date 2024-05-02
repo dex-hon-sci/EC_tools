@@ -185,13 +185,7 @@ def loop_signal(signal_data, history_data, dict_contracts_quant_signals,
         apc_curve_lag5, history_data_lag5 = EC_read.extract_lag_data(signal_data, 
                                                              history_data_daily, 
                                                              forecast_date)
-        
-# =============================================================================
-#         print("apc_curve_lag5[['Forecast Period','0.5']]", 
-#               apc_curve_lag5[['Forecast Period','0.5']])
-#         print("history_data_lag5", history_data_lag5)
-# =============================================================================
-        
+                
         # Run the strategy        
         direction = EC_strategy.MRStrategy.argus_benchmark_strategy(
              price_330, history_data_lag5, apc_curve_lag5, curve_today)
@@ -199,10 +193,6 @@ def loop_signal(signal_data, history_data, dict_contracts_quant_signals,
         #direction = EC_strategy.MRStrategy.argus_benchmark_mode(
         #     price_330, history_data_lag5, apc_curve_lag5, curve_today)
         
-# =============================================================================
-#         print("direction done", i, direction, forecast_date)
-#         print("curve_today", curve_today["Forecast Period"])
-# =============================================================================
 
         # calculate the data needed for PNL analysis for this strategy
         strategy_data = EC_strategy.MRStrategy.gen_strategy_data(
@@ -215,12 +205,10 @@ def loop_signal(signal_data, history_data, dict_contracts_quant_signals,
         # set resposne price.
         entry_price, exit_price, stop_loss = EC_strategy.MRStrategy.set_EES_APC(
                                                         direction, curve_today)
-
         EES = [entry_price, exit_price, stop_loss]
                
         #make bucket for storage
         bucket = dict_contracts_quant_signals
-        
         
         # put all the data in a singular list
         data = [forecast_date, full_contract_symbol] + strategy_data + \

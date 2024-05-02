@@ -65,7 +65,35 @@ def list_match(list1,list2):
         raise Exception(
             "Mismatch at the following positions:{}".format(mismatch_index))
 
-# Convert file from CSV to HDF5, npy? Npy might be faster
+#tested
+def convert_intmin_to_time(data, label='Time'):
+    
+    intmin = data[label]
+    
+    # bucket for storage.
+    bucket = []
+    #loop through each element
+    for num in intmin:
+        # if the integer time is less than 1000, then go through the string 
+        # treatment
+        if num < 1000:
+            num = '0000'+str(num) # add the preceding zeroes as strings  
+            #bucket.append(num[-4:-2]+':'+num[-2:])
+            #bucket.append(num[-4:-2]+':'+num[-2:])
+            hr_str, min_str = num[-4:-2], num[-2:]
+        elif num >= 1000:
+            num = str(num)
+            #bucket.append(str(num)[-4:-2]+':'+str(num)[-2:])
+            hr_str, min_str = num[-4:-2], num[-2:]
+
+        time  = datetime.time(hour = int(hr_str), minute = int(min_str))
+        bucket.append(time)
+        
+    data[label] = bucket
+    
+    return data
+
+# Convert file from CSV to HDF5, npy? Npy might be faster, WIP
 def convert_csv_to_npy(filename):
     # A function that turn big csv to npy file for faster read-time
     # This is meant to be run once only for each file

@@ -10,6 +10,8 @@ import pandas as pd
 import numpy as np
 from plotly.offline import iplot
 from plotly.offline import plot, init_notebook_mode
+import datetime as datetime
+import matplotlib.dates as mdates
 
 import matplotlib.gridspec as gridspec
 
@@ -18,11 +20,10 @@ import plotly.graph_objects as go
 
 import EC_read as EC_read
 import math_func as mfunc
+import utility as util
 
 color_dict_light_mode = {}
 color_dict_dark_mode = {}
-
-
 
 def plot_distribution(x,y, color = 'k', title = "",
                       xlabel = 'quantile', ylabel = 'Price'):
@@ -86,13 +87,14 @@ class PlotPricing(object):
         return None
 
 
+
 def plot_price_BIG(x,y, events, pdf, 
                    quant_list, quant_price_list, direction="Neutral",
                    price_chart_title = "Date", 
-                   open_hr = 300, close_hr=1900,
+                   open_hr = "0330", close_hr="1900",
                    events_lower_limit=70, events_upper_limit =78,
-                   buy_time = 1281, buy_price =  86.05,
-                   sell_time = 1900, sell_price = 85.70):
+                   buy_time = "1201", buy_price =  86.05,
+                   sell_time = "1900", sell_price = 85.70):
     """
     A function that plot the intraday minute pricing chart alongside the APC.
 
@@ -102,7 +104,7 @@ def plot_price_BIG(x,y, events, pdf,
         The intraday minutes.
     y : list
         The price of intraday data.
-    events : TYPE
+    events : list
         The price of the APC.
     pdf : list
         The probability of the APC's pdf.
@@ -114,10 +116,10 @@ def plot_price_BIG(x,y, events, pdf,
         Buy", "Sell", or "Neutral" signal.
     price_chart_title : str, optional
         The title of the plot. The default is "Date".
-    open_hr : int, optional
-        The opening hour of a trade day. The default is 300 (03:00 am UK time).
-    close_hr : int, optional
-        The closing hour of a trade day. The default is 1900 (03:00 am).
+    open_hr : str, optional
+        The opening hour of a trade day. The default is 0330 (03:30 at UK time).
+    close_hr : str, optional
+        The closing hour of a trade day. The default is 1900 (07:00 pm).
     events_lower_limit : TYPE, optional
         The lower bound in y-axis of the plot. The default is 70.
     events_upper_limit : TYPE, optional
@@ -129,39 +131,69 @@ def plot_price_BIG(x,y, events, pdf,
         The figure.
 
     """
+    x_datetime = [datetime.datetime.combine(datetime.date.today(), t) for t in x]
+
+    # Set the x-axis value based on datetime.time
+    start_line = datetime.time(hour = 0, minute = 0)  
+    end_line =  datetime.time(hour = 23, minute = 59)  
+    open_hr = datetime.time(hour = int(open_hr[-4:-2]), minute = int(open_hr[-2:]))    
+    close_hr = datetime.time(hour = int(close_hr[-4:-2]), minute = int(close_hr[-2:]))
+    buy_time = datetime.time(hour = int(buy_time[-4:-2]), minute = int(buy_time[-2:]))    
+    sell_time = datetime.time(hour = int(sell_time[-4:-2]), minute = int(sell_time[-2:]))
+    EES_txt_start_time = datetime.time(hour = 20, minute = 50)
+    
+    start_line = datetime.datetime.combine(datetime.date.today(), start_line)
+    end_line = datetime.datetime.combine(datetime.date.today(), end_line)
+    open_hr = datetime.datetime.combine(datetime.date.today(), open_hr)
+    close_hr = datetime.datetime.combine(datetime.date.today(), close_hr)
+    buy_time = datetime.datetime.combine(datetime.date.today(), buy_time)  
+    sell_time = datetime.datetime.combine(datetime.date.today(), sell_time)
+    EES_txt_start_time = datetime.datetime.combine(datetime.date.today(), 
+                                                   EES_txt_start_time)
+
+    print(start_line, end_line, open_hr, close_hr, buy_time, sell_time)
+
     fig = plt.figure(figsize=(10,4))
     gs = fig.add_gridspec(nrows=1, ncols = 2, width_ratios = [4,1])
 
     ax1 = fig.add_subplot(gs[0])
-    #plot_candlestick_chart(price,ax1)
-
-    ax1.plot(x, y,'o--', ms=2, c='k')
+    ax1.plot(x_datetime, y,'o--', ms=2, c='k')
     
     # fill the closed trading hours with shade
-    ax1.fill_between([0,open_hr], 0, 2000, color='grey', alpha=0.3)
-    ax1.fill_between([close_hr,2500], 0, 2000, color='grey', alpha=0.3)
+    ax1.fill_between([start_line, open_hr], 0, 2000, color='grey', alpha=0.3)
+    ax1.fill_between([close_hr, end_line], 0, 2000, color='grey', alpha=0.3)
     
     # the vertical lines that
     ax1.vlines(open_hr, 0, 2000, 'k')
     ax1.vlines(close_hr, 0, 2000, 'k')
     
-    ax1.set_xlim([-10, 2400])
+    ax1.set_xlim([start_line, end_line])
     ax1.set_ylim([events_lower_limit, events_upper_limit])
     
     ax1.set_xlabel("Time (minutes)")
     ax1.set_ylabel("Price (USD)")
     ax1.set_title(price_chart_title)
+    
+    fmt = mdates.DateFormatter('%H:%M')
+    ax1.xaxis.set_major_formatter(fmt)
     ax1.grid()
+    
+    #somehow ax2 x-axis also become dattime
 
     ax2 = fig.add_subplot(gs[1], sharey=ax1)
     ax2.plot(pdf, events, 'o', c='orange', ms =2)
     
     # define the pixels of shift for the texts in both x and y axis
     txt_shift_x, txt_shift_y = np.std(pdf)/2, np.std(events)/20
+    #define the shift in dates
+    txt_shift_x_date = datetime.timedelta(hours = round(np.std(pdf)/2))
+
         
     # add quantile lines for both plots
-    add_quant_lines(ax1, quant_list, quant_price_list, txt_shift_x, txt_shift_y, 
-                        alpha = 0.5)
+    add_quant_lines(ax1, quant_list, quant_price_list, txt_shift_x_date, txt_shift_y, 
+                        start_x = start_line, end_x = end_line, alpha = 0.5)
+    
+    
     add_quant_lines(ax2, quant_list, quant_price_list, txt_shift_x, txt_shift_y, 
                         alpha = 0.5)
     
@@ -180,8 +212,8 @@ def plot_price_BIG(x,y, events, pdf,
         
     # add the EES regions
     add_EES_region(ax1, entry_price, exit_price ,stop_loss, 
-                   txt_shift_x, txt_shift_y,
-                   direction = direction)
+                   txt_shift_x_date, txt_shift_y, start_x = EES_txt_start_time,
+                   end_x = end_line, direction = direction)
     
     # add the buying and selling points
     add_buysell_points(ax1, buy_time, buy_price, sell_time, sell_price)
@@ -199,7 +231,7 @@ def plot_price_BIG(x,y, events, pdf,
 # Strategy on off button and it changes all plots moving forwards
 
 def add_quant_lines(ax, quant_list, quant_price_list, txt_shift_x, txt_shift_y, 
-                    alpha = 0.5):
+                    start_x = 0.0, end_x= 100, alpha = 0.5):
     """
     A function that add the quantile lines to a plot.
 
@@ -215,17 +247,21 @@ def add_quant_lines(ax, quant_list, quant_price_list, txt_shift_x, txt_shift_y,
         The shift in x-axis for the text.
     txt_shift_y : float
         The shift in y-axis for the text.
+    start_x: float, or datetime.time
+        The starting position for the text in x-axis
+    end_x: float, or datetime.time
+        The ending position for the text in x-axis
     alpha : float, optional
         The transparency of the quantile line. The default is 0.5.
 
     """
     for quant, price in zip(quant_list, quant_price_list):
-        ax.hlines(price, 0, 2500.0, color='#C26F05', alpha = alpha)
-        ax.text(0.0 + txt_shift_x, price + txt_shift_y, quant, 
+        ax.hlines(price, start_x, end_x, color='#C26F05', alpha = alpha)
+        ax.text( start_x + txt_shift_x, price + txt_shift_y, quant, 
                  fontsize=8, color='#C26F05')
         
 def add_EES_region(ax,entry_price, exit_price, stop_loss, 
-                   txt_shift_x, txt_shift_y,
+                   txt_shift_x, txt_shift_y, start_x = 0.0, end_x = 2150,
                    direction="Neutral"):
     """
     A function that add the Entry, Exit, and Stop Loss regions to a plot.
@@ -249,6 +285,13 @@ def add_EES_region(ax,entry_price, exit_price, stop_loss,
         "Buy", "Sell", or "Neutral" signal. The default is "Neutral".
 
     """
+
+    start_line = datetime.time(hour = 0, minute = 0)  
+    end_line =  datetime.time(hour = 23, minute = 59) 
+    
+    start_line = datetime.datetime.combine(datetime.date.today(), start_line)
+    end_line = datetime.datetime.combine(datetime.date.today(), end_line)
+    
     # dashed line is the entry line, solid line is the exit line
     # dashed red line is the stop loss
     
@@ -260,22 +303,22 @@ def add_EES_region(ax,entry_price, exit_price, stop_loss,
         limit = np.nan
     
     # The EES lines
-    ax.hlines(entry_price, 0, 2500.0, color='#18833D', ls="dashed", lw = 2)
-    ax.hlines(exit_price, 0, 2500.0, color='#18833D', ls="solid", lw = 2 )
-    ax.hlines(stop_loss, 0, 2500.0, color='#E5543D', ls = "dashed", lw = 2)
+    ax.hlines(entry_price, start_line, end_x, color='#18833D', ls="dashed", lw = 2)
+    ax.hlines(exit_price, start_line, end_x, color='#18833D', ls="solid", lw = 2 )
+    ax.hlines(stop_loss, start_line, end_x, color='#E5543D', ls = "dashed", lw = 2)
     
     # Green shade is the target region.
-    ax.fill_between([0,2500.0], entry_price, exit_price, color='green', alpha=0.3)
+    ax.fill_between([start_line,end_line], entry_price, exit_price, color='green', alpha=0.3)
     # Red shade is the stop loss region. 
-    ax.fill_between([0,2500.0], stop_loss, limit, color='red', alpha=0.3)
+    ax.fill_between([start_line,end_line], stop_loss, limit, color='red', alpha=0.3)
     
     # The texts that indicate the regions
-    ax.text(2150.0 + txt_shift_x, entry_price + txt_shift_y, "Entry Price", 
-             fontsize=8, color='#206829')
-    ax.text(2150.0 + txt_shift_x, exit_price + txt_shift_y, "Exit Price", 
-             fontsize=8, color='#206829')
-    ax.text(2150.0 + txt_shift_x, stop_loss + txt_shift_y, "Stop Loss", 
-             fontsize=8, color='#80271B')
+    ax.text(start_x + txt_shift_x, entry_price + txt_shift_y, "Entry Price", 
+                  fontsize=8, color='#206829')
+    ax.text(start_x + txt_shift_x, exit_price + txt_shift_y, "Exit Price", 
+                  fontsize=8, color='#206829')
+    ax.text(start_x + txt_shift_x, stop_loss + txt_shift_y, "Stop Loss", 
+                  fontsize=8, color='#80271B')
     
 def add_buysell_points(ax, entry_time, entry_price,exit_time, exit_price):
     
@@ -321,7 +364,8 @@ def plot_candlestick_chart(prices,ax):
     ax.bar(down.index, down.High-down.Open, width2, bottom=down.Open, color=col2) 
     ax.bar(down.index, down.Low-down.Settle, width2, bottom=down.Settle, color=col2) 
     
-           
+
+        
 def plot_minute(filename_minute, signal_filename, price_approx = 'Settle',
                 date_interest = "2022-05-19", direction = "Buy"):
     
@@ -330,8 +374,12 @@ def plot_minute(filename_minute, signal_filename, price_approx = 'Settle',
     
     # Get the history data on the date of interest
     interest = history_data[history_data['Date']  == date_interest]
-    x, y = interest['Time'], interest[price_approx]
     
+    # Change the time format from 0015 to 00:15 in string format
+    interest = util.convert_intmin_to_time(interest)
+    
+    x, y = interest['Time'], interest[price_approx]
+
     #read the APC file on the relevant date
     curve = EC_read.read_apc_data(signal_filename)
     curve = curve[curve['Forecast Period'] == date_interest]
@@ -348,19 +396,20 @@ def plot_minute(filename_minute, signal_filename, price_approx = 'Settle',
     quant_price_list = [curve['0.1'], curve['0.4'], curve['0.5'], curve['0.6'], curve['0.9']]
 
     # Define the upper and lower bound of the pricing plot in the y-axis
-    events_lower_limit = curve['0.05'].to_numpy()
-    events_upper_limit = curve['0.95'].to_numpy()
+    price_lower_limit = curve['0.05'].to_numpy()
+    price_upper_limit = curve['0.95'].to_numpy()
     
+
     # Plot the pricing chart.
     plot_price_BIG(x,y, 
                    even_spaced_prices, pdf, 
                    quant_list, quant_price_list, 
                    direction,
                    price_chart_title =date_interest,
-                   events_lower_limit= events_lower_limit,
-                   events_upper_limit = events_upper_limit)
+                   events_lower_limit= price_lower_limit,
+                   events_upper_limit = price_upper_limit)
     
-        
+    
 
     
 if __name__ == "__main__":
