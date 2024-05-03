@@ -8,22 +8,26 @@ Created on Tue Apr 23 23:44:17 2024
 """
 import pandas as pd
 import numpy as np
+from dataclasses import dataclass
+
+
 from plotly.offline import iplot
 from plotly.offline import plot, init_notebook_mode
 import datetime as datetime
+
 import matplotlib.dates as mdates
-
 import matplotlib.gridspec as gridspec
-
 import matplotlib.pyplot as plt
+
 import plotly.graph_objects as go
 
+# import EC_tools
 import EC_read as EC_read
 import math_func as mfunc
 import utility as util
 
-color_dict_light_mode = {}
-color_dict_dark_mode = {}
+color_dict_light_mode = {'data_col':'k','bg_col':'white', 'col':'g'}
+color_dict_dark_mode = {'data_col':'white','bg_col':'k', 'col':'g'}
 
 def plot_distribution(x,y, color = 'k', title = "",
                       xlabel = 'quantile', ylabel = 'Price'):
@@ -72,20 +76,35 @@ def plot_price(df):
     fig.show(renderer="browser")
     return fig
 
-
+@dataclass
+class AxsesShade(object):
+    # add axeses and shaded area
+    def __init__(self):
+        return None
+    
+@dataclass
+class SubPlots(object):
+    # add subplots
+    def __init__(self):
+        return None
 
 class PlotPricing(object):
+    # input other class objects here
     
     def __init__(self):
-        self._color_mode = None
+        self._pdf_mode = None
+        self._add_APC_panel
         self._add_quant_lines = None
         self._add_EES_regions = None
         self._add_entry_exit_points = None
+        self._add_bol_band = None
         return None
     
-    def A(object):
+    def controller(object):
+        # detemine whether the data is intraday minute data, seconds or days
         return None
 
+    
 
 
 def plot_price_BIG(x,y, events, pdf, 
@@ -178,11 +197,7 @@ def plot_price_BIG(x,y, events, pdf,
     ax1.xaxis.set_major_formatter(fmt)
     ax1.grid()
     
-    #somehow ax2 x-axis also become dattime
 
-    ax2 = fig.add_subplot(gs[1], sharey=ax1)
-    ax2.plot(pdf, events, 'o', c='orange', ms =2)
-    
     # define the pixels of shift for the texts in both x and y axis
     txt_shift_x, txt_shift_y = np.std(pdf)/2, np.std(events)/20
     #define the shift in dates
@@ -192,10 +207,7 @@ def plot_price_BIG(x,y, events, pdf,
     # add quantile lines for both plots
     add_quant_lines(ax1, quant_list, quant_price_list, txt_shift_x_date, txt_shift_y, 
                         start_x = start_line, end_x = end_line, alpha = 0.5)
-    
-    
-    add_quant_lines(ax2, quant_list, quant_price_list, txt_shift_x, txt_shift_y, 
-                        alpha = 0.5)
+
     
     if direction == "Buy":
         entry_price = quant_price_list[1]
@@ -217,17 +229,31 @@ def plot_price_BIG(x,y, events, pdf,
     
     # add the buying and selling points
     add_buysell_points(ax1, buy_time, buy_price, sell_time, sell_price)
-
-    ax2.set_xlim([-0.005, max(pdf)+ np.std(pdf)/4])
-    ax2.set_title('APC')
-    ax2.set_xlabel("Probability")
-    ax2.invert_xaxis()
-    ax2.grid()
-
+    
+    # add APC subplot
+    add_pdf_panel(fig,  gs[1],  ax1, pdf, events, 
+                  quant_list, quant_price_list, 
+                  txt_shift_x, txt_shift_y)
+    
     plt.show()
     
     return fig
 
+def add_pdf_panel(fig, gs, sharey, pdf, events, quant_list, quant_price_list, 
+                  txt_shift_x, txt_shift_y):
+
+    ax_apc = fig.add_subplot(gs, sharey=sharey)
+    ax_apc.plot(pdf, events, 'o', c='orange', ms =2)
+    
+    add_quant_lines(ax_apc, quant_list, quant_price_list, txt_shift_x, txt_shift_y, 
+                        alpha = 0.5)
+
+    ax_apc.set_xlim([-0.005, max(pdf)+ np.std(pdf)/4])
+    ax_apc.set_title('APC')
+    ax_apc.set_xlabel("Probability")
+    ax_apc.invert_xaxis()
+    ax_apc.grid()
+    
 # Strategy on off button and it changes all plots moving forwards
 
 def add_quant_lines(ax, quant_list, quant_price_list, txt_shift_x, txt_shift_y, 
@@ -332,7 +358,7 @@ def add_buysell_points(ax, entry_time, entry_price,exit_time, exit_price):
             markeredgecolor='k', alpha = 0.6)
 
     
-def plot_candlestick_chart(prices,ax):
+def plot_candlestick_chart(prices,ax) -> None:
 
     # "up" dataframe will store the stock_prices  
     # when the closing stock price is greater than or equal to the opening stock prices 
@@ -366,7 +392,7 @@ def plot_candlestick_chart(prices,ax):
     
 
         
-def plot_minute(filename_minute, signal_filename, price_approx = 'Settle',
+def plot_minute(filename_minute, signal_filename, price_approx = 'Open',
                 date_interest = "2022-05-19", direction = "Buy"):
     
     # read the reformatted minute history data

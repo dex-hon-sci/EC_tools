@@ -205,20 +205,18 @@ def find_EES_time_price(data, entry_price, exit_price, stop_loss, direction="Buy
 
     return None    
 
-def loop_date(trade_date_table, histrot_intraday_data, plot_or_not = False):
+def loop_date(trade_date_table, histroy_intraday_data, plot_or_not = False):
     filename_minute = "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL.001"
     signal_filename = "APC_latest_CL.csv"
     
 
     for date, direction in zip(trade_date_table['Date'],trade_date_table['direction']):
-        
         # Define the date of interest by reading TimeStamp. 
         # We may want to remake all this and make Timestamp the universal 
         # parameter when dealing with time
         date_interest = str(date)[:10]
         
-        
-        day = extract_intraday_minute_data(histrot_intraday_data, date_interest, 
+        day = extract_intraday_minute_data(histroy_intraday_data, date_interest, 
                                      open_hr=300, close_hr=1900)
         
         if plot_or_not == True:
@@ -263,6 +261,7 @@ def run_backtest():
     # loop through the date and extract the signals
     loop_date(trade_date_table, history_data, plot_or_not = True)    
 
+    # The current method only allows one singular direction signal perday.
     
 # =============================================================================
 #     # read a signal list

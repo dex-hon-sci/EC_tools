@@ -25,55 +25,6 @@ __all__ = ['loop_signal','gen_signal_vector','run_gen_MR_signals']
 
 __author__="Dexter S.-H. Hon"
 
-#%%
-#tested
-def extract_lag_data(signal_data, history_data, date, lag_size=5):
-    """
-    Extract the Lag data based on a given date.
-
-    Parameters
-    ----------
-    signal_data : pandas dataframe
-        The signal data.
-    history_data : pandas dataframe
-        The historical data.
-    date : str
-        The date of interest, format like this "2024-01-10".
-    lag_size : TYPE, optional
-        The size of the lag window. The default is 5 (days).
-
-    Returns
-    -------
-    signal_data_lag : pandas data frame
-        The signal data five (lag_size) days prior to the given date.
-    history_data_lag : pandas data frame
-        The historical data five (lag_size) days prior to the given date.
-
-    """
-
-    # Find the row index of the history data first
-    row_index = history_data.index[history_data['Date only'] == date].tolist()[0]
-    
-    # extract exactly 5 (default) lag days array
-    history_data_lag = history_data.loc[row_index-lag_size:row_index-1]
-
-    # use the relevant date from history data to get signal data to ensure matching date
-    window = history_data_lag['Date only'].tolist()
-    
-    #Store the lag signal data in a list
-    signal_data_lag = signal_data[signal_data['Forecast Period'] == window[0]]
-    
-    for i in range(lag_size-1):
-        curve = signal_data[signal_data['Forecast Period'] == window[i+1]]
-        signal_data_lag = pd.concat([signal_data_lag, curve])
-        
-    return signal_data_lag, history_data_lag
-
-def extract_lag_data_to_list(signal_data, history_data_daily,lag_size=5):
-    # make a list of lag data with a nested data structure.
-    
-    return None
-    #extract_lag_data(signal_data, history_data_daily, "2024-01-10")
 
 #%%
 def loop_signal(signal_data, history_data, dict_contracts_quant_signals, 
@@ -82,6 +33,8 @@ def loop_signal(signal_data, history_data, dict_contracts_quant_signals,
     A method taken from Abbe's original method. It is not necessary to loop 
     through each date and run evaluation one by one. But this is a rudamentary 
     method.
+    
+    LEGACY function structure from Abbe.
 
     Parameters
     ----------
@@ -255,7 +208,7 @@ def gen_signal_vector(signal_data, history_data, loop_start_date = ""):
 
 
 @util.save_csv("benchmark_signal_test.csv")
-def run_gen_MR_signals():
+def run_gen_MR_signals(update_apc = False):
     # input is a dictionary or json file
     
     # run meanreversion signal generation on the basis of individual programme  
@@ -276,15 +229,14 @@ def run_gen_MR_signals():
     
     
     # download the relevant APC data from the server
-    #if update == True:
-    #    update_db.download_latest_APC_list() #something like that
+    if update_apc == True:
+        update_db.download_latest_APC_list() #something like that
 
-    # load the master table in memory and test multple strategies
-    # input APC file
+    # input 1, APC. Load the master table in memory and test multple strategies
     signal_data = EC_read.read_apc_data(signal_filename)
    
-    # input history file
-    # start_date2 is a temporary solution
+    # input 2, Portara history file.
+    # start_date2 is a temporary solution 
     history_data_daily = EC_read.read_portara_daily_data(filename_daily,symbol,
                                                  start_date_2,end_date)
     history_data_minute = EC_read.read_portara_minute_data(filename_minute,symbol, 
@@ -319,6 +271,8 @@ def run_gen_MR_signals():
     
     # there are better ways than looping. here is a vectoralised method
     return dict_contracts_quant_signals
+
+# make a function to run multiple signal generation from a list
 
 if __name__ == "__main__":
     dict_contracts_quant_signals = run_gen_MR_signals()

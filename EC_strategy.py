@@ -14,12 +14,17 @@ from scipy.interpolate import CubicSpline, UnivariateSpline
 # round trip fee 15 dollars
 __author__="Dexter S.-H. Hon"
 
-class MRStrategy(object):
     
+class MRStrategy(object):
+
     def __init__(self):
         self._buy_cond_list = []
         self._sell_cond_list = []
         return None
+    
+    # make a list of lambda functions for the multiple conditions 
+    # make a set of numbers for different EES (or EES range) 
+    # also make them into a list or data frame to allow multiple EES in the same day.
     
     def set_buy_cond(self):
         return None
@@ -378,7 +383,7 @@ class MRStrategy(object):
                             sell_cond =(0.6,0.4,0.9)):
         """
         A generic method to set the entry, exit, and stop loss (ESS) prices 
-        base on an APC. 
+        base on a cumulative probability distribution. 
         
         Parameters
         ----------
@@ -441,3 +446,21 @@ class MRStrategy(object):
             
         return entry_price, exit_price, stop_loss
     
+    
+MR_STRATEGIES = {'benchmark': MRStrategy.argus_benchmark_strategy,
+                      'mode': MRStrategy.argus_benchmark_mode}
+
+
+class BucketStorage(object):
+    STRATEGY = MRStrategy
+    def __init__(self):
+        return None
+
+    def make_signal_bucket(strategy_name="benchmark"):
+        return None
+    
+    def store_to_bucket_single():
+        return None
+
+def apply_strategy(strategy_name:str):
+     return MR_STRATEGIES[strategy_name]

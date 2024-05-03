@@ -10,13 +10,13 @@ import pandas as pd
 import time
 import datetime
 
+# Argus API 
 from ArgusPossibilityCurves2 import ArgusPossibilityCurves
 
 __all__ = ['get_apc_from_server','read_apc_data','read_portara_daily_data', 
            'read_portara_minute_data','merge_portara_data',
            'portara_data_handling', 'extract_lag_data', 
-           'read_reformat_Portara_minute_data',
-           'render_PNL_xlsx']
+           'read_reformat_Portara_minute_data']
 __author__="Dexter S.-H. Hon"
 
 
@@ -122,6 +122,8 @@ def read_portara_daily_data(filename, symbol, start_date, end_date,
     A generic function that read the Portara Data in a suitable form. 
     The function itself only read a single csv file at a time.
 
+    LEGACY function from Abbe.
+    
     Parameters
     ----------
     filename : str
@@ -183,6 +185,8 @@ def read_portara_minute_data(filename, symbol, start_date, end_date,
     """
     A modified version of the generic Portara reading function specifically for 
     the 1 minute data.
+    
+    LEGACY function from Abbe.
 
     Parameters
     ----------
@@ -259,6 +263,8 @@ def merge_portara_data(table1, table2):
     """
     Merging the Portara Daily and Minute table. The merger is operated on the 
     two columns: 'Date only' and 'Price Code'.
+    
+    LEGACY function from Abbe.
 
     Parameters
     ----------
@@ -296,6 +302,8 @@ def merge_portara_data(table1, table2):
 def portara_data_handling(portara_dat):
     """
     A function that handle Portara's data.
+    
+    LEGACY function from Abbe.
 
     Parameters
     ----------
@@ -398,17 +406,15 @@ def extract_lag_data(signal_data, history_data, date, lag_size=5):
 
     # Find the row index of the history data first
     row_index = history_data.index[history_data['Date only'] == date].tolist()[0]
-    print("row_index",row_index)
+
     # extract exactly 5 (default) lag days array
     history_data_lag = history_data.loc[row_index-lag_size:row_index-1]
-    print("history_data_lag",history_data_lag)
 
     # use the relevant date from history data to get signal data to ensure matching date
     window = history_data_lag['Date only'].tolist()
     # turn Timstamp into string
     window = [str(window[i])[0:10] for i in range(lag_size)]
     
-    print("window",window)
     #Store the lag signal data in a list
     signal_data_lag = signal_data[signal_data['Forecast Period'] == window[0]]
     
@@ -418,7 +424,21 @@ def extract_lag_data(signal_data, history_data, date, lag_size=5):
         
     return signal_data_lag, history_data_lag
 
+
+#%% Construction Area
+def extract_lag_data_to_list(signal_data, history_data_daily,lag_size=5):
+    # make a list of lag data with a nested data structure.
+    
+    return None
+    #extract_lag_data(signal_data, history_data_daily, "2024-01-10")
+
+
+
+
 def render_PNL_xlsx(filename):
+    """
+    LEGACY function from Abbe.
+    """
     #WIP
     
     # the function read in the backtest result to generate an xlsx file with PNL

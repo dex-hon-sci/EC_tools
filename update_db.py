@@ -30,7 +30,7 @@ asset_pack = {'categories': 'Argus Nymex WTI month 1, Daily',
 # checking function to see if the table is up to date
 
 
-def download_latest_APC(auth_pack,categories,keywords,symbol):
+def download_latest_APC(auth_pack, asset_pack):
     # input is a dictionary or json file
     
     #username = "dexter@eulercapital.com.au"
@@ -41,6 +41,10 @@ def download_latest_APC(auth_pack,categories,keywords,symbol):
 
     start_date = "2021-01-01"
     end_date = datetime.date.today().strftime("%Y-%m-%d")
+    
+    categories = asset_pack['categories']
+    keywords = asset_pack['keywords']
+    symbol = asset_pack['symbol']
         
     # download the relevant APC data from the server
     signal_data = EC_read.get_apc_from_server(username, password, start_date, 
@@ -74,9 +78,9 @@ def download_latest_APC_list():
         @util.time_it
         @util.save_csv("{}".format(filename))
         def download_latest_APC_indi(cat, key, sym):
-            signal_data = download_latest_APC(auth_pack, cat, key, sym)
+            asset_pack = {'categories': cat, 'keywords': key, 'symbol': sym}
+            signal_data = download_latest_APC(auth_pack, asset_pack)
             print("name {}".format(filename))
-            #print("2",type(signal_data),signal_data)
 
             return signal_data
         
