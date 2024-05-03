@@ -19,7 +19,7 @@ There are a few classes that might be of interested to you.
  3) Backtest is a library that read in signal data and generate a PNL test result for set strategies
  4) Bookeep is a library that convert the backtest result into documentations and relevant report format
  5) visualise is a library that plot the data and backtest result
- 
+
  6) forecast contains forecasting methods
  
 
