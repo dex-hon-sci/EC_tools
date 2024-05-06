@@ -89,6 +89,8 @@ class SubPlots(object):
         return None
 
 class PlotPricing(object):
+    # A clss that control the state of the pricing plots.
+    
     # input other class objects here
     
     def __init__(self):
@@ -113,7 +115,10 @@ def plot_price_BIG(x,y, events, pdf,
                    open_hr = "0330", close_hr="1900",
                    events_lower_limit=70, events_upper_limit =78,
                    buy_time = "1201", buy_price =  86.05,
-                   sell_time = "1900", sell_price = 85.70):
+                   sell_time = "1900", sell_price = 85.70, 
+                   bppt_x1 = [], bppt_y1 = [], 
+                   bppt_x2 = [], bppt_y2 = [], 
+                   bppt_x3 =[], bppt_y3 = []):
     """
     A function that plot the intraday minute pricing chart alongside the APC.
 
@@ -171,12 +176,22 @@ def plot_price_BIG(x,y, events, pdf,
                                                    EES_txt_start_time)
 
     print(start_line, end_line, open_hr, close_hr, buy_time, sell_time)
+    
+    bppt_x1 = [datetime.datetime.combine(datetime.date.today(), t) for t in bppt_x1]
+    bppt_x2 = [datetime.datetime.combine(datetime.date.today(), t) for t in bppt_x2]
+    bppt_x3 = [datetime.datetime.combine(datetime.date.today(), t) for t in bppt_x3]
 
+    # plotting area
     fig = plt.figure(figsize=(10,4))
     gs = fig.add_gridspec(nrows=1, ncols = 2, width_ratios = [4,1])
 
     ax1 = fig.add_subplot(gs[0])
     ax1.plot(x_datetime, y,'o--', ms=2, c='k')
+    
+    # crossover points set 1 
+    ax1.plot(bppt_x1, bppt_y1,'o', ms=10, c='blue')
+    ax1.plot(bppt_x2, bppt_y2,'o', ms=10, c='green')
+    ax1.plot(bppt_x3, bppt_y3,'o', ms=10, c='red')
     
     # fill the closed trading hours with shade
     ax1.fill_between([start_line, open_hr], 0, 2000, color='grey', alpha=0.3)
@@ -186,6 +201,7 @@ def plot_price_BIG(x,y, events, pdf,
     ax1.vlines(open_hr, 0, 2000, 'k')
     ax1.vlines(close_hr, 0, 2000, 'k')
     
+    # set plot limits
     ax1.set_xlim([start_line, end_line])
     ax1.set_ylim([events_lower_limit, events_upper_limit])
     
@@ -334,7 +350,8 @@ def add_EES_region(ax,entry_price, exit_price, stop_loss,
     ax.hlines(stop_loss, start_line, end_x, color='#E5543D', ls = "dashed", lw = 2)
     
     # Green shade is the target region.
-    ax.fill_between([start_line,end_line], entry_price, exit_price, color='green', alpha=0.3)
+    ax.fill_between([start_line,end_line], entry_price, exit_price, color='green', 
+                    alpha=0.3)
     # Red shade is the stop loss region. 
     ax.fill_between([start_line,end_line], stop_loss, limit, color='red', alpha=0.3)
     
@@ -393,16 +410,29 @@ def plot_candlestick_chart(prices,ax) -> None:
 
         
 def plot_minute(filename_minute, signal_filename, price_approx = 'Open',
-                date_interest = "2022-05-19", direction = "Buy"):
+                date_interest = "2022-05-19", direction = "Buy",
+                bppt_x1 =[], bppt_y1 = [], 
+                bppt_x2 =[], bppt_y2 = [], 
+                bppt_x3 =[], bppt_y3 = []):
     
     # read the reformatted minute history data
     history_data = EC_read.read_reformat_Portara_minute_data(filename_minute)
     
+    #reformat the date of interest
+    date_interest_year = int(date_interest[:4])
+    date_interest_month = int(date_interest[5:7])
+    date_interest_day = int(date_interest[-2:])
+    
+    #temporary solution here because to read the APC file I need to use string
+    date_interest_dt = datetime.datetime(year = date_interest_year, 
+                                      month = date_interest_month , 
+                                      day = date_interest_day)
+    
     # Get the history data on the date of interest
-    interest = history_data[history_data['Date']  == date_interest]
+    interest = history_data[history_data['Date']  == date_interest_dt]
     
     # Change the time format from 0015 to 00:15 in string format
-    interest = util.convert_intmin_to_time(interest)
+    #interest = util.convert_intmin_to_time(interest)
     
     x, y = interest['Time'], interest[price_approx]
 
@@ -433,7 +463,10 @@ def plot_minute(filename_minute, signal_filename, price_approx = 'Open',
                    direction,
                    price_chart_title =date_interest,
                    events_lower_limit= price_lower_limit,
-                   events_upper_limit = price_upper_limit)
+                   events_upper_limit = price_upper_limit,
+                   bppt_x1 = bppt_x1, bppt_y1 = bppt_y1, 
+                   bppt_x2 =bppt_x2, bppt_y2 = bppt_y2, 
+                   bppt_x3 =bppt_x3, bppt_y3 = bppt_y3)
     
     
 
@@ -446,7 +479,8 @@ if __name__ == "__main__":
     filename_minute = "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL.001"
     signal_filename = "APC_latest_CL.csv"
     #date_interest = "2022-05-19"
-    date_interest = "2024-04-03"
+    #date_interest = "2024-04-03"
+    date_interest = "2024-01-18"
     
     plot_minute(filename_minute, signal_filename, 
                 date_interest = date_interest, direction="Sell")

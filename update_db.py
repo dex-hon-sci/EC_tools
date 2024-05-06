@@ -32,19 +32,15 @@ asset_pack = {'categories': 'Argus Nymex WTI month 1, Daily',
 
 def download_latest_APC(auth_pack, asset_pack):
     # input is a dictionary or json file
-    
-    #username = "dexter@eulercapital.com.au"
-    #password = "76tileArg56!"
-
     username = auth_pack['username']
     password = auth_pack['password']
-
-    start_date = "2021-01-01"
-    end_date = datetime.date.today().strftime("%Y-%m-%d")
     
     categories = asset_pack['categories']
     keywords = asset_pack['keywords']
     symbol = asset_pack['symbol']
+    
+    start_date = "2021-01-01"
+    end_date = datetime.date.today().strftime("%Y-%m-%d")
         
     # download the relevant APC data from the server
     signal_data = EC_read.get_apc_from_server(username, password, start_date, 
@@ -53,34 +49,19 @@ def download_latest_APC(auth_pack, asset_pack):
     return signal_data
 
 
-def download_latest_APC_list():
+def download_latest_APC_list(auth_pack, save_filename_list, categories_list, 
+                         keywords_list, symbol_list):
     # a function to download the APC of a list of asset
     # input username and password.json
-    
-    filename_list = ["APC_latest_CL.csv", 
-                     "APC_latest_HO.csv", 
-                     "APC_latest_RB.csv", 
-                     "APC_latest_QO.csv",
-                     "APC_latest_QP.csv" ]
 
-    categories = ['Argus Nymex WTI month 1, Daily', 
-                   'Argus Nymex Heating oil month 1, Daily', 
-                   'Argus Nymex RBOB Gasoline month 1, Daily', 
-                   'Argus Brent month 1, Daily', 
-                   'Argus ICE gasoil month 1, Daily']
-
-    keywords = ["WTI","Heating", "Gasoline","gasoil",'Brent']
-    symbol = ['CL', 'HO', 'RB', 'QO', 'QP']
-
-    
-    for filename, cat, key, sym in zip(filename_list, categories, keywords, 
-                                       symbol):
+    for filename, cat, key, sym in zip(save_filename_list, categories_list, 
+                                       keywords_list, symbol_list):
         @util.time_it
         @util.save_csv("{}".format(filename))
         def download_latest_APC_indi(cat, key, sym):
             asset_pack = {'categories': cat, 'keywords': key, 'symbol': sym}
             signal_data = download_latest_APC(auth_pack, asset_pack)
-            print("name {}".format(filename))
+            print("File: {} is generated.".format(filename))
 
             return signal_data
         
@@ -95,5 +76,21 @@ def download_latest_Portara():
     return None
 
 if __name__ == "__main__": 
-    download_latest_APC_list()
+    save_filename_list = ["APC_latest_CL.csv", 
+                     "APC_latest_HO.csv", 
+                     "APC_latest_RB.csv", 
+                     "APC_latest_QO.csv",
+                     "APC_latest_QP.csv" ]
+
+    categories_list = ['Argus Nymex WTI month 1, Daily', 
+                   'Argus Nymex Heating oil month 1, Daily', 
+                   'Argus Nymex RBOB Gasoline month 1, Daily', 
+                   'Argus Brent month 1, Daily', 
+                   'Argus ICE gasoil month 1, Daily']
+
+    keywords_list = ["WTI","Heating", "Gasoline","gasoil",'Brent']
+    symbol_list = ['CLc1', 'HOc1', 'RBc1', 'QOc1', 'QPc1']
+    
+    download_latest_APC_list(auth_pack, save_filename_list, categories_list, 
+                             keywords_list, symbol_list)
     

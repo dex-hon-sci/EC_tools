@@ -453,14 +453,70 @@ MR_STRATEGIES = {'benchmark': MRStrategy.argus_benchmark_strategy,
 
 class BucketStorage(object):
     STRATEGY = MRStrategy
+    
+    signal_columns = ['APC forecast period', 'APC Contract Symbol']
+    
+    # usemaxofpdf_insteadof_medianpdf
+    A = ["Q0.1","Q0.4","Q0.5","Q0.6","Q0.9"]
+    
+    B = ["Q0.1", "Qmax-0.1", "Qmax","Qmax+0.1","Q0.9"]
+
+    #use_OB_OS_levels_for_lag_conditions
+    C = ["Close price lag 1", "Close price lag 2", "OB level 1 lag 1", 
+     "OB level 1 lag 2", "OS level 1 lag 1", "OS level 1 lag 2", 
+     "OB level 3", "OS level 3", "Price 3:30 UK time"]
+
+    D = ['Quant close lag 1', 'Quant close lag 2', 'mean Quant close n = 5',
+     'Quant 3:30 UK time']
+
+    # abs(entry_region_exit_region_range[0]) > 0
+    E = ['target entry lower', 'target entry upper']
+
+    F = ['target entry']
+
+    # abs(entry_region_exit_region_range[1]) > 0:
+    G = ['target entry lower', 'target entry upper']
+
+    H = ['target exit']
+
+    End = ['stop exit', 'direction', 'price code']
+        
+    BUCKET_COL_DICT = {
+           "benchmark": signal_columns + A + D + F + H + End, 
+           "mode": signal_columns + B + D + F + H + End 
+                  }
+    
     def __init__(self):
+
         return None
 
-    def make_signal_bucket(strategy_name="benchmark"):
-        return None
+    def make_signal_bucket(self, strategy_name="benchmark"):
+        return self.BUCKET_COL_DICT[strategy_name]
     
-    def store_to_bucket_single():
-        return None
+    def store_to_bucket_single(self, bucket, data):
+        """
+        A simple function to store data in a bucket. This function should be 
+        used in adjacent to make_signal_bucket.
+
+        Parameters
+        ----------
+        bucket : dict
+            An empty dictionary with column names.
+        data : list
+            A list of data to put into the bucket.
+
+        Returns
+        -------
+        bucket: dict
+            A filled bucket with data
+
+        """
+        # Storing the data    
+        for i, key in enumerate(bucket):
+            bucket[key].append(data[i])   
+
+        return bucket
+
 
 def apply_strategy(strategy_name:str):
      return MR_STRATEGIES[strategy_name]

@@ -10,6 +10,8 @@ import pandas as pd
 import time
 import datetime
 
+import utility as util
+
 # Argus API 
 from ArgusPossibilityCurves2 import ArgusPossibilityCurves
 
@@ -375,8 +377,21 @@ def read_reformat_Portara_minute_data(filename):
     history_data =  pd.read_csv(filename)
     history_data.columns = ['Date', 'Time', 'Open', 'High', 'Low', 
                             'Settle', 'Volume', 'Contract Code']
-    history_data['Date'] = [str(x)[0:4] + '-' + str(x)[4:6] + '-' + str(x)[6:] 
+    
+    # include a function that let user to choose the reformat?
+    
+    # change the date from 20220222 (int) to '2022-02-22' (str)
+    #history_data['Date'] = [str(x)[0:4] + '-' + str(x)[4:6] + '-' + str(x)[6:] 
+    #                        for x in history_data['Date']]
+    
+    history_data['Date'] = [datetime.datetime(year = int(str(x)[0:4]), 
+                                              month=int(str(x)[4:6]), 
+                                              day = int(str(x)[6:])) 
                             for x in history_data['Date']]
+    
+    # convert the format 1330 (int) to 13:30 (datetime.time) obejct
+    history_data = util.convert_intmin_to_time(history_data,label='Time')
+    
     return history_data
 
 #tested

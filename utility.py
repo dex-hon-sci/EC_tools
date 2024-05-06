@@ -66,7 +66,7 @@ def list_match(list1,list2):
             "Mismatch at the following positions:{}".format(mismatch_index))
 
 #tested
-def convert_intmin_to_time(data, label='Time'):
+def convert_intmin_to_time(data, label='Time')->list:
     
     intmin = data[label]
     

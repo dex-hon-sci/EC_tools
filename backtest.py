@@ -6,73 +6,47 @@ Created on Thu Apr 18 18:22:17 2024
 @author: dexter
 """
 import pandas as pd
+import numpy as np
 import datetime as datetime
 
 import EC_read as EC_read
 import EC_plot as EC_plot
 import utility as util
 
-# (1) Loop through the minute price to perform action
-
-# (2) isolate out opportunity by just finding out when the price hit the entry zone
-
 # Spit out the document for overall PNL analysis
-round_turn_fees = {
-'CLc1': 24.0,
-'CLc2': 24.0,
-'HOc1': 25.2,
-'HOc2': 25.2,
-'RBc1': 25.2,
-'RBc2': 25.2,
-'QOc1': 24.0,
-'QOc2': 24.0,
-'QPc1': 24.0,
-'QPc2': 24.0,
-}
 
-num_per_contract = {
-    'CLc1': 1000.0,
-    'CLc2': 1000.0,
-    'HOc1': 42000.0,
-    'HOc2': 42000.0,
-    'RBc1': 42000.0,
-    'RBc2': 42000.0,
-    'QOc1': 1000.0,
-    'QOc2': 1000.0,
-    'QPc1': 100.0,
-    'QPc2': 100.0,
-}
+# tested
+def find_crossover(input_array, threshold):
+    # a function that make a list of cross over point's indices given a particular threshold
+    
+    threshold = np.repeat(threshold, len(input_array))
+    
+    # The difference between the input value and the threshold number
+    # Positive values mean the input is higher than threshold
+    # Negative values mean the input is lower than threshold
+    delta = input_array - threshold
+    
+    # This is an array 1 unit in the past
+    #delta_lag = np.concatenate([delta, np.array([np.nan])])[1:]
+    delta_lag = np.concatenate([np.array([np.nan]), delta])[:-1]
+    
+    # IF delta[i] > delta_lag[i], then the price rise above threshold
+    # Because all elements are either +1, -1 or 0, the larger value has to be +1.
+    # np.sign(delta) = +1, while np.sign(delta_lag) = -1 means yesterday the value 
+    # is lower than threshold and today's value is higher than the threshold-> rise above
+    indices_rise_above  = np.where(np.sign(delta) > np.sign(delta_lag))
+    
+    # IF delta[i] < delta_lag[i], then the price drop below threshold
+    indices_drop_below = np.where(np.sign(delta) < np.sign(delta_lag))
 
-class AssetProfolio(object):
-        
-    def __init__(self):
-        self._profolio = None
-        
-        return None
+    #print('rise', indices_rise_above)
+    #print('drop', indices_drop_below)
     
-    def profolio(object):
-        profolio = {"USD": 0.0,
-                    "AUD": 0.0}
-        return profolio
-    
-    def sub_asset(object):
-        
-        return None
-    
-    def add_asset(object, profolio, new_asset):
-        profolio.update(new_asset)
-        return profolio
-    
-    def cal_total_value(object, profolio, dntr='USD'):
-        #dntr = denomonator
-        # read in a list of dictioart value and convert the asset to currency
-        return None
-    
-    def track_profolio_history(object):
-        # make a list of dictionary indexed by time of the changing of profolio
-        # add the total value of the 
-        return None
-    
+    # Produce a dic of indicies for below and above
+    return {'rise': indices_rise_above, 
+            'drop': indices_drop_below}
+
+
 class BackTest(object):
     def __init__(self):
         self._instruction = None
@@ -95,14 +69,13 @@ def make_backtest_bucket():
     'exit price': [],
     'exit datetime': [],
     'risk/reward value ratio': [],
-    #'path': []
     }
     
 def store_data_to_bucket():
     return None
     
 # tested
-def prepare_data(filename_buysell_signals, direction=["Buy", "Sell"], trim = False):
+def prepare_signal_interest(filename_buysell_signals, direction=["Buy", "Sell"], trim = False):
     """
     A function that extract data from a signal table based on some directional 
     instruction.
@@ -143,20 +116,20 @@ def prepare_data(filename_buysell_signals, direction=["Buy", "Sell"], trim = Fal
         signal_data.append(temp)
     
     # concatenate the list of signals
-    data = pd.concat(signal_data, ignore_index=True)
+    signal_interest = pd.concat(signal_data, ignore_index=True)
 
     # make a column with Timestamp as its content
-    data['Date'] = pd.to_datetime(data["APC forecast period"], 
+    signal_interest['Date'] = pd.to_datetime(signal_interest["APC forecast period"], 
                                   format='%Y-%m-%d')
                                   
     # sort the table by Date
-    data.sort_values(by='Date', inplace=True)
+    signal_interest.sort_values(by='Date', inplace=True)
     
-    return data
+    return signal_interest
 
 #tested
 def extract_intraday_minute_data(histrot_intraday_data, date_interest, 
-                                 open_hr=300, close_hr=1900):
+                                 open_hr='0330', close_hr='1900'):
     """
     A function that extract only the minute pricing data from a master file 
     given a single date of interest.
@@ -167,9 +140,9 @@ def extract_intraday_minute_data(histrot_intraday_data, date_interest,
         The master file for minute data.
     date_interest : str
         In the format of '2020-02-02'.
-    open_hr : int, optional
+    open_hr : str, optional
         Opening trading hour. The default is 300.
-    close_hr : int, optional
+    close_hr : str, optional
         Closing trading hour. The default is 1900.
 
     Returns
@@ -177,7 +150,14 @@ def extract_intraday_minute_data(histrot_intraday_data, date_interest,
     histroy_data_intraday : pandas dataframe
         A table isolated by the date of interest.
 
-    """
+    """    
+    # convert the string hour and minute input to datetime.time objecy
+    open_hr_str, open_min_str = open_hr[-4:-2], open_hr[-2:]
+    close_hr_str, close_min_str = close_hr[-4:-2], close_hr[-2:]
+
+    open_hr =  datetime.time(hour = int(open_hr_str), minute = int(open_min_str))
+    close_hr =  datetime.time(hour = int(close_hr_str), minute = int(close_min_str))
+
     
     # Given a date of interest, and read-in the intraday data.
     histrot_intraday_data = histrot_intraday_data[
@@ -191,59 +171,178 @@ def extract_intraday_minute_data(histrot_intraday_data, date_interest,
 
     return histrot_intraday_data
 
-# WIP
-def find_EES_time_price(data, entry_price, exit_price, stop_loss, direction="Buy"):
-    bucket_entry, bucket_exit, bucket_stoploss = [], [], []
-    # make it into a vector
-    if direction == "Buy":
-        if data > entry_price:
-            bucket_entry.append(data)
-        
-    elif direction == "Sell":
-        if data < entry_price:
-            bucket_entry.append(data)
 
-    return None    
 
-def loop_date(trade_date_table, histroy_intraday_data, plot_or_not = False):
-    filename_minute = "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL.001"
-    signal_filename = "APC_latest_CL.csv"
+def loop_date(signal_table, histroy_intraday_data, open_hr='0330', 
+              close_hr='1930',
+              plot_or_not = False):
     
-
-    for date, direction in zip(trade_date_table['Date'],trade_date_table['direction']):
+    # make bucket
+    profits_losses_bucket = {
+    'Price Code': [],
+    'predicted signal': [],
+    'date': [],
+    'return from trades': [],
+    'entry price': [],
+    'entry datetime': [],
+    'exit price': [],
+    'exit datetime': [],
+    'risk/reward value ratio': [],
+    }
+   
+    #trade_date_table is the signal table
+    
+    filename_minute = "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL.001"
+    signal_filename = "APC_latest_CL.csv"   
+    
+    
+    for date_interest, direction, target_entry, target_exit, stop_exit in zip(
+            signal_table['Date'], 
+            signal_table['direction'], 
+            signal_table['target entry'],
+            signal_table['target exit'], 
+            signal_table['stop exit']):
+        
         # Define the date of interest by reading TimeStamp. 
         # We may want to remake all this and make Timestamp the universal 
         # parameter when dealing with time
-        date_interest = str(date)[:10]
-        
         day = extract_intraday_minute_data(histroy_intraday_data, date_interest, 
-                                     open_hr=300, close_hr=1900)
+                                     open_hr=open_hr, close_hr=close_hr)
+        
+        print(day['Date'].iloc[0], direction, target_entry, target_exit, stop_exit)
+        
+        # make a dictionary for all the possible EES time and values
+        EES_dict = set_minute_EES(day, target_entry, target_exit, stop_exit,
+                          open_hr=open_hr, close_hr=close_hr, direction = direction)
+        
+        # make the trade.
+        trade_choice(EES_dict)
+        # WIP
+        
+        # store stuff into buckets
+        # WIP
         
         if plot_or_not == True:
+            
+            date_interest_str=date_interest.strftime("%Y-%m-%d")
+            
+            entry_times, entry_pts = EES_dict['entry_times'], EES_dict['entry_pts']
+            exit_times, exit_pts = EES_dict['exit_times'], EES_dict['exit_pts']
+            stop_times, stop_pts = EES_dict['stop_times'], EES_dict['stop_pts']
+            
             EC_plot.plot_minute(filename_minute, signal_filename, 
-                date_interest = date_interest, direction= direction)
+                            date_interest = date_interest_str, direction=direction,
+                              bppt_x1=entry_times, bppt_y1=entry_pts,
+                              bppt_x2=exit_times, bppt_y2=exit_pts,
+                              bppt_x3=stop_times, bppt_y3=stop_pts)
+            
         elif plot_or_not == False:
             pass
+        
+        
+        
+        
+    return EES_dict
     
-    return day
+def set_minute_EES(histroy_data_intraday, 
+                      target_entry, target_exit, stop_exit
+                      ,open_hr="0330", close_hr="1930", 
+                      price_approx = 'Open', direction = 'Neutral',
+                      close_trade_hr='1925'):
     
-def loop_minute_price(histroy_data_intraday):
-    # loop through the prices 
+    # define subsample. turn the pandas series into a numpy array
+    price_list = histroy_data_intraday[price_approx].to_numpy()
+    time_list = histroy_data_intraday['Time'].to_numpy()
     
-    # Find the entry point and exit point
+    # Find the crossover indices
+    entry_pt_dict = find_crossover(price_list, target_entry)
+    exit_pt_dict = find_crossover(price_list, target_exit)
+    stop_pt_dict = find_crossover(price_list, stop_exit)
     
-    # Spit out a list of data
-    return None
+    
+    if direction == "Neutral":
+        print("Neutral")
+        # for 'Neutral' action, all info are empty
+        entry_pts = []
+        entry_times = []
+            
+        exit_pts = []
+        exit_times = []
+        
+        stop_pts = []
+        stop_times = []
+    
+    elif direction == "Buy":
+        print("Buy")
+        # for 'Buy' action EES sequence is drop,rise,drop
+        entry_pts = price_list[entry_pt_dict['drop'][0]]
+        entry_times = time_list[entry_pt_dict['drop'][0]]
+            
+        exit_pts = price_list[exit_pt_dict['rise'][0]]
+        exit_times = time_list[exit_pt_dict['rise'][0]]
+        
+        stop_pts = price_list[stop_pt_dict['drop'][0]]
+        stop_times = time_list[stop_pt_dict['drop'][0]]
+            
+    elif direction == "Sell":
+        print("Sell")
+        # for 'Sell' action EES sequence is rise,drop,rise
+        entry_pts = price_list[entry_pt_dict['rise'][0]]
+        entry_times = time_list[entry_pt_dict['rise'][0]]
+            
+        exit_pts = price_list[exit_pt_dict['drop'][0]]
+        exit_times = time_list[exit_pt_dict['drop'][0]]
+        
+        stop_pts = price_list[stop_pt_dict['rise'][0]]
+        stop_times = time_list[stop_pt_dict['rise'][0]]
+    else:
+        raise ValueError('Direction has to be either Buy, Sell, or Neutral.')
+    
+    # Define the closing time and closing price. Here we choose 19:25 for final trade
+    close_time = datetime.time(int(close_trade_hr[:2]),int(close_trade_hr[2:]))
+    close_pt = price_list[np.where(time_list==close_time)[0]]
+    
+    # storage
+    EES_dict = {'entry_times': entry_times,
+                'entry_pts': entry_pts,
+                'exit_times': exit_times,
+                'exit_pts': exit_pts,
+                'stop_times': stop_times,
+                'stop_pts': stop_pts,
+                'close_time': close_time,
+                'close_pt': close_pt
+                }
+    
+    print('EES_dict', EES_dict)
 
-def cal_crossover():
-    # A function that calculate the moment of crossover to the price
-    return None
+    # Spit out a Dict of data
+    return EES_dict
 
-
-def analysis_cross_percentage():
-    # A function that calculate the percentage of points that crosses over to 
-    # the different regions.
+def trade_choice(EES_dict):
+    # a function that control which price to buy and sell
+    
+    # if entry list = None, no trade that day
+    # else, choose position x or a list of positions
+    
+    # choose the entry point
+    trade_open_time = EES_dict['entry_times'][0]
+    trade_open_price = EES_dict['entry_pts'][0]
+    
+    # If exit price list = None, use the close time
+    #else, choose position xx or a list
+    
+    
+    
+    
+    # output: trade_open_time, trade_open_price, trade_close_time, trade_close_price 
     return None
+# =============================================================================
+# 
+# def analysis_cross_percentage():
+#     # A function that calculate the percentage of points that crosses over to 
+#     # the different regions.
+#     return None
+# =============================================================================
     
 
 @util.time_it
@@ -252,27 +351,22 @@ def run_backtest():
     
     filename_minute = "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL.001"
     filename_buysell_signals = "./benchmark_signal_test.csv"
+    
     # read the reformatted minute history data
     history_data = EC_read.read_reformat_Portara_minute_data(filename_minute)
     
     # Find the date for trading
-    trade_date_table = prepare_data(filename_buysell_signals, trim = True)
+    trade_date_table = prepare_signal_interest(filename_buysell_signals, trim = False)
     
-    # loop through the date and extract the signals
+    # loop through the date and set the EES prices for each trading day   
     loop_date(trade_date_table, history_data, plot_or_not = True)    
 
-    # The current method only allows one singular direction signal perday.
-    
-# =============================================================================
-#     # read a signal list
-#     date_interest = "2024-04-03"
-#     A = extract_intraday_minute_data(history_data, date_interest, 
-#                                      open_hr=300, close_hr=1900)
-# =============================================================================
-    
+    # The current method only allows one singular direction signal perday. and constant EES
     
 
     return None
+
+
 
 
 if __name__ == "__main__":

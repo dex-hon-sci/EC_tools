@@ -21,12 +21,29 @@ import utility as util
 import math_func as mfunc
 
 
-__all__ = ['loop_signal','gen_signal_vector','run_gen_MR_signals']
+__all__ = ['loop_signal','gen_signal_vector','run_gen_MR_signals', 
+           'run_gen_MR_signals_list']
 
 __author__="Dexter S.-H. Hon"
 
 
+save_filename_list = ["benchmark_signal_test_CL.csv", 
+                 "benchmark_signal_test_HO.csv", 
+                 "benchmark_signal_test_RB.csv", 
+                 "benchmark_signal_test_QO.csv",
+                 "benchmark_signal_test_QP.csv" ]
+
+categories_list = ['Argus Nymex WTI month 1, Daily', 
+               'Argus Nymex Heating oil month 1, Daily', 
+               'Argus Nymex RBOB Gasoline month 1, Daily', 
+               'Argus Brent month 1, Daily', 
+               'Argus ICE gasoil month 1, Daily']
+
+keywords_list = ["WTI","Heating", "Gasoline","gasoil",'Brent']
+symbol_list = ['CL', 'HO', 'RB', 'QO', 'QP']
+
 #%%
+@util.time_it
 def loop_signal(signal_data, history_data, dict_contracts_quant_signals, 
                 history_data_daily, start_date, end_date):
     """
@@ -206,31 +223,24 @@ def gen_signal_vector(signal_data, history_data, loop_start_date = ""):
     
     return dict_contracts_quant_signals
 
-
-@util.save_csv("benchmark_signal_test.csv")
-def run_gen_MR_signals(update_apc = False):
+#@util.save_csv("benchmark_signal_test.csv")
+def run_gen_MR_signals(auth_pack, asset_pack, start_date, start_date_2, end_date,
+                       signal_filename, filename_daily, filename_minute,
+                       update_apc = False):
     # input is a dictionary or json file
     
     # run meanreversion signal generation on the basis of individual programme  
     # Loop the whole list in one go with all the contracts or Loop it one contract at a time?
     
-    #inputs: Portara data (1 Minute and Daily), APC
-    
-    signal_filename = "./APC_latest_CL.csv"
-    filename_daily = "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL.day"
-    filename_minute = "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL.001"
+    symbol = asset_pack['symbol']
 
-    start_date = "2024-01-10"
-    start_date_2 = "2024-01-01"
-    end_date = "2024-03-13"
-    categories = 'Argus Nymex WTI month 1, Daily'
-    keywords = "WTI"
-    symbol = "CL"
-    
-    
     # download the relevant APC data from the server
     if update_apc == True:
-        update_db.download_latest_APC_list() #something like that
+        update_db.download_latest_APC_list(auth_pack, save_filename_list, 
+                                           categories_list, keywords_list, 
+                                           symbol_list) 
+
+    # The reading part takes the longest time: 13 seconds. The loop itself takes 
 
     # input 1, APC. Load the master table in memory and test multple strategies
     signal_data = EC_read.read_apc_data(signal_filename)
@@ -270,11 +280,62 @@ def run_gen_MR_signals(update_apc = False):
                                                start_date, end_date)
     
     # there are better ways than looping. here is a vectoralised method
+    # XXXX
+    
     return dict_contracts_quant_signals
 
+
+
 # make a function to run multiple signal generation from a list
+# WIP
+def run_gen_MR_signals_list(filename_list, categories_list, keywords_list, 
+                            symbol_list):
+    # a function to download the APC of a list of asset
+    # input username and password.json
+
+    for filename, cat, key, sym in zip(filename_list, categories_list, 
+                                       keywords_list, symbol_list):
+        @util.time_it
+        @util.save_csv("{}".format(filename))
+        def run_gen_MR_signals_indi(cat, key, sym):
+            asset_pack = {'categories': cat, 'keywords': key, 'symbol': sym}
+            signal_data = run_gen_MR_signals(auth_pack, asset_pack, 
+                                             start_date, start_date_2, end_date,
+                                             signal_filename, filename_daily, 
+                                             filename_minute) #WIP
+            print("name {}".format(filename))
+
+            return signal_data
+        
+        run_gen_MR_signals_indi(cat, key, sym)
+    
+    return "All APC files downloaded!"
 
 if __name__ == "__main__":
-    dict_contracts_quant_signals = run_gen_MR_signals()
+    #inputs: Portara data (1 Minute and Daily), APC
+    signal_filename = "./APC_latest_CL.csv"
+    filename_daily = "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL.day"
+    filename_minute = "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL.001"
+
+    start_date = "2024-01-10"
+    start_date_2 = "2024-01-01"
+    end_date = "2024-03-13"
+    
+    #maybe I need an unpacking function here ro handle payload from json files
+    
+    auth_pack = {'username': "dexter@eulercapital.com.au",
+            'password':"76tileArg56!"}
+
+    asset_pack = {"categories" : 'Argus Nymex WTI month 1, Daily',
+                  "keywords" : "WTI",
+                  "symbol": "CL"}
+    
+
+    # run signal for the individual asset
+    dict_contracts_quant_signals = run_gen_MR_signals(auth_pack, asset_pack, 
+                                                      start_date, start_date_2, 
+                                                      end_date, signal_filename, 
+                                                      filename_daily, 
+                                                      filename_minute)
 
 
