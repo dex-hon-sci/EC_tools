@@ -27,11 +27,11 @@ __all__ = ['loop_signal','gen_signal_vector','run_gen_MR_signals',
 __author__="Dexter S.-H. Hon"
 
 
-save_filename_list = ["benchmark_signal_test_CL.csv", 
-                 "benchmark_signal_test_HO.csv", 
-                 "benchmark_signal_test_RB.csv", 
-                 "benchmark_signal_test_QO.csv",
-                 "benchmark_signal_test_QP.csv" ]
+save_filename_list = ["benchmark_signal_CL.csv", 
+                 "benchmark_signal_HO.csv", 
+                 "benchmark_signal_RB.csv", 
+                 "benchmark_signal_QO.csv",
+                 "benchmark_signal_QP.csv" ]
 
 categories_list = ['Argus Nymex WTI month 1, Daily', 
                'Argus Nymex Heating oil month 1, Daily', 
@@ -39,13 +39,32 @@ categories_list = ['Argus Nymex WTI month 1, Daily',
                'Argus Brent month 1, Daily', 
                'Argus ICE gasoil month 1, Daily']
 
-keywords_list = ["WTI","Heating", "Gasoline","gasoil",'Brent']
-symbol_list = ['CL', 'HO', 'RB', 'QO', 'QP']
+keywords_list = ["WTI","Heating", "Gasoline",'Brent', "gasoil"]
+symbol_list = ['CLc1', 'HOc1', 'RBc1', 'QOc1', 'QPc1']
+
+signal_list = ['./APC_latest_CL.csv',
+              './APC_latest_HO.csv',
+              './APC_latest_RB.csv',
+              './APC_latest_QO.csv',
+              './APC_latest_QP.csv']
+
+history_daily_list = ['../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL.day',
+                      '../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/HO.day',
+                      '../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/RB.day',
+                      '../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QO.day',
+                      '../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QP.day']
+                      
+
+history_minute_list = ["../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL.001",
+                       "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/HO.001",
+                       "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/RB.001",
+                       "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/QO.001",
+                       "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/QP.001"
+                       ]
 
 #%%
-@util.time_it
-def loop_signal(signal_data, history_data, dict_contracts_quant_signals, 
-                history_data_daily, start_date, end_date):
+def loop_signal(signal_data, history_data, 
+                history_data_daily, start_date, end_date, strategy_name='benchmark'):
     """
     A method taken from Abbe's original method. It is not necessary to loop 
     through each date and run evaluation one by one. But this is a rudamentary 
@@ -59,8 +78,6 @@ def loop_signal(signal_data, history_data, dict_contracts_quant_signals,
         The signal data (assuming the signal is from APC).
     history_data : pandas dataframe table
         The historical data (assuming the data is from Portara).
-    dict_contracts_quant_signals : dict
-        An empty bucket for final data storage.
     history_data_daily : pandas dataframe table
         The historical data (assuming the data is from Portara).
     start_date : str
@@ -74,6 +91,10 @@ def loop_signal(signal_data, history_data, dict_contracts_quant_signals,
         A dictionary for storing the signals and wanted quantiles.
 
     """
+    # make an empty signal dictionary for storage
+    dict_contracts_quant_signals = EC_strategy.MRStrategy.make_signal_bucket(
+                                                        strategy_name=strategy_name)
+    
     # Define a small window of interest
     APCs_dat = signal_data[signal_data['Forecast Period'] > start_date]
     # APCs_dat = signal_data[signal_data['Forecast Period'] < end_date] 
@@ -97,6 +118,7 @@ def loop_signal(signal_data, history_data, dict_contracts_quant_signals,
         symbol = APCs_this_date_and_contract.to_numpy()[-1]
         
         full_contract_symbol = portara_dat['Contract Symbol'].iloc[i]
+        print('full_contract_symbol', full_contract_symbol)
         full_price_code = portara_dat['Price Code'].iloc[i]
         
         ##############################################################
@@ -264,61 +286,53 @@ def run_gen_MR_signals(auth_pack, asset_pack, start_date, start_date_2, end_date
     
     # Checking function to make sure the input of the strategy is valid (maybe dumb them in a class)
     # check date and stuff
-    
-    # make an empty signal dictionary for storage
-    #dict_contracts_quant_signals = EC_strategy.MRStrategy.make_signal_bucket(strategy_name='benchmark')
-    dict_contracts_quant_signals = EC_strategy.MRStrategy.make_signal_bucket(
-                                                        strategy_name='mode')
-    
+
     # experiment with lag data extraction
     #extract_lag_data(signal_data, history_data_daily, "2024-01-10")
     
     # The strategy will be ran in loop_signal decorator
     dict_contracts_quant_signals = loop_signal(signal_data, history_data, 
-                                               dict_contracts_quant_signals, 
                                                history_data_daily, 
                                                start_date, end_date)
     
-    # there are better ways than looping. here is a vectoralised method
-    # XXXX
-    
+    # there are better ways than looping. here is a vectoralised method    
     return dict_contracts_quant_signals
 
 
 
 # make a function to run multiple signal generation from a list
-# WIP
-def run_gen_MR_signals_list(filename_list, categories_list, keywords_list, 
-                            symbol_list):
+# tested
+def run_gen_MR_signals_list(filename_list, categories_list, keywords_list, symbol_list, 
+                            start_date, start_date_2, end_date,
+                            signal_filename, filename_daily, 
+                            filename_minute):
     # a function to download the APC of a list of asset
     # input username and password.json
 
-    for filename, cat, key, sym in zip(filename_list, categories_list, 
-                                       keywords_list, symbol_list):
+
+    for filename, cat, key, sym, signal, history_daily, history_minute in zip(\
+        filename_list, categories_list, keywords_list, symbol_list, signal_list, history_daily_list, history_minute_list):
+        
         @util.time_it
         @util.save_csv("{}".format(filename))
         def run_gen_MR_signals_indi(cat, key, sym):
             asset_pack = {'categories': cat, 'keywords': key, 'symbol': sym}
             signal_data = run_gen_MR_signals(auth_pack, asset_pack, 
                                              start_date, start_date_2, end_date,
-                                             signal_filename, filename_daily, 
-                                             filename_minute) #WIP
+                                             signal, history_daily, 
+                                             history_minute) #WIP
             print("name {}".format(filename))
 
             return signal_data
         
         run_gen_MR_signals_indi(cat, key, sym)
     
-    return "All APC files downloaded!"
+    return "All asset signal generated!"
 
 if __name__ == "__main__":
-    #inputs: Portara data (1 Minute and Daily), APC
-    signal_filename = "./APC_latest_CL.csv"
-    filename_daily = "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL.day"
-    filename_minute = "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL.001"
 
     start_date = "2024-01-10"
-    start_date_2 = "2024-01-01"
+    start_date_2 = "2024-01-01" # make it at least 5 days before the start_date
     end_date = "2024-03-13"
     
     #maybe I need an unpacking function here ro handle payload from json files
@@ -326,16 +340,28 @@ if __name__ == "__main__":
     auth_pack = {'username': "dexter@eulercapital.com.au",
             'password':"76tileArg56!"}
 
-    asset_pack = {"categories" : 'Argus Nymex WTI month 1, Daily',
-                  "keywords" : "WTI",
-                  "symbol": "CL"}
+
     
-
-    # run signal for the individual asset
-    dict_contracts_quant_signals = run_gen_MR_signals(auth_pack, asset_pack, 
-                                                      start_date, start_date_2, 
-                                                      end_date, signal_filename, 
-                                                      filename_daily, 
-                                                      filename_minute)
-
+    run_gen_MR_signals_list(save_filename_list, categories_list, keywords_list, symbol_list, 
+                            start_date, start_date_2, end_date,
+                            signal_list, history_daily_list, 
+                            history_minute_list)
+    
+# =============================================================================
+#    asset_pack = {"categories" : 'Argus Nymex WTI month 1, Daily',
+#                  "keywords" : "WTI",
+#                  "symbol": "CL"}
+#
+#     #inputs: Portara data (1 Minute and Daily), APC
+#     signal_filename = "./APC_latest_CL.csv"
+#     filename_daily = "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL.day"
+#     filename_minute = "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL.001"
+#
+#     # run signal for the individual asset
+#     dict_contracts_quant_signals = run_gen_MR_signals(auth_pack, asset_pack, 
+#                                                       start_date, start_date_2, 
+#                                                       end_date, signal_filename, 
+#                                                       filename_daily, 
+#                                                       filename_minute)
+# =============================================================================
 

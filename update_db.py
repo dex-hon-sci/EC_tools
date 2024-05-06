@@ -22,10 +22,11 @@ auth_pack = {'username': "dexter@eulercapital.com.au",
 
 date_pack = {"start_date": "2021-01-01",
         "end_date": "2024-04-25"}
-
-asset_pack = {'categories': 'Argus Nymex WTI month 1, Daily',
-              'keywords': "WTI",
-              'symbol': "CL"}
+# =============================================================================
+# asset_pack = {'categories': 'Argus Nymex WTI month 1, Daily',
+#               'keywords': "WTI",
+#               'symbol': "CL"}
+# =============================================================================
 
 # checking function to see if the table is up to date
 
@@ -45,7 +46,7 @@ def download_latest_APC(auth_pack, asset_pack):
     # download the relevant APC data from the server
     signal_data = EC_read.get_apc_from_server(username, password, start_date, 
                                       end_date, categories,
-                            keywords=keywords,symbol=symbol)
+                            keywords=keywords, symbol=symbol)
     return signal_data
 
 
@@ -88,7 +89,7 @@ if __name__ == "__main__":
                    'Argus Brent month 1, Daily', 
                    'Argus ICE gasoil month 1, Daily']
 
-    keywords_list = ["WTI","Heating", "Gasoline","gasoil",'Brent']
+    keywords_list = ["WTI","Heating", "Gasoline",'Brent', "gasoil"]
     symbol_list = ['CLc1', 'HOc1', 'RBc1', 'QOc1', 'QPc1']
     
     download_latest_APC_list(auth_pack, save_filename_list, categories_list, 

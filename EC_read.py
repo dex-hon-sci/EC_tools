@@ -61,6 +61,8 @@ def get_apc_from_server(username, password, start_date, end_date, categories,
                    '0.9925', '0.995', '0.9975', 'symbol'], dtype='object', 
                   length=402)
     """
+    print('symbol',symbol)
+    
     # Check if categories and keywords varaible matches in dimension
     # Login and Authentication
     apc = ArgusPossibilityCurves(username=username, password=password)

@@ -61,3 +61,11 @@ class AssetProfolio(object):
         # make a list of dictionary indexed by time of the changing of profolio
         # add the total value of the 
         return None
+    
+    def trade(object, asset_1, asset_2, fee):
+        # call in a table of exchange rate
+        # pay asset_1 to asset_2
+        # make sure one of the asset is money
+        
+        # asset_1.quantity and asset_1.value
+        return None

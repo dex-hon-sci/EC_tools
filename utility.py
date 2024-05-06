@@ -67,7 +67,9 @@ def list_match(list1,list2):
 
 #tested
 def convert_intmin_to_time(data, label='Time')->list:
-    
+    # A function that convert elements in the time column in a dataframe from 
+    # 0330 to datetime.time(hour=3,minute=30)
+    # output a renewed pandas dataframe
     intmin = data[label]
     
     # bucket for storage.

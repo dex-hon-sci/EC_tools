@@ -29,6 +29,8 @@ import utility as util
 color_dict_light_mode = {'data_col':'k','bg_col':'white', 'col':'g'}
 color_dict_dark_mode = {'data_col':'white','bg_col':'k', 'col':'g'}
 
+pt_col='w'
+
 def plot_distribution(x,y, color = 'k', title = "",
                       xlabel = 'quantile', ylabel = 'Price'):
     
@@ -80,12 +82,21 @@ def plot_price(df):
 class AxsesShade(object):
     # add axeses and shaded area
     def __init__(self):
+        self._start_line = None
+        self._end_line = None
+        self._events_lower_limit = None 
+        self._events_upper_limit = None
+
         return None
     
 @dataclass
 class SubPlots(object):
     # add subplots
     def __init__(self):
+        self._add_pdf_panel = None
+        self._add_volume_panel = None
+        self._add_quant_lines = None
+        self._add_add_EES_region = None
         return None
 
 class PlotPricing(object):
@@ -94,21 +105,58 @@ class PlotPricing(object):
     # input other class objects here
     
     def __init__(self):
-        self._pdf_mode = None
-        self._add_APC_panel
-        self._add_quant_lines = None
-        self._add_EES_regions = None
+        # most are data-derived indicators
+        self._color_mode = None
         self._add_entry_exit_points = None
+        self._add_crossover_pts = None
+        self._add_buysell_points = None
         self._add_bol_band = None
+        self._add_fibo_retract_lines = None
         return None
     
     def controller(object):
-        # detemine whether the data is intraday minute data, seconds or days
+        # determine whether the data is intraday minute data, seconds or days
         return None
-
     
+    @property
+    def add_quant_lines(ax, quant_list, quant_price_list, txt_shift_x, txt_shift_y, 
+                    start_x = 0.0, end_x= 100, alpha = 0.5):
+        """
+        A function that add the quantile lines to a plot.
+    
+        Parameters
+        ----------
+        ax : <class 'matplotlib.axes._axes.Axes'>
+            The figure.
+        quant_list : list
+            A list of quantile name for text marking on the plot.
+        quant_price_list : list
+            The price of the horizontal lines corresponding to quant_list.
+        txt_shift_x : float
+            The shift in x-axis for the text.
+        txt_shift_y : float
+            The shift in y-axis for the text.
+        start_x: float, or datetime.time
+            The starting position for the text in x-axis
+        end_x: float, or datetime.time
+            The ending position for the text in x-axis
+        alpha : float, optional
+            The transparency of the quantile line. The default is 0.5.
+    
+        """
+        for quant, price in zip(quant_list, quant_price_list):
+            ax.hlines(price, start_x, end_x, color='#C26F05', alpha = alpha)
+            ax.text( start_x + txt_shift_x, price + txt_shift_y, quant, 
+                     fontsize=8, color='#C26F05')
 
 
+class PlotPNL(object):
+    
+    def PNL_plot(self):
+      return None
+
+
+@util.time_it
 def plot_price_BIG(x,y, events, pdf, 
                    quant_list, quant_price_list, direction="Neutral",
                    price_chart_title = "Date", 
@@ -116,6 +164,7 @@ def plot_price_BIG(x,y, events, pdf,
                    events_lower_limit=70, events_upper_limit =78,
                    buy_time = "1201", buy_price =  86.05,
                    sell_time = "1900", sell_price = 85.70, 
+                   pt_col ='w',
                    bppt_x1 = [], bppt_y1 = [], 
                    bppt_x2 = [], bppt_y2 = [], 
                    bppt_x3 =[], bppt_y3 = []):
@@ -181,12 +230,14 @@ def plot_price_BIG(x,y, events, pdf,
     bppt_x2 = [datetime.datetime.combine(datetime.date.today(), t) for t in bppt_x2]
     bppt_x3 = [datetime.datetime.combine(datetime.date.today(), t) for t in bppt_x3]
 
+    plt.style.use('dark_background')
+
     # plotting area
     fig = plt.figure(figsize=(10,4))
     gs = fig.add_gridspec(nrows=1, ncols = 2, width_ratios = [4,1])
 
     ax1 = fig.add_subplot(gs[0])
-    ax1.plot(x_datetime, y,'o--', ms=2, c='k')
+    ax1.plot(x_datetime, y,'o--', ms=2, c=pt_col)
     
     # crossover points set 1 
     ax1.plot(bppt_x1, bppt_y1,'o', ms=10, c='blue')
@@ -224,7 +275,6 @@ def plot_price_BIG(x,y, events, pdf,
     add_quant_lines(ax1, quant_list, quant_price_list, txt_shift_x_date, txt_shift_y, 
                         start_x = start_line, end_x = end_line, alpha = 0.5)
 
-    
     if direction == "Buy":
         entry_price = quant_price_list[1]
         exit_price = quant_price_list[3]
@@ -300,7 +350,8 @@ def add_quant_lines(ax, quant_list, quant_price_list, txt_shift_x, txt_shift_y,
     for quant, price in zip(quant_list, quant_price_list):
         ax.hlines(price, start_x, end_x, color='#C26F05', alpha = alpha)
         ax.text( start_x + txt_shift_x, price + txt_shift_y, quant, 
-                 fontsize=8, color='#C26F05')
+                 fontsize=8, color=pt_col, bbox=dict(boxstyle="round",
+                 ec= pt_col, fc='#C26F05'))
         
 def add_EES_region(ax,entry_price, exit_price, stop_loss, 
                    txt_shift_x, txt_shift_y, start_x = 0.0, end_x = 2150,
@@ -357,11 +408,18 @@ def add_EES_region(ax,entry_price, exit_price, stop_loss,
     
     # The texts that indicate the regions
     ax.text(start_x + txt_shift_x, entry_price + txt_shift_y, "Entry Price", 
-                  fontsize=8, color='#206829')
+                  fontsize=8, color = pt_col, bbox=dict(boxstyle="round",
+                   ec= pt_col,fc='#206829'))
+                  
+                 # facecolor='#206829')
     ax.text(start_x + txt_shift_x, exit_price + txt_shift_y, "Exit Price", 
-                  fontsize=8, color='#206829')
+                  fontsize=8, color= pt_col, bbox=dict(boxstyle="round",
+                   ec= pt_col,fc='#206829'))
+                  
     ax.text(start_x + txt_shift_x, stop_loss + txt_shift_y, "Stop Loss", 
-                  fontsize=8, color='#80271B')
+                  fontsize=8, color=pt_col, bbox=dict(boxstyle="round",
+                   ec= pt_col,fc='#80271B'))
+                  
     
 def add_buysell_points(ax, entry_time, entry_price,exit_time, exit_price):
     
@@ -455,7 +513,6 @@ def plot_minute(filename_minute, signal_filename, price_approx = 'Open',
     price_lower_limit = curve['0.05'].to_numpy()
     price_upper_limit = curve['0.95'].to_numpy()
     
-
     # Plot the pricing chart.
     plot_price_BIG(x,y, 
                    even_spaced_prices, pdf, 
@@ -468,8 +525,6 @@ def plot_minute(filename_minute, signal_filename, price_approx = 'Open',
                    bppt_x2 =bppt_x2, bppt_y2 = bppt_y2, 
                    bppt_x3 =bppt_x3, bppt_y3 = bppt_y3)
     
-    
-
     
 if __name__ == "__main__":
     
