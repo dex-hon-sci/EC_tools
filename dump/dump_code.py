@@ -600,5 +600,57 @@ def extract_lag_data(signal_data, history_data, date, lag_size=5):
         curve = signal_data[signal_data['Forecast Period'] == window[i+1]]
         signal_data_lag = pd.concat([signal_data_lag, curve])
         
+####################3
+def indi_test(history_data, close_trade ='1925'):
+        # inside one of the loop, daily data
+        date_interest = datetime.datetime(year = 2024, month = 1, day =18)
+        open_hr = "0330"#datetime.time(hour=3,minute=30)""
+        close_hr = "1930"#datetime.time(hour=19,minute=30)
+        close_trade = '1925'
+        
+        day = extract_intraday_minute_data(history_data, date_interest, 
+                                             open_hr=open_hr, close_hr=close_hr)
+    
+        target_entry = 72.95166
+        target_exit = 72.2002
+        stop_exit = 74.43712
+    
+        
+        price_list= day['Open'].to_numpy()
+        time_list= day['Time'].to_numpy()
+        
+        
+        entry_pt_dict = find_crossover(price_list, target_entry)   
+        exit_pt_dict = find_crossover(price_list, target_exit)   
+        stop_pt_dict = find_crossover(price_list, stop_exit)   
+        
+        print("RISERISERISE", entry_pt_dict['rise'][0])
+        
+        entry_pts = price_list[entry_pt_dict['rise'][0]]
+        entry_times = time_list[entry_pt_dict['rise'][0]]
+            
+        exit_pts = price_list[exit_pt_dict['drop'][0]]
+        exit_times = time_list[exit_pt_dict['drop'][0]]
+        
+        stop_pts = price_list[stop_pt_dict['rise'][0]]
+        stop_times = time_list[stop_pt_dict['rise'][0]]
+    
+        close_time = datetime.time(int(close_trade[:2]),int(close_trade[2:]))
+        close_pt = price_list[np.where(time_list==close_time)[0]]
+        
+        print('close_time', close_time, 'close_pt', close_pt)
+        
+        filename_minute = "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL.001"
+        signal_filename = "APC_latest_CL.csv"
+        date_interest = "2024-01-18"
+        
+        EC_plot.plot_minute(filename_minute, signal_filename, 
+                        date_interest = date_interest, direction="Sell",
+                          bppt_x1=entry_times, bppt_y1=entry_pts,
+                          bppt_x2=exit_times, bppt_y2=exit_pts,
+                          bppt_x3=stop_times, bppt_y3=stop_pts
+                          )
+################
+        
     return signal_data_lag, history_data_lag
 
