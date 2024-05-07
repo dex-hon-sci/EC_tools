@@ -18,9 +18,32 @@ import utility as util
 
 # tested
 def find_crossover(input_array, threshold):
-    # a function that make a list of cross over point's indices given a particular threshold
+    """
+    A function that find the crossover points' indicies. It finds the points right
+    after either rise above, or drop below the threshold value.
     
+    
+
+    Parameters
+    ----------
+    input_array : numpy array
+        A 1D numpy array with only numbers.
+    threshold : float
+        the threshold value.
+
+    Returns
+    -------
+    dict
+        The 'rise' value contains a numpy array containing the indicies of 
+        points that rise above the the threshold.
+        The 'drop' value contains a numpy array containing the indicies of 
+        points that drop below the the threshold.
+
+    """
+    # make a numpy array of the threshold value    
     threshold = np.repeat(threshold, len(input_array))
+    # XXX
+    # Add new function to read-in an array of threshold later 
     
     # The difference between the input value and the threshold number
     # Positive values mean the input is higher than threshold
@@ -162,7 +185,7 @@ def loop_date(signal_table, histroy_intraday_data, open_hr='0330',
               close_hr='1930',
               plot_or_not = False):
     
-    # make bucket
+    # make bucket # I need to make a new set of columns name
     profits_losses_bucket = {
     'Price Code': [],
     'predicted signal': [],
@@ -174,9 +197,7 @@ def loop_date(signal_table, histroy_intraday_data, open_hr='0330',
     'exit datetime': [],
     'risk/reward value ratio': [],
     }
-   
-    #trade_date_table is the signal table
-    
+       
 
     print('signal_table',signal_table)
     
@@ -201,22 +222,24 @@ def loop_date(signal_table, histroy_intraday_data, open_hr='0330',
         EES_dict = set_minute_EES(day, target_entry, target_exit, stop_exit,
                           open_hr=open_hr, close_hr=close_hr, direction = direction)
         
+
         # make the trade.
-        #trade_open, trade_close = trade_choice(EES_dict)
-        trade_open, trade_close = None, None
+        trade_open, trade_close = trade_choice_simple(EES_dict)
+        #trade_open, trade_close = None, None
         # WIP
-        entry_price, exit_price = None, None
-        #entry_price, exit_price = trade_open[1], trade_close[1]
-        entry_datetime= None
-        exit_datetime = None
+        #entry_price, exit_price = None, None
+        entry_price, exit_price = trade_open[1], trade_close[1]
+        entry_datetime= trade_open[0]
+        exit_datetime = trade_close[0]
         
-        # calculate statistics
-        #return_trades = (exit_price - entry_price)/ entry_price
-        return_trades = None
-        risk_reward_ratio = None
-        
-        # store stuff into buckets
-        # WIP
+        # calculate statisticsEES_dict
+        if direction == "Buy": # for buy, we are longing
+            return_trades = exit_price - entry_price
+        elif direction == "Sell": # for sell, we are shorting
+            return_trades = entry_price - exit_price
+
+        # The risk and reward ratio is based on Abbe's old script but it should be the sharpe ratio
+        risk_reward_ratio = abs(target_entry-stop_exit)/abs(target_entry-target_exit)
 
         #make bucket for storage
         bucket = profits_losses_bucket
@@ -254,22 +277,70 @@ def loop_date(signal_table, histroy_intraday_data, open_hr='0330',
         
     dict_trade_PNL = pd.DataFrame(dict_trade_PNL)
     
-    print('dict_trade_PNL', dict_trade_PNL)
+    print('dict_trade_PNL', dict_trade_PNL.columns, dict_trade_PNL.iloc[0])
     #sort by date
-    dict_trade_PNL = dict_trade_PNL.sort_values(by='Date')
+    dict_trade_PNL = dict_trade_PNL.sort_values(by='date')
     
         
-    return EES_dict
+    return dict_trade_PNL
     
 def set_minute_EES(histroy_data_intraday, 
-                      target_entry, target_exit, stop_exit
-                      ,open_hr="0330", close_hr="1930", 
-                      price_approx = 'Open', direction = 'Neutral',
+                      target_entry, target_exit, stop_exit,
+                      open_hr="0330", close_hr="1930", 
+                      price_approx = 'Open', time_proxy= 'Time',
+                      direction = 'Neutral',
                       close_trade_hr='1925'):
+    """
+    Set the EES value given a minute intraday data.
+
+    Parameters
+    ----------
+    histroy_data_intraday : dataframe
+        The histort intraday minute data. This assume the file contains the 
+        ohlc value of the day
+    target_entry : float 
+        target entry price.
+    target_exit : float
+        target exit price.
+    stop_exit : float
+        target stop loss price.
+    open_hr : str, optional
+        The opening hour of trade in military time format. 
+        The default is "0330".
+    close_hr : str, optional
+        The closing hour of trade in military time format. 
+        The default is "1930".
+    price_approx : str, optional
+        The price approximator. The default uses the opening price of each 
+        minute as the price indicator. It calls in the 'Open' column in the 
+        history intradday minute dataframe
+        The default is 'Open'.
+    time_prox: 
+        The time proxy. This function assume the input time data come fomr the 
+        'Time' column of the dataframe. 
+        The default is 'Time'.
+    direction : str, optional
+        Trade direction. Either "Buy", "Sell", or "Neutral".
+        The default is 'Neutral'.
+    close_trade_hr : str, optional
+        The final minute to finish off the trade in military time format. 
+        The default is '1925'.
+
+    Raises
+    ------
+    ValueError
+        Direction data can only be either "Buy", "Sell", or "Neutral".
+
+    Returns
+    -------
+    EES_dict : dict
+        A dictionary that cantains the possible EES points and time.
+
+    """
     
     # define subsample. turn the pandas series into a numpy array
     price_list = histroy_data_intraday[price_approx].to_numpy()
-    time_list = histroy_data_intraday['Time'].to_numpy()
+    time_list = histroy_data_intraday[time_proxy].to_numpy()
     
     # Find the crossover indices
     entry_pt_dict = find_crossover(price_list, target_entry)
@@ -319,71 +390,54 @@ def set_minute_EES(histroy_data_intraday,
     close_time = datetime.time(int(close_trade_hr[:2]),int(close_trade_hr[2:]))
     close_pt = price_list[np.where(time_list==close_time)[0]][0]
     
-    print(close_time, close_pt)
     # storage
-# =============================================================================
-#     EES_dict = {'entry_times': entry_times,
-#                 'entry_pts': entry_pts,
-#                 'exit_times': exit_times,
-#                 'exit_pts': exit_pts,
-#                 'stop_times': stop_times,
-#                 'stop_pts': stop_pts,
-#                 'close_time': close_time,
-#                 'close_pt': close_pt
-#                 }
-# =============================================================================
-
     EES_dict = {'entry': list(zip(entry_times,entry_pts)),
                 'exit': list(zip(exit_times,exit_pts)),
-                'close': [close_time, close_pt]
-                }
-    print('EES_dict', EES_dict)
+                'stop': list(zip(exit_times,stop_pts)),
+                'close': [close_time, close_pt] }
 
     # Spit out a Dict of data
+    #print('EES_dict', EES_dict)
     return EES_dict
 
-def trade_choice(EES_dict):
+def trade_choice_simple(EES_dict): #WIP
     # a function that control which price to buy and sell
     # Trading choice should be a class on its own. This is just a prototype.
     # I need a whole module of classes related to trade. to operate on portfolio and so on
     
+    # add the amount of exchange
+    
     # if entry list = None, no trade that day
     # else, choose position x or a list of positions
+    trade_open, trade_close = None, None
     
-    
-    if len(EES_dict['entry']) == 0:
+    if len(EES_dict['entry']) == 0: # entry price not hit. No trade that day.
+        print("NO ENTRYYYY")
+        trade_open, trade_close = (np.nan, np.nan), (np.nan, np.nan)
+
         pass
     else:
         # choose the entry point
         trade_open = EES_dict['entry'][0]
-        
-    #trade_close = EES_dict['exit'][0]
+        if len(EES_dict['stop']) == 0: # if the stop loss wasn't hit
+            print('stop loss NOT hit')
     
-    if len(EES_dict['exit']) == 0:
-        trade_close = EES_dict['close']
-    else:
-        # choose the exit point
-
-        trade_close = EES_dict['exit'][0]
+            pass
+        else:
+            trade_close = EES_dict['stop'][0] #set the trade close at stop loss
+            print('stop loss hit')
+            
+        if len(EES_dict['exit']) == 0:
+            trade_close = EES_dict['close']
+        else:
+            # choose the exit point
+            trade_close = EES_dict['exit'][0]
     
-    
-    buy_moment = None
-    sell_moment = None
-    print("REESS", EES_dict['entry'],EES_dict['exit'])
-    #print('trade_open, trade_close', trade_open, trade_close)
-    # output: trade_open_time, trade_open_price, trade_close_time, trade_close_price 
-   # return trade_open, trade_close
-
-# =============================================================================
-# 
-# def analysis_cross_percentage():
-#     # A function that calculate the percentage of points that crosses over to 
-#     # the different regions.
-#     return None
-# =============================================================================
+    return trade_open, trade_close
     
 
 @util.time_it
+@util.save_csv('benchmark_PNL_simple_test.csv')
 def run_backtest():
     # master function that runs the backtest itself.
     
@@ -397,12 +451,11 @@ def run_backtest():
     trade_date_table = prepare_signal_interest(filename_buysell_signals, trim = False)
         
     # loop through the date and set the EES prices for each trading day   
-    loop_date(trade_date_table, history_data, plot_or_not = False)    
+    dict_trade_PNL = loop_date(trade_date_table, history_data, plot_or_not = False)    
 
     # The current method only allows one singular direction signal perday. and a set of constant EES
-    
 
-    return None
+    return dict_trade_PNL
 
 
 def run_backtest_list():

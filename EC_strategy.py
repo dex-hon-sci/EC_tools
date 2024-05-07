@@ -8,8 +8,9 @@ Created on Fri Apr  5 03:19:59 2024
 This is a list of strategy that can be implemented in other scripts.
 """
 import numpy as np
-import math_func as mfunc
 from scipy.interpolate import CubicSpline, UnivariateSpline
+
+import math_func as mfunc
 
 # round trip fee 15 dollars
 __author__="Dexter S.-H. Hon"

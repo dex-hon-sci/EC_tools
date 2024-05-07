@@ -16,6 +16,24 @@ __all__ = ['generic_spline','find_quant','cal_pdf']
 __author__="Dexter S.-H. Hon"
 
 def generic_spline(x,y, method="cubic", **kwargs):
+    """
+    A generic method to interpolate data.
+
+    Parameters
+    ----------
+    x : numpy array
+        x-axis.
+    y : numpy array
+        y-axis.
+    method : str, optional
+        The method of interpolation. The default is "cubic".
+
+    Returns
+    -------
+    func : TYPE
+        A callable function.
+
+    """
     # generic interpolate method Cubic spline and what not
     
     if method == "cubic":

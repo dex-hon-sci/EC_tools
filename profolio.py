@@ -32,7 +32,14 @@ num_per_contract = {
     'QPc2': 100.0,
 }
 
-class AssetProfolio(object):
+class Asset(object):
+    name = ""
+    quantity = 0 # int
+    unit = ""
+    value_USD = 0.0 
+    asset_type = ""
+
+class Profolio(Asset):
         
     def __init__(self):
         self._profolio = None
@@ -40,12 +47,16 @@ class AssetProfolio(object):
         return None
     
     def profolio(object):
-        profolio = {"USD": 0.0,
-                    "AUD": 0.0}
+        # profolio only calculate the value of the asset
+        profolio = {}
+        #"USD": 0.0, "AUD": 0.0
         return profolio
     
-    def sub_asset(object):
-        
+    def make_profolio_table(object):
+        profolio_table = None
+        return profolio_table
+    
+    def sub_asset(object, asset):        
         return None
     
     def add_asset(object, profolio, new_asset):
@@ -62,7 +73,7 @@ class AssetProfolio(object):
         # add the total value of the 
         return None
     
-    def trade(object, asset_1, asset_2, fee):
+    def trade(object, profolio, asset_1, asset_2, fee):
         # call in a table of exchange rate
         # pay asset_1 to asset_2
         # make sure one of the asset is money
