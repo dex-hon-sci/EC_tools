@@ -11,14 +11,12 @@ A modified script based on the Mean-Reversion Method developed by Abbe Whitford.
 # import libraries
 import pandas as pd 
 import numpy as np
-from scipy.interpolate import CubicSpline, UnivariateSpline
-
-
+from scipy.interpolate import CubicSpline
+# import EC_tools
 import EC_strategy as EC_strategy
 import EC_read as EC_read
 import update_db as update_db
 import utility as util
-import math_func as mfunc
 
 
 __all__ = ['loop_signal','gen_signal_vector','run_gen_MR_signals', 
@@ -97,7 +95,7 @@ def loop_signal(signal_data, history_data,
     
     # Define a small window of interest
     APCs_dat = signal_data[signal_data['Forecast Period'] > start_date]
-    # APCs_dat = signal_data[signal_data['Forecast Period'] < end_date] 
+    # APCs_dat = signal_data[signal_data['Forecast Period'] < end_date]
 
     # leave the end date open because on some date there are no APC published, 
     # leading to a mismatch of history and signal data. Now this method use the 
@@ -106,7 +104,7 @@ def loop_signal(signal_data, history_data,
     portara_dat = history_data[history_data["Date only"] > start_date]
     #portara_dat = history_data[history_data["Date only"] < end_date]
     
-    print("length", len(portara_dat), len(APCs_dat))
+    #print("length", len(portara_dat), len(APCs_dat))
     
     # loop through every forecast date and contract symbol 
     for i in np.arange(len(portara_dat)): 
@@ -118,9 +116,8 @@ def loop_signal(signal_data, history_data,
         symbol = APCs_this_date_and_contract.to_numpy()[-1]
         
         full_contract_symbol = portara_dat['Contract Symbol'].iloc[i]
-        print('full_contract_symbol', full_contract_symbol)
         full_price_code = portara_dat['Price Code'].iloc[i]
-        
+
         ##############################################################
         ##############################################################
         # The following part is purely Abbe's code. I may need to modify it later
@@ -129,7 +126,7 @@ def loop_signal(signal_data, history_data,
         
         # select for only rows in the history data with date matching the symbol, "CL"
         # can delete 
-        dat_330 = dat_330[dat_330['Contract Symbol'].apply(lambda x: str(x)[:-3])==symbol]
+        dat_330 = dat_330[dat_330['Contract Symbol'].apply(lambda x: str(x)[:-3])==str(symbol)[:-2]]
         
         quant_330UKtime = np.NaN 
                         
@@ -142,7 +139,7 @@ def loop_signal(signal_data, history_data,
         else: 
             continue # data not available! 
         #-------------------------------#
-        portara_dat_filtered = portara_dat[portara_dat['Contract Symbol'].apply(lambda x: str(x)[:-3] == symbol)]
+        portara_dat_filtered = portara_dat[portara_dat['Contract Symbol'].apply(lambda x: str(x)[:-3] == str(symbol)[:-2])]
         portara_dat_filtered = portara_dat_filtered.reset_index(drop=True)
         index_thisapc = portara_dat_filtered[portara_dat_filtered['Date only'] == (forecast_date)] 
                 
@@ -194,6 +191,9 @@ def loop_signal(signal_data, history_data,
                                                          strategy_name=\
                                                              "benchmark")
         
+        print(forecast_date, full_contract_symbol, 'MR signal generated!')
+    
+        
         # set resposne price.
         entry_price, exit_price, stop_loss = EC_strategy.MRStrategy.set_EES_APC(
                                                         direction, curve_today)
@@ -205,6 +205,7 @@ def loop_signal(signal_data, history_data,
         # put all the data in a singular list
         data = [forecast_date, full_contract_symbol] + strategy_data + \
                 [quant_330UKtime] + EES + [direction, full_price_code]
+        
         
         # Storing the data    
         dict_contracts_quant_signals = EC_strategy.MRStrategy.\
@@ -245,7 +246,8 @@ def gen_signal_vector(signal_data, history_data, loop_start_date = ""):
     
     return dict_contracts_quant_signals
 
-#@util.save_csv("benchmark_signal_test.csv")
+@util.time_it
+@util.save_csv("benchmark_signal_test.csv")
 def run_gen_MR_signals(auth_pack, asset_pack, start_date, start_date_2, end_date,
                        signal_filename, filename_daily, filename_minute,
                        update_apc = False):
@@ -309,7 +311,6 @@ def run_gen_MR_signals_list(filename_list, categories_list, keywords_list, symbo
     # a function to download the APC of a list of asset
     # input username and password.json
 
-
     for filename, cat, key, sym, signal, history_daily, history_minute in zip(\
         filename_list, categories_list, keywords_list, symbol_list, signal_list, history_daily_list, history_minute_list):
         
@@ -335,33 +336,30 @@ if __name__ == "__main__":
     start_date_2 = "2024-01-01" # make it at least 5 days before the start_date
     end_date = "2024-03-13"
     
-    #maybe I need an unpacking function here ro handle payload from json files
-    
     auth_pack = {'username': "dexter@eulercapital.com.au",
-            'password':"76tileArg56!"}
-
-
-    
-    run_gen_MR_signals_list(save_filename_list, categories_list, keywords_list, symbol_list, 
-                            start_date, start_date_2, end_date,
-                            signal_list, history_daily_list, 
-                            history_minute_list)
-    
+                'password':"76tileArg56!"}
 # =============================================================================
-#    asset_pack = {"categories" : 'Argus Nymex WTI month 1, Daily',
-#                  "keywords" : "WTI",
-#                  "symbol": "CL"}
-#
-#     #inputs: Portara data (1 Minute and Daily), APC
-#     signal_filename = "./APC_latest_CL.csv"
-#     filename_daily = "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL.day"
-#     filename_minute = "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL.001"
-#
-#     # run signal for the individual asset
-#     dict_contracts_quant_signals = run_gen_MR_signals(auth_pack, asset_pack, 
-#                                                       start_date, start_date_2, 
-#                                                       end_date, signal_filename, 
-#                                                       filename_daily, 
-#                                                       filename_minute)
+#     #maybe I need an unpacking function here ro handle payload from json files
+#     
+#     run_gen_MR_signals_list(save_filename_list, categories_list, keywords_list, symbol_list, 
+#                             start_date, start_date_2, end_date,
+#                             signal_list, history_daily_list, 
+#                             history_minute_list)
 # =============================================================================
+    
+    asset_pack = {"categories" : 'Argus Nymex WTI month 1, Daily',
+                  "keywords" : "WTI",
+                  "symbol": "CL"}
+
+    #inputs: Portara data (1 Minute and Daily), APC
+    signal_filename = "./APC_latest_CL.csv"
+    filename_daily = "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL.day"
+    filename_minute = "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL.001"
+
+    # run signal for the individual asset
+    dict_contracts_quant_signals = run_gen_MR_signals(auth_pack, asset_pack, 
+                                                      start_date, start_date_2, 
+                                                      end_date, signal_filename, 
+                                                      filename_daily, 
+                                                      filename_minute)
 

@@ -8,7 +8,7 @@ Created on Fri Apr  5 03:19:59 2024
 This is a list of strategy that can be implemented in other scripts.
 """
 import numpy as np
-from scipy.interpolate import CubicSpline, UnivariateSpline
+from scipy.interpolate import CubicSpline
 
 import math_func as mfunc
 
@@ -235,19 +235,21 @@ class MRStrategy(object):
         cond3_sell = rollinglagq5day > median_apc_5days
         # (3) price at today's opening hour below the 0.9 quantile of today's apc
         cond4_sell = quant_330UKtime <= curve_today['0.9']
-        
-        print("===================This is in the package")  
-        print("cond1_buy", cond1_buy, history_data_lag2_close, signal_data_lag2_median)
-        print("cond2_buy", cond2_buy, history_data_lag1_close, signal_data_lag1_median)
-        print("cond3_buy", cond3_buy, rollinglagq5day,  median_apc_5days)
-        print("cond4_buy", cond4_buy, quant_330UKtime, curve_today['0.1'])
-        print("====================")
-        print("cond1_sell", cond1_sell, history_data_lag2_close, signal_data_lag2_median)
-        print("cond2_sell", cond2_sell, history_data_lag1_close, signal_data_lag1_median)
-        print("cond3_sell", cond3_sell, rollinglagq5day,  median_apc_5days)
-        print("cond4_sell", cond4_sell, quant_330UKtime, curve_today['0.1'])
-        print("======================")
-        
+# =============================================================================
+#         
+#         print("===================This is in the package")  
+#         print("cond1_buy", cond1_buy, history_data_lag2_close, signal_data_lag2_median)
+#         print("cond2_buy", cond2_buy, history_data_lag1_close, signal_data_lag1_median)
+#         print("cond3_buy", cond3_buy, rollinglagq5day,  median_apc_5days)
+#         print("cond4_buy", cond4_buy, quant_330UKtime, curve_today['0.1'])
+#         print("====================")
+#         print("cond1_sell", cond1_sell, history_data_lag2_close, signal_data_lag2_median)
+#         print("cond2_sell", cond2_sell, history_data_lag1_close, signal_data_lag1_median)
+#         print("cond3_sell", cond3_sell, rollinglagq5day,  median_apc_5days)
+#         print("cond4_sell", cond4_sell, quant_330UKtime, curve_today['0.1'])
+#         print("======================")
+#         
+# =============================================================================
         
         # Find the boolean value of strategy conditions
         Buy_cond = cond1_buy and cond2_buy and cond3_buy and cond4_buy
@@ -313,7 +315,8 @@ class MRStrategy(object):
         lag1q = mfunc.find_quant(apc_curve_lag5.iloc[-2][1:-1], quant0, signal_data_lag2_mode)
         lag2q = mfunc.find_quant(apc_curve_lag5.iloc[-1][1:-1], quant0, signal_data_lag1_mode)
 
-        print("lag1q, lag2q", lag1q, lag2q)
+        #print("lag1q, lag2q", lag1q, lag2q)
+        
         # Reminder: pulling directly from a list is a factor of 3 faster than doing 
         # spline everytime
             
@@ -482,11 +485,8 @@ class MRStrategy(object):
             stop_loss = curve_today(sell_cond[2])
             
         elif cond == "Neutral":
-            # (A) Entry region at price > APC p=0.6 and 
             entry_price = "NA"
-            # (B) Exit price
             exit_price = "NA"
-            # (C) Stop loss at APC p=0.9
             stop_loss = "NA"
         else:
             raise Exception(

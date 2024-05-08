@@ -1,4 +1,4 @@
-APC forecast period,APC Contract Symbol,Q0.1,Qmax-0.1,Qmax,Qmax+0.1,Q0.9,Quant close lag 1,Quant close lag 2,mean Quant close n = 5,Quant 3:30 UK time,target entry,target exit,stop exit,direction,price code
+APC forecast period,APC Contract Symbol,Q0.1,Q0.4,Q0.5,Q0.6,Q0.9,Quant close lag 1,Quant close lag 2,mean Quant close n = 5,Quant 3:30 UK time,target entry,target exit,stop exit,direction,price code
 2024-01-11,CL24G,69.69075,71.02769,71.346214,71.66758,73.076126,0.5075253158692221,0.7552455385545285,0.714975312614003,0.5885920241005215,NA,NA,NA,Neutral,CLc1
 2024-01-12,CL24G,71.37244,72.913376,73.25351,73.58589,74.931465,0.19047461922613973,0.09974539152108924,0.19443347220420676,0.6071437796078092,NA,NA,NA,Neutral,CLc1
 2024-01-16,CL24G,69.556366,71.580475,72.025444,72.4552,74.12814,0.6515195609257288,0.498741753229315,0.4520893367883796,0.5941575492081316,NA,NA,NA,Neutral,CLc1
