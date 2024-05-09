@@ -13,7 +13,7 @@ import EC_read as EC_read
 import EC_plot as EC_plot
 import EC_strategy as EC_strategy
 import utility as util
-
+from bookkeep import Bookkeep
 # Spit out the document for overall PNL analysis
 
 # tested
@@ -22,13 +22,11 @@ def find_crossover(input_array, threshold):
     A function that find the crossover points' indicies. It finds the points right
     after either rise above, or drop below the threshold value.
     
-    
-
     Parameters
     ----------
     input_array : numpy array
         A 1D numpy array with only numbers.
-    threshold : float
+    threshold : float, list, numpy array
         the threshold value.
 
     Returns
@@ -40,10 +38,17 @@ def find_crossover(input_array, threshold):
         points that drop below the the threshold.
 
     """
-    # make a numpy array of the threshold value    
-    threshold = np.repeat(threshold, len(input_array))
-    # XXX
-    # Add new function to read-in an array of threshold later 
+    if type(threshold) == str:
+        # make a numpy array of the threshold value    
+        threshold = np.repeat(threshold, len(input_array)) 
+    elif (type(threshold) == list or type(threshold) == np.ndarray) and \
+                                        len(threshold) != len(input_array):
+        raise Exception("Mismatch input and threshold arraty length.")
+    elif type(threshold) == list and len(threshold) == len(input_array):
+        # make a numpy array of the threshold value    
+        threshold = np.array(threshold)
+    elif type(threshold) == np.ndarray and len(threshold) == len(input_array):
+        pass
     
     # The difference between the input value and the threshold number
     # Positive values mean the input is higher than threshold
@@ -63,9 +68,6 @@ def find_crossover(input_array, threshold):
     # IF delta[i] < delta_lag[i], then the price drop below threshold
     indices_drop_below = np.where(np.sign(delta) < np.sign(delta_lag))
 
-    #print('rise', indices_rise_above)
-    #print('drop', indices_drop_below)
-    
     # Produce a dic of indicies for below and above
     return {'rise': indices_rise_above, 
             'drop': indices_drop_below}
@@ -80,10 +82,9 @@ class BackTest(object):
         return None
         
     
-    
-    
 # tested
-def prepare_signal_interest(filename_buysell_signals, direction=["Buy", "Sell"], trim = False):
+def prepare_signal_interest(filename_buysell_signals, 
+                            direction=["Buy", "Sell"], trim = False):
     """
     A function that extract data from a signal table based on some directional 
     instruction.
@@ -179,28 +180,46 @@ def extract_intraday_minute_data(histrot_intraday_data, date_interest,
 
     return histrot_intraday_data
 
-
+# tested
+def plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=False):
+    if plot_or_not == True:
+        
+        filename_minute = "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL.001"
+        signal_filename = "APC_latest_CL.csv"   
+        
+        date_interest_str = date_interest.strftime("%Y-%m-%d")
+        
+        if len(EES_dict['entry']) > 0:    
+            entry_times, entry_pts = list(zip(*EES_dict['entry']))
+        else:
+            entry_times, entry_pts = [], []
+            
+        if len(EES_dict['exit']) > 0:
+            exit_times, exit_pts = list(zip(*EES_dict['exit']))
+        else:
+            exit_times, exit_pts = [], []
+        
+        if len(EES_dict['stop']) > 0:
+            stop_times, stop_pts = list(zip(*EES_dict['stop']))
+        else: 
+            stop_times, stop_pts = [], []
+        
+        EC_plot.plot_minute(filename_minute, signal_filename, 
+                        date_interest = date_interest_str, direction=direction,
+                          bppt_x1=entry_times, bppt_y1=entry_pts,
+                          bppt_x2=exit_times, bppt_y2=exit_pts,
+                          bppt_x3=stop_times, bppt_y3=stop_pts)
+        
+    elif plot_or_not == False:
+        pass
 
 def loop_date(signal_table, histroy_intraday_data, open_hr='0330', 
               close_hr='1930',
               plot_or_not = False):
     
-    # make bucket # I need to make a new set of columns name
-    profits_losses_bucket = {
-    'Price Code': [],
-    'predicted signal': [],
-    'date': [],
-    'return from trades': [],
-    'entry price': [],
-    'entry datetime': [],
-    'exit price': [],
-    'exit datetime': [],
-    'risk/reward value ratio': [],
-    }
-       
-
-    print('signal_table',signal_table)
-    
+    # make bucket 
+    book = Bookkeep(bucket_type='backtest')
+    dict_trade_PNL = book.make_bucket(keyword='benchmark')
     
     for date_interest, direction, target_entry, target_exit, stop_exit, price_code in zip(
             signal_table['Date'], 
@@ -232,6 +251,88 @@ def loop_date(signal_table, histroy_intraday_data, open_hr='0330',
         entry_datetime= trade_open[0]
         exit_datetime = trade_close[0]
         
+        # calculate statistics EES_dict
+        if direction == "Buy": # for buy, we are longing
+            return_trades = exit_price - entry_price
+        elif direction == "Sell": # for sell, we are shorting
+            return_trades = entry_price - exit_price
+
+        # The risk and reward ratio is based on Abbe's old script but it should be the sharpe ratio
+        risk_reward_ratio = abs(target_entry-stop_exit)/abs(target_entry-target_exit)
+
+
+        # put all the data in a singular list
+        data = [price_code, direction, date_interest,
+                return_trades, entry_price,  entry_datetime,
+                    exit_price, exit_datetime, risk_reward_ratio]
+        
+        # Storing the data    
+        dict_trade_PNL = book.store_to_bucket_single(data)
+                                    
+        # plotting mid-backtest
+        plot_in_backtest(date_interest, EES_dict, direction, 
+                         plot_or_not=plot_or_not)
+
+        print('info', data)
+        
+    dict_trade_PNL = pd.DataFrame(dict_trade_PNL)
+    
+    #sort by date
+    dict_trade_PNL = dict_trade_PNL.sort_values(by='date')
+    
+        
+    return dict_trade_PNL
+
+def loop_date_2(signal_table, histroy_intraday_data, func1, func2, open_hr='0330', 
+              close_hr='1930',
+              plot_or_not = False):
+    
+    # make bucket # I need to make a new set of columns name
+    # make a bookkep.bucket_method wrapper
+    profits_losses_bucket = {
+    'Price Code': [],
+    'predicted signal': [],
+    'date': [],
+    'return from trades': [],
+    'entry price': [],
+    'entry datetime': [],
+    'exit price': [],
+    'exit datetime': [],
+    'risk/reward value ratio': [],
+    }
+       
+    print('signal_table',signal_table)
+    
+    
+    for date_interest, direction, target_entry, target_exit, stop_exit, price_code in zip(
+            signal_table['Date'], 
+            signal_table['direction'], 
+            signal_table['target entry'],
+            signal_table['target exit'], 
+            signal_table['stop exit'],
+            signal_table['price code']):
+        
+        # Define the date of interest by reading TimeStamp. 
+        # We may want to remake all this and make Timestamp the universal 
+        # parameter when dealing with time
+        day = extract_intraday_minute_data(histroy_intraday_data, date_interest, 
+                                     open_hr=open_hr, close_hr=close_hr)
+        
+        print(day['Date'].iloc[0], direction, target_entry, target_exit, stop_exit)
+        
+        # make a dictionary for all the possible EES time and values
+        EES_dict = func1(day, target_entry, target_exit, stop_exit,
+                          open_hr=open_hr, close_hr=close_hr, direction = direction)
+        
+        # make the trade.
+        trade_open, trade_close = func2(EES_dict)
+
+        
+        #cal_xxx: make a function that calculate the info for the bookeep
+        entry_price, exit_price = trade_open[1], trade_close[1]
+        entry_datetime= trade_open[0]
+        exit_datetime = trade_close[0]
+        
         # calculate statisticsEES_dict
         if direction == "Buy": # for buy, we are longing
             return_trades = exit_price - entry_price
@@ -252,28 +353,6 @@ def loop_date(signal_table, histroy_intraday_data, open_hr='0330',
         # Storing the data    
         dict_trade_PNL = EC_strategy.MRStrategy.\
                                         store_to_bucket_single(bucket, data)
-                                        
-        # =================Plotting Secrions ===============
-        if plot_or_not == True:
-            
-            filename_minute = "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL.001"
-            signal_filename = "APC_latest_CL.csv"   
-            
-            date_interest_str=date_interest.strftime("%Y-%m-%d")
-            
-            entry_times, entry_pts = EES_dict['entry_times'], EES_dict['entry_pts']
-            exit_times, exit_pts = EES_dict['exit_times'], EES_dict['exit_pts']
-            stop_times, stop_pts = EES_dict['stop_times'], EES_dict['stop_pts']
-            
-            EC_plot.plot_minute(filename_minute, signal_filename, 
-                            date_interest = date_interest_str, direction=direction,
-                              bppt_x1=entry_times, bppt_y1=entry_pts,
-                              bppt_x2=exit_times, bppt_y2=exit_pts,
-                              bppt_x3=stop_times, bppt_y3=stop_pts)
-            
-        elif plot_or_not == False:
-            pass
-        # ===================================================
         
     dict_trade_PNL = pd.DataFrame(dict_trade_PNL)
     
@@ -393,14 +472,15 @@ def set_minute_EES(histroy_data_intraday,
     # storage
     EES_dict = {'entry': list(zip(entry_times,entry_pts)),
                 'exit': list(zip(exit_times,exit_pts)),
-                'stop': list(zip(exit_times,stop_pts)),
-                'close': [close_time, close_pt] }
+                'stop': list(zip(stop_times,stop_pts)),
+                'close': list((close_time, close_pt)) }
 
     # Spit out a Dict of data
     #print('EES_dict', EES_dict)
     return EES_dict
 
-def trade_choice_simple(EES_dict): #WIP
+# tested
+def trade_choice_simple(EES_dict): 
     # a function that control which price to buy and sell
     # Trading choice should be a class on its own. This is just a prototype.
     # I need a whole module of classes related to trade. to operate on portfolio and so on
@@ -412,7 +492,7 @@ def trade_choice_simple(EES_dict): #WIP
     trade_open, trade_close = None, None
     
     if len(EES_dict['entry']) == 0: # entry price not hit. No trade that day.
-        print("NO ENTRYYYY")
+        #print("NO ENTRYYYY")
         trade_open, trade_close = (np.nan, np.nan), (np.nan, np.nan)
 
         pass
@@ -420,12 +500,11 @@ def trade_choice_simple(EES_dict): #WIP
         # choose the entry point
         trade_open = EES_dict['entry'][0]
         if len(EES_dict['stop']) == 0: # if the stop loss wasn't hit
-            print('stop loss NOT hit')
-    
+            #print('stop loss NOT hit')
             pass
         else:
             trade_close = EES_dict['stop'][0] #set the trade close at stop loss
-            print('stop loss hit')
+            #print('stop loss hit')
             
         if len(EES_dict['exit']) == 0:
             trade_close = EES_dict['close']
@@ -440,20 +519,20 @@ def trade_choice_simple(EES_dict): #WIP
 @util.save_csv('benchmark_PNL_simple_test.csv')
 def run_backtest():
     # master function that runs the backtest itself.
-    
+    # The current method only allows one singular direction signal perday. and a set of constant EES
+
     filename_minute = "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL.001"
     filename_buysell_signals = "./benchmark_signal_test.csv"
     
     # read the reformatted minute history data
     history_data = EC_read.read_reformat_Portara_minute_data(filename_minute)
     
-    # Find the date for trading
+    # Find the date for trading, only "Buy" or "Sell" date are taken.
     trade_date_table = prepare_signal_interest(filename_buysell_signals, trim = False)
         
     # loop through the date and set the EES prices for each trading day   
-    dict_trade_PNL = loop_date(trade_date_table, history_data, plot_or_not = False)    
-
-    # The current method only allows one singular direction signal perday. and a set of constant EES
+    dict_trade_PNL = loop_date(trade_date_table, history_data, open_hr='0330', 
+                  close_hr='1930', plot_or_not = True)    
 
     return dict_trade_PNL
 

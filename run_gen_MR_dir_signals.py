@@ -12,11 +12,13 @@ A modified script based on the Mean-Reversion Method developed by Abbe Whitford.
 import pandas as pd 
 import numpy as np
 from scipy.interpolate import CubicSpline
+
 # import EC_tools
 import EC_strategy as EC_strategy
 import EC_read as EC_read
 import update_db as update_db
 import utility as util
+from bookkeep import Bookkeep
 
 
 __all__ = ['loop_signal','gen_signal_vector','run_gen_MR_signals', 
@@ -89,9 +91,10 @@ def loop_signal(signal_data, history_data,
         A dictionary for storing the signals and wanted quantiles.
 
     """
+    
     # make an empty signal dictionary for storage
-    dict_contracts_quant_signals = EC_strategy.MRStrategy.make_signal_bucket(
-                                                        strategy_name=strategy_name)
+    book = Bookkeep(bucket_type = 'mr_signals')
+    dict_contracts_quant_signals = book.make_bucket(keyword='benchmark')
     
     # Define a small window of interest
     APCs_dat = signal_data[signal_data['Forecast Period'] > start_date]
@@ -198,18 +201,14 @@ def loop_signal(signal_data, history_data,
         entry_price, exit_price, stop_loss = EC_strategy.MRStrategy.set_EES_APC(
                                                         direction, curve_today)
         EES = [entry_price, exit_price, stop_loss]
-               
-        #make bucket for storage
-        bucket = dict_contracts_quant_signals
-        
+                       
         # put all the data in a singular list
         data = [forecast_date, full_contract_symbol] + strategy_data + \
                 [quant_330UKtime] + EES + [direction, full_price_code]
         
         
         # Storing the data    
-        dict_contracts_quant_signals = EC_strategy.MRStrategy.\
-                                        store_to_bucket_single(bucket, data)
+        dict_contracts_quant_signals = book.store_to_bucket_single(data)
 
     dict_contracts_quant_signals = pd.DataFrame(dict_contracts_quant_signals)
     

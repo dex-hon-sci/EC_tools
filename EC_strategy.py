@@ -15,54 +15,7 @@ import math_func as mfunc
 # round trip fee 15 dollars
 __author__="Dexter S.-H. Hon"
 
-class BookKeep(object):
-    
-    signal_columns = ['APC forecast period', 'APC Contract Symbol']
-    
-    # usemaxofpdf_insteadof_medianpdf
-    A = ["Q0.1","Q0.4","Q0.5","Q0.6","Q0.9"]
-    
-    B = ["Q0.1", "Qmax-0.1", "Qmax","Qmax+0.1","Q0.9"]
 
-    #use_OB_OS_levels_for_lag_conditions
-    C = ["Close price lag 1", "Close price lag 2", "OB level 1 lag 1", 
-     "OB level 1 lag 2", "OS level 1 lag 1", "OS level 1 lag 2", 
-     "OB level 3", "OS level 3", "Price 3:30 UK time"]
-
-    D = ['Quant close lag 1', 'Quant close lag 2', 'mean Quant close n = 5',
-     'Quant 3:30 UK time']
-
-    # abs(entry_region_exit_region_range[0]) > 0
-    E = ['target entry lower', 'target entry upper']
-
-    F = ['target entry']
-
-    # abs(entry_region_exit_region_range[1]) > 0:
-    G = ['target entry lower', 'target entry upper']
-
-    H = ['target exit']
-
-    End = ['stop exit', 'direction', 'price code']
-    
-    
-    STRATEGY_SIGNAL_COL_DICT = {
-            "benchmark": signal_columns + A + D + F + H + End, 
-            "mode": signal_columns + B + D + F + H + End 
-                   }
-    
-    def make_bucket(self, bucket_keys):
-        bucket = dict()
-        for i in bucket_keys:
-            bucket[i] = []
-            
-        return bucket
-    
-    def store_to_bucket_single(self,bucket,data):
-        # Storing the data for single entry. Please use this in a loop   
-        for i, key in enumerate(bucket):
-            bucket[key].append(data[i])   
-
-        return bucket
     
 class MRStrategy(object):
 
@@ -235,8 +188,8 @@ class MRStrategy(object):
         cond3_sell = rollinglagq5day > median_apc_5days
         # (3) price at today's opening hour below the 0.9 quantile of today's apc
         cond4_sell = quant_330UKtime <= curve_today['0.9']
-# =============================================================================
-#         
+        
+# =============================================================================        
 #         print("===================This is in the package")  
 #         print("cond1_buy", cond1_buy, history_data_lag2_close, signal_data_lag2_median)
 #         print("cond2_buy", cond2_buy, history_data_lag1_close, signal_data_lag1_median)
@@ -248,7 +201,6 @@ class MRStrategy(object):
 #         print("cond3_sell", cond3_sell, rollinglagq5day,  median_apc_5days)
 #         print("cond4_sell", cond4_sell, quant_330UKtime, curve_today['0.1'])
 #         print("======================")
-#         
 # =============================================================================
         
         # Find the boolean value of strategy conditions
