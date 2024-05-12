@@ -391,8 +391,11 @@ def read_reformat_Portara_minute_data(filename):
                             for x in history_data['Date']]
     
     # convert the format 1330 (int) to 13:30 (datetime.time) obejct
-    history_data = util.convert_intmin_to_time(history_data,label='Time')
+    intmin = history_data['Time']
+    bucket = util.convert_intmin_to_time(intmin) #, label='Time')
     
+    history_data['Time'] = bucket
+
     return history_data
 
 #tested

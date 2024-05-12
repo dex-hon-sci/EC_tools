@@ -46,6 +46,7 @@ def date_matching_list(date_list1, date_list2):
         pass
     else:
         raise Exception("Date list missmatch dimenstion")
+        
     for i in range(len(date_list1)):
         date_matching(date_list1[i], date_list2[i])
         
@@ -64,13 +65,23 @@ def list_match(list1,list2):
         
         raise Exception(
             "Mismatch at the following positions:{}".format(mismatch_index))
+        
+def get_list_element_format(x):
+    # a function that finid the type of each element, collapse it into a set, 
+    # and return a list of datatype contains in the list/array
+    type_x = [type(i) for i in x]
+    fmt = list(set(type_x))
+    return fmt
+
+def get_list_element_str_len(x):
+    len_x = [len(i) for i in x]
+    return len_x
 
 #tested
-def convert_intmin_to_time(data, label='Time')->list:
+def convert_intmin_to_time(intmin)->list:
     # A function that convert elements in the time column in a dataframe from 
     # 0330 to datetime.time(hour=3,minute=30)
-    # output a renewed pandas dataframe
-    intmin = data[label]
+
     
     # bucket for storage.
     bucket = []
@@ -90,10 +101,9 @@ def convert_intmin_to_time(data, label='Time')->list:
 
         time  = datetime.time(hour = int(hr_str), minute = int(min_str))
         bucket.append(time)
-        
-    data[label] = bucket
+       
     
-    return data
+    return bucket
 
 # Convert file from CSV to HDF5, npy? Npy might be faster, WIP
 def convert_csv_to_npy(filename):

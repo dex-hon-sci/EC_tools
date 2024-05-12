@@ -14,6 +14,7 @@ import EC_plot as EC_plot
 import EC_strategy as EC_strategy
 import utility as util
 from bookkeep import Bookkeep
+from trade import Trade
 # Spit out the document for overall PNL analysis
 
 # tested
@@ -121,7 +122,6 @@ def prepare_signal_interest(filename_buysell_signals,
     signal_data = []
     for i in direction:
         temp = buysell_signals_data[buysell_signals_data['direction'] == i]
-        #print('temp', temp)
         signal_data.append(temp)
     
     # concatenate the list of signals
@@ -238,12 +238,11 @@ def loop_date(signal_table, histroy_intraday_data, open_hr='0330',
         print(day['Date'].iloc[0], direction, target_entry, target_exit, stop_exit)
         
         # make a dictionary for all the possible EES time and values
-        EES_dict = set_minute_EES(day, target_entry, target_exit, stop_exit,
+        EES_dict = find_minute_EES(day, target_entry, target_exit, stop_exit,
                           open_hr=open_hr, close_hr=close_hr, direction = direction)
-        
 
         # make the trade.
-        trade_open, trade_close = trade_choice_simple(EES_dict)
+        trade_open, trade_close = Trade().trade_choice_simple2(EES_dict)
         #trade_open, trade_close = None, None
         # WIP
         #entry_price, exit_price = None, None
@@ -363,7 +362,7 @@ def loop_date_2(signal_table, histroy_intraday_data, func1, func2, open_hr='0330
         
     return dict_trade_PNL
     
-def set_minute_EES(histroy_data_intraday, 
+def find_minute_EES(histroy_data_intraday, 
                       target_entry, target_exit, stop_exit,
                       open_hr="0330", close_hr="1930", 
                       price_approx = 'Open', time_proxy= 'Time',
@@ -475,45 +474,10 @@ def set_minute_EES(histroy_data_intraday,
                 'stop': list(zip(stop_times,stop_pts)),
                 'close': list((close_time, close_pt)) }
 
-    # Spit out a Dict of data
     #print('EES_dict', EES_dict)
     return EES_dict
 
-# tested
-def trade_choice_simple(EES_dict): 
-    # a function that control which price to buy and sell
-    # Trading choice should be a class on its own. This is just a prototype.
-    # I need a whole module of classes related to trade. to operate on portfolio and so on
-    
-    # add the amount of exchange
-    
-    # if entry list = None, no trade that day
-    # else, choose position x or a list of positions
-    trade_open, trade_close = None, None
-    
-    if len(EES_dict['entry']) == 0: # entry price not hit. No trade that day.
-        #print("NO ENTRYYYY")
-        trade_open, trade_close = (np.nan, np.nan), (np.nan, np.nan)
 
-        pass
-    else:
-        # choose the entry point
-        trade_open = EES_dict['entry'][0]
-        if len(EES_dict['stop']) == 0: # if the stop loss wasn't hit
-            #print('stop loss NOT hit')
-            pass
-        else:
-            trade_close = EES_dict['stop'][0] #set the trade close at stop loss
-            #print('stop loss hit')
-            
-        if len(EES_dict['exit']) == 0:
-            trade_close = EES_dict['close']
-        else:
-            # choose the exit point
-            trade_close = EES_dict['exit'][0]
-    
-    return trade_open, trade_close
-    
 
 @util.time_it
 @util.save_csv('benchmark_PNL_simple_test.csv')
@@ -532,7 +496,7 @@ def run_backtest():
         
     # loop through the date and set the EES prices for each trading day   
     dict_trade_PNL = loop_date(trade_date_table, history_data, open_hr='0330', 
-                  close_hr='1930', plot_or_not = True)    
+                  close_hr='1930', plot_or_not = False)    
 
     return dict_trade_PNL
 
