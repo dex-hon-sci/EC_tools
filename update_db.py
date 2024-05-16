@@ -49,7 +49,18 @@ def download_latest_APC(auth_pack, asset_pack):
                             keywords=keywords, symbol=symbol)
     return signal_data
 
+def fast_download_latest_APC(auth_pack, asset_pack, old_filename): #WIP
+    # input is a dictionary or json file
+    username = auth_pack['username']
+    password = auth_pack['password']
+    
+    categories = asset_pack['categories']
+    keywords = asset_pack['keywords']
+    symbol = asset_pack['symbol']
+    
+    #check the last entry in the old file and only download the data 
 
+@util.time_it
 def download_latest_APC_list(auth_pack, save_filename_list, categories_list, 
                          keywords_list, symbol_list):
     # a function to download the APC of a list of asset
@@ -57,7 +68,6 @@ def download_latest_APC_list(auth_pack, save_filename_list, categories_list,
 
     for filename, cat, key, sym in zip(save_filename_list, categories_list, 
                                        keywords_list, symbol_list):
-        @util.time_it
         @util.save_csv("{}".format(filename))
         def download_latest_APC_indi(cat, key, sym):
             asset_pack = {'categories': cat, 'keywords': key, 'symbol': sym}
@@ -70,6 +80,10 @@ def download_latest_APC_list(auth_pack, save_filename_list, categories_list,
     
     return "All APC files downloaded!"
 
+
+def operate_list(auth_pack, save_filename_list, categories_list, 
+                         keywords_list, symbol_list):
+    return 
 
 def download_latest_Portara():
     # WIP

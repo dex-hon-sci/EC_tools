@@ -8,7 +8,6 @@ Created on Fri May 10 18:33:06 2024
 import numpy as np
 from dataclasses import dataclass
 
-
 from plotly.offline import iplot
 from plotly.offline import plot, init_notebook_mode
 import datetime as datetime
@@ -29,52 +28,11 @@ color_dict_dark_mode = {'data_col':'white','bg_col':'k', 'col':'g'}
 
 pt_col='w'
 
-@dataclass
-class Axis(object):
-    # make functions that check what datetime format we are operating in
-    def __init__(self, x):
-        self._x = x 
-        # These attributes define the frame of the plot
-        self._price_lower_limit = 70.0 
-        self._price_upper_limit = 78.0
-        self._start_line = datetime.datetime.combine(datetime.date.today(), 
-                                                     datetime.time(hour=0,
-                                                                   minute=0))
-        self._end_line = datetime.datetime.combine(datetime.date.today(),
-                                                   datetime.time(hour=23,
-                                                                 minute=59))
-    @property
-    def price_lower_limit(self):
-        return self._price_lower_limit
 
-    @property
-    def price_upper_limit(self):
-        return self._price_upper_limit 
-    
-    @price_lower_limit.setter
-    def price_lower_limit(self, value):
-         self._price_lower_limit = value
-         
-    @price_upper_limit.setter
-    def price_upper_limit(self, value):
-        self._price_upper_limit = value
+class XObject(object):
+    def __init__(self, x):
+        self._x = x
         
-    @property
-    def start_line(self):
-        return self._start_line
-    
-    @property
-    def end_line(self):
-        return self._end_line
-    
-    @start_line.setter
-    def start_line(self,value):
-        self._start_line = value
-    
-    @end_line.setter
-    def end_line(self,value):
-        self._end_line =value
-    
     @property
     def x(self):
         return self._x
@@ -85,13 +43,13 @@ class Axis(object):
     
         # Trigger keyword to perform setter action
         if value == 'datetime': 
-            print('converting to datetime')  
             pass
         else: return self._x
         
         # If the input is interable
         if type(self._x) == list or type(self._x)== np.ndarray: #tested
             pass
+        
         elif type(self._x) in [int, float, str, complex]: # tested
             # put the element in list so that it is iterable
             self._x = [self._x] 
@@ -118,25 +76,83 @@ class Axis(object):
         if fmt == datetime.time:  #tested
             pass
 
-        self._x = [datetime.datetime.combine(datetime.date.today(), t) for t in self._x]
+        self._x = [datetime.datetime.combine(datetime.date.today(), t) 
+                   for t in self._x]
         return self._x
-
+    
+class AxisLimit(object):
+    # make functions that check what datetime format we are operating in
+    def __init__(self):
+        # These attributes define the frame of the plot
+        self.price_lower_limit = 70.0 
+        self.price_upper_limit = 78.0
+        self.start_line = datetime.datetime.combine(datetime.date.today(), 
+                                                     datetime.time(hour=0,
+                                                                   minute=0))
+        self.end_line = datetime.datetime.cJiraombine(datetime.date.today(),
+                                                   datetime.time(hour=23, 
+                                                                 minute=59))
 
     
-class PlotPricing(Axis):
+class ExtSubplot(object):
+    # A class that control added external subplots
+    def __inti__(self):
+        self._add_pdf_panel = False
+
+    @property
+    def add_pdf_panel(self):
+        return self._add_pdf_panel
+    
+    @add_pdf_panel.setter
+    def add_pdf_panel(self, value):
+        self._add_pdf_panel = value
+
+    def add_pdf_panel(self, sharey, pdf, events, quant_list, 
+                      quant_price_list,
+                      title='APC', pt_col='orange'):
+        
+        
+        # define the pixels of shift for the texts in both x and y axis
+        txt_shift_x, txt_shift_y = np.std(pdf)/2, np.std(events)/20
+        #define the shift in dates
+        txt_shift_x_date = datetime.timedelta(hours = round(np.std(pdf)/2))
+    
+        ax_apc = self.fig.add_subplot(self.gs[1], sharey=sharey)
+        ax_apc.plot(pdf, events, 'o', c = pt_col, ms =2)
+        
+        SubComponents(ax_apc).quant_lines(quant_list, quant_price_list, 
+                                          txt_shift_x, txt_shift_y)
+
+    
+        ax_apc.set_xlim([-0.005, max(pdf)+ np.std(pdf)/4])
+        ax_apc.set_title(title)
+        ax_apc.set_xlabel("Probability")
+        ax_apc.invert_xaxis()
+        ax_apc.grid()  
+
+class PlotPricing(object):
     # A clss that control the state of the pricing plots.
-    # input other class objects here
+    # It can also create more subplot derived from the Pricing data
     
-    def __init__(self, nrows=1, ncols = 2):
+    def __init__(self, axis_limit = AxisLimit(), subcomp = None,
+                 nrows=1, ncols = 2):
+        
         self.fig = plt.figure(figsize=(10,4))
         
         # make a way to change the number of subplot based on nrows and ncols
         self.gs = self.fig.add_gridspec(nrows=1, ncols = 2, width_ratios = [4,1])
 
+        self.axis_limit = axis_limit 
+        self.subcomp = subcomp
+        
         self._add_pdf_panel = False
+        self._add_vol_panel = False
+        self.add_subpot = False
         self._color_mode = color_dict_dark_mode
-        super().__init__(Axis.start_line, Axis.end_line)
-    
+        #super().__init__()
+        
+
+        
     def controller(self, ax, *args, **kwargs):
         # A function that control which subcomponents and subplots are turned on      
         # Add subcomponents  
@@ -147,9 +163,10 @@ class PlotPricing(Axis):
                        quant_list, quant_price_list, direction="Neutral",
                        price_chart_title = "Date", 
                        events_lower_limit=70, events_upper_limit =78,
-                       buy_time = "1201", buy_price =  86.05,
-                       sell_time = "1900", sell_price = 85.70, 
+
                        open_hr = '0330', close_hr='1930',
+                       xlabel = "Time (minutes)",
+                       x_format = '%H:%M',
                        bppt_x1 = [], bppt_y1 = [], 
                        bppt_x2 = [], bppt_y2 = [], 
                        bppt_x3 =[], bppt_y3 = []):
@@ -189,28 +206,21 @@ class PlotPricing(Axis):
             The figure.
     
         """
-        Axis_x = Axis(x)
-        Axis_x.x= "datetime"
-        x_datetime = Axis_x.x
+        x_o = XObject(x)
+        x_o.x = 'datetime'
+        x_datetime = x_o.x
         
-        # Set the x-axis value based on datetime.time
-        start_line = Axis(x).start_line
-        end_line =  Axis(x).end_line
-        
-     
-        
-        open_hr = datetime.time(hour = int(open_hr[-4:-2]), minute = int(open_hr[-2:]))    
-        close_hr = datetime.time(hour = int(close_hr[-4:-2]), minute = int(close_hr[-2:]))
+        o_hr = XObject(open_hr)
+        c_hr = XObject(close_hr)
+        o_hr.x = 'datetime'
+        c_hr.x = 'datetime'
+        open_hr = o_hr.x[0] 
+        close_hr = c_hr.x[0]
+                
         #buy_time = datetime.time(hour = int(buy_time[-4:-2]), minute = int(buy_time[-2:]))    
         #sell_time = datetime.time(hour = int(sell_time[-4:-2]), minute = int(sell_time[-2:]))
         EES_txt_start_time = datetime.time(hour = 20, minute = 50)
         
-# =============================================================================
-#         start_line = datetime.datetime.combine(datetime.date.today(), start_line)
-#         end_line = datetime.datetime.combine(datetime.date.today(), end_line)
-        open_hr = datetime.datetime.combine(datetime.date.today(), open_hr)
-        close_hr = datetime.datetime.combine(datetime.date.today(), close_hr)
-# =============================================================================
         #buy_time = datetime.datetime.combine(datetime.date.today(), buy_time)  
         #sell_time = datetime.datetime.combine(datetime.date.today(), sell_time)
         EES_txt_start_time = datetime.datetime.combine(datetime.date.today(), 
@@ -227,24 +237,16 @@ class PlotPricing(Axis):
         ax1 = self.fig.add_subplot(self.gs[0])
         ax1.plot(x_datetime, y,'o--', ms=2, c=pt_col)
         
-        
-        # fill the closed trading hours with shade
-        ax1.fill_between([start_line, open_hr], 0, 2000, color='grey', alpha=0.3)
-        ax1.fill_between([close_hr, end_line], 0, 2000, color='grey', alpha=0.3)
-        
-        # the vertical lines that
-        ax1.vlines(open_hr, 0, 2000, 'k')
-        ax1.vlines(close_hr, 0, 2000, 'k')
-        
         # set plot limits
-        ax1.set_xlim([start_line, end_line])
-        ax1.set_ylim([Axis_x.price_lower_limit, Axis_x.price_upper_limit])
+        ax1.set_xlim([self.axis_limit.start_line, self.axis_limit.end_line])
+        ax1.set_ylim([self.axis_limit.price_lower_limit, 
+                      self.axis_limit.price_upper_limit])
         
-        ax1.set_xlabel("Time (minutes)")
+        ax1.set_xlabel(xlabel)
         ax1.set_ylabel("Price (USD)")
         ax1.set_title(price_chart_title)
         
-        fmt = mdates.DateFormatter('%H:%M')
+        fmt = mdates.DateFormatter(x_format)
         ax1.xaxis.set_major_formatter(fmt)
         ax1.grid()
         
@@ -253,15 +255,22 @@ class PlotPricing(Axis):
         #define the shift in dates
         txt_shift_x_date = datetime.timedelta(hours = round(np.std(pdf)/2))
     
+        # Add sub plots
+        self._add_pdf_panel = True
+            
+        # add other subplots
+        if self._add_pdf_panel == True:
+        # add APC subplot
+            self.add_pdf_panel(ax1, pdf, events, 
+                      quant_list, quant_price_list)
             
         # Add subcomponents  
         subcomp = SubComponents(ax1)
         subcomp._quant_lines = True
         subcomp._add_EES_region = True
         subcomp._add_crossover_pts = True
-        self._add_pdf_panel = True
+        subcomp._add_trade_region = True
 
-        print(subcomp._quant_lines, subcomp._add_EES_region,subcomp._add_crossover_pts)
         # add the EES regions
         if subcomp._add_EES_region == True:
                 
@@ -281,33 +290,34 @@ class PlotPricing(Axis):
             subcomp.EES_region(entry_price, exit_price ,stop_loss, 
                                 txt_shift_x_date, txt_shift_y, 
                                 start_x = EES_txt_start_time,
-                                end_x = end_line, direction = direction)
+                                end_x = self.axis_limit.end_line, 
+                                direction = direction)
             
         # add quantile lines to the plot
         if subcomp._quant_lines == True:
             subcomp.quant_lines(quant_list, quant_price_list, 
                                         txt_shift_x_date, txt_shift_y, 
-                            start_x = start_line, end_x = end_line, 
+                            start_x = self.axis_limit.start_line, 
+                            end_x = self.axis_limit.end_line, 
                             alpha = 0.5)
             
         # add cross over points
         if subcomp._add_crossover_pts == True:
-            bppt_x1 = [datetime.datetime.combine(datetime.date.today(), t) for t in bppt_x1]
-            bppt_x2 = [datetime.datetime.combine(datetime.date.today(), t) for t in bppt_x2]
-            bppt_x3 = [datetime.datetime.combine(datetime.date.today(), t) for t in bppt_x3]
+            bppt_x1 = [datetime.datetime.combine(datetime.date.today(), t) 
+                       for t in bppt_x1]
+            bppt_x2 = [datetime.datetime.combine(datetime.date.today(), t) 
+                       for t in bppt_x2]
+            bppt_x3 = [datetime.datetime.combine(datetime.date.today(), t) 
+                       for t in bppt_x3]
             
             subcomp.crossover_pts(bppt_x1, bppt_y1, bppt_x2, bppt_y2, 
                                   bppt_x3, bppt_y3)
             
+        if subcomp._add_trade_region == True:
+            subcomp.trade_region(open_hr, close_hr)
             
         # add the buying and selling points
         #add_buysell_points(ax1, buy_time, buy_price, sell_time, sell_price)
-
-        # add other subplots
-        if self._add_pdf_panel == True:
-        # add APC subplot
-            self.add_pdf_panel(ax1, pdf, events, 
-                      quant_list, quant_price_list)
         
         plt.show()
         
@@ -340,12 +350,10 @@ class PlotPricing(Axis):
     def add_volume_panel(self):
         return None
     
-@dataclass
-class SubComponents(PlotPricing):
-    
+class SubComponents(object):
 
     # All subcomponents for Price plotting. This can be inheretance class
-    def __init__(self, ax):
+    def __init__(self, ax, axis_limit = AxisLimit()):
         self.ax = ax # the location that these things should be added
         self._quant_lines = False
         self._add_EES_region = False
@@ -358,11 +366,12 @@ class SubComponents(PlotPricing):
 
         self.txt_shift_x = None
         self.txt_shift_y = None
-        
+        self.axis_limit = axis_limit # WIP
 
+       # super().__init__()
        
-    def quant_lines(self, quant_list, quant_price_list, txt_shift_x, txt_shift_y,
-                    start_x = 0.0, end_x= 100, alpha = 0.5):
+    def quant_lines(self, quant_list, quant_price_list, txt_shift_x, 
+                    txt_shift_y, start_x = 0.0, end_x= 100, alpha = 0.5):
         """
         A function that add the quantile lines to a plot.
     
@@ -388,13 +397,15 @@ class SubComponents(PlotPricing):
         """
 
         for quant, price in zip(quant_list, quant_price_list):
-            self.ax.hlines(price, start_x, end_x, color='#C26F05', alpha = alpha)
-            self.ax.text( start_x + txt_shift_x, price + txt_shift_y, quant, 
+            self.ax.hlines(price, start_x, end_x, color='#C26F05', 
+                           alpha = alpha)
+            self.ax.text(start_x + txt_shift_x, price + txt_shift_y, quant, 
                      color=pt_col, bbox=dict(boxstyle="round",
                      ec= pt_col, fc='#C26F05'))        
     
-    def EES_region(self, entry_price, exit_price, stop_loss, txt_shift_x, txt_shift_y,
-                       start_x = 0.0, end_x = 2150, direction="Neutral"):
+    def EES_region(self, entry_price, exit_price, stop_loss, txt_shift_x, 
+                   txt_shift_y, start_x = 0.0, end_x = 2150, 
+                   direction="Neutral"):
         """
         A function that add the Entry, Exit, and Stop Loss regions to a plot.
         It plot only in horizontal line. I will change this to np.arrage later.
@@ -417,13 +428,6 @@ class SubComponents(PlotPricing):
             "Buy", "Sell", or "Neutral" signal. The default is "Neutral".
     
         """
-        start_line = datetime.time(hour = 0, minute = 0)  
-        end_line =  datetime.time(hour = 23, minute = 59) 
-        
-        start_line = datetime.datetime.combine(datetime.date.today(), start_line)
-        end_line = datetime.datetime.combine(datetime.date.today(), end_line)
-
-                
         # dashed line is the entry line, solid line is the exit line
         # dashed red line is the stop loss
         
@@ -435,18 +439,25 @@ class SubComponents(PlotPricing):
             limit = np.nan
         
         # The EES lines
-        self.ax.hlines(entry_price, start_line, end_line, color='#18833D', 
+        self.ax.hlines(entry_price, self.axis_limit.start_line, 
+                       self.axis_limit.end_line, color='#18833D', 
                        ls="dashed", lw = 2)
-        self.ax.hlines(exit_price, start_line, end_line, color='#18833D', 
+        self.ax.hlines(exit_price, self.axis_limit.start_line, 
+                       self.axis_limit.end_line, color='#18833D', 
                        ls="solid", lw = 2 )
-        self.ax.hlines(stop_loss, start_line, end_line, color='#E5543D', 
+        self.ax.hlines(stop_loss, self.axis_limit.start_line, 
+                       self.axis_limit.end_line, color='#E5543D', 
                        ls = "dashed", lw = 2)
         
         # Green shade is the target region.
-        self.ax.fill_between([start_line, end_line], entry_price, exit_price, 
+        self.ax.fill_between([self.axis_limit.start_line, 
+                              self.axis_limit.end_line], 
+                             entry_price, exit_price, 
                              color='green', alpha=0.3)
         # Red shade is the stop loss region. 
-        self.ax.fill_between([start_line, end_line], stop_loss, limit, 
+        self.ax.fill_between([self.axis_limit.start_line, 
+                              self.axis_limit.end_line], 
+                             stop_loss, limit, 
                              color='red', alpha=0.3)
         
         # The texts that indicate the regions
@@ -466,10 +477,16 @@ class SubComponents(PlotPricing):
                       fontsize=8, color=pt_col, bbox=dict(boxstyle="round",
                        ec= pt_col,fc='#80271B'))
         
-    def add_trade_region(self, open_hr, close_hr):
+    def trade_region(self, open_hr, close_hr):
         # fill the closed trading hours with shade
-        self.ax.fill_between([self._start_line, open_hr], 0, 2000, color='grey', alpha=0.3)
-        self.ax1.fill_between([close_hr, self._end_line], 0, 2000, color='grey', alpha=0.3)
+        # the vertical lines that
+        self.ax.vlines(open_hr, 0, 2000, 'w')
+        self.ax.vlines(close_hr, 0, 2000, 'w')
+        
+        self.ax.fill_between([self.axis_limit.start_line, open_hr], 0, 2000, 
+                             color='grey', alpha=0.3)
+        self.ax.fill_between([close_hr, self.axis_limit.end_line], 0, 2000, 
+                             color='grey', alpha=0.3)
         
         # the vertical lines that
         self.ax.vlines(open_hr, 0, 2000, 'k')
@@ -481,6 +498,11 @@ class SubComponents(PlotPricing):
         self.ax.plot(bppt_x1, bppt_y1,'o', ms=10, c='blue')
         self.ax.plot(bppt_x2, bppt_y2,'o', ms=10, c='green')
         self.ax.plot(bppt_x3, bppt_y3,'o', ms=10, c='red')
+        
+    def buysellpoints(self, buy_time = "1201", buy_price =  86.05,
+                           sell_time = "1900", sell_price = 85.70):
+        
+        return None
         
         
 def plot_minute(filename_minute, signal_filename, price_approx = 'Open',
@@ -523,32 +545,31 @@ def plot_minute(filename_minute, signal_filename, price_approx = 'Open',
     # Define the quantile list of interest based on a strategy
     # The lists are for marking the lines only. 
     quant_list=['q0.1','q0.4','q0.5','q0.6','q0.9']
-    quant_price_list = [curve['0.1'], curve['0.4'], curve['0.5'], curve['0.6'], curve['0.9']]
+    quant_price_list = [curve['0.1'], curve['0.4'], curve['0.5'], 
+                        curve['0.6'], curve['0.9']]
 
     # Define the upper and lower bound of the pricing plot in the y-axis
     price_lower_limit = curve['0.05'].to_numpy()
     price_upper_limit = curve['0.95'].to_numpy()
     
+    # First set up the axes limit class to define the plot limit
+    new_axis_limit = AxisLimit()
+    new_axis_limit.price_lower_limit = price_lower_limit
+    new_axis_limit.price_upper_limit = price_upper_limit
     
-    # First set up the axes class to datetime format
     
     # Then choose the subcomponents to be added
-    
+    subcomp = SubComponents(new_axis_limit)
+
     # Then plot
-    
     # Plot the pricing chart.
-    Axis_limit = Axis(x)
-    Axis_limit.price_lower_limit = price_lower_limit 
-    Axis_limit.price_upper_limit = price_upper_limit
-    
-    PP = PlotPricing()
+
+    PP = PlotPricing(axis_limit = new_axis_limit)
     
     PP.plot_price(x,y, even_spaced_prices, pdf, 
                        quant_list, quant_price_list, 
                        direction="Buy",
                        price_chart_title = "Date", 
-                       buy_time = "1201", buy_price =  86.05,
-                       sell_time = "1900", sell_price = 85.70, 
                        bppt_x1 = [], bppt_y1 = [], 
                        bppt_x2 = [], bppt_y2 = [], 
                        bppt_x3 =[], bppt_y3 = [])

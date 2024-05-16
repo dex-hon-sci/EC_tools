@@ -17,8 +17,9 @@ def time_it(func):
         t1 = time.time()
         result = func(*args, **kwargs)
         t2 = time.time()-t1
-        print(f"{func.__name__} ran in {t2} seconds.")
-        return t2, result, func.__name__
+        print(f"{func.__name__!r} ran in {t2:.4f} seconds.")
+        return result
+    
     return wrapper
 
 def save_csv(savefilename, save_or_not = True):
@@ -77,12 +78,47 @@ def get_list_element_str_len(x):
     len_x = [len(i) for i in x]
     return len_x
 
+
+def list_to_datetime(x): # set the array of x axis to datetime format
+# This function convert all x-axis objects to the format of datetime
+    
+    # If the input is interable
+    if type(x) == list or type(x)== np.ndarray: #tested
+        pass
+    elif type(x) in [int, float, str, complex]: # tested
+        # put the element in list so that it is iterable
+        x = [x] 
+        
+    #Find out what format is the input
+    fmt = get_list_element_format(x)[0]
+    
+    # If the datetime is already in datetime.datetime format, pass
+    if fmt == datetime.datetime: # tested
+        return x
+    
+    if fmt == str: # tested
+        # make sure the string is in the military format
+        if list(set(get_list_element_str_len(x)))[0]==4: 
+            
+            x = [datetime.time(hour = int(t[-4:-2]), 
+                                    minute = int(t[-2:])) 
+                       for t in x] 
+
+    if fmt == int: #tested
+        x = convert_intmin_to_time(x)
+        
+        # If the format is datetime.time
+    if fmt == datetime.time:  #tested
+        pass
+
+    x = [datetime.datetime.combine(datetime.date.today(), t) for t in x]
+    return x
+
 #tested
 def convert_intmin_to_time(intmin)->list:
     # A function that convert elements in the time column in a dataframe from 
     # 0330 to datetime.time(hour=3,minute=30)
 
-    
     # bucket for storage.
     bucket = []
     #loop through each element
@@ -101,8 +137,7 @@ def convert_intmin_to_time(intmin)->list:
 
         time  = datetime.time(hour = int(hr_str), minute = int(min_str))
         bucket.append(time)
-       
-    
+  
     return bucket
 
 # Convert file from CSV to HDF5, npy? Npy might be faster, WIP
