@@ -85,6 +85,7 @@ def list_to_datetime(x): # set the array of x axis to datetime format
     # If the input is interable
     if type(x) == list or type(x)== np.ndarray: #tested
         pass
+    
     elif type(x) in [int, float, str, complex]: # tested
         # put the element in list so that it is iterable
         x = [x] 

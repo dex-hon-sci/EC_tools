@@ -31,76 +31,6 @@ class MRStrategy(object):
     def set_buy_cond(self):
         return None
     
-    def make_signal_bucket(strategy_name="benchmark"):
-        # a function that make data bucket for a particular strategy
-        
-        signal_columns = ['APC forecast period', 'APC Contract Symbol']
-        
-        # usemaxofpdf_insteadof_medianpdf
-        A = ["Q0.1","Q0.4","Q0.5","Q0.6","Q0.9"]
-        
-        B = ["Q0.1", "Qmax-0.1", "Qmax","Qmax+0.1","Q0.9"]
-    
-        #use_OB_OS_levels_for_lag_conditions
-        C = ["Close price lag 1", "Close price lag 2", "OB level 1 lag 1", 
-         "OB level 1 lag 2", "OS level 1 lag 1", "OS level 1 lag 2", 
-         "OB level 3", "OS level 3", "Price 3:30 UK time"]
-    
-        D = ['Quant close lag 1', 'Quant close lag 2', 'mean Quant close n = 5',
-         'Quant 3:30 UK time']
-    
-        # abs(entry_region_exit_region_range[0]) > 0
-        E = ['target entry lower', 'target entry upper']
-    
-        F = ['target entry']
-    
-        # abs(entry_region_exit_region_range[1]) > 0:
-        G = ['target entry lower', 'target entry upper']
-
-        H = ['target exit']
-    
-        End = ['stop exit', 'direction', 'price code']
-    
-        
-        # a dictionary for column combination
-        strategy_dict = {
-            "benchmark": signal_columns + A + D + F + H + End, 
-            "mode": signal_columns + B + D + F + H + End 
-                   }
-   
-        # Define the empty bucket keys
-        bucket_keys = strategy_dict[strategy_name]
-        
-        dict_futures_quant_signals = dict()
-        for i in bucket_keys:
-            dict_futures_quant_signals[i] = []
-            
-        return dict_futures_quant_signals
-   
-
-    def store_to_bucket_single(bucket, data):
-        """
-        A simple function to store data in a bucket. This function should be 
-        used in adjacent to make_signal_bucket.
-
-        Parameters
-        ----------
-        bucket : dict
-            An empty dictionary with column names.
-        data : list
-            A list of data to put into the bucket.
-
-        Returns
-        -------
-        bucket: dict
-            A filled bucket with data
-
-        """
-        # Storing the data    
-        for i, key in enumerate(bucket):
-            bucket[key].append(data[i])   
-
-        return bucket
 
     def argus_benchmark_strategy(price_330, history_data_lag5, apc_curve_lag5,
                                      curve_today):
@@ -134,7 +64,7 @@ class MRStrategy(object):
             The last 5 days of historical data.
         apc_curve_lag5 : pandas dataframe table
             The last 5 days of APC data.
-        curve_today : 1D pandas dataframe
+        curve_today : dataframe
             The APC curve of the date of interest.
 
         Returns
@@ -170,6 +100,11 @@ class MRStrategy(object):
                                       apc_curve_lag5.iloc[-3]['0.5'],
                                       apc_curve_lag5.iloc[-2]['0.5'],
                                       apc_curve_lag5.iloc[-1]['0.5']])
+        
+        #print('signal_data_lag', signal_data_lag2_median, signal_data_lag1_median)
+        #print('history_data_lag', history_data_lag2_close, history_data_lag1_close)
+        #print('rollinglagq5day', rollinglagq5day)
+        #print('median_apc_5days', median_apc_5days)
 
         # "BUY" condition
         # (1) Two consecutive days of closing price lower than the signal median
@@ -178,7 +113,7 @@ class MRStrategy(object):
         # (2) rolling 5 days average lower than the median apc 
         cond3_buy = rollinglagq5day < median_apc_5days
         # (3) price at today's opening hour above the 0.1 quantile of today's apc
-        cond4_buy = quant_330UKtime >= curve_today['0.1']
+        cond4_buy = quant_330UKtime >= float(curve_today['0.1'].iloc[0])
     
         # "SELL" condition
         # (1) Two consecutive days of closing price higher than the signal median
@@ -187,7 +122,7 @@ class MRStrategy(object):
         # (2) rolling 5 days average higher than the median apc 
         cond3_sell = rollinglagq5day > median_apc_5days
         # (3) price at today's opening hour below the 0.9 quantile of today's apc
-        cond4_sell = quant_330UKtime <= curve_today['0.9']
+        cond4_sell = quant_330UKtime <= float(curve_today['0.9'].iloc[0])
         
 # =============================================================================        
 #         print("===================This is in the package")  
@@ -360,17 +295,17 @@ class MRStrategy(object):
 
         # Here it get the probabilty at different x axis            
         wanted_quantiles = mfunc.generic_spline(
-            quant0, curve_today.to_numpy()[1:-1])(quantiles_forwantedprices)
+            quant0, curve_today)(quantiles_forwantedprices)
         
         history_data_lag2_close = history_data_lag5["Settle"].iloc[-2]
         history_data_lag1_close = history_data_lag5["Settle"].iloc[-1]   
         
-        lag2q = mfunc.find_quant(curve_today[1:-1], quant0, history_data_lag2_close)  
-        lag1q = mfunc.find_quant(curve_today[1:-1], quant0, history_data_lag1_close) 
+        lag2q = mfunc.find_quant(curve_today, quant0, history_data_lag2_close)  
+        lag1q = mfunc.find_quant(curve_today, quant0, history_data_lag1_close) 
         
         rollinglagq5day = np.average(history_data_lag5["Settle"].to_numpy())
         
-        roll5q = mfunc.find_quant(curve_today[1:-1], quant0, rollinglagq5day) 
+        roll5q = mfunc.find_quant(curve_today, quant0, rollinglagq5day) 
         
         data0 = [
             wanted_quantiles[0],
@@ -417,24 +352,24 @@ class MRStrategy(object):
 
         """
         quant0 = np.arange(0.0025, 0.9975, 0.0025)
-        curve_today = CubicSpline(quant0, curve_today.to_numpy()[1:-1])
+        curve_today = CubicSpline(quant0, curve_today)
         
         if cond == "Buy":
             # (A) Entry region at price < APC p=0.4 and 
-            entry_price = curve_today(buy_cond[0])
+            entry_price = float(curve_today(buy_cond[0]))
             # (B) Exit price
-            exit_price = curve_today(buy_cond[1])
+            exit_price = float(curve_today(buy_cond[1]))
             # (C) Stop loss at APC p=0.1
-            stop_loss = curve_today(buy_cond[2])
+            stop_loss = float(curve_today(buy_cond[2]))
 
             
         elif cond == "Sell":
             # (A) Entry region at price > APC p=0.6 and 
-            entry_price = curve_today(sell_cond[0])
+            entry_price = float(curve_today(sell_cond[0]))
             # (B) Exit price
-            exit_price = curve_today(sell_cond[1])
+            exit_price = float(curve_today(sell_cond[1]))
             # (C) Stop loss at APC p=0.9
-            stop_loss = curve_today(sell_cond[2])
+            stop_loss = float(curve_today(sell_cond[2]))
             
         elif cond == "Neutral":
             entry_price = "NA"

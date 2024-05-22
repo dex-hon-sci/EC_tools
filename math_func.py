@@ -66,7 +66,7 @@ def find_quant(curve, quant_list, price):
     """
     spline_apc = CubicSpline(curve, quant_list)
     quant = spline_apc(price)
-    return quant
+    return float(quant)
     
 
 def cal_pdf(quant, cdf):

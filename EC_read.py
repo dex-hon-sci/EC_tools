@@ -159,8 +159,8 @@ def read_portara_daily_data(filename, symbol, start_date, end_date,
     
     # Datetime beyond 2020-12-14 is accepted beyond 2020-12-14
     # Select datetime between start_date and end_date
-    bools = portara_dat['Date'].apply(lambda x: x > pd.to_datetime(start_date) 
-                                      and x < pd.to_datetime(end_date))
+    bools = portara_dat['Date'].apply(lambda x: x >= pd.to_datetime(start_date) 
+                                      and x <= pd.to_datetime(end_date))
         
     # Select for the data that fits the bool condition (date after 2020-12-14)
     portara_dat = portara_dat[bools]
@@ -252,8 +252,8 @@ def read_portara_minute_data(filename, symbol, start_date, end_date,
     portara_dat_2.columns = ['Date only', 'Contract', 'symbol'] + list_names
     
     # Select for data after first date and end date
-    bools = portara_dat_2['Date only'].apply(lambda x: x > pd.to_datetime(start_date) 
-                                             and x < pd.to_datetime(end_date)) # filter for data after given date 
+    bools = portara_dat_2['Date only'].apply(lambda x: x >= pd.to_datetime(start_date) 
+                                             and x <= pd.to_datetime(end_date)) # filter for data after given date 
     portara_dat_2 = portara_dat_2[bools]
     
     # add c1 for front month contract
@@ -360,6 +360,40 @@ def portara_data_handling(portara_dat):
     return portara_dat
 
 #tested
+def read_reformat_Portara_daily_data(filename):
+    """
+    Reformat the Portara minute data in a format readable by the scripts.
+
+    Parameters
+    ----------
+    filename : str
+        The filename of the Portara minute data.
+
+    Returns
+    -------
+    history_data : pandas dataframe
+        The reformatted table.
+
+    """
+    history_data =  pd.read_csv(filename)
+    history_data.columns = ['Date', 'Open', 'High', 'Low', 
+                            'Settle', 'Volume', 'OpenInterest', 'Contract Code']
+    
+    # include a function that let user to choose the reformat?
+    
+    # change the date from 20220222 (int) to '2022-02-22' (str)
+    #history_data['Date'] = [str(x)[0:4] + '-' + str(x)[4:6] + '-' + str(x)[6:] 
+    #                        for x in history_data['Date']]
+    
+    history_data['Date'] = [datetime.datetime(year = int(str(x)[0:4]), 
+                                              month=int(str(x)[4:6]), 
+                                              day = int(str(x)[6:])) 
+                            for x in history_data['Date']]
+
+    return history_data
+
+
+#tested
 def read_reformat_Portara_minute_data(filename):
     """
     Reformat the Portara minute data in a format readable by the scripts.
@@ -398,6 +432,17 @@ def read_reformat_Portara_minute_data(filename):
 
     return history_data
 
+
+def read_reformat_APC_data(filename):
+    signal_data =  pd.read_csv(filename)
+    
+    signal_data['Forecast Period'] = [datetime.datetime(year = int(str(x)[0:4]), 
+                                              month=int(str(x)[5:7]), 
+                                              day = int(str(x)[8:])) 
+                            for x in signal_data['Forecast Period']]
+    
+    return signal_data
+
 #tested
 def extract_lag_data(signal_data, history_data, date, lag_size=5):
     """
@@ -422,18 +467,17 @@ def extract_lag_data(signal_data, history_data, date, lag_size=5):
         The historical data five (lag_size) days prior to the given date.
 
     """
-
     # Find the row index of the history data first
-    row_index = history_data.index[history_data['Date only'] == date].tolist()[0]
+    row_index = history_data.index[history_data['Date'] == date].tolist()[0]
 
     # extract exactly 5 (default) lag days array
     history_data_lag = history_data.loc[row_index-lag_size:row_index-1]
 
     # use the relevant date from history data to get signal data to ensure matching date
-    window = history_data_lag['Date only'].tolist()
+    window = history_data_lag['Date'].tolist()
     # turn Timstamp into string
     window = [str(window[i])[0:10] for i in range(lag_size)]
-    
+        
     #Store the lag signal data in a list
     signal_data_lag = signal_data[signal_data['Forecast Period'] == window[0]]
     
@@ -443,6 +487,30 @@ def extract_lag_data(signal_data, history_data, date, lag_size=5):
         
     return signal_data_lag, history_data_lag
 
+# tested
+def find_closest_price(day_minute_data, target_hr='0330', direction='forward', 
+                       step = 1, search_time = 1000):
+    
+    # If the input is forward, the loop search forward a unit of minute (step)
+    if direction == 'forward':
+        step = 1.* step
+    # If the input is backward, the loop search back a unit of minute (step)
+    elif direction == 'backward':
+        step = -1* step
+        
+    target_hr_dt= datetime.time(hour=int(target_hr[0:2]),minute=int(target_hr[2:4]))
+    
+    #initial estimation of the target price
+    target_price = day_minute_data[day_minute_data['Time'] == target_hr_dt]['Open']
+    #loop through the next 30 minutes to find the opening price    
+    for i in range(search_time):    
+        if len(target_price) == 0:
+            delta = datetime.timedelta(minutes = step)
+            target_hr_dt = (datetime.datetime.combine(datetime.datetime.today(), 
+                            target_hr_dt) + delta).time()
+            target_price = day_minute_data[day_minute_data['Time'] == target_hr_dt]['Open']
+            
+    return target_hr_dt, target_price
 
 #%% Construction Area
 def extract_lag_data_to_list(signal_data, history_data_daily,lag_size=5):

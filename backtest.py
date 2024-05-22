@@ -10,12 +10,16 @@ import numpy as np
 import datetime as datetime
 
 import EC_read as EC_read
-import EC_plot as EC_plot
 import EC_strategy as EC_strategy
 import utility as util
 from bookkeep import Bookkeep
 from trade import Trade
+import plot as plot
 # Spit out the document for overall PNL analysis
+
+FILENAME_MINUTE = "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/QP.001"
+FILENSME_BUYSELL_SIGNALS = "./benchmark_signal_QP_full.csv"
+SIGNAL_FILENAME = "APC_latest_QP.csv"   
 
 # tested
 def find_crossover(input_array, threshold):
@@ -160,12 +164,20 @@ def extract_intraday_minute_data(histrot_intraday_data, date_interest,
         A table isolated by the date of interest.
 
     """    
-    # convert the string hour and minute input to datetime.time objecy
-    open_hr_str, open_min_str = open_hr[-4:-2], open_hr[-2:]
-    close_hr_str, close_min_str = close_hr[-4:-2], close_hr[-2:]
-
-    open_hr =  datetime.time(hour = int(open_hr_str), minute = int(open_min_str))
-    close_hr =  datetime.time(hour = int(close_hr_str), minute = int(close_min_str))
+    print('open_hr', open_hr)
+    # convert the string hour and minute input to datetime.time object
+    
+    if type(open_hr) == str:
+        open_hr_str, open_min_str = open_hr[-4:-2], open_hr[-2:]
+        open_hr =  datetime.time(hour = int(open_hr_str), minute = int(open_min_str))
+    elif type(open_hr) == datetime.time:
+        pass
+    
+    if type(close_hr) == str:
+        close_hr_str, close_min_str = close_hr[-4:-2], close_hr[-2:]
+        close_hr =  datetime.time(hour = int(close_hr_str), minute = int(close_min_str))
+    elif type(close_hr) == datetime.time:
+        pass
 
     
     # Given a date of interest, and read-in the intraday data.
@@ -177,6 +189,7 @@ def extract_intraday_minute_data(histrot_intraday_data, date_interest,
                                             histrot_intraday_data['Time'] > open_hr]
     histrot_intraday_data = histrot_intraday_data[
                                             histrot_intraday_data['Time'] < close_hr]
+    
 
     return histrot_intraday_data
 
@@ -184,8 +197,6 @@ def extract_intraday_minute_data(histrot_intraday_data, date_interest,
 def plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=False):
     if plot_or_not == True:
         
-        filename_minute = "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL.001"
-        signal_filename = "APC_latest_CL.csv"   
         
         date_interest_str = date_interest.strftime("%Y-%m-%d")
         
@@ -204,7 +215,7 @@ def plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=False):
         else: 
             stop_times, stop_pts = [], []
         
-        EC_plot.plot_minute(filename_minute, signal_filename, 
+        plot.plot_minute(FILENAME_MINUTE, SIGNAL_FILENAME, 
                         date_interest = date_interest_str, direction=direction,
                           bppt_x1=entry_times, bppt_y1=entry_pts,
                           bppt_x2=exit_times, bppt_y2=exit_pts,
@@ -237,12 +248,24 @@ def loop_date(signal_table, histroy_intraday_data, open_hr='0330',
         
         print(day['Date'].iloc[0], direction, target_entry, target_exit, stop_exit)
         
+        open_hr_dt, open_price = EC_read.find_closest_price(day,
+                                                           target_hr= open_hr,
+                                                           direction='forward')
+        
+        print('open',open_hr_dt, open_price)
+        
+        close_hr_dt, close_price = EC_read.find_closest_price(day,
+                                                           target_hr= close_hr,
+                                                           direction='backward')
+        print('close', close_hr_dt, close_price)
+
+        
         # make a dictionary for all the possible EES time and values
         EES_dict = find_minute_EES(day, target_entry, target_exit, stop_exit,
-                          open_hr=open_hr, close_hr=close_hr, direction = direction)
+                          open_hr=open_hr_dt, close_hr=close_hr_dt, direction = direction)
 
         # make the trade.
-        trade_open, trade_close = Trade().trade_choice_simple2(EES_dict)
+        trade_open, trade_close = Trade().trade_choice_simple(EES_dict)
         #trade_open, trade_close = None, None
         # WIP
         #entry_price, exit_price = None, None
@@ -278,8 +301,7 @@ def loop_date(signal_table, histroy_intraday_data, open_hr='0330',
     
     #sort by date
     dict_trade_PNL = dict_trade_PNL.sort_values(by='date')
-    
-        
+         
     return dict_trade_PNL
 
 def loop_date_2(signal_table, histroy_intraday_data, func1, func2, open_hr='0330', 
@@ -359,7 +381,6 @@ def loop_date_2(signal_table, histroy_intraday_data, func1, func2, open_hr='0330
     #sort by date
     dict_trade_PNL = dict_trade_PNL.sort_values(by='date')
     
-        
     return dict_trade_PNL
     
 def find_minute_EES(histroy_data_intraday, 
@@ -465,9 +486,10 @@ def find_minute_EES(histroy_data_intraday,
         raise ValueError('Direction has to be either Buy, Sell, or Neutral.')
     
     # Define the closing time and closing price. Here we choose 19:25 for final trade
-    close_time = datetime.time(int(close_trade_hr[:2]),int(close_trade_hr[2:]))
+    #close_time = datetime.time(int(close_trade_hr[:2]),int(close_trade_hr[2:]))
+    close_time = close_hr #quick fix. need some work
     close_pt = price_list[np.where(time_list==close_time)[0]][0]
-    
+        
     # storage
     EES_dict = {'entry': list(zip(entry_times,entry_pts)),
                 'exit': list(zip(exit_times,exit_pts)),
@@ -478,25 +500,22 @@ def find_minute_EES(histroy_data_intraday,
     return EES_dict
 
 
-
 @util.time_it
-@util.save_csv('benchmark_PNL_simple_test.csv')
+@util.save_csv('benchmark_PNL_QP_full.csv')
 def run_backtest():
     # master function that runs the backtest itself.
     # The current method only allows one singular direction signal perday. and a set of constant EES
 
-    filename_minute = "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL.001"
-    filename_buysell_signals = "./benchmark_signal_test.csv"
     
     # read the reformatted minute history data
-    history_data = EC_read.read_reformat_Portara_minute_data(filename_minute)
+    history_data = EC_read.read_reformat_Portara_minute_data(FILENAME_MINUTE)
     
     # Find the date for trading, only "Buy" or "Sell" date are taken.
-    trade_date_table = prepare_signal_interest(filename_buysell_signals, trim = False)
+    trade_date_table = prepare_signal_interest(FILENSME_BUYSELL_SIGNALS, trim = False)
         
     # loop through the date and set the EES prices for each trading day   
-    dict_trade_PNL = loop_date(trade_date_table, history_data, open_hr='0330', 
-                  close_hr='1930', plot_or_not = False)    
+    dict_trade_PNL = loop_date(trade_date_table, history_data, open_hr='0800', 
+                  close_hr='1628', plot_or_not = False)    
 
     return dict_trade_PNL
 

@@ -89,7 +89,7 @@ class AxisLimit(object):
         self.start_line = datetime.datetime.combine(datetime.date.today(), 
                                                      datetime.time(hour=0,
                                                                    minute=0))
-        self.end_line = datetime.datetime.cJiraombine(datetime.date.today(),
+        self.end_line = datetime.datetime.combine(datetime.date.today(),
                                                    datetime.time(hour=23, 
                                                                  minute=59))
 
