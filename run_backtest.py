@@ -6,6 +6,7 @@ Created on Tue May  7 23:46:42 2024
 @author: dexter
 """
 import EC_read as EC_read
+import read as read
 import backtest as backtest
 import utility as util
 
@@ -15,7 +16,7 @@ def run_backtest(filename_minute,filename_buysell_signals):
     # The current method only allows one singular direction signal perday. and a set of constant EES
 
     # read the reformatted minute history data
-    history_data = EC_read.read_reformat_Portara_minute_data(filename_minute)
+    history_data = read.read_reformat_Portara_minute_data(filename_minute)
     
     # Find the date for trading
     trade_date_table = backtest.prepare_signal_interest(filename_buysell_signals, trim = False)

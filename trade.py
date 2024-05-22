@@ -85,3 +85,11 @@ class Trade(object):
         return self.trade_open, self.trade_close
     
 #(object, tradde_open, trade_closetrade_closetrade_close)
+
+@dataclass
+class TradeBot:
+    
+    exchange: None
+    trading_startegy: None
+    
+    

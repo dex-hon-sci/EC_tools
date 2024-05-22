@@ -16,6 +16,9 @@ import datetime as datetime
 # import EC_tools
 import EC_strategy as EC_strategy
 import EC_read as EC_read
+
+import strategy as strategy
+import read as read
 import update_db as update_db
 import utility as util
 from bookkeep import Bookkeep
@@ -28,11 +31,11 @@ __all__ = ['loop_signal','gen_signal_vector','run_gen_MR_signals',
 __author__="Dexter S.-H. Hon"
 
 
-save_filename_list = ["benchmark_signal_CL_full.csv", 
-                 "benchmark_signal_HO_full.csv", 
-                 "benchmark_signal_RB_full.csv", 
-                 "benchmark_signal_QO_full.csv",
-                 "benchmark_signal_QP_full.csv" ]
+save_filename_list = ["benchmark_signal_CLc2_full.csv", 
+                 "benchmark_signal_HOc2_full.csv", 
+                 "benchmark_signal_RBc2_full.csv", 
+                 "benchmark_signal_QOc2_full.csv",
+                 "benchmark_signal_QPc2_full.csv" ]
 
 categories_list = ['Argus Nymex WTI month 1, Daily', 
                'Argus Nymex Heating oil month 1, Daily', 
@@ -93,7 +96,7 @@ def find_open_price(history_data_daily, history_data_minute, open_hr='0330'): #t
         day_data = history_data_minute[history_data_minute['Date'] == date]
         
         # Find the closest hour and price
-        open_hr_dt, open_price = EC_read.find_closest_price(day_data,
+        open_hr_dt, open_price = read.find_closest_price(day_data,
                                                             target_hr='0330')
         
         if len(open_price)!=1:
@@ -158,19 +161,19 @@ def loop_signal(signal_data, history_data, open_price_data, start_date, end_date
         price_330_quant = mfunc.find_quant(curve_this_date, quant0, price_330)
         
         # Get the extracted 5 days Lag data 
-        apc_curve_lag5, history_data_lag5 = EC_read.extract_lag_data(signal_data, 
+        apc_curve_lag5, history_data_lag5 = read.extract_lag_data(signal_data, 
                                                              history_data, 
                                                              forecast_date)
         
         # Run the strategy        
-        direction = EC_strategy.MRStrategy.argus_benchmark_strategy(
+        direction = strategy.MRStrategy.argus_benchmark_strategy(
              price_330, history_data_lag5, apc_curve_lag5, APCs_this_date)
         
         #direction = EC_strategy.MRStrategy.argus_benchmark_mode(
         #     price_330, history_data_lag5, apc_curve_lag5, APCs_this_date)
         
         # calculate the data needed for PNL analysis for this strategy
-        strategy_data = EC_strategy.MRStrategy.gen_strategy_data(
+        strategy_data = strategy.MRStrategy.gen_strategy_data(
                                                         history_data_lag5, 
                                                          apc_curve_lag5, 
                                                          curve_this_date,
@@ -181,7 +184,7 @@ def loop_signal(signal_data, history_data, open_price_data, start_date, end_date
         print(open_price_data[open_price_data['Date']==this_date]['Time'].item(), price_330)
     
         # set resposne price.
-        entry_price, exit_price, stop_loss = EC_strategy.MRStrategy.set_EES_APC(
+        entry_price, exit_price, stop_loss = strategy.MRStrategy.set_EES_APC(
                                                         direction, curve_this_date)
         EES = [entry_price, exit_price, stop_loss]
                        
@@ -243,19 +246,22 @@ def run_gen_MR_signals(auth_pack, asset_pack, start_date, start_date_2, end_date
 
     # download the relevant APC data from the server
     if update_apc == True:
-        update_db.download_latest_APC_list(auth_pack, save_filename_list, 
-                                           categories_list, keywords_list, 
-                                           symbol_list) 
+# =============================================================================
+#         update_db.download_latest_APC_list(auth_pack, save_filename_list, 
+#                                            categories_list, keywords_list, 
+#                                            symbol_list) 
+# =============================================================================
+        update_db.download_latest_APC(auth_pack, asset_pack)
 
     # The reading part takes the longest time: 13 seconds. The loop itself takes 
 
     # input 1, APC. Load the master table in memory and test multple strategies   
-    signal_data =  EC_read.read_reformat_APC_data(signal_filename)
+    signal_data =  read.read_reformat_APC_data(signal_filename)
    
     # input 2, Portara history file.
     # start_date2 is a temporary solution 
-    history_data_daily = EC_read.read_reformat_Portara_daily_data(filename_daily)
-    history_data_minute = EC_read.read_reformat_Portara_minute_data(filename_minute)
+    history_data_daily = read.read_reformat_Portara_daily_data(filename_daily)
+    history_data_minute = read.read_reformat_Portara_minute_data(filename_minute)
 
     # Find the opening price at 03:30 UK time. If not found, 
     #loop through the next 30 minutes to find the opening price
@@ -324,9 +330,9 @@ if __name__ == "__main__":
 #                             history_minute_list)
 # =============================================================================
 
-    asset_pack = {"categories" : 'Argus Nymex Heating oil month 1, Daily',
+    asset_pack = {"categories" : 'Argus Nymex Heating oil month 1 Daily',
                   "keywords" : "Heating",
-                  "symbol": "HO"}
+                  "symbol": "HOc1"}
 
     #inputs: Portara data (1 Minute and Daily), APC
     signal_filename = "./APC_latest_HO.csv"
@@ -338,7 +344,7 @@ if __name__ == "__main__":
                                                       start_date, start_date_2, 
                                                       end_date, signal_filename, 
                                                       filename_daily, 
-                                                      filename_minute)
+                                                      filename_minute,update_apc=True)
 
 
 

@@ -75,13 +75,10 @@ class Bookkeep(object):
     
     def store_to_bucket_single(self, data):
         """
-        A simple function to store data in a bucket. This function should be 
-        used in adjacent to make_signal_bucket.
+        A simple function to store data in a bucket one entry at a time. 
 
         Parameters
         ----------
-        bucket : dict
-            An empty dictionary with column names.
         data : list
             A list of data to put into the bucket.
 

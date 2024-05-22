@@ -13,13 +13,16 @@ import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 from datetime import datetime
 
-dataframe = pd.read_excel('profits_and_losses_data_benchmark_11_.xlsx',sheet_name='Total')
+FILENAME = 'profits_and_losses_data_benchmark_11_.xlsx'
+#FILENAME = 'benchmark_PNL_full_.xlsx'
 
-dataframe_CLc1 = pd.read_excel('profits_and_losses_data_benchmark_11_.xlsx',sheet_name='CLc1')
-dataframe_HOc1 = pd.read_excel('profits_and_losses_data_benchmark_11_.xlsx',sheet_name='HOc1')
-dataframe_RBc1 = pd.read_excel('profits_and_losses_data_benchmark_11_.xlsx',sheet_name='RBc1')
-dataframe_QOc1 = pd.read_excel('profits_and_losses_data_benchmark_11_.xlsx',sheet_name='QOc1')
-dataframe_QPc1 = pd.read_excel('profits_and_losses_data_benchmark_11_.xlsx',sheet_name='QPc1')
+dataframe = pd.read_excel(FILENAME,sheet_name='Total')
+
+dataframe_CLc1 = pd.read_excel(FILENAME, sheet_name='CLc1')
+dataframe_HOc1 = pd.read_excel(FILENAME, sheet_name='HOc1')
+dataframe_RBc1 = pd.read_excel(FILENAME, sheet_name='RBc1')
+dataframe_QOc1 = pd.read_excel(FILENAME, sheet_name='QOc1')
+dataframe_QPc1 = pd.read_excel(FILENAME, sheet_name='QPc1')
 
 date_all = dataframe['date'].to_numpy()
 cumPNL_all = dataframe['cumulative P&L from trades for contracts (x 50)'].to_numpy()
@@ -51,9 +54,32 @@ cumPNL_50_RBc1 = dataframe_RBc1['cumulative P&L from trades for contracts (x 50)
 cumPNL_50_QOc1 = dataframe_QOc1['cumulative P&L from trades for contracts (x 50)'].to_numpy()
 cumPNL_50_QPc1 = dataframe_QPc1['cumulative P&L from trades for contracts (x 50)'].to_numpy()
 
+def fill_holes(cumPNL):
+    if np.isnan(cumPNL[0]):
+        cumPNL[0] = 0.0
+    
+    for i in range(len(cumPNL)):
+        
+        if np.isnan(cumPNL[i]):
+            cumPNL[i] = cumPNL[i-1]
+            
+    return cumPNL
+
+cumPNL_50_CLc1 = fill_holes(cumPNL_50_CLc1)
+cumPNL_50_HOc1 = fill_holes(cumPNL_50_HOc1)
+cumPNL_50_RBc1 = fill_holes(cumPNL_50_RBc1)
+cumPNL_50_QOc1 = fill_holes(cumPNL_50_QOc1)
+cumPNL_50_QPc1 = fill_holes(cumPNL_50_QPc1)
+
+cumPNL_all = fill_holes(cumPNL_all)
+
+
+
 date_list = [date_CLc1, date_HOc1, date_RBc1, date_QOc1, date_QPc1]
 data_list = [cumPNL_50_CLc1, cumPNL_50_HOc1, cumPNL_50_RBc1, cumPNL_50_QOc1, cumPNL_50_QPc1]
+
 label_list = ['CLc1 (x50)', 'HOc1 (x50)', 'RBc1 (x50)', 'QOc1 (x50)', 'QPc1 (x50)']
+col_list = ['#62A0E1','#EB634E','#E99938','#5CDE93','#6ABBC6']
 
 def PNL_plot(x,y):
     plt.style.use('dark_background')
@@ -66,16 +92,7 @@ def PNL_plot(x,y):
     
     
     for i, (date, data) in enumerate(zip(date_list, data_list)):
-        ax.plot(date, data,'-', label=label_list[i])
-
-# =============================================================================
-# ax.plot(date_CLc1, cumPNL_50_CLc1,'-', c='#667CEC', label='CLc1 (x50)')
-# ax.plot(date_HOc1, cumPNL_50_HOc1,'-', c='#D6796D', label='HOc1 (x50)')
-# ax.plot(date_RBc1, cumPNL_50_RBc1,'-', c='#E7B83B', label='RBc1 (x50)')
-# ax.plot(date_QOc1, cumPNL_50_QOc1,'-', c='#52B780', label='QOc1 (x50)')
-# ax.plot(date_QPc1, cumPNL_50_QPc1,'-', c='#66ECD6', label='QPc1 (x50)')
-# 
-# =============================================================================
+        ax.plot(date, data,'-', label=label_list[i], color=col_list[i])
     
     fmt = mdates.DateFormatter('%y-%m-%d')
     ax.xaxis.set_major_formatter(fmt)

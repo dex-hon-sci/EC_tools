@@ -11,6 +11,11 @@ import datetime as datetime
 
 import EC_read as EC_read
 import EC_strategy as EC_strategy
+
+import read as read
+import strategy as strategy
+
+
 import utility as util
 from bookkeep import Bookkeep
 from trade import Trade
@@ -248,13 +253,13 @@ def loop_date(signal_table, histroy_intraday_data, open_hr='0330',
         
         print(day['Date'].iloc[0], direction, target_entry, target_exit, stop_exit)
         
-        open_hr_dt, open_price = EC_read.find_closest_price(day,
+        open_hr_dt, open_price = read.find_closest_price(day,
                                                            target_hr= open_hr,
                                                            direction='forward')
         
         print('open',open_hr_dt, open_price)
         
-        close_hr_dt, close_price = EC_read.find_closest_price(day,
+        close_hr_dt, close_price = read.find_closest_price(day,
                                                            target_hr= close_hr,
                                                            direction='backward')
         print('close', close_hr_dt, close_price)
@@ -372,7 +377,7 @@ def loop_date_2(signal_table, histroy_intraday_data, func1, func2, open_hr='0330
                     exit_price, exit_datetime, risk_reward_ratio]
         
         # Storing the data    
-        dict_trade_PNL = EC_strategy.MRStrategy.\
+        dict_trade_PNL = strategy.MRStrategy.\
                                         store_to_bucket_single(bucket, data)
         
     dict_trade_PNL = pd.DataFrame(dict_trade_PNL)
@@ -508,7 +513,7 @@ def run_backtest():
 
     
     # read the reformatted minute history data
-    history_data = EC_read.read_reformat_Portara_minute_data(FILENAME_MINUTE)
+    history_data = read.read_reformat_Portara_minute_data(FILENAME_MINUTE)
     
     # Find the date for trading, only "Buy" or "Sell" date are taken.
     trade_date_table = prepare_signal_interest(FILENSME_BUYSELL_SIGNALS, trim = False)

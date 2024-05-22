@@ -20,6 +20,7 @@ import plotly.graph_objects as go
 
 # import EC_tools
 import EC_read as EC_read
+import read as read
 import math_func as mfunc
 import utility as util
 
@@ -512,7 +513,7 @@ def plot_minute(filename_minute, signal_filename, price_approx = 'Open',
                 bppt_x3 =[], bppt_y3 = []):
     
     # read the reformatted minute history data
-    history_data = EC_read.read_reformat_Portara_minute_data(filename_minute)
+    history_data = read.read_reformat_Portara_minute_data(filename_minute)
     
     #reformat the date of interest
     date_interest_year = int(date_interest[:4])
@@ -533,7 +534,7 @@ def plot_minute(filename_minute, signal_filename, price_approx = 'Open',
     x, y = interest['Time'], interest[price_approx]
 
     #read the APC file on the relevant date
-    curve = EC_read.read_apc_data(signal_filename)
+    curve = read.read_apc_data(signal_filename)
     curve = curve[curve['Forecast Period'] == date_interest]
     
     # Calculate the pdf from the cdf for plotting
