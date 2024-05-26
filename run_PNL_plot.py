@@ -13,8 +13,8 @@ import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 from datetime import datetime
 
-FILENAME = 'profits_and_losses_data_benchmark_11_.xlsx'
-#FILENAME = 'benchmark_PNL_full_.xlsx'
+#FILENAME = './data/profits_and_losses_data_benchmark_11_.xlsx'
+FILENAME = 'data/benchmark_PNL_full_.xlsx'
 
 dataframe = pd.read_excel(FILENAME,sheet_name='Total')
 

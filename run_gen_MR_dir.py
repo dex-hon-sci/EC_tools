@@ -14,8 +14,8 @@ import numpy as np
 from scipy.interpolate import CubicSpline
 import datetime as datetime
 # import EC_tools
-import EC_strategy as EC_strategy
-import EC_read as EC_read
+#import EC_strategy as EC_strategy
+#import EC_read as EC_read
 
 import strategy as strategy
 import read as read
@@ -37,20 +37,20 @@ save_filename_list = ["benchmark_signal_CLc2_full.csv",
                  "benchmark_signal_QOc2_full.csv",
                  "benchmark_signal_QPc2_full.csv" ]
 
-categories_list = ['Argus Nymex WTI month 1, Daily', 
-               'Argus Nymex Heating oil month 1, Daily', 
-               'Argus Nymex RBOB Gasoline month 1, Daily', 
-               'Argus Brent month 1, Daily', 
-               'Argus ICE gasoil month 1, Daily']
+categories_list = ['Argus Nymex WTI month 2, Daily', 
+               'Argus Nymex Heating oil month 2, Daily', 
+               'Argus Nymex RBOB Gasoline month 2, Daily', 
+               'Argus Brent month 2, Daily', 
+               'Argus ICE gasoil month 2, Daily']
 
 keywords_list = ["WTI","Heating", "Gasoline",'Brent', "gasoil"]
-symbol_list = ['CLc1', 'HOc1', 'RBc1', 'QOc1', 'QPc1']
+symbol_list = ['CLc2', 'HOc2', 'RBc2', 'QOc2', 'QPc2']
 
-signal_list = ['./APC_latest_CL.csv',
-              './APC_latest_HO.csv',
-              './APC_latest_RB.csv',
-              './APC_latest_QO.csv',
-              './APC_latest_QP.csv']
+signal_list = ['./APC_latest_CLc2.csv',
+              './APC_latest_HOc2.csv',
+              './APC_latest_RBc2.csv',
+              './APC_latest_QOc2.csv',
+              './APC_latest_QPc2.csv']
 
 history_daily_list = ['../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL.day',
                       '../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/HO.day',
@@ -59,11 +59,11 @@ history_daily_list = ['../test_MS/data_zeroadjust_intradayportara_attempt1/Daily
                       '../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QP.day']
                       
 
-history_minute_list = ["../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL.001",
-                       "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/HO.001",
-                       "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/RB.001",
-                       "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/QO.001",
-                       "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/QP.001"
+history_minute_list = ["../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL_d01.001",
+                       "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/HO_d01.001",
+                       "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/RB_d01.001",
+                       "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/QO_d01.001",
+                       "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/QP_d01.001"
                        ]
 
 
@@ -323,28 +323,30 @@ if __name__ == "__main__":
     
 
     #maybe I need an unpacking function here ro handle payload from json files
+
+    run_gen_MR_signals_list(save_filename_list, categories_list, keywords_list, symbol_list, 
+                            start_date, start_date_2, end_date,
+                            signal_list, history_daily_list, 
+                            history_minute_list)
+
+
 # =============================================================================
-#     run_gen_MR_signals_list(save_filename_list, categories_list, keywords_list, symbol_list, 
-#                             start_date, start_date_2, end_date,
-#                             signal_list, history_daily_list, 
-#                             history_minute_list)
+#     asset_pack = {"categories" : 'Argus Nymex Heating oil month 1 Daily',
+#                   "keywords" : "Heating",
+#                   "symbol": "HOc1"}
+# 
+#     #inputs: Portara data (1 Minute and Daily), APC
+#     signal_filename = "./APC_latest_HO.csv"
+#     filename_daily = "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/HO.day"
+#     filename_minute = "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/HO.001"
+# 
+#     # run signal for the individual asset
+#     dict_contracts_quant_signals = run_gen_MR_signals(auth_pack, asset_pack, 
+#                                                       start_date, start_date_2, 
+#                                                       end_date, signal_filename, 
+#                                                       filename_daily, 
+#                                                       filename_minute,update_apc=True)
+# 
 # =============================================================================
-
-    asset_pack = {"categories" : 'Argus Nymex Heating oil month 1 Daily',
-                  "keywords" : "Heating",
-                  "symbol": "HOc1"}
-
-    #inputs: Portara data (1 Minute and Daily), APC
-    signal_filename = "./APC_latest_HO.csv"
-    filename_daily = "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/HO.day"
-    filename_minute = "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/HO.001"
-
-    # run signal for the individual asset
-    dict_contracts_quant_signals = run_gen_MR_signals(auth_pack, asset_pack, 
-                                                      start_date, start_date_2, 
-                                                      end_date, signal_filename, 
-                                                      filename_daily, 
-                                                      filename_minute,update_apc=True)
-
 
 

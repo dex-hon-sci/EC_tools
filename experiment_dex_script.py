@@ -11,7 +11,6 @@ import pandas as pd
 from scipy.interpolate import CubicSpline, UnivariateSpline
 import matplotlib.pyplot as plt
 import datetime as datetime
-import EC_read as EC_read
 import read as read
 
 
@@ -54,6 +53,47 @@ filename_minute = "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/
 # print(apc_data)
 # =============================================================================
     
+PRICE_TABLE = {"CLc1": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL.day",
+               "CLc2": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL_d01.day",
+               "HOc1": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/HO.day",
+               "HOc2": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/HO_d01.day",
+               "RBc1": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/RB.day",
+               "RBc2": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/RB_d01.day",
+               "QOc1": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QO.day",
+               "QOc2": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QO_d01.day",
+               "QPc1": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QP.day",
+               "QPc2": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QP_d01.day"
+               }
+
+num_per_contract = {
+    'CLc1': 1000.0,
+    'CLc2': 1000.0,
+    'HOc1': 42000.0,
+    'HOc2': 42000.0,
+    'RBc1': 42000.0,
+    'RBc2': 42000.0,
+    'QOc1': 1000.0,
+    'QOc2': 1000.0,
+    'QPc1': 100.0,
+    'QPc2': 100.0,
+}
+
+round_turn_fees = {
+'CLc1': 24.0,
+'CLc2': 24.0,
+'HOc1': 25.2,
+'HOc2': 25.2,
+'RBc1': 25.2,
+'RBc2': 25.2,
+'QOc1': 24.0,
+'QOc2': 24.0,
+'QPc1': 24.0,
+'QPc2': 24.0,
+}
+
+
+
+
 import portfolio as port
 import time as time
 
@@ -89,6 +129,8 @@ def simple_func(A):
     A.add(CL4, datetime = day3)  
     A.add(CL5,datetime = day3)
     
+    print('pool_window', A.pool_window)
+    print(A.table)
     A.sub(CL6, datetime = day4)
     A.sub("CLc1", quantity = 11, unit='contracts', asset_type='Future',
           datetime = day4)
@@ -112,12 +154,20 @@ def simple_func(A):
     
 A1 = simple_func(A1)
 
-
-
 start_day = datetime.datetime(2024,2,10)
-end_day =  datetime.datetime(2024,3,10)
+end_day =  datetime.datetime(2024,3,11)
 
-print(A1.get_pool_interest(start_day, end_day))
+#print(A1.set_pool_window(start_day, end_day))
+#A1_newpool = A1.set_pool_window(start_day, end_day)
+
+print('====================================')
+
+print(A1.value(end_day, PRICE_TABLE, size_dict = num_per_contract))
+
+#values = [list(A2[i][1].__dict__.values()) for i in range(len(A2))]
+#keys = [list(A2[i][1].__dict__.keys()) for i in range(len(A2))][0]
+#print(values, keys)
+
 
 #A2 = simple_func2(A2)
 
