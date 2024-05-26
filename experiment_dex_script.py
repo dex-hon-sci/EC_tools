@@ -111,13 +111,13 @@ CL6 = port.Asset('CLc1',20,'contracts', 'Future')
 A1 = port.Portfolio()
 #A2 = port.Portfolio()
 
+day1= datetime.datetime(2024,1,10)
+day2= datetime.datetime(2024,2,28)
+day3= datetime.datetime(2024,3,1)
+day4= datetime.datetime(2024,4,4)
+
 @util.time_it
 def simple_func(A):
-    day1= datetime.datetime(2024,1,10)
-    day2= datetime.datetime(2024,2,28)
-    day3= datetime.datetime(2024,3,1)
-    day4= datetime.datetime(2024,4,4)
-    
     A.add(USD, datetime = day1)
     A.add(CL1, datetime = day1)
     A.add(CL2, datetime = day1)    
@@ -157,9 +157,9 @@ A1 = simple_func(A1)
 start_day = datetime.datetime(2024,2,10)
 end_day =  datetime.datetime(2024,3,11)
 
-#print(A1.set_pool_window(start_day, end_day))
-#A1_newpool = A1.set_pool_window(start_day, end_day)
+A1_newpool = A1.set_pool_window(day1, end_day)
 
+print('A1_newpool', A1_newpool)
 print('====================================')
 
 print(A1.value(end_day, PRICE_TABLE, size_dict = num_per_contract))

@@ -23,6 +23,19 @@ PRICE_DICT = {"CLc1": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily
                "QPc2": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QP_d01.day"
                }
 
+SIZE_DICT = {
+    'CLc1': 1000.0,
+    'CLc2': 1000.0,
+    'HOc1': 42000.0,
+    'HOc2': 42000.0,
+    'RBc1': 42000.0,
+    'RBc2': 42000.0,
+    'QOc1': 1000.0,
+    'QOc2': 1000.0,
+    'QPc1': 100.0,
+    'QPc2': 100.0,
+}
+
 __all__ = ['Asset','Portfolio', 'Positions']
 
 __author__="Dexter S.-H. Hon"
@@ -53,7 +66,7 @@ class Portfolio(object):
         self.__pool_asset = [] # set pool to be a private attribute
         self.__pool_datetime = []
         self._pool = []
-        self._pool_window = self._pool
+        self._pool_window = None
         self._table = None
         self._master_table = None
         self._value = None
@@ -61,7 +74,7 @@ class Portfolio(object):
  
     @property
     def pool_asset(self):
-
+        # A list that contains the the added assets
         return self.__pool_asset
     
     @property
@@ -109,16 +122,17 @@ class Portfolio(object):
     def set_pool_window(self, start_time=datetime.datetime(1900,1,1), 
                                 end_time=datetime.datetime(2200,12,31)): #WIP
         # define a window of interest amount the pool object
-        pool_df_interest = self.pool_df[(self.pool_df['datetime'] > start_time) & 
-                                (self.pool_df['datetime'] < end_time)]
+        pool_df_interest = self.pool_df[(self.pool_df['datetime'] >= start_time) & 
+                                (self.pool_df['datetime'] <= end_time)]
+        print(pool_df_interest)
         ind = pool_df_interest.index.to_list()
-        self._pool_window = self._pool[ind[0]:ind[-1]]
+        print(ind)
+        self._pool_window = self._pool[ind[0]:ind[-1]+1]
         
         return self._pool_window
     
-    
-    @property # cached ths for fast access # tested
-    def table(self): 
+    @staticmethod
+    def _make_table(pool_type):
         """
         The atteribute that show a table of all the assets in the portfolio.
         
@@ -128,89 +142,21 @@ class Portfolio(object):
         # The reason I use the table method is that some obejct stored in the 
         # profolio list may contain non standard attributes, like contract 
         # expiration date.
-# =============================================================================
-#         # Extract the values and keys from the Asset class objects
-#         values = [list(asset.__dict__.values()) for asset in self.__pool_asset]
-#         keys = [list(asset.__dict__.keys()) for asset in self.__pool_asset][0]
-# =============================================================================
         
         # Find the keys and values for asset within a particular time window
         # The function operate on the previously defiend poo_window
-        values = [list(self._pool_window[i][1].__dict__.values()) 
-                                  for i in range(len(self._pool_window))]
-        keys = [list(self._pool_window[i][1].__dict__.keys()) 
-                                  for i in range(len(self._pool_window))][0]
-    
-        # Load the inforamtion to self._table
-        self._table = pd.DataFrame.from_records(data = values, columns = keys)
-        
-        # Handle repeating aseet type
-        for index, val_name in enumerate(self._table['name']):
-            
-            temp_df = self._table[self._table['name'] == val_name]
-            
-            # If the asset is unique in the pool, pass.
-            if len(temp_df) == 1:
-                pass
-            # If the asset is not unique, perform the condesation action
-            elif len(temp_df) > 1:
-                #print(list(temp_df['quantity']), sum(list(temp_df['quantity'])))
-                # the summed quantity
-                new_quantity = sum(list(temp_df['quantity']))
-                
-                # make new entry_dictionary                
-                new_entry_dict = {'name': temp_df['name'].iloc[0], 
-                                  'quantity': new_quantity,
-                                  'unit': temp_df['unit'].iloc[0],
-                                  'asset_type': temp_df['asset_type'].iloc[0],
-                                  'misc': dict()}
-                
-                new_entry_dict = pd.DataFrame(new_entry_dict, index=[len(self._table)])
-                
-                #store them in the lowest row
-                self._table = pd.concat([self._table, new_entry_dict], ignore_index = False)
-
-                #delete the old entries
-                self._table.drop(list(temp_df.index), axis=0, inplace=True)
-
-                # sort the table by 'name'                
-                self._table.sort_values(by='name')
-                
-                # reset the indices
-                self._table.reset_index(drop=True, inplace=True)
-
-        return self._table
-    @classmethod
-    def _make_table(cls, pool_type):
-        """
-        The atteribute that show a table of all the assets in the portfolio.
-        
-        The table operate on pool_window
-
-        """
-        # The reason I use the table method is that some obejct stored in the 
-        # profolio list may contain non standard attributes, like contract 
-        # expiration date.
-# =============================================================================
-#         # Extract the values and keys from the Asset class objects
-#         values = [list(asset.__dict__.values()) for asset in self.__pool_asset]
-#         keys = [list(asset.__dict__.keys()) for asset in self.__pool_asset][0]
-# =============================================================================
-        
-        # Find the keys and values for asset within a particular time window
-        # The function operate on the previously defiend poo_window
-        values = [list(cls.pool_type[i][1].__dict__.values()) 
+        values = [list(pool_type[i][1].__dict__.values()) 
                                   for i in range(len(pool_type))]
-        keys = [list(cls.pool_type[i][1].__dict__.keys()) 
+        keys = [list(pool_type[i][1].__dict__.keys()) 
                                   for i in range(len(pool_type))][0]
     
         # Load the inforamtion to self._table
-        cls._table = pd.DataFrame.from_records(data = values, columns = keys)
+        table = pd.DataFrame.from_records(data = values, columns = keys)
         
         # Handle repeating aseet type
-        for index, val_name in enumerate(cls._table['name']):
+        for index, val_name in enumerate(table['name']):
             
-            temp_df = cls._table[cls._table['name'] == val_name]
+            temp_df = table[table['name'] == val_name]
             
             # If the asset is unique in the pool, pass.
             if len(temp_df) == 1:
@@ -228,25 +174,34 @@ class Portfolio(object):
                                   'asset_type': temp_df['asset_type'].iloc[0],
                                   'misc': dict()}
                 
-                new_entry_dict = pd.DataFrame(new_entry_dict, index=[len(cls._table)])
+                new_entry_dict = pd.DataFrame(new_entry_dict, index=[len(table)])
                 
                 #store them in the lowest row
-                cls._table = pd.concat([cls._table, new_entry_dict], ignore_index = False)
+                table = pd.concat([table, new_entry_dict], ignore_index = False)
 
                 #delete the old entries
-                cls._table.drop(list(temp_df.index), axis=0, inplace=True)
+                table.drop(list(temp_df.index), axis=0, inplace=True)
 
                 # sort the table by 'name'                
-                cls._table.sort_values(by='name')
+                table.sort_values(by='name')
                 
                 # reset the indices
-                cls._table.reset_index(drop=True, inplace=True)
+                table.reset_index(drop=True, inplace=True)
 
-        return cls._table
+        return table
     
     @property
-    def master_table(self):
-        self._master_table  = self._make_table(self.__pool)
+    def table(self): # tested
+        if self._pool_window == None:
+            raise Exception("pool_window not found. Use either master_table or \
+                            define a pool_window for viewing first")
+    
+        self._table  = self._make_table(self._pool_window)
+        return self._table
+    
+    @property
+    def master_table(self): #tested
+        self._master_table  = self._make_table(self.pool)
         return self._master_table
     
     def add(self, asset,  datetime= datetime.datetime.now(), 
@@ -305,7 +260,7 @@ class Portfolio(object):
             #print(self.table[self.table['name']== asset_name]['quantity'].iloc[0])
             
             # check if the total amount is higher than the subtraction amount
-            if asset.__dict__['quantity'] > self.table[self.table['name']==\
+            if asset.__dict__['quantity'] > self.master_table[self.master_table['name']==\
                                               asset_name]['quantity'].iloc[0]: # tested
                 
                 raise Exception('There is not enough {} to be subtracted \
@@ -328,7 +283,7 @@ class Portfolio(object):
         self.__pool_datetime.append(datetime) #record datetime
         
     def value(self, datetime, price_dict = PRICE_DICT,   
-              size_dict = None, dntr='USD'): #WIP
+              size_dict = SIZE_DICT, dntr='USD'): #WIP
         """
         A function that return a dict with the price for each assets on 
         a particular date and time.
@@ -342,12 +297,13 @@ class Portfolio(object):
         # read the value of the portfolio of a particular date
         
         value_dict = dict()
+        self.set_pool_window(self.__pool_datetime[0], datetime)
 
-        for i, asset_name in enumerate(self._table['name']):
+        for i, asset_name in enumerate(self.table['name']):
             
             # specia handling the denomator asset (usually a currency)
             if asset_name == dntr:
-                value_dict[asset_name] = float(self._table['quantity'].iloc[0])
+                value_dict[asset_name] = float(self.table['quantity'].iloc[0])
             else:
             
                 # manage the size of the asset
@@ -364,7 +320,7 @@ class Portfolio(object):
                 # The current version of this method only gets the price data iff 
                 # it exist in the table, i.e. it does not get anything outside of the trading days
                 value = float(sub_price_table[sub_price_table['Date'] == datetime]['Settle'].iloc[0])
-                quantity = int(self._table['quantity'].iloc[i])
+                quantity = int(self.table['quantity'].iloc[i])
                                 
                 #print(asset_name, quantity, value, size, value*quantity*size)
                 
@@ -381,12 +337,25 @@ class Portfolio(object):
         total_value = sum(self.value(datetime).values())
         return total_value
 
-    @cached_property
+    @property
     def log(self):
-        # Run the calculation for all asset values for each time unit and 
+        """
+        Run the calculation for all asset values for each time unit and 
+        """
+        # Use the keys from the master table to construct the columns
+        columns = list(self.master_table['name'])
+        log = pd.DataFrame(columns)
+        # then loop through the pool history and 
+        for i, item in enumerate(self.pool):
+            value_entry = self.value(item[0])
+            print('VE', item[0], value_entry)
+            log.loc[i] = pd.Series(value_entry)
+            print(log)
         # return a log of the values of each asset by time
         
         # set index to datetime time
+        print(log)
+        self._log = log
         return self._log
     
     def asset_log(self, asset_name):
