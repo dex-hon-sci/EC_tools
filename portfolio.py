@@ -44,6 +44,7 @@ __author__="Dexter S.-H. Hon"
 class Asset:
     """
     A class that solely define the attribute of a Asset object.
+    
     """
     name: str  # note that future countract should be written in the CLM24 format
     quantity: int or float
@@ -51,16 +52,18 @@ class Asset:
     asset_type:str 
     misc: dict[str] = field(default_factory=dict)
     
-    def check_exp_date():
+    def check_exp_date(): #WIP
         # a function to check the exp date and create an open position at the 
         # exp date for the future contract.
         return
+    
     #meta: field(default_factory=dict)
 
 
 class Portfolio(object):
     """
-    This class manage everything related to Portfolio.
+    This class manage everything related to the Portfolio.
+    
     """
     def __init__(self):
         self.__pool_asset = [] # set pool to be a private attribute
@@ -74,12 +77,18 @@ class Portfolio(object):
  
     @property
     def pool_asset(self):
-        # A list that contains the the added assets
+        """
+        A list that contains the the added assets.
+
+        """
         return self.__pool_asset
     
     @property
     def pool_datetime(self):
-        # A list that contains the corresponding datetime where asset is added
+        """
+        A list that contains the corresponding datetime where asset is added
+
+        """
         return self.__pool_datetime
     
     @property
@@ -108,25 +117,50 @@ class Portfolio(object):
     
     @property
     def pool_df(self):
+        """
+        A pool in dataframe format for easy query.
+        
+        """
         pool_df = pd.DataFrame(self.pool, columns=['datetime','asset'])
         return pool_df
     
 
     @property
     def pool_window(self): 
-        # define a window of interest amount the pool object
-        self._pool_window = self.pool
+        """
+        A pool window given by a specific time intervals. This function 
+        initialised the object. Use set_pool_window to set a particular 
+        time frame.
 
+
+        """
+        self._pool_window = self.pool
         return self._pool_window
     
     def set_pool_window(self, start_time=datetime.datetime(1900,1,1), 
-                                end_time=datetime.datetime(2200,12,31)): #WIP
+                                end_time=datetime.datetime(2200,12,31)):
+        """
+        Setter method for the pool_window object.
+
+        Parameters
+        ----------
+        start_time : datetime object, optional
+            The start time . The default is datetime.datetime(1900,1,1).
+        end_time : datetime object, optional
+            The end time. The default is datetime.datetime(2200,12,31).
+
+        Returns
+        -------
+        list
+            pool_window list object.
+
+        """
         # define a window of interest amount the pool object
         pool_df_interest = self.pool_df[(self.pool_df['datetime'] >= start_time) & 
                                 (self.pool_df['datetime'] <= end_time)]
-        print(pool_df_interest)
+        #print(pool_df_interest)
         ind = pool_df_interest.index.to_list()
-        print(ind)
+        #print(ind)
         self._pool_window = self._pool[ind[0]:ind[-1]+1]
         
         return self._pool_window
@@ -134,14 +168,27 @@ class Portfolio(object):
     @staticmethod
     def _make_table(pool_type):
         """
-        The atteribute that show a table of all the assets in the portfolio.
+        A staticmethod that create a datafreame table using either pool_window
+        or pool. This is an internal method to construct the table and master 
+        table attributes for the portfolio class. 
         
-        The table operate on pool_window
+        The reason I use the table method is that some obejct stored in the 
+        profolio list may contain non standard attributes, like contract 
+        expiration date.
+
+        Parameters
+        ----------
+        pool_type : pool object (list)
+            The pool object type. It can be either pool_window or pool, 
+            corresponding to making table or master_table objects
+
+        Returns
+        -------
+        table : dataframe
+            The resulting table.
 
         """
-        # The reason I use the table method is that some obejct stored in the 
-        # profolio list may contain non standard attributes, like contract 
-        # expiration date.
+
         
         # Find the keys and values for asset within a particular time window
         # The function operate on the previously defiend poo_window
@@ -192,6 +239,14 @@ class Portfolio(object):
     
     @property
     def table(self): # tested
+        """
+        An attribute that show a table of all the assets in the portfolio.
+        
+        The table operates on pool_window, meaning it obly shows the assets 
+        listed in the pool_window list. Please make sure you are setting 
+        the time window correctly.
+        
+        """
         if self._pool_window == None:
             raise Exception("pool_window not found. Use either master_table or \
                             define a pool_window for viewing first")
@@ -201,6 +256,13 @@ class Portfolio(object):
     
     @property
     def master_table(self): #tested
+        """
+        An attribute that show a table of all the assets in the portfolio.
+        
+        The table operates on pool, meaning it obly shows the assets 
+        listed in the pool list, i.e., it shows assets across all time.
+        
+        """
         self._master_table  = self._make_table(self.pool)
         return self._master_table
     
@@ -208,20 +270,23 @@ class Portfolio(object):
             quantity = 0, unit='contract', 
             asset_type='future'): #tested
         """
-        A function that .
+        A function that add a new asset to the pool.
     
         Parameters
         ----------
         asset : str, Asset Object, list
-            
+            The asset to be added.
         datetime: datetime
-        
+            The datetime that the asset is added
         quantity: float, int
-            
-        ...
+            The number of the same asset added. The default is 0.
+        unit: str
+            The unit name of the asset. The default is 'contract'.
+        asset_type: str
+            The type name of the asset. The default is 'future'.
         
         """
-        #asset can be a list
+        #asset cannot be a list
         # check if it asset is an asset format
         if type(asset) == Asset:
             pass
@@ -239,17 +304,20 @@ class Portfolio(object):
             asset_name="", quantity = 0, unit='contract', 
             asset_type='future'): #tested
         """
-        A function that p.
+        A function that subtract an existing asset from the pool.
     
         Parameters
         ----------
-        asset : str, Asset Object, list
-            
+        asset : str, Asset object, list
+            The asset to be added.
         datetime: datetime
-        
+            The datetime that the asset is added
         quantity: float, int
-            
-        ...
+            The number of the same asset added. The default is 0.
+        unit: str
+            The unit name of the asset. The default is 'contract'.
+        asset_type: str
+            The type name of the asset. The default is 'future'.
         
         """
         # check if it asset is an asset format
@@ -282,7 +350,7 @@ class Portfolio(object):
         self.__pool_asset.append(new_asset)   # save new asset
         self.__pool_datetime.append(datetime) #record datetime
         
-    def value(self, datetime, price_dict = PRICE_DICT,   
+    def value(self, date_time, price_dict = PRICE_DICT,   
               size_dict = SIZE_DICT, dntr='USD'): #WIP
         """
         A function that return a dict with the price for each assets on 
@@ -291,13 +359,22 @@ class Portfolio(object):
         Parameters
         ----------
         datetime: datetime object
-    
+        
+        price_dict: dict
+            A dictionary that contains the pricing data filename for each 
+            assets. The default is PRICE_DICT.
+        size_dict: dict
+            A dictionary that contains the size (for example, number of barrels)
+            contained in each assets. The default is SIZE_DICT.
+        dntr: str
+            The denomanator currency for calculating the value of each asset.
+            The default is USD'.
         """
         # price_table is a dict containing the pricing data files
         # read the value of the portfolio of a particular date
         
         value_dict = dict()
-        self.set_pool_window(self.__pool_datetime[0], datetime)
+        self.set_pool_window(self.__pool_datetime[0], date_time)
 
         for i, asset_name in enumerate(self.table['name']):
             
@@ -319,54 +396,91 @@ class Portfolio(object):
                 
                 # The current version of this method only gets the price data iff 
                 # it exist in the table, i.e. it does not get anything outside of the trading days
-                value = float(sub_price_table[sub_price_table['Date'] == datetime]['Settle'].iloc[0])
+                target_time = date_time.strftime("%Y-%m-%d")
+                _ , value = read.find_closest_price_date(sub_price_table, target_time=target_time)
+                
+                #value = float(sub_price_table[sub_price_table['Date'] == date_time]['Settle'].iloc[0])
                 quantity = int(self.table['quantity'].iloc[i])
-                                
-                #print(asset_name, quantity, value, size, value*quantity*size)
+                
+                #new way to do things
+                #print('------------')
+                #print(_, asset_name, quantity, float(value.iloc[0]), size)
                 
                 # storage
-                value_dict[asset_name] = value*quantity*size
+                value_dict[asset_name] = float(value.iloc[0])*quantity*size
         
         return value_dict
         
     def asset_value(self, asset_name, datetime):
+        """
+        
+
+        Parameters
+        ----------
+        asset_name : TYPE
+            DESCRIPTION.
+        datetime : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        asset_value : TYPE
+            DESCRIPTION.
+
+        """
         asset_value = self.value(datetime)[asset_name]
         return asset_value
             
     def total_value(self, datetime):
+        """
+        
+
+        Parameters
+        ----------
+        datetime : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        total_value : TYPE
+            DESCRIPTION.
+
+        """
         total_value = sum(self.value(datetime).values())
         return total_value
 
     @property
-    def log(self):
+    def log(self): # tested
         """
         Run the calculation for all asset values for each time unit and 
         """
         # Use the keys from the master table to construct the columns
-        columns = list(self.master_table['name'])
-        log = pd.DataFrame(columns)
+        #columns = list(self.master_table['name'])
+        log = list()
         # then loop through the pool history and 
         for i, item in enumerate(self.pool):
             value_entry = self.value(item[0])
-            print('VE', item[0], value_entry)
-            log.loc[i] = pd.Series(value_entry)
-            print(log)
+            #print('VE', item[0], value_entry)
+            #log.loc[i] = pd.Series(value_entry)
+            log.append(value_entry)
+
         # return a log of the values of each asset by time
-        
-        # set index to datetime time
-        print(log)
-        self._log = log
+
+        self._log = pd.DataFrame(log)
         return self._log
     
-    def asset_log(self, asset_name):
-        return
+    def asset_log(self, asset_name): #tested
+        """
+        """
+        asset_log = self.log[asset_name]
+        return asset_log
 
-    # action log, (1, datetime.datetime, action_str, asset_1, asset_2, func)
 
     
     
 @dataclass
 class Positions(Portfolio):
+    # The position class constitue the exchanges i.e. trade, add(asset), sub(asset)
     # Auto load position 
     # Long Cash baseline
     
