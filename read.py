@@ -513,6 +513,72 @@ def find_closest_price(day_minute_data, target_hr='0330', direction='forward',
             
     return target_hr_dt, target_price
 
+def find_closest_price_date(data, target_time='2024-01-03', 
+                               time_proxy = 'Date', price_proxy ='Open',
+                                direction='forward', step = 1, 
+                                search_time = 30):
+    
+    # If the input is forward, the loop search forward a unit of minute (step)
+    if direction == 'forward':
+        step = 1* step
+    # If the input is backward, the loop search back a unit of minute (step)
+    elif direction == 'backward':
+        step = -1* step
+        
+    # determine whether it is in the time frame of minutes,    
+    #target_time_dt= datetime.time(hour=int(target_time[0:2]),minute=int(target_time[2:4]))
+    target_time_dt = datetime.datetime.strptime(target_time, "%Y-%m-%d")
+    
+    #initial estimation of the target price
+    target_price = data[data[time_proxy] == target_time_dt][price_proxy]
+    #loop through the next 30 days to find the opening price    
+    for i in range(search_time):    
+        if len(target_price) == 0:
+            
+            delta = datetime.timedelta(days = step)
+            
+            target_time_dt = target_time_dt + delta
+            
+            target_price = data[data[time_proxy] == target_time_dt][price_proxy]
+            
+    return target_time_dt, target_price
+
+
+def find_closest_price_generic(data, target_time='0330', 
+                               time_proxy = 'Time', price_proxy ='Open',
+                                direction='forward', step = 1, 
+                                search_time = 1000): # WIP
+    
+    # If the input is forward, the loop search forward a unit of minute (step)
+    if direction == 'forward':
+        step = 1* step
+    # If the input is backward, the loop search back a unit of minute (step)
+    elif direction == 'backward':
+        step = -1* step
+        
+        
+    # determine whether it is in the time frame of minutes,
+    
+    
+    #target_time_dt= datetime.time(hour=int(target_time[0:2]),minute=int(target_time[2:4]))
+    target_time_dt = datetime.datetime.strftime(target_time, "%H%M")
+    
+    #initial estimation of the target price
+    target_price = data[data[time_proxy] == target_time_dt][price_proxy]
+    #loop through the next 30 minutes to find the opening price    
+    for i in range(search_time):    
+        if len(target_price) == 0:
+            
+            delta = datetime.timedelta(minutes = step)
+            
+            target_time_dt = (datetime.datetime.combine(datetime.datetime.today(), 
+                            target_time_dt) + delta).time()
+            
+            
+            target_price = data[data[time_proxy] == target_time_dt][price_proxy]
+            
+    return target_time_dt, target_price
+
 #%% Construction Area
 def extract_lag_data_to_list(signal_data, history_data_daily,lag_size=5):
     # make a list of lag data with a nested data structure.
