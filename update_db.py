@@ -11,8 +11,8 @@ It pulls data from external servers to the local directory.
 """
 import datetime as datetime
 
-import read as read
-import utility as util
+import EC_tools.read as read
+import EC_tools.utility as util
 
 __author__="Dexter S.-H. Hon"
 

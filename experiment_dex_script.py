@@ -5,13 +5,26 @@ Created on Fri Mar 22 14:09:15 2024
 
 @author: dexter
 """
+# =============================================================================
+# import numpy as np
+# import utility as util
+# import pandas as pd
+# from scipy.interpolate import CubicSpline, UnivariateSpline
+# import matplotlib.pyplot as plt
+# import datetime as datetime
+# =============================================================================
+
 import numpy as np
-import utility as util
+import datetime as datetime
 import pandas as pd
 from scipy.interpolate import CubicSpline, UnivariateSpline
 import matplotlib.pyplot as plt
-import datetime as datetime
-import read as read
+import time as time
+
+
+import EC_tools.read as read
+import EC_tools.utility as util
+import EC_tools.portfolio as port
 
 
 username = "dexter@eulercapital.com.au"
@@ -93,10 +106,6 @@ round_turn_fees = {
 
 
 
-
-import portfolio as port
-import time as time
-
 USD = port.Asset('USD', 1e7, 'dollars', 'Cash')
 CL1 = port.Asset("CLc1", 50, 'contracts', 'Future')
 CL2 = port.Asset("CLc2", 60, 'contracts', 'Future')
@@ -155,7 +164,7 @@ def simple_func(A):
 A1 = simple_func(A1)
 
 start_day = datetime.datetime(2024,2,10)
-end_day =  datetime.datetime(2024,3,11)
+end_day =  datetime.datetime(2024,3,8)
 
 A1_newpool = A1.set_pool_window(day1, end_day)
 
@@ -163,6 +172,9 @@ print('A1_newpool', A1_newpool)
 print('====================================')
 
 print(A1.value(end_day, PRICE_TABLE, size_dict = num_per_contract))
+print('====================================')
+
+#print(A1.log)
 
 #values = [list(A2[i][1].__dict__.values()) for i in range(len(A2))]
 #keys = [list(A2[i][1].__dict__.keys()) for i in range(len(A2))][0]

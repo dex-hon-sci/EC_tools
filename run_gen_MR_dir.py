@@ -13,16 +13,16 @@ import pandas as pd
 import numpy as np
 from scipy.interpolate import CubicSpline
 import datetime as datetime
-# import EC_tools
-#import EC_strategy as EC_strategy
-#import EC_read as EC_read
 
-import strategy as strategy
-import read as read
+# import EC_tools
+import EC_tools.strategy as strategy
+import EC_tools.read as read
+import EC_tools.utility as util
+from EC_tools.bookkeep import Bookkeep
+import EC_tools.math_func as mfunc
+
 import update_db as update_db
-import utility as util
-from bookkeep import Bookkeep
-import math_func as mfunc
+
 
 
 __all__ = ['loop_signal','gen_signal_vector','run_gen_MR_signals', 
@@ -52,11 +52,11 @@ signal_list = ['./APC_latest_CLc2.csv',
               './APC_latest_QOc2.csv',
               './APC_latest_QPc2.csv']
 
-history_daily_list = ['../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL.day',
-                      '../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/HO.day',
-                      '../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/RB.day',
-                      '../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QO.day',
-                      '../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QP.day']
+history_daily_list = ['../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL_d01.day',
+                      '../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/HO_d01.day',
+                      '../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/RB_d01.day',
+                      '../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QO_d01.day',
+                      '../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QP_d01.day']
                       
 
 history_minute_list = ["../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL_d01.001",
