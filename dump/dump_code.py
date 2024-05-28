@@ -923,3 +923,67 @@ def run_gen_MR_signals(auth_pack, asset_pack, start_date, start_date_2, end_date
     
     # there are better ways than looping. here is a vectoralised method    
     return dict_contracts_quant_signals
+    
+    @property # cached ths for fast access # tested
+    def table(self): 
+        """
+        The atteribute that show a table of all the assets in the portfolio.
+        
+        The table operate on pool_window
+
+        """
+        # The reason I use the table method is that some obejct stored in the 
+        # profolio list may contain non standard attributes, like contract 
+        # expiration date.
+# =============================================================================
+#         # Extract the values and keys from the Asset class objects
+#         values = [list(asset.__dict__.values()) for asset in self.__pool_asset]
+#         keys = [list(asset.__dict__.keys()) for asset in self.__pool_asset][0]
+# =============================================================================
+        
+        # Find the keys and values for asset within a particular time window
+        # The function operate on the previously defiend poo_window
+        values = [list(self._pool_window[i][1].__dict__.values()) 
+                                  for i in range(len(self._pool_window))]
+        keys = [list(self._pool_window[i][1].__dict__.keys()) 
+                                  for i in range(len(self._pool_window))][0]
+    
+        # Load the inforamtion to self._table
+        self._table = pd.DataFrame.from_records(data = values, columns = keys)
+        
+        # Handle repeating aseet type
+        for index, val_name in enumerate(self._table['name']):
+            
+            temp_df = self._table[self._table['name'] == val_name]
+            
+            # If the asset is unique in the pool, pass.
+            if len(temp_df) == 1:
+                pass
+            # If the asset is not unique, perform the condesation action
+            elif len(temp_df) > 1:
+                #print(list(temp_df['quantity']), sum(list(temp_df['quantity'])))
+                # the summed quantity
+                new_quantity = sum(list(temp_df['quantity']))
+                
+                # make new entry_dictionary                
+                new_entry_dict = {'name': temp_df['name'].iloc[0], 
+                                  'quantity': new_quantity,
+                                  'unit': temp_df['unit'].iloc[0],
+                                  'asset_type': temp_df['asset_type'].iloc[0],
+                                  'misc': dict()}
+                
+                new_entry_dict = pd.DataFrame(new_entry_dict, index=[len(self._table)])
+                
+                #store them in the lowest row
+                self._table = pd.concat([self._table, new_entry_dict], ignore_index = False)
+
+                #delete the old entries
+                self._table.drop(list(temp_df.index), axis=0, inplace=True)
+
+                # sort the table by 'name'                
+                self._table.sort_values(by='name')
+                
+                # reset the indices
+                self._table.reset_index(drop=True, inplace=True)
+
+        return self._table
