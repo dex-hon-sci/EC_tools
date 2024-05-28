@@ -9,10 +9,10 @@ import numpy as np
 import pandas as pd
 import datetime
 
-import utility as util
+import EC_tools.utility as util
 
 # Argus API 
-from ArgusPossibilityCurves2 import ArgusPossibilityCurves
+from EC_tools.ArgusPossibilityCurves2 import ArgusPossibilityCurves
 
 __all__ = ['get_apc_from_server','read_apc_data','read_portara_daily_data', 
            'read_portara_minute_data','merge_portara_data',

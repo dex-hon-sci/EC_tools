@@ -19,10 +19,9 @@ import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 
 # import EC_tools
-import EC_read as EC_read
-import read as read
-import math_func as mfunc
-import utility as util
+import EC_tools.read as read
+import EC_tools.math_func as mfunc
+import EC_tools.utility as util
 
 color_dict_light_mode = {'data_col':'k','bg_col':'white', 'col':'g'}
 color_dict_dark_mode = {'data_col':'white','bg_col':'k', 'col':'g'}

@@ -10,7 +10,8 @@ here.
 """
 import numpy as np
 from dataclasses import dataclass
-import portfolio as port
+
+import EC_tools.portfolio as port
 
 # there are two ways to backtest strategies, 
 # (1) is to loop through every unit time interval and make a judgement call
@@ -66,6 +67,9 @@ class Trade(object):
         else:
             # choose the entry point
             self.trade_open = EES_dict['entry'][0]
+            
+            # Open position here
+            
             if len(EES_dict['stop']) == 0: # if the stop loss wasn't hit
                 pass
             else:

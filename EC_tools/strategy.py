@@ -10,7 +10,7 @@ This is a list of strategy that can be implemented in other scripts.
 import numpy as np
 from scipy.interpolate import CubicSpline
 
-import math_func as mfunc
+import EC_tools.math_func as mfunc
 
 # round trip fee 15 dollars
 __author__="Dexter S.-H. Hon"

@@ -9,7 +9,8 @@ import pandas as pd
 from dataclasses import dataclass, field
 from functools import cached_property
 import datetime as datetime
-import read as read
+
+import EC_tools.read as read
 
 PRICE_DICT = {"CLc1": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL.day",
                "CLc2": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL_d01.day",
@@ -369,6 +370,11 @@ class Portfolio(object):
         dntr: str
             The denomanator currency for calculating the value of each asset.
             The default is USD'.
+            
+        Returns
+        ------_
+        value_dict: dict
+            A dictionary for the value of each assets for that time.
         """
         # price_table is a dict containing the pricing data files
         # read the value of the portfolio of a particular date
@@ -413,19 +419,20 @@ class Portfolio(object):
         
     def asset_value(self, asset_name, datetime):
         """
+        A function that return a dict with of a particular asset on 
+        a particular date and time.
         
-
         Parameters
         ----------
-        asset_name : TYPE
-            DESCRIPTION.
-        datetime : TYPE
-            DESCRIPTION.
+        asset_name : str
+            The name of the asset.
+        datetime : datetime object
+            The date and time of interest.
 
         Returns
         -------
-        asset_value : TYPE
-            DESCRIPTION.
+        asset_value : float
+            the asset value.
 
         """
         asset_value = self.value(datetime)[asset_name]
@@ -433,17 +440,18 @@ class Portfolio(object):
             
     def total_value(self, datetime):
         """
-        
+        A function that return the total value of the entire portfolio on 
+        a particular date and time.
 
         Parameters
         ----------
-        datetime : TYPE
-            DESCRIPTION.
+        datetime : datetime object
+            The date and time of interest.
 
         Returns
         -------
-        total_value : TYPE
-            DESCRIPTION.
+        total_value : float
+            the total value.
 
         """
         total_value = sum(self.value(datetime).values())
@@ -452,7 +460,9 @@ class Portfolio(object):
     @property
     def log(self): # tested
         """
-        Run the calculation for all asset values for each time unit and 
+        The attribute that log the changes in values of each assets across 
+        all time.
+        
         """
         # Use the keys from the master table to construct the columns
         #columns = list(self.master_table['name'])
@@ -471,12 +481,14 @@ class Portfolio(object):
     
     def asset_log(self, asset_name): #tested
         """
+        The log of the changes in values for a particular assets across 
+        all time.
+        
         """
         asset_log = self.log[asset_name]
         return asset_log
 
 
-    
     
 @dataclass
 class Positions(Portfolio):
@@ -487,18 +499,44 @@ class Positions(Portfolio):
     #(Position id, give_asset, get_asset, Entry ,Exit, Stoploss, close_arg=S, active = False, datetime= None)
     #(Position id, asset_obj_A, asset_obj_B, entry_datetime, entry_price (payA buyB))
     #(Position id, asset_obj_A, asset_obj_B, exit_datetime)
-    pend_pos_list: list[int] = field(default_factory=list)
-    open_pos_list: list[int] = field(default_factory=list)
-    close_pos_list: list[int] = field(default_factory=list)
     
-    def add_pos(self):
-        #pos = (pos_id, give_asset, get_asset, Entry ,Exit, Stoploss, close_arg=S)
-        pos = None
+    #pend_pos_list: list[int] = field(default_factory=list)
+    #open_pos_list: list[int] = field(default_factory=list)
+    #close_pos_list: list[int] = field(default_factory=list)
+    
+    # Entry (1, asset_A, asset_B, price(A to B))
+    # Exit  (2, asset_B, asset_A, price_target(B to A))
+    # Stop  (3, asset_B, asset_A, price_exit(B to A))
+    # Close (4, asset_B , asset_A, price_close(B to A))
+    
+    def __init__(self):
+        
+        self._pend_pos_list = list()
+        self._open_pos_list = list()
+        self._close_pos_list = list()
+        
+    @property
+    def pend_pos_list(self):
+        return self._pend_pos_list
+    
+    @property
+    def open_pos_list(self):
+        return self._open_pos_list
+    
+    @property
+    def close_pos_list(self):
+        return self._close_pos_list
+    
+    def add_(self, give_asset, get_asset, price):
+        # Add a new position in the pend_pos_list
+        
+        #pos = (pos_id, give_asset, get_asset, Entry ,Exit, Stoploss, close_arg==S)
+        #pos = None
         return self.pend_pos_list.append(pos)
     
-    def open_pos(self):
+    def open_(self):
         pos_id=0
-        # add new position from pending_pos_list
+        # move a position from pending_pos_list to open_pos
         pend_pos = self.pend_pos_list[0]
         self.open_pos_list.append(pend_pos)
         # add the asset to the Portfolio
@@ -507,9 +545,10 @@ class Positions(Portfolio):
         self.pend_pos_list.remove(pend_pos)
         return self.pend_pos_list
     
-    def close_pos():
+    def close_():
         # convert the position from pending format to resolved format
-        
+        # move a position from open_pos_list to close_pos
+
         # check if cash
         # make a new position with void EES
         

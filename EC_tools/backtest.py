@@ -5,26 +5,25 @@ Created on Thu Apr 18 18:22:17 2024
 
 @author: dexter
 """
+# import Python package
 import pandas as pd
 import numpy as np
 import datetime as datetime
 
-import EC_read as EC_read
-import EC_strategy as EC_strategy
+# import from EC_tools
+import EC_tools.read as read
+import EC_tools.strategy as strategy
 
-import read as read
-import strategy as strategy
+import EC_tools.utility as util
+from EC_tools.bookkeep import Bookkeep
+from EC_tools.trade import Trade
+import EC_tools.plot as plot
 
-
-import utility as util
-from bookkeep import Bookkeep
-from trade import Trade
-import plot as plot
 # Spit out the document for overall PNL analysis
 
-FILENAME_MINUTE = "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/QP.001"
-FILENSME_BUYSELL_SIGNALS = "./benchmark_signal_QP_full.csv"
-SIGNAL_FILENAME = "APC_latest_QP.csv"   
+FILENAME_MINUTE = "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL_d01.001"
+FILENSME_BUYSELL_SIGNALS = "./benchmark_signal_CLc2_full.csv"
+SIGNAL_FILENAME = "APC_latest_CLc2.csv"   
 
 # tested
 def find_crossover(input_array, threshold):
@@ -82,16 +81,6 @@ def find_crossover(input_array, threshold):
     return {'rise': indices_rise_above, 
             'drop': indices_drop_below}
 
-
-class BackTest(object):
-    def __init__(self):
-        self._instruction = None
-        
-    def make_report(object):
-        
-        return None
-        
-    
 # tested
 def prepare_signal_interest(filename_buysell_signals, 
                             direction=["Buy", "Sell"], trim = False):
@@ -267,7 +256,8 @@ def loop_date(signal_table, histroy_intraday_data, open_hr='0330',
         
         # make a dictionary for all the possible EES time and values
         EES_dict = find_minute_EES(day, target_entry, target_exit, stop_exit,
-                          open_hr=open_hr_dt, close_hr=close_hr_dt, direction = direction)
+                          open_hr=open_hr_dt, close_hr=close_hr_dt, 
+                          direction = direction)
 
         # make the trade.
         trade_open, trade_close = Trade().trade_choice_simple(EES_dict)
@@ -506,7 +496,7 @@ def find_minute_EES(histroy_data_intraday,
 
 
 @util.time_it
-@util.save_csv('benchmark_PNL_QP_full.csv')
+@util.save_csv('benchmark_PNL_CLc2_full.csv')
 def run_backtest():
     # master function that runs the backtest itself.
     # The current method only allows one singular direction signal perday. and a set of constant EES
@@ -519,8 +509,8 @@ def run_backtest():
     trade_date_table = prepare_signal_interest(FILENSME_BUYSELL_SIGNALS, trim = False)
         
     # loop through the date and set the EES prices for each trading day   
-    dict_trade_PNL = loop_date(trade_date_table, history_data, open_hr='0800', 
-                  close_hr='1628', plot_or_not = False)    
+    dict_trade_PNL = loop_date(trade_date_table, history_data, open_hr='0330', 
+                  close_hr='2000', plot_or_not = False)    
 
     return dict_trade_PNL
 
