@@ -143,7 +143,7 @@ def simple_func(A):
     A.sub(CL6, datetime = day4)
     A.sub("CLc1", quantity = 11, unit='contracts', asset_type='Future',
           datetime = day4)
-    return A1
+    return A
 
 # 4% of SPY weight, drive large portion of growth (FAANG)
 # our own index with stock piles that has a certain quality
