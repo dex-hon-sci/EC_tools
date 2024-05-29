@@ -44,10 +44,11 @@ round_turn_fees = {
 'QPc2': 24.0,
 }
 
-import portfolio as port
+import EC_tools.portfolio as port
+import EC_tools.utility as util
+
 import time as time
 import datetime
-import utility as util
 
 USD = port.Asset('USD', 1e7, 'dollars', 'Cash')
 CL1 = port.Asset("CLc1", 50, 'contracts', 'Future')
@@ -88,44 +89,20 @@ def simple_func(A):
           datetime = day4)
     return A1
 
-# 4% of SPY weight, drive large portion of growth (FAANG)
-# our own index with stock piles that has a certain quality
 
-# =============================================================================
-# def simple_func2(A):
-#     A.add(USD.name, datetime = datetime.datetime.now())
-#     A.add(CL1.name, datetime = datetime.datetime.now())
-#     A.add(CL2.name, datetime = datetime.datetime.now())    
-#     A.add(CL3.name, datetime = datetime.datetime.now())    
-#     A.add(HO1.name, datetime = datetime.datetime.now())    
-#     A.add(QO1.name, datetime = datetime.datetime.now())    
-#     A.add(CL4.name, datetime = datetime.datetime.now())  
-#     A.add(CL5.name, datetime = datetime.datetime.now())
-#     return A
-# =============================================================================
+def test_Asset()->None:
+    A = port.Asset("test", 0, "test unit", "test type", misc={"Comment":"This is a comment."})
+    assert A.name == "test"
+    assert A.quantity == 0
+    assert A.unit == "test unit"
+    assert A.asset_type == "test type"
+    assert A.misc['Comment'] == "This is a comment."
     
-A1 = simple_func(A1)
+def test_Portfolio_init()->None:
+    
+    assert None
+    
+def test_Portfolio_entry() -> None:
+    assert None
+    
 
-start_day = datetime.datetime(2024,2,10)
-end_day =  datetime.datetime(2024,3,8)
-
-A1_newpool = A1.set_pool_window(day1, end_day)
-
-print('A1_newpool', A1_newpool)
-print('====================================')
-
-print(A1.value(end_day, PRICE_TABLE, size_dict = num_per_contract))
-print('====================================')
-
-#print(A1.log)
-
-#values = [list(A2[i][1].__dict__.values()) for i in range(len(A2))]
-#keys = [list(A2[i][1].__dict__.keys()) for i in range(len(A2))][0]
-#print(values, keys)
-
-
-#A2 = simple_func2(A2)
-
-#print(A1.table)
-
-#print(A1.pool_df())
