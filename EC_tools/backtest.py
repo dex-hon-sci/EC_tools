@@ -16,7 +16,7 @@ import EC_tools.strategy as strategy
 
 import EC_tools.utility as util
 from EC_tools.bookkeep import Bookkeep
-from EC_tools.trade import Trade
+from EC_tools.trade import Trade, trade_choice_simple
 import EC_tools.plot as plot
 
 # Spit out the document for overall PNL analysis
@@ -221,6 +221,9 @@ def plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=False):
 def loop_date(signal_table, histroy_intraday_data, open_hr='0330', 
               close_hr='1930',
               plot_or_not = False):
+    """
+    LEGACY looping method before the development of the Portfolio module
+    """
     
     # make bucket 
     book = Bookkeep(bucket_type='backtest')
@@ -260,7 +263,7 @@ def loop_date(signal_table, histroy_intraday_data, open_hr='0330',
                           direction = direction)
 
         # make the trade.
-        trade_open, trade_close = Trade().trade_choice_simple(EES_dict)
+        trade_open, trade_close = trade_choice_simple(EES_dict)
         #trade_open, trade_close = None, None
         # WIP
         #entry_price, exit_price = None, None
@@ -297,85 +300,6 @@ def loop_date(signal_table, histroy_intraday_data, open_hr='0330',
     #sort by date
     dict_trade_PNL = dict_trade_PNL.sort_values(by='date')
          
-    return dict_trade_PNL
-
-def loop_date_2(signal_table, histroy_intraday_data, func1, func2, open_hr='0330', 
-              close_hr='1930',
-              plot_or_not = False):
-    
-    # make bucket # I need to make a new set of columns name
-    # make a bookkep.bucket_method wrapper
-    profits_losses_bucket = {
-    'Price Code': [],
-    'predicted signal': [],
-    'date': [],
-    'return from trades': [],
-    'entry price': [],
-    'entry datetime': [],
-    'exit price': [],
-    'exit datetime': [],
-    'risk/reward value ratio': [],
-    }
-       
-    print('signal_table',signal_table)
-    
-    
-    for date_interest, direction, target_entry, target_exit, stop_exit, price_code in zip(
-            signal_table['Date'], 
-            signal_table['direction'], 
-            signal_table['target entry'],
-            signal_table['target exit'], 
-            signal_table['stop exit'],
-            signal_table['price code']):
-        
-        # Define the date of interest by reading TimeStamp. 
-        # We may want to remake all this and make Timestamp the universal 
-        # parameter when dealing with time
-        day = extract_intraday_minute_data(histroy_intraday_data, date_interest, 
-                                     open_hr=open_hr, close_hr=close_hr)
-        
-        print(day['Date'].iloc[0], direction, target_entry, target_exit, stop_exit)
-        
-        # make a dictionary for all the possible EES time and values
-        EES_dict = func1(day, target_entry, target_exit, stop_exit,
-                          open_hr=open_hr, close_hr=close_hr, direction = direction)
-        
-        # make the trade.
-        trade_open, trade_close = func2(EES_dict)
-
-        
-        #cal_xxx: make a function that calculate the info for the bookeep
-        entry_price, exit_price = trade_open[1], trade_close[1]
-        entry_datetime= trade_open[0]
-        exit_datetime = trade_close[0]
-        
-        # calculate statisticsEES_dict
-        if direction == "Buy": # for buy, we are longing
-            return_trades = exit_price - entry_price
-        elif direction == "Sell": # for sell, we are shorting
-            return_trades = entry_price - exit_price
-
-        # The risk and reward ratio is based on Abbe's old script but it should be the sharpe ratio
-        risk_reward_ratio = abs(target_entry-stop_exit)/abs(target_entry-target_exit)
-
-        #make bucket for storage
-        bucket = profits_losses_bucket
-        
-        # put all the data in a singular list
-        data = [price_code, direction, date_interest,
-                return_trades, entry_price,  entry_datetime,
-                    exit_price, exit_datetime, risk_reward_ratio]
-        
-        # Storing the data    
-        dict_trade_PNL = strategy.MRStrategy.\
-                                        store_to_bucket_single(bucket, data)
-        
-    dict_trade_PNL = pd.DataFrame(dict_trade_PNL)
-    
-    print('dict_trade_PNL', dict_trade_PNL.columns, dict_trade_PNL.iloc[0])
-    #sort by date
-    dict_trade_PNL = dict_trade_PNL.sort_values(by='date')
-    
     return dict_trade_PNL
     
 def find_minute_EES(histroy_data_intraday, 

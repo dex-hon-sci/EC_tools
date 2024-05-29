@@ -9,13 +9,17 @@ This is a list of strategy that can be implemented in other scripts.
 """
 import numpy as np
 from scipy.interpolate import CubicSpline
+from typing import Protocol
 
 import EC_tools.math_func as mfunc
 
 # round trip fee 15 dollars
 __author__="Dexter S.-H. Hon"
 
+class Strategy(Protocol):
+    def set_EES():
 
+        pass
     
 class MRStrategy(object):
 

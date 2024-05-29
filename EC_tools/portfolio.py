@@ -7,6 +7,7 @@ Created on Mon May  6 08:55:17 2024
 """
 import pandas as pd
 from dataclasses import dataclass, field
+from typing import Protocol
 from functools import cached_property
 import datetime as datetime
 
@@ -34,8 +35,8 @@ SIZE_DICT = {
     'QOc1': 1000.0,
     'QOc2': 1000.0,
     'QPc1': 100.0,
-    'QPc2': 100.0,
-}
+    'QPc2': 100.0
+    }
 
 __all__ = ['Asset','Portfolio', 'Positions']
 
@@ -267,6 +268,16 @@ class Portfolio(object):
         self._master_table  = self._make_table(self.pool)
         return self._master_table
     
+    def check_remainder(self, asset_name, quantity):
+        """
+        A function that check the remainder if there are enough asset of a 
+        particular name in the portfolio
+        
+        """
+        return self.master_table[self.master_table['name']==\
+                                  asset_name]['quantity'].iloc[0] < quantity
+         
+    
     def add(self, asset,  datetime= datetime.datetime.now(), 
             quantity = 0, unit='contract', 
             asset_type='future'): #tested
@@ -491,7 +502,12 @@ class Portfolio(object):
 
     
 @dataclass
-class Positions(Portfolio):
+class Positions(object):
+    pos_id: int    
+    status: str
+    pos_tuple: tuple
+    # attribute of which portfolio does it belong to
+    
     # The position class constitue the exchanges i.e. trade, add(asset), sub(asset)
     # Auto load position 
     # Long Cash baseline
@@ -509,50 +525,66 @@ class Positions(Portfolio):
     # Stop  (3, asset_B, asset_A, price_exit(B to A))
     # Close (4, asset_B , asset_A, price_close(B to A))
     
-    def __init__(self):
-        
-        self._pend_pos_list = list()
-        self._open_pos_list = list()
-        self._close_pos_list = list()
-        
-    @property
-    def pend_pos_list(self):
-        return self._pend_pos_list
-    
-    @property
-    def open_pos_list(self):
-        return self._open_pos_list
-    
-    @property
-    def close_pos_list(self):
-        return self._close_pos_list
-    
-    def add_(self, give_asset, get_asset, price):
-        # Add a new position in the pend_pos_list
-        
-        #pos = (pos_id, give_asset, get_asset, Entry ,Exit, Stoploss, close_arg==S)
-        #pos = None
-        return self.pend_pos_list.append(pos)
-    
-    def open_(self):
-        pos_id=0
-        # move a position from pending_pos_list to open_pos
-        pend_pos = self.pend_pos_list[0]
-        self.open_pos_list.append(pend_pos)
-        # add the asset to the Portfolio
-        
-        #remove pos in pending list
-        self.pend_pos_list.remove(pend_pos)
-        return self.pend_pos_list
-    
-    def close_():
-        # convert the position from pending format to resolved format
-        # move a position from open_pos_list to close_pos
-
-        # check if cash
-        # make a new position with void EES
-        
-        # add the relevant asset to the Portfolio
+    # PositionStatus: Pending, Open, Close, Voided
+class PositionBook(Portfolio):
+    def __init__():
         return
+    
+class PositionExecute(Protocol):
+    
+    def __init__(self,_):
+        self._ = _
+        
+    def execute():
+        # check position size before executions
+        #if price_cond==True: then initiate trade add A sub B  
+        return
+# =============================================================================
+#     def __init__(self):
+#         
+#         self._pend_pos_list = list()
+#         self._open_pos_list = list()
+#         self._close_pos_list = list()
+#         
+#     @property
+#     def pend_pos_list(self):
+#         return self._pend_pos_list
+#     
+#     @property
+#     def open_pos_list(self):
+#         return self._open_pos_list
+#     
+#     @property
+#     def close_pos_list(self):
+#         return self._close_pos_list
+#     
+#     def add_(self, give_asset, get_asset, price):
+#         # Add a new position in the pend_pos_list
+#         
+#         #pos = (pos_id, give_asset, get_asset, Entry ,Exit, Stoploss, close_arg==S)
+#         #pos = None
+#         return self.pend_pos_list.append(pos)
+#     
+#     def open_(self):
+#         pos_id=0
+#         # move a position from pending_pos_list to open_pos
+#         pend_pos = self.pend_pos_list[0]
+#         self.open_pos_list.append(pend_pos)
+#         # add the asset to the Portfolio
+#         
+#         #remove pos in pending list
+#         self.pend_pos_list.remove(pend_pos)
+#         return self.pend_pos_list
+#     
+#     def close_():
+#         # convert the position from pending format to resolved format
+#         # move a position from open_pos_list to close_pos
+# 
+#         # check if cash
+#         # make a new position with void EES
+#         
+#         # add the relevant asset to the Portfolio
+#         return
+# =============================================================================
     
     
