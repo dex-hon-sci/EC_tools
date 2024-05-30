@@ -44,33 +44,31 @@ round_turn_fees = {
 'QPc2': 24.0,
 }
 
-import EC_tools.portfolio as port
+import EC_tools.portfolio as P
 import EC_tools.utility as util
 
-import time as time
 import datetime
 
-USD = port.Asset('USD', 1e7, 'dollars', 'Cash')
-CL1 = port.Asset("CLc1", 50, 'contracts', 'Future')
-CL2 = port.Asset("CLc2", 60, 'contracts', 'Future')
-CL3 = port.Asset('CLc1', 10, 'contracts', 'Future')
-HO1 = port.Asset('HOc1', 30, 'contracts', 'Future')
-QO1 = port.Asset('QOc1', 20, 'contracts', 'Future')
-CL4 = port.Asset('CLc1', 56, 'contracts', 'Future')
-CL5 = port.Asset('CLc2', 36, 'contracts', 'Future')
+# Define the test inputs for assets
+USD = P.Asset('USD', 1e7, 'dollars', 'Cash')
+CL1 = P.Asset("CLc1", 50, 'contracts', 'Future')
+CL2 = P.Asset("CLc2", 60, 'contracts', 'Future')
+CL3 = P.Asset('CLc1', 10, 'contracts', 'Future')
+HO1 = P.Asset('HOc1', 30, 'contracts', 'Future')
+QO1 = P.Asset('QOc1', 20, 'contracts', 'Future')
+CL4 = P.Asset('CLc1', 56, 'contracts', 'Future')
+CL5 = P.Asset('CLc2', 36, 'contracts', 'Future')
 
-CL6 = port.Asset('CLc1',20,'contracts', 'Future')
+CL6 = P.Asset('CLc1',20,'contracts', 'Future')
 
-A1 = port.Portfolio()
-#A2 = port.Portfolio()
-
+# Define the test inputs for datetime
 day1= datetime.datetime(2024,1,10)
 day2= datetime.datetime(2024,2,28)
 day3= datetime.datetime(2024,3,1)
 day4= datetime.datetime(2024,4,4)
 
-@util.time_it
-def simple_func(A):
+def simple_fill_func(A):
+    # a simple function that fills the portfolio
     A.add(USD, datetime = day1)
     A.add(CL1, datetime = day1)
     A.add(CL2, datetime = day1)    
@@ -87,11 +85,11 @@ def simple_func(A):
     A.sub(CL6, datetime = day4)
     A.sub("CLc1", quantity = 11, unit='contracts', asset_type='Future',
           datetime = day4)
-    return A1
+    return A
 
 
 def test_Asset()->None:
-    A = port.Asset("test", 0, "test unit", "test type", misc={"Comment":"This is a comment."})
+    A = P.Asset("test", 0, "test unit", "test type", misc={"Comment":"This is a comment."})
     assert A.name == "test"
     assert A.quantity == 0
     assert A.unit == "test unit"
@@ -99,9 +97,17 @@ def test_Asset()->None:
     assert A.misc['Comment'] == "This is a comment."
     
 def test_Portfolio_init()->None:
-    
+    PP = P.Portfolio()
     assert None
-    
+    assert PP.__pool_asset == [] 
+    assert PP.__pool_datetime == []
+    assert PP._pool == []
+    assert PP._pool_window == None
+    assert PP._table == None
+    assert PP._master_table == None
+    assert PP._value == None
+    assert PP._log == None
+        
 def test_Portfolio_entry() -> None:
     assert None
     

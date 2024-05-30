@@ -9,6 +9,7 @@ Created on Wed May 29 16:50:39 2024
 # make a Portfolio
 
 from EC_tools.portfolio import Asset, Portfolio
+from EC_tools.position import Position, ExecutePosition
 import datetime as datetime
 
 P1 = Portfolio()
@@ -48,4 +49,8 @@ def add_asset_to_portfolio(A):
     return A
 
 #P1 = add_asset_to_portfolio(P1)
+A = Asset("CL24N", 50, 'contracts', 'future')
+PP = Position('1', USD, A, 0.05, datetime.datetime.now(),portfolio=P1)
 
+print(PP.status)
+print(ExecutePosition(PP).open_pos().status)
