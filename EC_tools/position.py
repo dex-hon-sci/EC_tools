@@ -23,71 +23,79 @@ class PositionStatus(Enum):
     OPEN = "Open"
     CLOSE = "Close"
     VOID = "Void"
+
     
 @dataclass
-class Positions(object):
+class Position(object):
     pos_id: str    
     give_obj: Asset
     get_obj: Asset
     price: float
-    start_time: datetime = None
+    status: PositionStatus = PositionStatus.PENDING
+    portfolio: Portfolio = None
+    
+    start_time: datetime = datetime.datetime.now()
     open_time: datetime = None
     close_time: datetime = None
     void_time: datetime = None
-    _status: PositionStatus = PositionStatus.PENDING
-    portfolio: Portfolio = None
-    #_check: bool = False
     
-    #@property
-    #def check_balance(self):
     
-    def __post_init__(self):
+    def __post_init__(self, void_time = datetime.datetime.now()):
         # check if the quantity of both assets are 
         correct_ratio = self.get_obj.quantity / self.give_obj.quantity
         print(correct_ratio, self.price)
         self._check = (self.price == correct_ratio)
         
+        print('Position created.')
         #If this value is false, the position is automatically voided.
         if self._check == False:
-            self._status = PositionStatus.VOID
-            self.void_time = datetime.datetime.now()
-            
-        #return self._check 
+            self.status = PositionStatus.VOID
+            self.void_time = void_time
+            print("Position voided.")
     
     
-    # attribute of which portfolio does it belong to
-    
-    # The position class constitue the exchanges i.e. trade, add(asset), sub(asset)
-    # Auto load position 
-    # Long Cash baseline
-    
-    #(Position id, give_asset, get_asset, Entry ,Exit, Stoploss, close_arg=S, active = False, datetime= None)
-    #(Position id, asset_obj_A, asset_obj_B, entry_datetime, entry_price (payA buyB))
-    #(Position id, asset_obj_A, asset_obj_B, exit_datetime)
-    
-    #pend_pos_list: list[int] = field(default_factory=list)
-    #open_pos_list: list[int] = field(default_factory=list)
-    #close_pos_list: list[int] = field(default_factory=list)
-    
-    # Entry (1, asset_A, asset_B, price(A to B))
-    # Exit  (2, asset_B, asset_A, price_target(B to A))
-    # Stop  (3, asset_B, asset_A, price_exit(B to A))
-    # Close (4, asset_B , asset_A, price_close(B to A))
-    
-    # PositionStatus: Pending, Open, Close, Voided
-    
-    
-
 class PositionBook(Portfolio):
-    def __init__():
-        return
-    
-class PositionExecute(Protocol):
-    
-    def __init__(self,_):
-        self._ = _
+    def __init__(self):
+        self._pool = list()
         
-    def execute():
-        # check position size before executions
-        #if price_cond==True: then initiate trade add A sub B  
-        return
+    def pool(self):
+        return self._pool
+    
+class ExecutePosition(object):
+    
+    def __init__(self,  Position):
+        self.position = Position
+
+        #super().__init__(*args, **kwargs)
+
+    #@classmethod()
+    def open_pos(self, open_time = datetime.datetime.now()):
+        
+        # check if you have the avaliable fund in the portfolio
+        if self.position.portfolio.asset_value(self.position.give_obj.name) < \
+                                            self.position.give_obj.quantity:
+            raise Exception('WTF')
+        else: pass
+    
+        self.position.status = PositionStatus.OPEN
+        self.open_time = open_time
+        return self.position
+    
+    def close_pos(self, close_time = datetime.datetime.now()):
+        # check if the position is open
+        if self.position.status == PositionStatus.OPEN:
+            pass
+        else:
+            raise Exception("The position is not yet open.")
+            
+        # check the condition
+        
+        #add and sub portfolio
+        self.portfolio.add(Position.get_obj)
+        self.Portfolio.sub(Position.give_obj)
+        self.position.status = PositionStatus.CLOSE
+        return self.position
+    
+    def void_pos():
+        
+        return 

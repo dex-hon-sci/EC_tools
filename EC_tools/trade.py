@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from typing import Protocol
 
 import EC_tools.portfolio as port
-from EC_tools.position import Positions
+from EC_tools.position import Position, ExecutePosition
 
 # there are two ways to backtest strategies, 
 # (1) is to loop through every unit time interval and make a judgement call
@@ -59,7 +59,7 @@ class Trade(object):
         self.portfolio = portfolio
 
 
-    def trade_choice_simple_portfolio(self, EES_dict, portfolio, give_obj, get_obj): 
+    def trade_choice_simple_portfolio(self, EES_dict, give_obj, get_obj): 
         # Add new position into the pending list
                 
         # establish a pending positions. 
@@ -78,15 +78,8 @@ class Trade(object):
         # Then add Asset B, sub Asset A
         # Then change (1..) to resolved.
         
-        pos_id = 1
-        entry = Positions(pos_id, give_obj, get_obj, EES_dict['entry'][0])
-        exit_pos = Positions(pos_id, give_obj, get_obj, EES_dict['exit'][0]) 
-        stop_pos = Positions(pos_id, give_obj, get_obj, EES_dict['stop'])
-        close_pos = Positions(pos_id, give_obj, get_obj, EES_dict['close'])
         
-        # 
-        
-        # Trade logic
+        # To get the correct EES and close time and price
         if len(EES_dict['entry']) == 0: # entry price not hit. No trade that day.
             pass
         else:
@@ -111,14 +104,30 @@ class Trade(object):
                     else:
                         pass
                     
+        # Perform the trade action on the Portfolio
+        # Make the pending positions here
+        pos_id = 1
+        entry = Position(pos_id, give_obj, get_obj, EES_dict['entry'][0], 
+                                                     portfolio= self.portfolio)
+        exit_pos = Position(pos_id, get_obj, give_obj, EES_dict['exit'][0], 
+                                                    portfolio= self.portfolio) 
+        stop_pos = Position(pos_id, get_obj, give_obj, EES_dict['stop'], 
+                                                    portfolio= self.portfolio)
+        close_pos = Position(pos_id, get_obj, give_obj, EES_dict['close'], 
+                                                     portfolio= self.portfolio)
+        
+        # Execute the Position here
+        #ExecutePosition()
+        
         return self.trade_open, self.trade_close
     
-#(object, tradde_open, trade_closetrade_closetrade_close)
-
-@dataclass
-class TradeBot:
-    
-    exchange: None
-    trading_startegy: None
-    
+# =============================================================================
+#  under construction
+# @dataclass
+# class TradeBot:
+#     
+#     exchange: None
+#     trading_startegy: None
+#     
+# =============================================================================
     

@@ -18,6 +18,7 @@ import EC_tools.utility as util
 from EC_tools.bookkeep import Bookkeep
 from EC_tools.trade import Trade, trade_choice_simple
 import EC_tools.plot as plot
+from EC_tools.portfolio import Asset, Portfolio
 
 # Spit out the document for overall PNL analysis
 
@@ -218,90 +219,6 @@ def plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=False):
     elif plot_or_not == False:
         pass
 
-def loop_date(signal_table, histroy_intraday_data, open_hr='0330', 
-              close_hr='1930',
-              plot_or_not = False):
-    """
-    LEGACY looping method before the development of the Portfolio module
-    """
-    
-    # make bucket 
-    book = Bookkeep(bucket_type='backtest')
-    dict_trade_PNL = book.make_bucket(keyword='benchmark')
-    
-    for date_interest, direction, target_entry, target_exit, stop_exit, price_code in zip(
-            signal_table['Date'], 
-            signal_table['direction'], 
-            signal_table['target entry'],
-            signal_table['target exit'], 
-            signal_table['stop exit'],
-            signal_table['price code']):
-        
-        # Define the date of interest by reading TimeStamp. 
-        # We may want to remake all this and make Timestamp the universal 
-        # parameter when dealing with time
-        day = extract_intraday_minute_data(histroy_intraday_data, date_interest, 
-                                     open_hr=open_hr, close_hr=close_hr)
-        
-        print(day['Date'].iloc[0], direction, target_entry, target_exit, stop_exit)
-        
-        open_hr_dt, open_price = read.find_closest_price(day,
-                                                           target_hr= open_hr,
-                                                           direction='forward')
-        
-        print('open',open_hr_dt, open_price)
-        
-        close_hr_dt, close_price = read.find_closest_price(day,
-                                                           target_hr= close_hr,
-                                                           direction='backward')
-        print('close', close_hr_dt, close_price)
-
-        
-        # make a dictionary for all the possible EES time and values
-        EES_dict = find_minute_EES(day, target_entry, target_exit, stop_exit,
-                          open_hr=open_hr_dt, close_hr=close_hr_dt, 
-                          direction = direction)
-
-        # make the trade.
-        trade_open, trade_close = trade_choice_simple(EES_dict)
-        #trade_open, trade_close = None, None
-        # WIP
-        #entry_price, exit_price = None, None
-        entry_price, exit_price = trade_open[1], trade_close[1]
-        entry_datetime= trade_open[0]
-        exit_datetime = trade_close[0]
-        
-        # calculate statistics EES_dict
-        if direction == "Buy": # for buy, we are longing
-            return_trades = exit_price - entry_price
-        elif direction == "Sell": # for sell, we are shorting
-            return_trades = entry_price - exit_price
-
-        # The risk and reward ratio is based on Abbe's old script but it should be the sharpe ratio
-        risk_reward_ratio = abs(target_entry-stop_exit)/abs(target_entry-target_exit)
-
-
-        # put all the data in a singular list
-        data = [price_code, direction, date_interest,
-                return_trades, entry_price,  entry_datetime,
-                    exit_price, exit_datetime, risk_reward_ratio]
-        
-        # Storing the data    
-        dict_trade_PNL = book.store_to_bucket_single(data)
-                                    
-        # plotting mid-backtest
-        plot_in_backtest(date_interest, EES_dict, direction, 
-                         plot_or_not=plot_or_not)
-
-        print('info', data)
-        
-    dict_trade_PNL = pd.DataFrame(dict_trade_PNL)
-    
-    #sort by date
-    dict_trade_PNL = dict_trade_PNL.sort_values(by='date')
-         
-    return dict_trade_PNL
-    
 def find_minute_EES(histroy_data_intraday, 
                       target_entry, target_exit, stop_exit,
                       open_hr="0330", close_hr="1930", 
@@ -419,6 +336,182 @@ def find_minute_EES(histroy_data_intraday,
     return EES_dict
 
 
+def loop_date(signal_table, histroy_intraday_data, open_hr='0330', 
+              close_hr='1930',
+              plot_or_not = False):
+    """
+    LEGACY looping method before the development of the Portfolio module
+    """
+    
+    # make bucket 
+    book = Bookkeep(bucket_type='backtest')
+    dict_trade_PNL = book.make_bucket(keyword='benchmark')
+    
+    for date_interest, direction, target_entry, target_exit, stop_exit, price_code in zip(
+            signal_table['Date'], 
+            signal_table['direction'], 
+            signal_table['target entry'],
+            signal_table['target exit'], 
+            signal_table['stop exit'],
+            signal_table['price code']):
+        
+        # Define the date of interest by reading TimeStamp. 
+        # We may want to remake all this and make Timestamp the universal 
+        # parameter when dealing with time
+        day = extract_intraday_minute_data(histroy_intraday_data, date_interest, 
+                                     open_hr=open_hr, close_hr=close_hr)
+        
+        print(day['Date'].iloc[0], direction, target_entry, target_exit, stop_exit)
+        
+        open_hr_dt, open_price = read.find_closest_price(day,
+                                                           target_hr= open_hr,
+                                                           direction='forward')
+        
+        print('open',open_hr_dt, open_price)
+        
+        close_hr_dt, close_price = read.find_closest_price(day,
+                                                           target_hr= close_hr,
+                                                           direction='backward')
+        print('close', close_hr_dt, close_price)
+
+        
+        # make a dictionary for all the possible EES time and values
+        EES_dict = find_minute_EES(day, target_entry, target_exit, stop_exit,
+                          open_hr=open_hr_dt, close_hr=close_hr_dt, 
+                          direction = direction)
+
+        # make the trade.
+        trade_open, trade_close = trade_choice_simple(EES_dict)
+        #trade_open, trade_close = None, None
+        # WIP
+        #entry_price, exit_price = None, None
+        entry_price, exit_price = trade_open[1], trade_close[1]
+        entry_datetime= trade_open[0]
+        exit_datetime = trade_close[0]
+        
+        # calculate statistics EES_dict
+        if direction == "Buy": # for buy, we are longing
+            return_trades = exit_price - entry_price
+        elif direction == "Sell": # for sell, we are shorting
+            return_trades = entry_price - exit_price
+
+        # The risk and reward ratio is based on Abbe's old script but it should be the sharpe ratio
+        risk_reward_ratio = abs(target_entry-stop_exit)/abs(target_entry-target_exit)
+
+
+        # put all the data in a singular list
+        data = [price_code, direction, date_interest,
+                return_trades, entry_price,  entry_datetime,
+                    exit_price, exit_datetime, risk_reward_ratio]
+        
+        # Storing the data    
+        dict_trade_PNL = book.store_to_bucket_single(data)
+                                    
+        # plotting mid-backtest
+        plot_in_backtest(date_interest, EES_dict, direction, 
+                         plot_or_not=plot_or_not)
+
+        print('info', data)
+        
+    dict_trade_PNL = pd.DataFrame(dict_trade_PNL)
+    
+    #sort by date
+    dict_trade_PNL = dict_trade_PNL.sort_values(by='date')
+         
+    return dict_trade_PNL
+    
+def loop_date_portfolio(signal_table, histroy_intraday_data, portfolio, 
+                        asset_name, 
+                        open_hr='0330', close_hr='1930',
+                        plot_or_not = False):
+    """
+    LEGACY looping method before the development of the Portfolio module
+    """
+
+    
+    book = Bookkeep(bucket_type='backtest')
+    dict_trade_PNL = book.make_bucket(keyword='benchmark')
+    
+    for date_interest, direction, target_entry, target_exit, stop_exit, price_code in zip(
+            signal_table['Date'], 
+            signal_table['direction'], 
+            signal_table['target entry'],
+            signal_table['target exit'], 
+            signal_table['stop exit'],
+            signal_table['price code']):
+        
+        # Define the date of interest by reading TimeStamp. 
+        # We may want to remake all this and make Timestamp the universal 
+        # parameter when dealing with time
+        day = extract_intraday_minute_data(histroy_intraday_data, date_interest, 
+                                     open_hr=open_hr, close_hr=close_hr)
+        
+        print(day['Date'].iloc[0], direction, target_entry, target_exit, stop_exit)
+        
+        open_hr_dt, open_price = read.find_closest_price(day,
+                                                           target_hr= open_hr,
+                                                           direction='forward')
+        
+        print('open',open_hr_dt, open_price)
+        
+        close_hr_dt, close_price = read.find_closest_price(day,
+                                                           target_hr= close_hr,
+                                                           direction='backward')
+        print('close', close_hr_dt, close_price)
+
+        
+        # make a dictionary for all the possible EES time and values
+        EES_dict = find_minute_EES(day, target_entry, target_exit, stop_exit,
+                          open_hr=open_hr_dt, close_hr=close_hr_dt, 
+                          direction = direction)
+
+############ WIP
+        # calculate the require quantity by the price action
+        give_obj_quantity, get_obj_quantity = 0, 0
+        
+        give_obj = Asset("USD", give_obj_quantity, 'dollars', 'cash'),
+        get_obj = Asset(asset_name, get_obj_quantity, 'contracts', 'future')
+        # make the trade.
+        trade_open, trade_close = Trade(portfolio).trade_choice_simple_portfolio(
+                                                    EES_dict, give_obj, get_obj)
+###########
+
+        entry_price, exit_price = trade_open[1], trade_close[1]
+        entry_datetime= trade_open[0]
+        exit_datetime = trade_close[0]
+        
+        # calculate statistics EES_dict
+        if direction == "Buy": # for buy, we are longing
+            return_trades = exit_price - entry_price
+        elif direction == "Sell": # for sell, we are shorting
+            return_trades = entry_price - exit_price
+
+        # The risk and reward ratio is based on Abbe's old script but it should be the sharpe ratio
+        risk_reward_ratio = abs(target_entry-stop_exit)/abs(target_entry-target_exit)
+
+
+        # put all the data in a singular list
+        data = [price_code, direction, date_interest,
+                return_trades, entry_price,  entry_datetime,
+                    exit_price, exit_datetime, risk_reward_ratio]
+        
+        # Storing the data    
+        dict_trade_PNL = book.store_to_bucket_single(data)
+                                    
+        # plotting mid-backtest
+        plot_in_backtest(date_interest, EES_dict, direction, 
+                         plot_or_not=plot_or_not)
+
+        print('info', data)
+        
+    dict_trade_PNL = pd.DataFrame(dict_trade_PNL)
+    
+    #sort by date
+    dict_trade_PNL = dict_trade_PNL.sort_values(by='date')
+         
+    return dict_trade_PNL
+    
+
 @util.time_it
 @util.save_csv('benchmark_PNL_CLc2_full.csv')
 def run_backtest():
@@ -437,6 +530,31 @@ def run_backtest():
                   close_hr='2000', plot_or_not = False)    
 
     return dict_trade_PNL
+
+def run_backtest_portfolio():
+    # master function that runs the backtest itself.
+    # The current method only allows one singular direction signal perday. and a set of constant EES
+
+    
+    # read the reformatted minute history data
+    history_data = read.read_reformat_Portara_minute_data(FILENAME_MINUTE)
+    
+    # Find the date for trading, only "Buy" or "Sell" date are taken.
+    trade_date_table = prepare_signal_interest(FILENSME_BUYSELL_SIGNALS, trim = False)
+    
+    # Initialise Portfolio
+    P1 = Portfolio()
+    USD_initial = Asset("USD", 100000, "dollars", "cash") # initial fund
+    P1.add(USD_initial)
+    
+    # loop through the date and set the EES prices for each trading day   
+    dict_trade_PNL = loop_date_portfolio(trade_date_table, history_data, P1, 
+                               give_obj = None, get_obj = None,
+                               open_hr='0330', close_hr='2000', 
+                               plot_or_not = False)    
+
+    return dict_trade_PNL
+
 
 
 def run_backtest_list():
