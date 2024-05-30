@@ -29,6 +29,9 @@ def run_backtest(filename_minute,filename_buysell_signals):
 
     return dict_trade_PNL
 
+def run_backtest_crude_oil():
+    
+    return
 
 if __name__ == "__main__":
     # master function that runs the backtest itself.

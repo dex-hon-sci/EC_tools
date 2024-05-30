@@ -147,19 +147,6 @@ def simple_func(A):
 
 # 4% of SPY weight, drive large portion of growth (FAANG)
 # our own index with stock piles that has a certain quality
-
-# =============================================================================
-# def simple_func2(A):
-#     A.add(USD.name, datetime = datetime.datetime.now())
-#     A.add(CL1.name, datetime = datetime.datetime.now())
-#     A.add(CL2.name, datetime = datetime.datetime.now())    
-#     A.add(CL3.name, datetime = datetime.datetime.now())    
-#     A.add(HO1.name, datetime = datetime.datetime.now())    
-#     A.add(QO1.name, datetime = datetime.datetime.now())    
-#     A.add(CL4.name, datetime = datetime.datetime.now())  
-#     A.add(CL5.name, datetime = datetime.datetime.now())
-#     return A
-# =============================================================================
     
 A1 = simple_func(A1)
 
