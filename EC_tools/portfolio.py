@@ -340,9 +340,9 @@ class Portfolio(object):
             #print(self.table[self.table['name']== asset_name]['quantity'].iloc[0])
             
             # check if the total amount is higher than the subtraction amount
-            if asset.__dict__['quantity'] > self.master_table[self.master_table['name']==\
-                                              asset_name]['quantity'].iloc[0]: # tested
-                
+            if self.check_remainder(asset_name, asset.__dict__['quantity']):
+            #if asset.__dict__['quantity'] > self.master_table[self.master_table['name']==\
+            #                                  asset_name]['quantity'].iloc[0]: # tested
                 raise Exception('There is not enough {} to be subtracted \
                                 from the portfolio.'.format(asset_name))
             else:

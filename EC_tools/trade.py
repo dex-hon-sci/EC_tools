@@ -77,44 +77,74 @@ class Trade(object):
         # If entry price exist, entry price == price(A to B).
         # Then add Asset B, sub Asset A
         # Then change (1..) to resolved.
-        
+        # Make the pending positions here
+        pos_id = 0
+        entry_pos = Position(pos_id+1, give_obj, get_obj, EES_dict['entry'][0], 
+                                                     portfolio= self.portfolio)
+        exit_pos = Position(pos_id+2, get_obj, give_obj, EES_dict['exit'][0], 
+                                                    portfolio= self.portfolio) 
+        stop_pos = Position(pos_id+3, get_obj, give_obj, EES_dict['stop'], 
+                                                    portfolio= self.portfolio)
+        close_pos = Position(pos_id+4, get_obj, give_obj, EES_dict['close'], 
+                                                     portfolio= self.portfolio)
         
         # To get the correct EES and close time and price
         if len(EES_dict['entry']) == 0: # entry price not hit. No trade that day.
             pass
         else:
             # choose the entry point
-            self.trade_open = EES_dict['entry'][0]
+            trade_open = EES_dict['entry'][0]
             
             # Open position here
+            # for trade_simple method, we do not care about path dependent trades
+            # Therefore, simple open and close actions suffice 
+            ExecutePosition(entry_pos).open_pos()
+            ExecutePosition(entry_pos).close_pos()
             
             if len(EES_dict['stop']) == 0: # if the stop loss wasn't hit
                 pass
             else:
-                self.trade_close = EES_dict['stop'][0] #set the trade close at stop loss
+                trade_close = EES_dict['stop'][0] #set the trade close at stop loss
+                
+                ExecutePosition(stop_pos).open_pos()
+                ExecutePosition(stop_pos).close_pos()
+                
+                # Cancel all order positions
+                ExecutePosition(exit_pos).void_pos()
+                ExecutePosition(close_pos).void_pos()
+
                 
             if len(EES_dict['exit']) == 0:
-                self.trade_close = EES_dict['close']
+                trade_close = EES_dict['close']
+                
+                ExecutePosition(close_pos).open_pos()
+                ExecutePosition(close_pos).close_pos()
+                
+                # Cancel all order positions
+                ExecutePosition(stop_pos).void_pos()
+                ExecutePosition(exit_pos).void_pos()
+                
             else:
                 # make sure the exit comes after the entry point
                 for i, exit_cand in enumerate(EES_dict['exit']):  
-                    if exit_cand[0] > self.trade_open[0]:
-                        self.trade_close = exit_cand
+                    if exit_cand[0] > trade_open[0]:
+                        trade_close = exit_cand
+                        
+                        ExecutePosition(exit_pos).open_pos()
+                        ExecutePosition(exit_pos).close_pos()
+                        
+                        # Cancel all order positions
+                        ExecutePosition(stop_pos).void_pos()
+                        ExecutePosition(close_pos).void_pos()     
+                        
                         break
                     else:
                         pass
                     
         # Perform the trade action on the Portfolio
-        # Make the pending positions here
-        pos_id = 1
-        entry = Position(pos_id, give_obj, get_obj, EES_dict['entry'][0], 
-                                                     portfolio= self.portfolio)
-        exit_pos = Position(pos_id, get_obj, give_obj, EES_dict['exit'][0], 
-                                                    portfolio= self.portfolio) 
-        stop_pos = Position(pos_id, get_obj, give_obj, EES_dict['stop'], 
-                                                    portfolio= self.portfolio)
-        close_pos = Position(pos_id, get_obj, give_obj, EES_dict['close'], 
-                                                     portfolio= self.portfolio)
+
+        def trade_choice_dynamic_1(self):
+            return
         
         # Execute the Position here
         #ExecutePosition()

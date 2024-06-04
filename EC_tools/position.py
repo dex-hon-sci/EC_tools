@@ -72,7 +72,8 @@ class ExecutePosition(object):
     def open_pos(self, open_time = datetime.datetime.now()):
         
         # check if you have the avaliable fund in the portfolio
-        if self.position.portfolio.asset_value(self.position.give_obj.name) < \
+        if self.position.portfolio.asset_value(
+                                    self.position.give_obj.name, open_time) < \
                                             self.position.give_obj.quantity:
             raise Exception('WTF')
         else: pass
