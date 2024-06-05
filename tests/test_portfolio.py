@@ -44,22 +44,26 @@ round_turn_fees = {
 'QPc2': 24.0,
 }
 
-import EC_tools.portfolio as P
+from EC_tools.portfolio import Asset, Portfolio
 import EC_tools.utility as util
 
+
+import unittest
+from werkzeug import exceptions
 import datetime
 
+import pandas as pd
 # Define the test inputs for assets
-USD = P.Asset('USD', 1e7, 'dollars', 'Cash')
-CL1 = P.Asset("CLc1", 50, 'contracts', 'Future')
-CL2 = P.Asset("CLc2", 60, 'contracts', 'Future')
-CL3 = P.Asset('CLc1', 10, 'contracts', 'Future')
-HO1 = P.Asset('HOc1', 30, 'contracts', 'Future')
-QO1 = P.Asset('QOc1', 20, 'contracts', 'Future')
-CL4 = P.Asset('CLc1', 56, 'contracts', 'Future')
-CL5 = P.Asset('CLc2', 36, 'contracts', 'Future')
+USD = Asset('USD', 1e7, 'dollars', 'Cash')
+CL1 = Asset("CLc1", 50, 'contracts', 'Future')
+CL2 = Asset("CLc2", 60, 'contracts', 'Future')
+CL3 = Asset('CLc1', 10, 'contracts', 'Future')
+HO1 = Asset('HOc1', 30, 'contracts', 'Future')
+QO1 = Asset('QOc1', 20, 'contracts', 'Future')
+CL4 = Asset('CLc1', 56, 'contracts', 'Future')
+CL5 = Asset('CLc2', 36, 'contracts', 'Future')
 
-CL6 = P.Asset('CLc1',20,'contracts', 'Future')
+CL6 = Asset('CLc1',20,'contracts', 'Future')
 
 # Define the test inputs for datetime
 day1= datetime.datetime(2024,1,10)
@@ -83,13 +87,14 @@ def simple_fill_func(A):
     print('pool_window', A.pool_window)
     print(A.table)
     A.sub(CL6, datetime = day4)
-    A.sub("CLc1", quantity = 11, unit='contracts', asset_type='Future',
-          datetime = day4)
+    #A.sub("CLc1", quantity = 11, unit='contracts', asset_type='Future',
+    #      datetime = day4)
     return A
 
 
 def test_Asset()->None:
-    A = P.Asset("test", 0, "test unit", "test type", misc={"Comment":"This is a comment."})
+    A = Asset("test", 0, "test unit", "test type", 
+                misc={"Comment":"This is a comment."})
     assert A.name == "test"
     assert A.quantity == 0
     assert A.unit == "test unit"
@@ -97,18 +102,76 @@ def test_Asset()->None:
     assert A.misc['Comment'] == "This is a comment."
     
 def test_Portfolio_init()->None:
-    PP = P.Portfolio()
-    assert None
-    assert PP.__pool_asset == [] 
-    assert PP.__pool_datetime == []
+    PP = Portfolio()
+    assert PP._Portfolio__pool_asset == [] 
+    assert PP._Portfolio__pool_datetime == []
     assert PP._pool == []
     assert PP._pool_window == None
     assert PP._table == None
     assert PP._master_table == None
     assert PP._value == None
     assert PP._log == None
+
         
 def test_Portfolio_entry() -> None:
-    assert None
+    PP = Portfolio()
     
+    # fill the portfolio with existing assets
+    PP = simple_fill_func(PP)
+    asset_list = [USD, CL1, CL2, CL3, HO1, QO1, CL4, CL5, CL6]
+    datetime_list = [day1, day1, day1, day2, day2, day2, day3, day3, day4]
+    
+    test_pool = list(zip(asset_list,  datetime_list))
+    
+    assert [PP.pool_asset[i] == asset_list[i] for i, item in enumerate(asset_list)]
+    assert [PP.pool_datetime[i] == datetime_list[i] for i, item in enumerate(datetime_list)]
+    assert [PP.pool[i] == test_pool[i] for i, item in enumerate(test_pool)]
+    
+def test_pool_df()->None:
+    PP = Portfolio()
+    PP = simple_fill_func(PP)
 
+    assert type(PP.pool_df) == pd.DataFrame
+    
+    
+def test_pool_window() -> None:
+    PP = Portfolio()
+    PP = simple_fill_func(PP)
+    
+    PP.set_pool_window(start_time=day2,end_time=day3)
+    
+    test_pool_window = [(day2,CL3), (day2,HO1),(day2,QO1), (day3,CL4), (day3,CL5)]
+    assert [PP.pool_window[i] ==  test_pool_window[i] for i, item in enumerate(test_pool_window)]
+    
+    
+def test_table() -> None:
+    PP = Portfolio()
+    PP = simple_fill_func(PP)
+    
+    PP.set_pool_window(start_time=day2,end_time=day3)
+    
+    #check asset name uniqueness
+    assert len(set(PP.master_table['name'])) == len(PP.master_table['name'])
+    assert len(set(PP.table['name'])) == len(PP.table['name'])
+    
+    #check the quantity of the assets for both table
+    assert PP.master_table[PP.master_table['name']=='CLc1']['quantity'].iloc[0] == 96   
+    assert PP.table[PP.table['name']=='CLc1']['quantity'].iloc[0] == 66
+
+
+class test_invalid(unittest.TestCase):
+    def test_table_invlaid(self) -> None:
+        PP = Portfolio()
+    
+        self.assertRaises(Exception, PP.table)
+            
+            
+def test_add_str()-> None:
+    PP = Portfolio()
+    PP.add('test',datetime=day1,quantity=10,unit='test unit', asset_type='test type')    
+    
+    assert PP.pool_asset[0] == Asset('test', 10, 'test unit', 'test type')
+
+
+test_table()
+test_invalid.test_table_invlaid

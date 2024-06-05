@@ -12,8 +12,6 @@ import datetime as datetime
 
 # import from EC_tools
 import EC_tools.read as read
-import EC_tools.strategy as strategy
-
 import EC_tools.utility as util
 from EC_tools.bookkeep import Bookkeep
 from EC_tools.trade import Trade, trade_choice_simple
@@ -22,9 +20,9 @@ from EC_tools.portfolio import Asset, Portfolio
 
 # Spit out the document for overall PNL analysis
 
-FILENAME_MINUTE = "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL_d01.001"
-FILENSME_BUYSELL_SIGNALS = "./benchmark_signal_CLc2_full.csv"
-SIGNAL_FILENAME = "APC_latest_CLc2.csv"   
+FILENAME_MINUTE = "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL_d01.001"
+FILENSME_BUYSELL_SIGNALS = "../benchmark_signal_CLc2_full.csv"
+SIGNAL_FILENAME = "../APC_latest_CLc2.csv"   
 
 # tested
 def find_crossover(input_array, threshold):

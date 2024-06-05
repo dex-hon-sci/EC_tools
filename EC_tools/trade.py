@@ -27,7 +27,7 @@ def trade_choice_simple(EES_dict):
     # I need a whole module of classes related to trade. to operate on portfolio and so on
     
     # add the amount of exchange
-            
+    trade_open, trade_close = (np.nan,np.nan), (np.nan,np.nan)
     # Trade logic
     if len(EES_dict['entry']) == 0: # entry price not hit. No trade that day.
         pass
