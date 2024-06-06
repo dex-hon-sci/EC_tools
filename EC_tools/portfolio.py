@@ -391,6 +391,8 @@ class Portfolio(object):
         # read the value of the portfolio of a particular date
         
         value_dict = dict()
+        
+        print(self.pool, date_time)
         self.set_pool_window(self.__pool_datetime[0], date_time)
 
         for i, asset_name in enumerate(self.table['name']):
@@ -428,7 +430,8 @@ class Portfolio(object):
         
         return value_dict
         
-    def asset_value(self, asset_name, datetime):
+    def asset_value(self, asset_name, datetime, price_dict = PRICE_DICT,   
+              size_dict = SIZE_DICT, dntr='USD'):
         """
         A function that return a dict with of a particular asset on 
         a particular date and time.
@@ -446,7 +449,8 @@ class Portfolio(object):
             the asset value.
 
         """
-        asset_value = self.value(datetime)[asset_name]
+        asset_value = self.value(datetime, price_dict = price_dict,   
+                  size_dict = size_dict, dntr=dntr)[asset_name]
         return asset_value
             
     def total_value(self, datetime):

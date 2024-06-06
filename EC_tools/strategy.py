@@ -16,7 +16,17 @@ import EC_tools.math_func as mfunc
 # round trip fee 15 dollars
 __author__="Dexter S.-H. Hon"
 
+
+
+
 class Strategy(Protocol):
+# make protocol class
+# condition array all([cond_1,cond_2]) == True then Buy
+    def __init__(self):
+        self._buy_cond_list = []
+        self._sell_cond_list = []
+        return None
+
     def set_EES():
 
         pass
