@@ -48,9 +48,9 @@ def add_asset_to_portfolio(A):
           datetime = day4)
     return A
 
-#P1 = add_asset_to_portfolio(P1)
+P1 = add_asset_to_portfolio(P1)
 A = Asset("CL24N", 50, 'contracts', 'future')
-PP = Position('1', USD, A, 0.05, datetime.datetime.now(),portfolio=P1)
+PP = Position('1', USD, A, 0.05, datetime.datetime.now(), portfolio=P1)
 
 print(PP.status)
-print(ExecutePosition(PP).open_pos().status)
+#print(ExecutePosition(PP).open_pos().status)

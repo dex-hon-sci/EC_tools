@@ -159,19 +159,31 @@ def test_table() -> None:
     assert PP.table[PP.table['name']=='CLc1']['quantity'].iloc[0] == 66
 
 
-class test_invalid(unittest.TestCase):
-    def test_table_invlaid(self) -> None:
-        PP = Portfolio()
-    
-        self.assertRaises(Exception, PP.table)
-            
-            
 def test_add_str()-> None:
     PP = Portfolio()
     PP.add('test',datetime=day1,quantity=10,unit='test unit', asset_type='test type')    
     
-    assert PP.pool_asset[0] == Asset('test', 10, 'test unit', 'test type')
+    assert PP.pool_asset[0].name == 'test' 
+    assert PP.pool_asset[0].quantity == 10
+    assert PP.pool_asset[0].unit == 'test unit' 
+    assert PP.pool_asset[0].asset_type == 'test type' 
+    
+    
+def test_sub_str()-> None:
+    PP = Portfolio()
+    PP.add('test',datetime=day1, 
+           quantity=10,unit='test unit', asset_type='test type')    
 
-
-test_table()
-test_invalid.test_table_invlaid
+    PP.sub('test', quantity=7)
+    
+    assert PP.master_table[PP.master_table['name']=='test']['quantity'].iloc[0] == 3
+    
+    
+class test_invalid(unittest.TestCase):
+    def test_table_invlaid(self) -> None:
+        PP = Portfolio()
+    
+        with self.assertRaises(Exception):
+            PP.table
+            
+        
