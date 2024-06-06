@@ -64,7 +64,6 @@ def download_latest_APC(auth_pack, asset_pack, start_date = "2021-01-01"):
     return signal_data
 
 def download_latest_APC_fast(auth_pack, asset_pack, old_filename): #tested
-    
     # Check the last entry in the old file and only download the data 
     # Read the old files
     old_data = pd.read_csv(old_filename)
@@ -114,28 +113,6 @@ def download_latest_APC_list(auth_pack, save_filename_list, categories_list,
     
     return "All APC files downloaded!"
 
-# =============================================================================
-# @util.time_it
-# def download_latest_APC_fast_list(auth_pack, save_filename_list, categories_list, 
-#                          keywords_list, symbol_list): #tested
-#     # a function to download the APC of a list of asset
-#     # input username and password.json
-# 
-#     for filename, cat, key, sym in zip(save_filename_list, categories_list, 
-#                                        keywords_list, symbol_list):
-#         @util.save_csv("{}".format(filename))
-#         def download_latest_APC_fast_indi(cat, key, sym):
-#             asset_pack = {'categories': cat, 'keywords': key, 'symbol': sym}
-#             signal_data = download_latest_APC_fast(auth_pack, asset_pack, 
-#                                                    filename)
-#             print("File: {} is generated.".format(filename))
-# 
-#             return signal_data
-#         
-#         download_latest_APC_fast_indi(cat, key, sym)
-#     
-#     return "All APC files downloaded!"
-# =============================================================================
 
 def download_latest_Portara():
     # WIP
@@ -158,8 +135,6 @@ if __name__ == "__main__":
     keywords_list = ["WTI","Heating", "Gasoline",'Brent', "gasoil"]
     symbol_list = ['CLc1', 'HOc1', 'RBc1', 'QOc1', 'QPc1']
     
-    #download_latest_APC_list(AUTH_PACK, save_filename_list, categories_list, 
-    #                         keywords_list, symbol_list)
     
     download_latest_APC_list(AUTH_PACK, save_filename_list, categories_list, 
                              keywords_list, symbol_list,fast_dl=True)    
