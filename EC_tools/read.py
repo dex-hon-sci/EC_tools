@@ -510,8 +510,9 @@ def find_closest_price(day_minute_data, target_hr='0330', direction='forward',
             target_hr_dt = (datetime.datetime.combine(datetime.datetime.today(), 
                             target_hr_dt) + delta).time()
             target_price = day_minute_data[day_minute_data['Time'] == target_hr_dt]['Open']
+            target_price = [float(target_price.iloc[0])] # make sure that this is float
             
-    return target_hr_dt, target_price
+    return target_hr_dt, target_price[0]
 
 def find_closest_price_date(data, target_time='2024-01-03', 
                                time_proxy = 'Date', price_proxy ='Open',

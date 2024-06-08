@@ -561,9 +561,7 @@ def plot_minute(filename_minute, signal_filename, price_approx = 'Open',
     # Then choose the subcomponents to be added
     subcomp = SubComponents(new_axis_limit)
 
-    # Then plot
     # Plot the pricing chart.
-
     PP = PlotPricing(axis_limit = new_axis_limit)
     
     PP.plot_price(x,y, even_spaced_prices, pdf, 
@@ -577,11 +575,12 @@ def plot_minute(filename_minute, signal_filename, price_approx = 'Open',
     
 if __name__ == "__main__":
     
-    filename_daily = "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL.day"
+    filename_daily = "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL.day"
     #################
     
-    filename_minute = "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL.001"
-    signal_filename = "APC_latest_CL.csv"
+    filename_minute = "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL.001"
+    
+    signal_filename = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_CLc1.csv"
     #date_interest = "2022-05-19"
     #date_interest = "2024-04-03"
     date_interest = "2024-01-18"

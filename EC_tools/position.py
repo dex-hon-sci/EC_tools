@@ -14,15 +14,16 @@ import datetime as datetime
 
 from EC_tools.portfolio import Asset, Portfolio
     
+__all__=['PositionStatus', 'Position', 'ExecutePosition']
+
 class PositionStatus(Enum):
     """
     A set of possible status for positions.
     
     """
-    PENDING = "Pending"
-    OPEN = "Open"
-    CLOSE = "Close"
-    VOID = "Void"
+    PENDING = "Pending" # When the position is added but not filled
+    FILLED = "Filled" # When the position is executed
+    VOID = "Cancelled" # When the position is cancelled
 
     
 @dataclass
@@ -38,9 +39,8 @@ class Position(object):
     status: PositionStatus = PositionStatus.PENDING
     portfolio: Portfolio = None
     
-    start_time: datetime = datetime.datetime.now()
-    open_time: datetime = None
-    close_time: datetime = None
+    open_time: datetime = datetime.datetime.now()
+    fill_time: datetime = None
     void_time: datetime = None
     
     
@@ -63,13 +63,6 @@ class Position(object):
             print("Position voided.")
     
     
-class PositionBook(Portfolio):
-    def __init__(self):
-        self._pool = list()
-        
-    def pool(self):
-        return self._pool
-    
 class ExecutePosition(object):
     """
     A class that execute the position.
@@ -84,14 +77,14 @@ class ExecutePosition(object):
             raise Exception("The position does not belong to a valid \
                             Portfolio.")
 
-    def open_pos(self, open_time = datetime.datetime.now()):
+    def fill_pos(self, fill_time = datetime.datetime.now()):
         """
-        Open position method.
+        Fill position method.
 
         Parameters
         ----------
-        open_time : datetime, optional
-            The opening time. The default is datetime.datetime.now().
+        fill_time : datetime, optional
+            The filling time. The default is datetime.datetime.now().
 
         Raises
         ------
@@ -110,50 +103,60 @@ class ExecutePosition(object):
         else:
             raise Exception("The position is not yet added.")
             
-        #print(self.position.give_obj.quantity)    
-        #print(self.position.portfolio.master_table[self.position.portfolio.master_table['name']==self.position.give_obj.name]['quantity'].iloc[0])
-        #print(self.position.portfolio.master_table[self.position.portfolio.master_table['name']==self.position.give_obj.name]['quantity'].iloc[0] < self.position.give_obj.quantity)
         port = self.position.portfolio
         # check if you have the avaliable fund in the portfolio
-        if port.master_table[port.master_table['name']==self.position.give_obj.name]['quantity'].iloc[0] < self.position.give_obj.quantity:
-        
-# =============================================================================
-#         self.position.portfolio.master_table[self.position.portfolio.\
-#                     master_table['name'] == self.position.give_obj]['quantity']\
-#             .iloc[0] < self.position.give_obj.quantity:
-# =============================================================================
+        if port.master_table[port.master_table['name']==
+                             self.position.give_obj.name]['quantity'].iloc[0] <\
+                                                self.position.give_obj.quantity:
                                                 
             raise Exception('You do not have enough {} in your portfolio'.format(
                                                 self.position.give_obj.name))
         else: pass
     
-        self.position.status = PositionStatus.OPEN
-        self.position.open_time = open_time
-        return self.position
-    
-    def close_pos(self, close_time = datetime.datetime.now()):
-        # check if the position is open
-        if self.position.status == PositionStatus.OPEN:
-            pass
-        else:
-            raise Exception("The position is not yet open.")
-                    
-        #add and sub portfolio
-        self.position.portfolio.add(self.position.get_obj, datetime = close_time)
-        self.position.portfolio.sub(self.position.give_obj, datetime= close_time)
-        self.position.status = PositionStatus.CLOSE
-        self.position.close_time = close_time
-
-        return self.position
-    
-    def void_pos(self, void_time = datetime.datetime.now()):
+        self.position.status = PositionStatus.FILLED
+        self.position.fill_time = fill_time
         
+        #add and sub portfolio
+        self.position.portfolio.add(self.position.get_obj, datetime = fill_time)
+        self.position.portfolio.sub(self.position.give_obj, datetime= fill_time)
+        
+        return self.position
+    
+    
+    def cancel_pos(self, void_time = datetime.datetime.now()):
+        """
+        Cancel position method.
+
+        Parameters
+        ----------
+        void_time : datetime, optional
+            The cancelling time. The default is datetime.datetime.now().
+
+        Raises
+        ------
+        Exception
+            If the position is not yet added.
+
+        Returns
+        -------
+        position object
+
+        """
         # check if the position is Pending
-        if self.position.status == PositionStatus.PENDING:
+        if self.position.status == PositionStatus.PENDING :
             pass
         else:
             raise Exception("The position is not yet added.")
             
         self.position.status = PositionStatus.VOID
         self.position.void_time = void_time
-        return 
+        return self.position
+    
+# =============================================================================
+# class PositionBook(Portfolio):
+#     def __init__(self):
+#         self._pool = list()
+#         
+#     def pool(self):
+#         return self._pool
+# =============================================================================

@@ -18,11 +18,9 @@ from EC_tools.trade import Trade, trade_choice_simple
 import EC_tools.plot as plot
 from EC_tools.portfolio import Asset, Portfolio
 
-# Spit out the document for overall PNL analysis
-
 FILENAME_MINUTE = "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL_d01.001"
-FILENSME_BUYSELL_SIGNALS = "../benchmark_signal_CLc2_full.csv"
-SIGNAL_FILENAME = "../APC_latest_CLc2.csv"   
+FILENSME_BUYSELL_SIGNALS = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_CLc2_full.csv"
+SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_CLc2.csv"   
 
 # tested
 def find_crossover(input_array, threshold):
@@ -190,9 +188,12 @@ def extract_intraday_minute_data(histrot_intraday_data, date_interest,
 def plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=False):
     if plot_or_not == True:
         
-        
-        date_interest_str = date_interest.strftime("%Y-%m-%d")
-        
+        if isinstance(date_interest, datetime.datetime):
+            date_interest_str = date_interest.strftime("%Y-%m-%d")
+        elif type(date_interest)==str:
+            date_interest_str = date_interest
+            
+            
         if len(EES_dict['entry']) > 0:    
             entry_times, entry_pts = list(zip(*EES_dict['entry']))
         else:
@@ -419,7 +420,7 @@ def loop_date(signal_table, histroy_intraday_data, open_hr='0330',
     return dict_trade_PNL
     
 def loop_date_portfolio(signal_table, histroy_intraday_data, portfolio, 
-                        asset_name, 
+                        asset_name,
                         open_hr='0330', close_hr='1930',
                         plot_or_not = False):
     """
@@ -465,9 +466,11 @@ def loop_date_portfolio(signal_table, histroy_intraday_data, portfolio,
 
 ############ WIP
         # calculate the require quantity by the price action
-        give_obj_quantity, get_obj_quantity = 0, 0
+        get_obj_quantity = 50
+        give_obj_quantity = get_obj_quantity
+        price = 1000*EES_dict
         
-        give_obj = Asset("USD", give_obj_quantity, 'dollars', 'cash'),
+        give_obj = Asset("USD", give_obj_quantity, 'dollars', 'Cash'),
         get_obj = Asset(asset_name, get_obj_quantity, 'contracts', 'future')
         # make the trade.
         trade_open, trade_close = Trade(portfolio).trade_choice_simple_portfolio(
@@ -542,12 +545,12 @@ def run_backtest_portfolio():
     
     # Initialise Portfolio
     P1 = Portfolio()
-    USD_initial = Asset("USD", 100000, "dollars", "cash") # initial fund
+    USD_initial = Asset("USD", 1000000, "dollars", "Cash") # initial fund
     P1.add(USD_initial)
     
     # loop through the date and set the EES prices for each trading day   
     dict_trade_PNL = loop_date_portfolio(trade_date_table, history_data, P1, 
-                               give_obj = None, get_obj = None,
+                               asset_name="CLc2",
                                open_hr='0330', close_hr='2000', 
                                plot_or_not = False)    
 
@@ -559,6 +562,7 @@ def run_backtest_list():
     return None
 
 
-
 if __name__ == "__main__":
-    run_backtest()
+    
+    #run_backtest()
+    run_backtest_portfolio()

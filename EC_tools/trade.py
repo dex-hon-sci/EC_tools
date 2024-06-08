@@ -78,6 +78,9 @@ class Trade(object):
         # Then add Asset B, sub Asset A
         # Then change (1..) to resolved.
         # Make the pending positions here
+        
+        trade_open, trade_close = (np.nan,np.nan), (np.nan,np.nan)
+        
         pos_id = 0
         entry_pos = Position(pos_id+1, give_obj, get_obj, EES_dict['entry'][0], 
                                                      portfolio= self.portfolio)
@@ -96,33 +99,28 @@ class Trade(object):
             trade_open = EES_dict['entry'][0]
             
             # Open position here
-            # for trade_simple method, we do not care about path dependent trades
-            # Therefore, simple open and close actions suffice 
-            ExecutePosition(entry_pos).open_pos()
-            ExecutePosition(entry_pos).close_pos()
+            ExecutePosition(entry_pos).fill_pos()
             
             if len(EES_dict['stop']) == 0: # if the stop loss wasn't hit
                 pass
             else:
                 trade_close = EES_dict['stop'][0] #set the trade close at stop loss
                 
-                ExecutePosition(stop_pos).open_pos()
-                ExecutePosition(stop_pos).close_pos()
+                ExecutePosition(stop_pos).fill_pos()
                 
                 # Cancel all order positions
-                ExecutePosition(exit_pos).void_pos()
-                ExecutePosition(close_pos).void_pos()
+                ExecutePosition(exit_pos).cancel_pos()
+                ExecutePosition(close_pos).cancel_pos()
 
                 
             if len(EES_dict['exit']) == 0:
                 trade_close = EES_dict['close']
                 
-                ExecutePosition(close_pos).open_pos()
-                ExecutePosition(close_pos).close_pos()
+                ExecutePosition(close_pos).fill_pos()
                 
                 # Cancel all order positions
-                ExecutePosition(stop_pos).void_pos()
-                ExecutePosition(exit_pos).void_pos()
+                ExecutePosition(stop_pos).cancel_pos()
+                ExecutePosition(exit_pos).cancel_pos()
                 
             else:
                 # make sure the exit comes after the entry point
@@ -130,16 +128,18 @@ class Trade(object):
                     if exit_cand[0] > trade_open[0]:
                         trade_close = exit_cand
                         
-                        ExecutePosition(exit_pos).open_pos()
-                        ExecutePosition(exit_pos).close_pos()
+                        ExecutePosition(exit_pos).fill_pos()
                         
                         # Cancel all order positions
-                        ExecutePosition(stop_pos).void_pos()
-                        ExecutePosition(close_pos).void_pos()     
+                        ExecutePosition(stop_pos).cancel_pos()
+                        ExecutePosition(close_pos).cancel_pos()     
                         
                         break
                     else:
                         pass
+                    
+        return trade_open, trade_close
+            
                     
         # Perform the trade action on the Portfolio
 
@@ -149,7 +149,6 @@ class Trade(object):
         # Execute the Position here
         #ExecutePosition()
         
-        return self.trade_open, self.trade_close
     
 # =============================================================================
 #  under construction
