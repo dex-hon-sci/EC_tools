@@ -47,12 +47,11 @@ round_turn_fees = {
 from EC_tools.portfolio import Asset, Portfolio
 import EC_tools.utility as util
 
-
 import unittest
 from werkzeug import exceptions
 import datetime
-
 import pandas as pd
+
 # Define the test inputs for assets
 USD = Asset('USD', 1e7, 'dollars', 'Cash')
 CL1 = Asset("CLc1", 50, 'contracts', 'Future')
@@ -72,7 +71,11 @@ day3= datetime.datetime(2024,3,1)
 day4= datetime.datetime(2024,4,4)
 
 def simple_fill_func(A):
-    # a simple function that fills the portfolio
+    """
+    A simple function that fills the portfolio.
+    
+    """
+    # 
     A.add(USD, datetime = day1)
     A.add(CL1, datetime = day1)
     A.add(CL2, datetime = day1)    
@@ -93,6 +96,10 @@ def simple_fill_func(A):
 
 
 def test_Asset()->None:
+    """
+    Test asset inputs
+    
+    """
     A = Asset("test", 0, "test unit", "test type", 
                 misc={"Comment":"This is a comment."})
     assert A.name == "test"
@@ -114,6 +121,10 @@ def test_Portfolio_init()->None:
 
         
 def test_Portfolio_entry() -> None:
+    """
+    Test Portfolio entry function.
+
+    """
     PP = Portfolio()
     
     # fill the portfolio with existing assets
@@ -128,13 +139,22 @@ def test_Portfolio_entry() -> None:
     assert [PP.pool[i] == test_pool[i] for i, item in enumerate(test_pool)]
     
 def test_pool_df()->None:
+    """
+    Test if poo_df successfully create a data frame
+
+    """
     PP = Portfolio()
     PP = simple_fill_func(PP)
 
     assert type(PP.pool_df) == pd.DataFrame
+    # check the values in the dataframe
     
     
 def test_pool_window() -> None:
+    """
+    Test the pool_window function to see if it isolate the correct entries.
+    
+    """
     PP = Portfolio()
     PP = simple_fill_func(PP)
     
@@ -145,6 +165,9 @@ def test_pool_window() -> None:
     
     
 def test_table() -> None:
+    """
+    Test the table function to see if it gets the correct value.
+    """
     PP = Portfolio()
     PP = simple_fill_func(PP)
     
@@ -160,6 +183,10 @@ def test_table() -> None:
 
 
 def test_add_str()-> None:
+    """
+    Test the add function with str input.
+    
+    """
     PP = Portfolio()
     PP.add('test',datetime=day1,quantity=10,unit='test unit', asset_type='test type')    
     
@@ -170,6 +197,10 @@ def test_add_str()-> None:
     
     
 def test_sub_str()-> None:
+    """
+    Test the sub function with str input.
+    
+    """
     PP = Portfolio()
     PP.add('test',datetime=day1, 
            quantity=10,unit='test unit', asset_type='test type')    
@@ -180,6 +211,9 @@ def test_sub_str()-> None:
     
     
 class test_invalid(unittest.TestCase):
+    """
+    Test the invalid inputs and the Exception handling.
+    """
     def test_table_invlaid(self) -> None:
         PP = Portfolio()
     
