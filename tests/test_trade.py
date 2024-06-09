@@ -67,12 +67,14 @@ def test_Trade_trade_choice_simple_portfolio()->None:
                       direction = direction)
     
     print(EES_dict)
+    plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=False)
 
-    give_obj, get_obj = None, None
+
+    give_obj_name = "USD"
+    get_obj_name = "CLc1"
     
-  #  Trade(P1).trade_choice_simple_portfolio(EES_dict, give_obj, get_obj)
+    #Trade(P1).trade_choice_simple_portfolio(EES_dict, give_obj_name, get_obj_name)
     
     
-    plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=True)
 
 test_Trade_trade_choice_simple_portfolio()
