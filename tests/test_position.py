@@ -6,7 +6,7 @@ Created on Fri May 31 02:54:13 2024
 @author: dexter
 """
 import datetime as datetime
-import unittest
+import pytest
 
 from EC_tools.position import PositionStatus, Position, ExecutePosition
 from EC_tools.portfolio import Asset, Portfolio
@@ -27,13 +27,12 @@ def test_Position_input_valid()-> None:
     A = Asset("CL24N", 50, 'contracts', 'future')
     
     # 
-    PP = Position( USD, A, 0.05,portfolio=P1, 
+    PP = Position( USD, A, 1000/50,portfolio=P1, 
                     open_time= datetime.datetime(2020,1,1))
     
     assert PP.give_obj == USD
     assert PP.get_obj == A
-    assert PP.pos_id == '1'
-    assert PP._price == 0.05
+    assert PP._price == 20.0
     assert PP.portfolio == P1
     assert PP.status == PositionStatus.PENDING
     assert PP.open_time == datetime.datetime(2020,1,1)
@@ -44,7 +43,7 @@ def test_Position_input_valid()-> None:
     # optional asset control
     assert PP.size == 1
     assert PP.fee == None
-    assert len(PP.pos_id) == 12
+    assert len(PP.pos_id) == 16
     
     #test price get method
     assert PP.price ==  PP._price
@@ -79,12 +78,13 @@ def test_position_price_setter()-> None:
     PP = Position(USD, A, USD.quantity/ A.quantity, portfolio=P1, 
                     open_time = datetime.datetime(2020,1,1))    
     # set new price
-    PP.price == 21
+    PP.price = 21
     
-    
+    print(PP.price)
     assert PP.price == 21
     assert PP.get_obj.quantity == 1000/21
     assert A.quantity == 1000/21
+
 
 def test_Execute_fill_pos()-> None:
     P1 = Portfolio()
@@ -132,28 +132,94 @@ def test_Execute_cancel_pos()->None:
     
     P1.add(USD, datetime= datetime.datetime(2019,12,31))
     
-    PP = Position(USD, A, A.quantity/ USD.quantity, portfolio=P1, 
+    PP = Position(USD, A,  USD.quantity/ A.quantity, portfolio=P1, 
                     open_time = datetime.datetime(2020,1,1))   
+    
+    print(PP.status)
     
     ExecutePosition(PP).cancel_pos(void_time= datetime.datetime(2020,1,3))
     
     assert PP.status == PositionStatus.VOID
     assert PP.void_time == datetime.datetime(2020,1,3)
 
-    
-class test_ErrorMsg(unittest.TestCase):
-    
-    def test_insufficient_asset_open_pos(self) -> None:
-        P1 = Portfolio()
-        USD = Asset('USD', 10, 'dollars', 'Cash')
-        A = Asset("CL24N", 50, 'contracts', 'future')
+#########Error tests###############################
 
-        P1.add(USD, datetime= datetime.datetime(2019,12,31))
+
+
+def test_ErrorMsg_auto_adjust_off_invalid_price():
+    P1 = Portfolio()
+    USD = Asset('USD', 1000, 'dollars', 'Cash')
+    A = Asset("CL24N", 50, 'contracts', 'future')
+    P1.add(USD, datetime= datetime.datetime(2019,12,31))
+    PP = Position(USD, A, USD.quantity/ A.quantity, 
+                      portfolio=P1, open_time = datetime.datetime(2020,1,1),
+                      auto_adjust=False)
+    
+    with pytest.raises(Exception):
+        PP.price = 21
+    
+def test_ErrorMsg_invalid_portfolio()->None:
+    P1 = None # An invalid Portfolio
+    
+    USD = Asset('USD', 1000, 'dollars', 'Cash')
+    A = Asset("CL24N", 50, 'contracts', 'future')
+    PP = Position(USD, A, USD.quantity/ A.quantity, 
+                      portfolio=P1, open_time = datetime.datetime(2020,1,1))
+    
+    # A Position can belong to no Portfolio but it cannot be executed.
+    with pytest.raises(Exception):
+        ExecutePosition(PP)
         
-        PP = Position(USD, A, A.quantity/ USD.quantity, portfolio=P1, 
-                    open_time = datetime.datetime(2020,1,1))        
+test_ErrorMsg_invalid_portfolio()
+def test_ErrorMsg_insufficient_asset_fill_pos() -> None:
+    # Test for insufficient fund
+    P1 = Portfolio()
+    USD = Asset('USD', 2, 'dollars', 'Cash')
+    A = Asset("CL24N", 50, 'contracts', 'future')
+    USD_trade = Asset('USD', 1000, 'dollars', 'Cash')
 
-        with self.assertRaises(Exception):
-            ExecutePosition(PP).fill_pos()
-            
+    P1.add(USD, datetime= datetime.datetime(2019,12,31))
+    
+    PP = Position(USD_trade, A, USD_trade.quantity/ A.quantity, 
+                  portfolio=P1, open_time = datetime.datetime(2020,1,1))        
+
+    with pytest.raises(Exception):
+        ExecutePosition(PP).fill_pos()
+                
+        
+def test_ErrorMsg_fill_pos_error_msg()-> None:
+    P1 = Portfolio()
+    USD = Asset('USD', 1000, 'dollars', 'Cash')
+    A = Asset("CL24N", 50, 'contracts', 'future')
+
+    P1.add(USD, datetime= datetime.datetime(2019,12,31))
+    
+    # make an invalid position so that it is automatically cancelled
+    PP = Position(USD, A, 1.0, portfolio=P1, 
+                    open_time = datetime.datetime(2020,1,1), size= 2)    
+
+    with pytest.raises(Exception):
+        ExecutePosition(PP).fill_pos()
+
+        
+def test_ErrorMsg_close_pos_invalid_position() -> None:
+    # Test for invalid input of Poistion
+    P1 = Portfolio()
+    USD = Asset('USD', 1025, 'dollars', 'Cash')
+
+    P1.add(USD, datetime= datetime.datetime(2019,12,31))
+
+    USD_exchange = Asset('USD', 1000, 'dollars', 'Cash')
+    A = Asset("CL24N", 50, 'contracts', 'future')
+    fee = Asset('USD', 24, 'dollars', 'Cash')
+    
+    PP = Position(USD_exchange, A, 10.0, portfolio=P1, 
+                    open_time = datetime.datetime(2020,1,1), size= 2, fee=fee)    
+    
+    #Execute a valid position so that it is in a filled state 
+    ExecutePosition(PP).fill_pos()
+    
+    with pytest.raises(Exception):
+        ExecutePosition(PP).cancel_pos()
+        
 

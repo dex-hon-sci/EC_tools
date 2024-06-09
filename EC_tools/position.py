@@ -59,7 +59,7 @@ class Position(object):
         """
         # check if the quantity of both assets are 
         correct_ratio = self.give_obj.quantity / (self.get_obj.quantity*self.size)
-        print(correct_ratio, self.price)
+        #print(correct_ratio, self.price)
         self._check = (self._price == correct_ratio)
         
         print('Position created.')
@@ -71,7 +71,7 @@ class Position(object):
             
     @property
     def price(self):
-        
+        # getter method for seld._price
         return self._price
     
     @price.setter
@@ -132,7 +132,7 @@ class ExecutePosition(object):
         if self.position.status == PositionStatus.PENDING:
             pass
         else:
-            raise Exception("The position is not yet added.")
+            raise Exception("The position must be in Pending state to be filled.")
             
         port = self.position.portfolio
         # check if you have the avaliable fund in the portfolio
@@ -176,10 +176,11 @@ class ExecutePosition(object):
 
         """
         # check if the position is Pending
-        if self.position.status == PositionStatus.PENDING :
+        if self.position.status == PositionStatus.PENDING:
             pass
         else:
-            raise Exception("The position is not yet added.")
+            raise Exception("The position can only be cancelled when it is in\
+                            the Pending state.")
             
         self.position.status = PositionStatus.VOID
         self.position.void_time = void_time
