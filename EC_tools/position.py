@@ -13,6 +13,7 @@ from functools import cached_property
 import datetime as datetime
 
 from EC_tools.portfolio import Asset, Portfolio
+from EC_tools.utility import random_string
     
 __all__=['PositionStatus', 'Position', 'ExecutePosition']
 
@@ -32,17 +33,23 @@ class Position(object):
     Position class that create and manage position objects.
     
     """
-    pos_id: str    
+    # key attributes
     give_obj: Asset
     get_obj: Asset
-    price: float
+    _price: float
     status: PositionStatus = PositionStatus.PENDING
     portfolio: Portfolio = None
     
+    # optional asset control
+    size: float = 1
+    fee: Asset = None
+    
+    # position attribute adjustable
     open_time: datetime = datetime.datetime.now()
     fill_time: datetime = None
     void_time: datetime = None
-    
+    auto_adjust: bool = True
+    pos_id: str = random_string()  
     
     def __post_init__(self, void_time = datetime.datetime.now()):
         """
@@ -51,18 +58,42 @@ class Position(object):
         
         """
         # check if the quantity of both assets are 
-        correct_ratio = self.get_obj.quantity / self.give_obj.quantity
+        correct_ratio = self.give_obj.quantity / (self.get_obj.quantity*self.size)
         print(correct_ratio, self.price)
-        self._check = (self.price == correct_ratio)
+        self._check = (self._price == correct_ratio)
         
         print('Position created.')
         #If this value is false, the position is automatically voided.
         if self._check == False:
             self.status = PositionStatus.VOID
             self.void_time = void_time
-            print("Position voided.")
+            print("Position voided due to invalid price entry.")
+            
+    @property
+    def price(self):
+        
+        return self._price
     
-    
+    @price.setter
+    def price(self, value):
+        
+        # check if the new price is the same 
+        if value != self.give_obj.quantity / self.get_obj.quantity:
+            if self.auto_adjust == True:
+                pass
+            elif self.auto_adjust == False:
+                raise Exception("The new price value does not align with the \
+                                asset quantities in the position.")
+        
+        # set a new price in the position.
+        self._price = value
+        
+        # Assuming the give_obj is the one in the portfolio, we anchor the 
+        # exchange rate using what we have. So we only changes the quantity in
+        # the get_obj atrribute
+        self.get_obj.quantity = self.give_obj.quantity / self._price
+        
+
 class ExecutePosition(object):
     """
     A class that execute the position.
@@ -119,6 +150,8 @@ class ExecutePosition(object):
         #add and sub portfolio
         self.position.portfolio.add(self.position.get_obj, datetime = fill_time)
         self.position.portfolio.sub(self.position.give_obj, datetime= fill_time)
+        self.position.portfolio.sub(self.position.fee, datetime= fill_time)
+        # charge a fee if it exits
         
         return self.position
     

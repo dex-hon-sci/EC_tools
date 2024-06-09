@@ -9,7 +9,29 @@ Created on Thu Mar 28 22:46:34 2024
 import time
 import datetime
 import numpy as np
+import random
 
+def random_string(length:int=16):
+    """
+    Generate a random x-digits alphanumerical string
+
+    Parameters
+    ----------
+    length : int
+        The number of digits.
+
+    Returns
+    -------
+    Shortcode.
+
+    """
+    base = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    
+    # Pick a random 6 digits string from base
+    # The amount to 56,800,235,584 possibilities
+    code = ''.join([random.choice(base) for i in range(length)])
+
+    return code
 
 def time_it(func):
     # simple timing function
