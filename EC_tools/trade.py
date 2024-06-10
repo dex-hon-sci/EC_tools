@@ -15,6 +15,8 @@ from typing import Protocol
 import EC_tools.portfolio as port
 from EC_tools.position import Position, ExecutePosition
 from EC_tools.utility import random_string
+from EC_tools.portfolio import Asset
+
 def find_crossover(input_array, threshold):
     """
     A function that find the crossover points' indicies. It finds the points right
@@ -232,7 +234,9 @@ class Trade(object):
         self.portfolio = portfolio
 
 
-    def trade_choice_simple_portfolio(self, day, give_obj, get_obj, 
+    def trade_choice_simple_portfolio(self, day, 
+                                      give_obj_str_dict, get_obj_str_dict, 
+                                      get_obj_quantity,
                                       target_entry, target_exit, stop_exit,
                                       open_hr="0300", close_hr="2000", 
                                       direction = "Buy"): 
@@ -277,26 +281,60 @@ class Trade(object):
         # Then add Asset B, sub Asset A
         # Then change (1..) to resolved.
         # Make the pending positions here
+        #################################################################
         
         #Find the minute that the price crosses the EES values
         EES_dict = find_minute_EES(day, target_entry, target_exit, stop_exit,
                           open_hr=open_hr, close_hr=close_hr, 
                           direction = direction)
         
+        print('entry_exit', EES_dict['entry'], EES_dict['exit'])
+        
         # initialise trade_open and trade_close time and prices
         trade_open, trade_close = (np.nan,np.nan), (np.nan,np.nan)
         
+        
+        give_obj_name = give_obj_str_dict['name']
+        give_obj_unit = give_obj_str_dict['unit']
+        give_obj_type = give_obj_str_dict['type']
+        
+        get_obj_name = get_obj_str_dict['name']
+        get_obj_unit = get_obj_str_dict['unit']
+        get_obj_type = get_obj_str_dict['type']
+        
         # make give and get objects here
-        
-        
+        # First define the get_obj because this is the target we are aimming at/
+        # We then use the get_obj quantity to define the amount we give in the 
+        # five_obj quantity
+        get_obj = Asset(get_obj_name, get_obj_quantity, get_obj_unit, get_obj_type)
+
         # Start the position
-        entry_pos = Position(random_string(), give_obj, get_obj, EES_dict['entry'][0], 
+        if direction == "Buy":
+            pos_type = 'Long'
+            # The quantity may be subjected to change because the entry price can 
+            # not always be hitted precisely. The position function will handle 
+            # the search for the closest proce during the crossover and readjust 
+            # the get_obj quantity.
+            give_obj= Asset(give_obj_name, target_entry*get_obj_quantity, 
+                            give_obj_unit, give_obj_type)
+            
+            entry_pos = Position(give_obj, get_obj, EES_dict['entry'][0][1], 
                                                      portfolio= self.portfolio)
-        exit_pos = Position(random_string(), get_obj, give_obj, EES_dict['exit'][0], 
+        
+        elif direction == "Sell":
+            pos_type = 'Short'
+            give_obj= Asset(give_obj_name, -1*target_entry*get_obj_quantity, 
+                            give_obj_unit, give_obj_type, misc={'debt'})
+            
+            entry_pos = Position(give_obj, get_obj, EES_dict['entry'][0][1], 
+                                                     portfolio= self.portfolio)
+                    
+        
+        exit_pos = Position(get_obj, give_obj, EES_dict['exit'][0][1], 
                                                     portfolio= self.portfolio) 
-        stop_pos = Position(random_string(), get_obj, give_obj, EES_dict['stop'], 
+        stop_pos = Position(get_obj, give_obj, EES_dict['stop'], 
                                                     portfolio= self.portfolio)
-        close_pos = Position(random_string(), get_obj, give_obj, EES_dict['close'], 
+        close_pos = Position(get_obj, give_obj, EES_dict['close'], 
                                                      portfolio= self.portfolio)
         
         # To get the correct EES and close time and price
@@ -307,14 +345,16 @@ class Trade(object):
             trade_open = EES_dict['entry'][0]
             
             # Open position here
-            ExecutePosition(entry_pos).fill_pos()
+            ExecutePosition(entry_pos).fill_pos(fill_time = trade_open[0], 
+                                                pos_type=pos_type)
             
             if len(EES_dict['stop']) == 0: # if the stop loss wasn't hit
                 pass
             else:
                 trade_close = EES_dict['stop'][0] #set the trade close at stop loss
                 
-                ExecutePosition(stop_pos).fill_pos()
+                ExecutePosition(stop_pos).fill_pos(fill_time = trade_close[0], 
+                                                   pos_type=pos_type)
                 
                 # Cancel all order positions
                 ExecutePosition(exit_pos).cancel_pos()
@@ -324,7 +364,8 @@ class Trade(object):
             if len(EES_dict['exit']) == 0:
                 trade_close = EES_dict['close']
                 
-                ExecutePosition(close_pos).fill_pos()
+                ExecutePosition(close_pos).fill_pos(fill_time= trade_close, 
+                                                    pos_type=pos_type)
                 
                 # Cancel all order positions
                 ExecutePosition(stop_pos).cancel_pos()
@@ -336,7 +377,8 @@ class Trade(object):
                     if exit_cand[0] > trade_open[0]:
                         trade_close = exit_cand
                         
-                        ExecutePosition(exit_pos).fill_pos()
+                        ExecutePosition(exit_pos).fill_pos(fill_time = trade_close[0], 
+                                                           pos_type=pos_type)
                         
                         # Cancel all order positions
                         ExecutePosition(stop_pos).cancel_pos()

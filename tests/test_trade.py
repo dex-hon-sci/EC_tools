@@ -21,6 +21,11 @@ FILENSME_BUYSELL_SIGNALS = "/home/dexter/Euler_Capital_codes/EC_tools/results/be
 SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_CLc2.csv"   
 
 def test_Trade_trade_choice_simple_portfolio()->None:
+    # Setting up the trade itself. First load the parameters
+    direction = 'Buy'
+    open_hr, close_hr = '0330', '2000'
+    date_interest = "2024-01-18"
+
     # Use one day to test if the trade logic works
     P1 = Portfolio()
     USD_initial = Asset("USD", 1000000, "dollars", "Cash") # initial fund
@@ -29,9 +34,6 @@ def test_Trade_trade_choice_simple_portfolio()->None:
     histroy_intraday_data = read.read_reformat_Portara_minute_data(FILENAME_MINUTE)
     signal_table = prepare_signal_interest(FILENSME_BUYSELL_SIGNALS, trim = False)
     
-    date_interest = "2024-01-18"
-    open_hr, close_hr = '0330', '2000'
-    direction = 'Buy'
     
     day = extract_intraday_minute_data(histroy_intraday_data, date_interest, 
                                  open_hr=open_hr, close_hr=close_hr)
@@ -61,19 +63,24 @@ def test_Trade_trade_choice_simple_portfolio()->None:
     print('close', close_hr_dt, close_price)
 
     
-    # make a dictionary for all the possible EES time and values
-    EES_dict = find_minute_EES(day, target_entry, target_exit, stop_exit,
-                      open_hr=open_hr_dt, close_hr=close_hr_dt, 
-                      direction = direction)
-    
-    print(EES_dict)
-    plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=False)
+    #print(EES_dict)
+    #plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=False)
 
+    if direction == "Buy":
+        give_obj_str_dict = {'name':"USD", 'unit':'dollars', 'type':'Cash'}
+        get_obj_str_dict = {'name':"CLc1", 'unit':'contracts', 'type':'Future'}
+        
+    elif direction == "Sell":
 
-    give_obj_name = "USD"
-    get_obj_name = "CLc1"
+        give_obj_str_dict = {'name':"CLc1", 'unit':'contracts', 'type':'Future'}
+        get_obj_str_dict = {'name':"USD", 'unit':'dollars', 'type':'Cash'}
     
-    #Trade(P1).trade_choice_simple_portfolio(EES_dict, give_obj_name, get_obj_name)
+    Trade(P1).trade_choice_simple_portfolio(day, 
+                                      give_obj_str_dict, get_obj_str_dict, 
+                                      50,
+                                      target_entry, target_exit, stop_exit,
+                                      open_hr="0300", close_hr="2000", 
+                                      direction = "Buy")
     
     
 
