@@ -108,7 +108,7 @@ class ExecutePosition(object):
             raise Exception("The position does not belong to a valid \
                             Portfolio.")
 
-    def fill_pos(self, fill_time = datetime.datetime.now()):
+    def fill_pos(self, fill_time = datetime.datetime.now(), pos_type='Long'):
         """
         Fill position method.
 
@@ -148,10 +148,26 @@ class ExecutePosition(object):
         self.position.fill_time = fill_time
         
         #add and sub portfolio
-        self.position.portfolio.add(self.position.get_obj, datetime = fill_time)
-        self.position.portfolio.sub(self.position.give_obj, datetime= fill_time)
-        self.position.portfolio.sub(self.position.fee, datetime= fill_time)
+        if pos_type == 'Long':
+            # Pay pre-existing asset
+            self.position.portfolio.sub(self.position.give_obj, datetime= fill_time)
+            # Get the desired asset
+            self.position.portfolio.add(self.position.get_obj, datetime = fill_time)
+
+        elif pos_type == 'Short':
+            # The sub method does not allow overwithdraw. 
+            # Thus assume the give_obj is a {debt} object
+            
+            # Issue a debt for borrowing
+            self.position.portfolio.add(self.position.give_obj, datetime= fill_time)
+            # Get the desired asset
+            self.position.portfolio.add(self.position.get_obj, datetime = fill_time)
+
+        
         # charge a fee if it exits
+        if self.position.fee != None or self.position.fee > 0:
+            self.position.portfolio.sub(self.position.fee, datetime= fill_time)
+
         
         return self.position
     

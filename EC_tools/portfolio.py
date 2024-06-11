@@ -203,9 +203,9 @@ class Portfolio(object):
         table = pd.DataFrame.from_records(data = values, columns = keys)
         
         # Handle repeating aseet type
-        for index, val_name in enumerate(table['name']):
+        for index, (val_name, misc) in enumerate(zip(table['name'], table['misc'])):
             
-            temp_df = table[table['name'] == val_name]
+            temp_df = table[(table['name'] == val_name) & (table['misc'] == misc)]
             
             # If the asset is unique in the pool, pass.
             if len(temp_df) == 1:

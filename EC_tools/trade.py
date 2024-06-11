@@ -227,13 +227,135 @@ def trade_choice_simple(EES_dict):
                 
     return trade_open, trade_close #(open_time, open_price) (close_time, close_price)
 
-@dataclass
+
+class Trade1(object):
+    
+    def  __init__(self, portfolio=None):
+        self.portfolio = portfolio
+
+    def long():
+        return
+    
+    def short():
+        return
+    
 class Trade(object):
 
     def  __init__(self, portfolio=None):
         self.portfolio = portfolio
 
+    def long():
+        trade_open, trade_close = (np.nan,np.nan), (np.nan,np.nan)
 
+        return
+    
+    def short():
+        return
+
+    @staticmethod
+    def find_pt_one_trade_per_day(EES_dict):
+        entry_pt, exit_pt, stop_pt, close_pt = None, None, None, None
+        # To get the correct EES and close time and price
+        if len(EES_dict['entry']) == 0: # entry price not hit. No trade that day.
+            pass
+        else:
+            # choose the entry point
+            entry_pt = EES_dict['entry'][0]
+
+            if len(EES_dict['exit']) == 0 and len(EES_dict['stop']) ==0:
+                close_pt = EES_dict['close'] #set the trade close at stop loss
+
+            
+            if len(EES_dict['exit']) > 0:
+                # Find exit point candidates
+                for i, exit_cand in enumerate(EES_dict['exit']):  
+                    if exit_cand[0] > entry_pt[0]:
+                        earliest_exit = exit_cand
+                    
+            if len(EES_dict['stop']) > 0:
+                # Finde stop loss point candidates
+                for i, stop_cand in enumerate(EES_dict['stop']):
+                    if stop_cand[0] > entry_pt[0]:
+                        earliest_stop = stop_cand
+
+            if earliest_stop > earliest_exit:
+                # close trade if first exit is earlier than first stop loss
+                exit_pt = earliest_exit
+                
+            elif earliest_exit > earliest_stop: 
+                # close trade if first stop loss is earlier than first exit
+                stop_pt = earliest_stop
+        return entry_pt, exit_pt, stop_pt, close_pt
+    
+    def run_trade_one_trade_per_day(self, entry_pt, exit_pt, stop_pt, close_pt, 
+                           give_obj, get_obj, pos_type):
+        # initialise trade_open and trade_close time and prices
+        trade_open, trade_close = (np.nan,np.nan), (np.nan,np.nan)
+        
+        # Make a position
+        entry_pos = Position(give_obj, get_obj, entry_pt[1], 
+                                                 portfolio= self.portfolio)
+        exit_pos = Position(get_obj, give_obj, exit_pt[1], 
+                                                    portfolio= self.portfolio) 
+        stop_pos = Position(get_obj, give_obj, stop_pt[1], 
+                                                    portfolio= self.portfolio)
+        close_pos = Position(get_obj, give_obj, close_pt[1], 
+                                                     portfolio= self.portfolio)
+        if entry_pt == None:
+            print("No trade")
+            # Cancel all order positions
+            ExecutePosition(entry_pos).cancel_pos(void_time=close_pt[0])
+            ExecutePosition(exit_pos).cancel_pos(void_time=close_pt[0])
+            ExecutePosition(stop_pos).cancel_pos(void_time=close_pt[0])
+            ExecutePosition(close_pos).cancel_pos(void_time=close_pt[0])    
+            
+        elif entry_pt and exit_pt != None:
+            print("Noraml exit.")
+            trade_open, trade_close = entry_pt, exit_pos
+            open_pos, close_pos = entry_pos, exit_pos
+            # Execute a position
+            ExecutePosition(entry_pos).fill_pos(fill_time = entry_pt[0], 
+                                                pos_type=pos_type)
+            
+            ExecutePosition(exit_pos).fill_pos(fill_time = exit_pos[0], 
+                                               pos_type=pos_type)
+            
+            # Cancel all order positions
+            ExecutePosition(stop_pos).cancel_pos(void_time= exit_pos[0])
+            ExecutePosition(close_pos).cancel_pos(void_time= exit_pos[0])  
+            
+        elif exit_pt== None and stop_pt != None:
+            print('stop loss')
+            trade_open, trade_close = entry_pt, stop_pt
+
+            # Execute a position
+            ExecutePosition(entry_pos).fill_pos(fill_time = entry_pt[0], 
+                                                pos_type=pos_type)
+            
+            ExecutePosition(stop_pos).fill_pos(fill_time = stop_pt[0], 
+                                               pos_type=pos_type)
+            
+            # Cancel all order positions
+            ExecutePosition(stop_pos).cancel_pos(void_time= stop_pt[0])
+            ExecutePosition(close_pos).cancel_pos(void_time= stop_pt[0])  
+            
+            
+        elif exit_pt== None and stop_pt == None:
+            print("Sell at close")
+            trade_open, trade_close = entry_pt, close_pt
+            # Open position here
+            ExecutePosition(entry_pos).fill_pos(fill_time = entry_pt[0], 
+                                                pos_type=pos_type)
+            
+            ExecutePosition(close_pos).fill_pos(fill_time = close_pt[0], 
+                                               pos_type=pos_type)
+            
+            # Cancel all order positions
+            ExecutePosition(stop_pos).cancel_pos(void_time=close_pt[0])
+            ExecutePosition(exit_pos).cancel_pos(void_time=close_pt[0])
+            
+        return trade_open, trade_close
+    
     def trade_choice_simple_portfolio(self, day, 
                                       give_obj_str_dict, get_obj_str_dict, 
                                       get_obj_quantity,
@@ -290,10 +412,12 @@ class Trade(object):
         
         print('entry_exit', EES_dict['entry'], EES_dict['exit'])
         
-        # initialise trade_open and trade_close time and prices
-        trade_open, trade_close = (np.nan,np.nan), (np.nan,np.nan)
-        
-        
+        # Define the EES points for one trade per day
+        entry_pt, exit_pt, stop_pt, close_pt = self.fined_pt_one_trade_per_day(
+                                                                        EES_dict)
+                
+
+        # Input the Asset objects
         give_obj_name = give_obj_str_dict['name']
         give_obj_unit = give_obj_str_dict['unit']
         give_obj_type = give_obj_str_dict['type']
@@ -328,66 +452,12 @@ class Trade(object):
             
             entry_pos = Position(give_obj, get_obj, EES_dict['entry'][0][1], 
                                                      portfolio= self.portfolio)
-                    
-        
-        exit_pos = Position(get_obj, give_obj, EES_dict['exit'][0][1], 
-                                                    portfolio= self.portfolio) 
-        stop_pos = Position(get_obj, give_obj, EES_dict['stop'], 
-                                                    portfolio= self.portfolio)
-        close_pos = Position(get_obj, give_obj, EES_dict['close'], 
-                                                     portfolio= self.portfolio)
-        
-        # To get the correct EES and close time and price
-        if len(EES_dict['entry']) == 0: # entry price not hit. No trade that day.
-            pass
-        else:
-            # choose the entry point
-            trade_open = EES_dict['entry'][0]
-            
-            # Open position here
-            ExecutePosition(entry_pos).fill_pos(fill_time = trade_open[0], 
-                                                pos_type=pos_type)
-            
-            if len(EES_dict['stop']) == 0: # if the stop loss wasn't hit
-                pass
-            else:
-                trade_close = EES_dict['stop'][0] #set the trade close at stop loss
-                
-                ExecutePosition(stop_pos).fill_pos(fill_time = trade_close[0], 
-                                                   pos_type=pos_type)
-                
-                # Cancel all order positions
-                ExecutePosition(exit_pos).cancel_pos()
-                ExecutePosition(close_pos).cancel_pos()
 
-                
-            if len(EES_dict['exit']) == 0:
-                trade_close = EES_dict['close']
-                
-                ExecutePosition(close_pos).fill_pos(fill_time= trade_close, 
-                                                    pos_type=pos_type)
-                
-                # Cancel all order positions
-                ExecutePosition(stop_pos).cancel_pos()
-                ExecutePosition(exit_pos).cancel_pos()
-                
-            else:
-                # make sure the exit comes after the entry point
-                for i, exit_cand in enumerate(EES_dict['exit']):  
-                    if exit_cand[0] > trade_open[0]:
-                        trade_close = exit_cand
-                        
-                        ExecutePosition(exit_pos).fill_pos(fill_time = trade_close[0], 
-                                                           pos_type=pos_type)
-                        
-                        # Cancel all order positions
-                        ExecutePosition(stop_pos).cancel_pos()
-                        ExecutePosition(close_pos).cancel_pos()     
-                        
-                        break
-                    else:
-                        pass
-                    
+        #ccc
+        trade_open, trade_close = self.run_trade_one_trade_per_day(
+                                        entry_pt, exit_pt, stop_pt, close_pt, 
+                                        give_obj, get_obj, pos_type)
+        # the search function for entry and exit time should be completely sepearate to the trading actions
         return trade_open, trade_close
             
                     
