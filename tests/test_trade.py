@@ -18,13 +18,13 @@ import EC_tools.read as read
 
 FILENAME_MINUTE = "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL.001"
 FILENSME_BUYSELL_SIGNALS = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_CLc1_full.csv"
-SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_CLc2.csv"   
+SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_CLc1.csv"   
 
 def test_Trade_trade_choice_simple_portfolio()->None:
     # Setting up the trade itself. First load the parameters
     direction = 'Buy'
     open_hr, close_hr = '0330', '2000'
-    date_interest = "2024-01-18"
+    date_interest = "2023-12-29" # no entry test case
     
     # Use one day to test if the trade logic works
     P1 = Portfolio()
@@ -46,10 +46,6 @@ def test_Trade_trade_choice_simple_portfolio()->None:
                                             float(signal_table['target exit'].iloc[0]), \
                                             float(signal_table['stop exit'].iloc[0])
     
-     
-    print(target_entry, target_exit, stop_exit)
-
-    
     print(day['Date'].iloc[0], direction, target_entry, target_exit, stop_exit)
     
     open_hr_dt, open_price = read.find_closest_price(day,
@@ -65,7 +61,6 @@ def test_Trade_trade_choice_simple_portfolio()->None:
 
     
     #print(EES_dict)
-    #plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=False)
 
     if direction == "Buy":
         give_obj_str_dict = {'name':"USD", 'unit':'dollars', 'type':'Cash'}
@@ -76,14 +71,18 @@ def test_Trade_trade_choice_simple_portfolio()->None:
         give_obj_str_dict = {'name':"CLc1", 'unit':'contracts', 'type':'Future'}
         get_obj_str_dict = {'name':"USD", 'unit':'dollars', 'type':'Cash'}
     
-    Trade(P1).trade_choice_simple_portfolio(day, 
+    trade_open, trade_close, EES_dict = Trade(P1).trade_choice_simple_portfolio(day, 
                                       give_obj_str_dict, get_obj_str_dict, 
                                       50,
                                       target_entry, target_exit, stop_exit,
                                       open_hr=open_hr_dt, close_hr=close_hr_dt, 
                                       direction = "Buy")
     
-    
-    print(P1.table)
+    plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=True)
+
+    print(P1.pool)
+
+    print(P1.master_table)
+#    print(P1.log)
 
 test_Trade_trade_choice_simple_portfolio()

@@ -51,7 +51,7 @@ class Position(object):
     auto_adjust: bool = True
     pos_id: str = random_string()  
     
-    def __post_init__(self, void_time = datetime.datetime.now()):
+    def __post_init__(self, void_time = datetime.datetime.now(), epi = 1e-8):
         """
         The post init function that checks if the input price is correct.
         If it is not. the position is voided.
@@ -60,9 +60,16 @@ class Position(object):
         # check if the quantity of both assets are 
         correct_ratio = self.give_obj.quantity / (self.get_obj.quantity*self.size)
         #print(correct_ratio, self.price)
-        self._check = (self._price == correct_ratio)
+        #self._check = (self._price == correct_ratio)
         
-        print('Position created.')
+        # If the price is within the interval of (-epi, +epi) upon the correct ratio
+        # We consider it is equal to the correct ratio
+        self._check = (self._price  < correct_ratio + epi) and \
+                        (self._price > correct_ratio- epi)
+        print('correct ratio', correct_ratio, self.give_obj.quantity / (self.get_obj.quantity*self.size))
+        print('_check', self._price == correct_ratio)
+
+        print('Position created.',self._check)
         #If this value is false, the position is automatically voided.
         if self._check == False:
             self.status = PositionStatus.VOID
@@ -94,6 +101,8 @@ class Position(object):
         self.get_obj.quantity = self.give_obj.quantity / self._price
         
 
+        
+        
 class ExecutePosition(object):
     """
     A class that execute the position.
@@ -165,7 +174,7 @@ class ExecutePosition(object):
 
         
         # charge a fee if it exits
-        if self.position.fee != None or self.position.fee > 0:
+        if self.position.fee != None: #or self.position.fee > 0:
             self.position.portfolio.sub(self.position.fee, datetime= fill_time)
 
         

@@ -583,7 +583,8 @@ if __name__ == "__main__":
     signal_filename = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_CLc1.csv"
     #date_interest = "2022-05-19"
     #date_interest = "2024-04-03"
-    date_interest = "2024-01-18"
+    #date_interest = "2024-01-18"
+    date_interest = "2023-12-29"
     
     plot_minute(filename_minute, signal_filename, 
                 date_interest = date_interest, direction="Sell")

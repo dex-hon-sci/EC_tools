@@ -130,12 +130,12 @@ def find_minute_EES(histroy_data_intraday,
     price_list = histroy_data_intraday[price_approx].to_numpy()
     time_list = histroy_data_intraday[time_proxy].to_numpy()
     
+    date_list = histroy_data_intraday['Date'].to_numpy()
     
     # Find the crossover indices
     entry_pt_dict = find_crossover(price_list, target_entry)
     exit_pt_dict = find_crossover(price_list, target_exit)
     stop_pt_dict = find_crossover(price_list, stop_exit)
-    
     
     if direction == "Neutral":
         print("Neutral")
@@ -189,7 +189,6 @@ def find_minute_EES(histroy_data_intraday,
     #print('EES_dict', EES_dict)
     return EES_dict
 
-#from EC_tools.backtest import find_minute_EES
 
 # there are two ways to backtest strategies, 
 # (1) is to loop through every unit time interval and make a judgement call
@@ -229,7 +228,7 @@ def trade_choice_simple(EES_dict):
     return trade_open, trade_close #(open_time, open_price) (close_time, close_price)
 
 
-class Trade1(object):
+class OneTradePerDay(object):
     
     def  __init__(self, portfolio=None):
         self.portfolio = portfolio
@@ -245,18 +244,12 @@ class Trade(object):
     def  __init__(self, portfolio=None):
         self.portfolio = portfolio
 
-    def long():
-        trade_open, trade_close = (np.nan,np.nan), (np.nan,np.nan)
-
-        return
-    
-    def short():
-        return
-
     @staticmethod
     def find_pt_one_trade_per_day(EES_dict):
         # A method that search for correct EES points from a EES_dict
-        entry_pt, exit_pt, stop_pt, close_pt = None, None, None, None
+        entry_pt, exit_pt = (np.nan,np.nan), (np.nan,np.nan)
+        stop_pt, close_pt = (np.nan,np.nan), (np.nan,np.nan)
+        
         earliest_exit, earliest_stop = exit_pt, stop_pt
         # To get the correct EES and close time and price
         if len(EES_dict['entry']) == 0: # entry price not hit. No trade that day.
@@ -264,56 +257,107 @@ class Trade(object):
         else:
             # choose the entry point
             entry_pt = EES_dict['entry'][0]
-
-            if len(EES_dict['exit']) == 0 and len(EES_dict['stop']) ==0:
-                close_pt = EES_dict['close'] #set the trade close at stop loss
-                
-                # return the value to avoid going to the next steps of the 
-                # if statements
-                return entry_pt, exit_pt, stop_pt, close_pt
+            close_pt = EES_dict['close']
             
             if len(EES_dict['exit']) > 0:
                 # Find exit point candidates
                 for i, exit_cand in enumerate(EES_dict['exit']):  
                     if exit_cand[0] > entry_pt[0]:
                         earliest_exit = exit_cand
+                        print('earliest_exit', earliest_exit)
+                        break
 
             if len(EES_dict['stop']) > 0:
                 # Finde stop loss point candidates
                 for i, stop_cand in enumerate(EES_dict['stop']):
                     if stop_cand[0] > entry_pt[0]:
                         earliest_stop = stop_cand
-                        
-            if earliest_stop != None and earliest_exit !=None:
-                if earliest_stop[0] > earliest_exit[0]:
-                    # close trade if first exit is earlier than first stop loss
-                    exit_pt = earliest_exit
-                    
-                elif earliest_exit[0] > earliest_stop[0]: 
-                    # close trade if first stop loss is earlier than first exit
-                    stop_pt = earliest_stop
+                        print('earliest_stop', earliest_stop)
+                        break
             
+            # put in the new exit and stop
+            exit_pt = earliest_exit
+            stop_pt = earliest_stop
+
         return entry_pt, exit_pt, stop_pt, close_pt
     
-    def run_trade_one_trade_per_day(self, entry_pt, exit_pt, stop_pt, close_pt, 
-                           give_obj, get_obj, pos_type):
+    def run_one_trade_per_day(self, 
+                                    entry_price, exit_price, stop_price, close_price, 
+                                    entry_pt, exit_pt, stop_pt, close_pt,
+                                                give_obj_str_dict, get_obj_str_dict, 
+                                                get_obj_quantity, pos_type):
         # a method that execute the one trade per day based on the cases of the EES
         
         # initialise trade_open and trade_close time and prices
         trade_open, trade_close = (np.nan,np.nan), (np.nan,np.nan)
         opening_pos, closing_pos = None, None
+        
+        give_obj_name = give_obj_str_dict['name']
+        give_obj_unit = give_obj_str_dict['unit']
+        give_obj_type = give_obj_str_dict['type']
+        
+        get_obj_name = get_obj_str_dict['name']
+        get_obj_unit = get_obj_str_dict['unit']
+        get_obj_type = get_obj_str_dict['type']
+        
+        
+        # Make positions for initial price estimation
+        print('==entry==')
+        get_obj_entry = Asset(get_obj_name, get_obj_quantity, get_obj_unit, get_obj_type)
+        give_obj_entry = Asset(give_obj_name, entry_price*get_obj_quantity, 
+                            give_obj_unit, give_obj_type)
 
-        # Make positions
-        entry_pos = Position(give_obj, get_obj, entry_pt[1], 
+        print('amount',entry_price, get_obj_quantity,get_obj_quantity*entry_price)
+        print('entry_price', give_obj_entry.quantity/get_obj_entry.quantity, entry_price)
+
+        entry_pos = Position(give_obj_entry, get_obj_entry, entry_price,
                                                  portfolio= self.portfolio)
-        exit_pos = Position(get_obj, give_obj, exit_pt[1], 
+        print('==exit==')
+        get_obj_exit = Asset(get_obj_name, get_obj_quantity, 
+                             get_obj_unit, get_obj_type)
+        give_obj_exit= Asset(give_obj_name, get_obj_quantity*exit_price, 
+                            give_obj_unit, give_obj_type)
+        
+        exit_pos = Position(get_obj_exit, give_obj_exit, 1.0/exit_price, 
                                                     portfolio= self.portfolio) 
-        stop_pos = Position(get_obj, give_obj, stop_pt[1], 
+        
+        print('amount', exit_price, get_obj_quantity,get_obj_quantity*exit_price)
+        print('exit_price', give_obj_exit.quantity/get_obj_exit.quantity, exit_price)
+        print('quantity', get_obj_exit.quantity, give_obj_exit.quantity)
+
+        print('==stop==', get_obj_quantity)
+        get_obj_stop = Asset(get_obj_name, get_obj_quantity,
+                             get_obj_unit, get_obj_type)
+        give_obj_stop = Asset(give_obj_name, get_obj_quantity*stop_price, 
+                            give_obj_unit, give_obj_type)
+        
+        stop_pos = Position(get_obj_stop, give_obj_stop, 1.0/stop_price, 
                                                     portfolio= self.portfolio)
-        close_pos = Position(get_obj, give_obj, close_pt[1], 
+        
+        print('amount', stop_price, get_obj_quantity,get_obj_quantity*stop_price)
+        print('stop_price', give_obj_stop.quantity/get_obj_stop.quantity, stop_price)
+        print('quantity', get_obj_stop.quantity, give_obj_stop.quantity)
+        
+        print('==close==')
+        get_obj_close = Asset(get_obj_name, get_obj_quantity,
+                              get_obj_unit, get_obj_type)
+        give_obj_close = Asset(give_obj_name, get_obj_quantity*close_price, 
+                            give_obj_unit, give_obj_type)
+        
+        close_pos = Position(get_obj_close, give_obj_close, 1.0/close_price, 
                                                      portfolio= self.portfolio)
         
-        if entry_pt == None:
+        print('amount', close_price, get_obj_quantity,get_obj_quantity*close_price)
+        print('exit_price',give_obj_close.quantity/get_obj_close.quantity, close_price)
+        print('quantity', get_obj_close.quantity, give_obj_close.quantity)
+
+        print('=========')
+        
+        # Execute the position based on different scenario
+        # change the price from the initial position to the closest price 
+        # estimation
+
+        if entry_pt == (np.nan,np.nan):
             print("No trade")
             # Cancel all order positions
             ExecutePosition(entry_pos).cancel_pos(void_time=close_pt[0])
@@ -324,33 +368,47 @@ class Trade(object):
             return trade_open, trade_close
 
             
-        elif entry_pt and exit_pt != None:
+        elif entry_pt and exit_pt != (np.nan,np.nan):
             print("Noraml exit.")
-            trade_open, trade_close = entry_pt, exit_pos
+            trade_open, trade_close = entry_pt, exit_pt
             opening_pos, closing_pos = entry_pos, exit_pos
-
+            
+            # change the closing price
+            closing_pos.price = round(1/exit_pt[1],2)
+            
+            print("trade_open, trade_close", trade_open, trade_close)
+            print(entry_pos.status, exit_pos.status, stop_pos.status, close_pos.status)
+            
             # Cancel all order positions
             ExecutePosition(stop_pos).cancel_pos(void_time= trade_close[0])
             ExecutePosition(close_pos).cancel_pos(void_time= trade_close[0])  
             
-        elif exit_pt== None and stop_pt != None:
+        elif exit_pt== (np.nan,np.nan) and stop_pt != (np.nan,np.nan):
             print('stop loss')
             trade_open, trade_close = entry_pt, stop_pt
             opening_pos, closing_pos = entry_pos, stop_pos
+            
+            # change the closing price
+            closing_pos.price = round(1/stop_pt[1],2)
+            
             # Cancel all order positions
             ExecutePosition(exit_pos).cancel_pos(void_time= trade_close[0])
             ExecutePosition(close_pos).cancel_pos(void_time= trade_close[0])  
             
             
-        elif exit_pt== None and stop_pt == None:
+        elif exit_pt== (np.nan,np.nan) and stop_pt == (np.nan,np.nan):
             print("Sell at close")
             trade_open, trade_close = entry_pt, close_pt
             opening_pos, closing_pos = entry_pos, close_pos
 
+            # change the closing price
+            closing_pos.price = round(1/close_pt[1],2)
+            
             # Cancel all order positions
             ExecutePosition(stop_pos).cancel_pos(void_time=trade_close[0])
             ExecutePosition(exit_pos).cancel_pos(void_time=trade_close[0])
             
+        opening_pos.price = entry_pt[1]
         # Execute the positions
         ExecutePosition(opening_pos).fill_pos(fill_time = trade_open[0], 
                                             pos_type=pos_type)
@@ -413,7 +471,7 @@ class Trade(object):
                           open_hr=open_hr, close_hr=close_hr, 
                           direction = direction)
         
-        print('entry_exit', EES_dict['entry'], EES_dict['exit'], EES_dict['stop'])
+        print('entry_exit', EES_dict['entry'], EES_dict['exit'], EES_dict['stop'], EES_dict['close'])
         
         # Define the EES points for one trade per day
         entry_pt, exit_pt, stop_pt, close_pt = self.find_pt_one_trade_per_day(
@@ -421,21 +479,12 @@ class Trade(object):
         print("entry_pt, exit_pt, stop_pt, close_pt", 
               entry_pt, exit_pt, stop_pt, close_pt)
         # Input the Asset objects
-        give_obj_name = give_obj_str_dict['name']
-        give_obj_unit = give_obj_str_dict['unit']
-        give_obj_type = give_obj_str_dict['type']
-        
-        get_obj_name = get_obj_str_dict['name']
-        get_obj_unit = get_obj_str_dict['unit']
-        get_obj_type = get_obj_str_dict['type']
-        
+
         # make give and get objects here
         # First define the get_obj because this is the target we are aimming at/
         # We then use the get_obj quantity to define the amount we give in the 
         # five_obj quantity
-        get_obj = Asset(get_obj_name, get_obj_quantity, get_obj_unit, get_obj_type)
-        give_obj= Asset(give_obj_name, target_entry*get_obj_quantity, 
-                            give_obj_unit, give_obj_type)
+
         pos_type= 'Long'
 # =============================================================================
 #         # Start the position
@@ -446,7 +495,7 @@ class Trade(object):
 #             # the search for the closest proce during the crossover and readjust 
 #             # the get_obj quantity.
 #             give_obj= Asset(give_obj_name, target_entry*get_obj_quantity, 
-#                             give_obj_unit, give_obj_type)
+#                             give_obj_unit, give_obj_type)target_entry
 #             
 #             entry_pos = Position(give_obj, get_obj, EES_dict['entry'][0][1], 
 #                                                      portfolio= self.portfolio)
@@ -461,12 +510,15 @@ class Trade(object):
 # =============================================================================
 
         # run the trade via position module
-        trade_open, trade_close = self.run_trade_one_trade_per_day(
+        trade_open, trade_close = self.run_one_trade_per_day(
+                                        target_entry, target_exit, stop_exit, close_pt[1],
                                         entry_pt, exit_pt, stop_pt, close_pt, 
-                                        give_obj, get_obj, pos_type)
+                                        give_obj_str_dict, get_obj_str_dict,
+                                        get_obj_quantity, pos_type)
+        
+
         # the search function for entry and exit time should be completely sepearate to the trading actions
-        return trade_open, trade_close
-            
+        return trade_open, trade_close, EES_dict            
                     
 
         def trade_choice_dynamic_1(self):
