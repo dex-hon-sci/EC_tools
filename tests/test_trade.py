@@ -25,7 +25,7 @@ def test_Trade_trade_choice_simple_portfolio()->None:
     direction = 'Buy'
     open_hr, close_hr = '0330', '2000'
     date_interest = "2024-01-18"
-
+    
     # Use one day to test if the trade logic works
     P1 = Portfolio()
     USD_initial = Asset("USD", 1000000, "dollars", "Cash") # initial fund
@@ -40,6 +40,7 @@ def test_Trade_trade_choice_simple_portfolio()->None:
     signal_table = signal_table[signal_table['APC forecast period'] == date_interest] 
     
     print(signal_table)
+    
     
     target_entry, target_exit, stop_exit = float(signal_table['target entry'].iloc[0]), \
                                             float(signal_table['target exit'].iloc[0]), \
@@ -79,9 +80,10 @@ def test_Trade_trade_choice_simple_portfolio()->None:
                                       give_obj_str_dict, get_obj_str_dict, 
                                       50,
                                       target_entry, target_exit, stop_exit,
-                                      open_hr="0300", close_hr="2000", 
+                                      open_hr=open_hr_dt, close_hr=close_hr_dt, 
                                       direction = "Buy")
     
     
+    print(P1.table)
 
 test_Trade_trade_choice_simple_portfolio()

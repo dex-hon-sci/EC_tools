@@ -130,6 +130,7 @@ def find_minute_EES(histroy_data_intraday,
     price_list = histroy_data_intraday[price_approx].to_numpy()
     time_list = histroy_data_intraday[time_proxy].to_numpy()
     
+    
     # Find the crossover indices
     entry_pt_dict = find_crossover(price_list, target_entry)
     exit_pt_dict = find_crossover(price_list, target_exit)
@@ -256,6 +257,7 @@ class Trade(object):
     def find_pt_one_trade_per_day(EES_dict):
         # A method that search for correct EES points from a EES_dict
         entry_pt, exit_pt, stop_pt, close_pt = None, None, None, None
+        earliest_exit, earliest_stop = exit_pt, stop_pt
         # To get the correct EES and close time and price
         if len(EES_dict['entry']) == 0: # entry price not hit. No trade that day.
             pass
@@ -275,20 +277,21 @@ class Trade(object):
                 for i, exit_cand in enumerate(EES_dict['exit']):  
                     if exit_cand[0] > entry_pt[0]:
                         earliest_exit = exit_cand
-                    
+
             if len(EES_dict['stop']) > 0:
                 # Finde stop loss point candidates
                 for i, stop_cand in enumerate(EES_dict['stop']):
                     if stop_cand[0] > entry_pt[0]:
                         earliest_stop = stop_cand
+                        
+            if earliest_stop != None and earliest_exit !=None:
+                if earliest_stop[0] > earliest_exit[0]:
+                    # close trade if first exit is earlier than first stop loss
+                    exit_pt = earliest_exit
                     
-            if earliest_stop > earliest_exit:
-                # close trade if first exit is earlier than first stop loss
-                exit_pt = earliest_exit
-                
-            elif earliest_exit > earliest_stop: 
-                # close trade if first stop loss is earlier than first exit
-                stop_pt = earliest_stop
+                elif earliest_exit[0] > earliest_stop[0]: 
+                    # close trade if first stop loss is earlier than first exit
+                    stop_pt = earliest_stop
             
         return entry_pt, exit_pt, stop_pt, close_pt
     
@@ -410,12 +413,13 @@ class Trade(object):
                           open_hr=open_hr, close_hr=close_hr, 
                           direction = direction)
         
-        print('entry_exit', EES_dict['entry'], EES_dict['exit'])
+        print('entry_exit', EES_dict['entry'], EES_dict['exit'], EES_dict['stop'])
         
         # Define the EES points for one trade per day
-        entry_pt, exit_pt, stop_pt, close_pt = self.fined_pt_one_trade_per_day(
+        entry_pt, exit_pt, stop_pt, close_pt = self.find_pt_one_trade_per_day(
                                                                         EES_dict)
-                
+        print("entry_pt, exit_pt, stop_pt, close_pt", 
+              entry_pt, exit_pt, stop_pt, close_pt)
         # Input the Asset objects
         give_obj_name = give_obj_str_dict['name']
         give_obj_unit = give_obj_str_dict['unit']
@@ -456,7 +460,7 @@ class Trade(object):
 #                                                      portfolio= self.portfolio)
 # =============================================================================
 
-        #ccc
+        # run the trade via position module
         trade_open, trade_close = self.run_trade_one_trade_per_day(
                                         entry_pt, exit_pt, stop_pt, close_pt, 
                                         give_obj, get_obj, pos_type)

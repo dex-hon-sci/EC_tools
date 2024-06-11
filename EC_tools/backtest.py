@@ -564,5 +564,5 @@ def run_backtest_list():
 
 if __name__ == "__main__":
     
-    #run_backtest()
-    run_backtest_portfolio()
+    run_backtest()
+    #run_backtest_portfolio()
