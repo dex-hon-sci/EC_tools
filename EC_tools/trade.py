@@ -10,13 +10,11 @@ here.
 """
 import numpy as np
 from dataclasses import dataclass
-from typing import Protocol
+from typing import Protocol # use protocol for trade class
 
-import EC_tools.portfolio as port
 from EC_tools.position import Position, ExecutePosition
-from EC_tools.utility import random_string
 from EC_tools.portfolio import Asset
-from EC_tools.read import read
+import EC_tools.read as read
 
 ASSET_DICT = {"USD": {"unit":'dollars', "asset_type":'Cash'},
               "AUD": {"unit":'dollars',"asset_type":'Cash'},
@@ -466,11 +464,11 @@ class Trade(object):
         EES_target_list = [target_entry, target_exit, stop_exit, EES_dict['close'][1]] 
 
         # run the trade via position module
-        pos_list = self.open_positions_one_trade_per_day(self, give_obj_name, get_obj_name, 
+        pos_list = self.open_positions_one_trade_per_day(give_obj_name, get_obj_name, 
                                   get_obj_quantity, EES_target_list, pos_type)
 
 
-        trade_open, trade_close, pos_list, exec_pos_list = self.execute_one_trade_per_day(EES_dict)
+        trade_open, trade_close, pos_list, exec_pos_list = self.execute_one_trade_per_day(EES_dict, pos_list)
 
         # the search function for entry and exit time should be completely sepearate to the trading actions
         return EES_dict, trade_open, trade_close, pos_list, exec_pos_list            
@@ -706,7 +704,7 @@ class OneTradePerDay(Trade):
                                   get_obj_quantity, EES_target_list, pos_type)
 
 
-        trade_open, trade_close, pos_list, exec_pos_list = self.execute_position(EES_dict)
+        trade_open, trade_close, pos_list, exec_pos_list = self.execute_position(EES_dict, pos_list)
 
         # the search function for entry and exit time should be completely sepearate to the trading actions
         return trade_open, trade_close, EES_dict, pos_list, exec_pos_list            

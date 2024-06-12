@@ -91,14 +91,14 @@ def test_trade_choice_simple_portfolio_buy_normalexit()->None:
     get_obj_name = "CLc1"
     
     EES_dict, trade_open, trade_close, pos_list, exec_pos_list =\
-                                Trade(P1).run_one_trade_per_day_portfolio( day, 
+                                Trade(P1).run_one_trade_per_day_portfolio(day, 
                                                                   give_obj_name, get_obj_name, 
                                                                   50,
                                                                   target_entry, target_exit, stop_exit,
-                                                                  open_hr="0300", close_hr="2000", 
+                                                                  open_hr=open_hr_dt, close_hr=close_hr_dt, 
                                                                   direction = "Buy")
     
-    plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=False)
+    plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=True)
 
     print(P1.pool)
 
