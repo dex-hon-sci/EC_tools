@@ -25,6 +25,7 @@ class Strategy(Protocol):
     def __init__(self):
         self._buy_cond_list = []
         self._sell_cond_list = []
+        self._direction = None
         return None
 
     def set_EES():

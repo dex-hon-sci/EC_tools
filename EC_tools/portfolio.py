@@ -5,12 +5,16 @@ Created on Mon May  6 08:55:17 2024
 
 @author: dexter
 """
-import pandas as pd
+# python import
 from dataclasses import dataclass, field
 from typing import Protocol
 from functools import cached_property
 import datetime as datetime
 
+# package import 
+import pandas as pd
+
+# EC_tools import
 import EC_tools.read as read
 
 PRICE_DICT = {"CLc1": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL.day",

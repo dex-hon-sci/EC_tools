@@ -8,21 +8,21 @@ Created on Wed Mar 13 19:51:24 2024
 A modified script based on the Mean-Reversion Method developed by Abbe Whitford.
 
 """
-# import libraries
+# python import
+import datetime as datetime
+
+# package imports
 import pandas as pd 
 import numpy as np
 from scipy.interpolate import CubicSpline
-import datetime as datetime
 
-# import EC_tools
+# EC_tools imports
 import EC_tools.strategy as strategy
 import EC_tools.read as read
 import EC_tools.utility as util
 from EC_tools.bookkeep import Bookkeep
 import EC_tools.math_func as mfunc
-
 import update_db as update_db
-
 
 
 __all__ = ['loop_signal','gen_signal_vector','run_gen_MR_signals', 

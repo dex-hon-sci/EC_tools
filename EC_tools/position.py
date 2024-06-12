@@ -5,13 +5,13 @@ Created on Wed May 29 23:49:08 2024
 
 @author: dexter
 """
-import pandas as pd
+# python import
 from dataclasses import dataclass, field
 from typing import Protocol
 from enum import Enum, auto
-from functools import cached_property
 import datetime as datetime
 
+# EC_tools import
 from EC_tools.portfolio import Asset, Portfolio
 from EC_tools.utility import random_string
     
@@ -101,8 +101,6 @@ class Position(object):
         self.get_obj.quantity = self.give_obj.quantity / self._price
         
 
-        
-        
 class ExecutePosition(object):
     """
     A class that execute the position.
@@ -211,11 +209,3 @@ class ExecutePosition(object):
         self.position.void_time = void_time
         return self.position
     
-# =============================================================================
-# class PositionBook(Portfolio):
-#     def __init__(self):
-#         self._pool = list()
-#         
-#     def pool(self):
-#         return self._pool
-# =============================================================================
