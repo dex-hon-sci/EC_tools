@@ -458,13 +458,14 @@ def loop_date_portfolio(signal_table, histroy_intraday_data, portfolio,
                                                            direction='backward')
         print('close', close_hr_dt, close_price)
 
+##############3From this point on, everythings are handled via the trade module
         
         # make a dictionary for all the possible EES time and values
         EES_dict = find_minute_EES(day, target_entry, target_exit, stop_exit,
                           open_hr=open_hr_dt, close_hr=close_hr_dt, 
                           direction = direction)
 
-############ WIP
+############ WIP 
         # calculate the require quantity by the price action
         get_obj_quantity = 50
         give_obj_quantity = get_obj_quantity
@@ -475,8 +476,10 @@ def loop_date_portfolio(signal_table, histroy_intraday_data, portfolio,
         # make the trade.
         trade_open, trade_close = Trade(portfolio).trade_choice_simple_portfolio(
                                                     EES_dict, give_obj, get_obj)
-###########
+###################################################
 
+
+        # Bookkeeping area, generating data for the PNL file
         entry_price, exit_price = trade_open[1], trade_close[1]
         entry_datetime= trade_open[0]
         exit_datetime = trade_close[0]
