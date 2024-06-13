@@ -44,13 +44,15 @@ round_turn_fees = {
 'QPc2': 24.0,
 }
 
-from EC_tools.portfolio import Asset, Portfolio
-import EC_tools.utility as util
+
 
 import unittest
 from werkzeug import exceptions
 import datetime
 import pandas as pd
+
+from EC_tools.portfolio import Asset, Portfolio
+import EC_tools.utility as util
 
 # Define the test inputs for assets
 USD = Asset('USD', 1e7, 'dollars', 'Cash')

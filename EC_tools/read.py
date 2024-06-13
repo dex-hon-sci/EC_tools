@@ -17,7 +17,8 @@ from EC_tools.ArgusPossibilityCurves2 import ArgusPossibilityCurves
 __all__ = ['get_apc_from_server','read_apc_data','read_portara_daily_data', 
            'read_portara_minute_data','merge_portara_data',
            'portara_data_handling', 'extract_lag_data', 
-           'read_reformat_Portara_minute_data']
+           'read_reformat_Portara_minute_data', 'find_closest_price', 
+           'find_crossover', 'find_minute_EES']
 
 __author__="Dexter S.-H. Hon"
 
@@ -581,7 +582,7 @@ def find_closest_price_generic(data, target_time='0330',
             
     return target_time_dt, target_price
 
-
+# tested
 def find_crossover(input_array, threshold):
     """
     A function that find the crossover points' indicies. It finds the points right
@@ -636,7 +637,7 @@ def find_crossover(input_array, threshold):
     # Produce a dic of indicies for below and above
     return {'rise': indices_rise_above, 
             'drop': indices_drop_below}
-
+#tested
 def find_minute_EES(histroy_data_intraday, 
                       target_entry, target_exit, stop_exit,
                       open_hr="0330", close_hr="1930", 

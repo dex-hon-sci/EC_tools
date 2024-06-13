@@ -16,9 +16,6 @@ import EC_tools.math_func as mfunc
 # round trip fee 15 dollars
 __author__="Dexter S.-H. Hon"
 
-
-
-
 class Strategy(Protocol):
 # make protocol class
 # condition array all([cond_1,cond_2]) == True then Buy
@@ -37,13 +34,39 @@ class MRStrategy(object):
     def __init__(self):
         self._buy_cond_list = []
         self._sell_cond_list = []
-        return None
+        self._buy_cond = False
+        self._sell_cond = False
     
     # make a list of lambda functions for the multiple conditions 
     # make a set of numbers for different EES (or EES range) 
     # also make them into a list or data frame to allow multiple EES in the same day.
     
+    @property
+    def buy_cond(self):
+        if all(self._buy_cond_list) == True:
+            self._buy_cond = True
+        return self._buy_cond
+    
+    @property
+    def sell_cond(self):
+        if all(self._sell_cond_list) == True:
+            self._sell_cond = True
+        return self._sell_cond
+    
+    def neutral_cond(self):
+        neutral_cond = not (self._buy_cond ^ self._sell_cond)
+        
+        return neutral_cond
+    
     def set_buy_cond(self):
+        # =============================================================================
+        #         cond1_buy = (history_data_lag2_close < signal_data_lag2_mode)
+        #         cond2_buy = (history_data_lag1_close < signal_data_lag1_mode)
+        #         # (2) rolling 5 days average lower than the median apc 
+        #         cond3_buy = rollinglagq5day < mode_apc_5days
+        #         # (3) price at today's opening hour above the 0.1 quantile of today's apc
+        #         cond4_buy = quant_330UKtime >= curve_today['0.1']
+        # =============================================================================
         return None
     
 

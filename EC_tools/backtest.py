@@ -14,7 +14,7 @@ import datetime as datetime
 import EC_tools.read as read
 import EC_tools.utility as util
 from EC_tools.bookkeep import Bookkeep
-from EC_tools.trade import Trade, trade_choice_simple
+from EC_tools.trade import  trade_choice_simple, OneTradePerDay
 import EC_tools.plot as plot
 from EC_tools.portfolio import Asset, Portfolio
 
@@ -419,26 +419,30 @@ def loop_date(signal_table, histroy_intraday_data, open_hr='0330',
          
     return dict_trade_PNL
     
-def loop_date_portfolio(signal_table, histroy_intraday_data, portfolio, 
-                        asset_name,
+def loop_date_portfolio(portfo, signal_table, histroy_intraday_data, 
+                        give_obj_name = "USD", get_obj_name = "CLc1", 
+                        get_obj_quantity = 50,
                         open_hr='0330', close_hr='1930',
                         plot_or_not = False):
     """
     LEGACY looping method before the development of the Portfolio module
     """
 
+    P1 = Portfolio()
+    USD_initial = Asset("USD", 1000000, "dollars", "Cash") 
+    P1.add(USD_initial)  # add initial fund
     
     book = Bookkeep(bucket_type='backtest')
     dict_trade_PNL = book.make_bucket(keyword='benchmark')
     
-    for date_interest, direction, target_entry, target_exit, stop_exit, price_code in zip(
-            signal_table['Date'], 
-            signal_table['direction'], 
-            signal_table['target entry'],
-            signal_table['target exit'], 
-            signal_table['stop exit'],
-            signal_table['price code']):
-        
+    for date_interest, direction, target_entry, target_exit, \
+        stop_exit, price_code in zip(signal_table['Date'], 
+                                    signal_table['direction'], 
+                                    signal_table['target entry'],
+                                    signal_table['target exit'], 
+                                    signal_table['stop exit'],
+                                    signal_table['price code']):
+                                        
         # Define the date of interest by reading TimeStamp. 
         # We may want to remake all this and make Timestamp the universal 
         # parameter when dealing with time
@@ -457,27 +461,17 @@ def loop_date_portfolio(signal_table, histroy_intraday_data, portfolio,
                                                            target_hr= close_hr,
                                                            direction='backward')
         print('close', close_hr_dt, close_price)
-
-##############3From this point on, everythings are handled via the trade module
+    
         
-        # make a dictionary for all the possible EES time and values
-        EES_dict = find_minute_EES(day, target_entry, target_exit, stop_exit,
-                          open_hr=open_hr_dt, close_hr=close_hr_dt, 
-                          direction = direction)
-
-############ WIP 
-        # calculate the require quantity by the price action
-        get_obj_quantity = 50
-        give_obj_quantity = get_obj_quantity
-        price = 1000*EES_dict
-        
-        give_obj = Asset("USD", give_obj_quantity, 'dollars', 'Cash'),
-        get_obj = Asset(asset_name, get_obj_quantity, 'contracts', 'future')
-        # make the trade.
-        trade_open, trade_close = Trade(portfolio).trade_choice_simple_portfolio(
-                                                    EES_dict, give_obj, get_obj)
-###################################################
-
+        # The main Trade function here
+        EES_dict, trade_open, trade_close, \
+            pos_list, exec_pos_list = OneTradePerDay(portfo).run_trade(\
+                                            day, give_obj_name, get_obj_name, 
+                                            50, target_entry, 
+                                            target_exit, stop_exit, 
+                                            open_hr=open_hr_dt, 
+                                            close_hr=close_hr_dt, 
+                                            direction = direction)
 
         # Bookkeeping area, generating data for the PNL file
         entry_price, exit_price = trade_open[1], trade_close[1]
@@ -552,12 +546,12 @@ def run_backtest_portfolio():
     P1.add(USD_initial)
     
     # loop through the date and set the EES prices for each trading day   
-    dict_trade_PNL = loop_date_portfolio(trade_date_table, history_data, P1, 
-                               asset_name="CLc2",
-                               open_hr='0330', close_hr='2000', 
-                               plot_or_not = False)    
+    dict_trade_PNL, P1 = loop_date_portfolio(P1, trade_date_table, history_data,
+                                            asset_name="CLc2",
+                                            open_hr='0330', close_hr='2000', 
+                                            plot_or_not = False)    
 
-    return dict_trade_PNL
+    return dict_trade_PNL, P1
 
 
 

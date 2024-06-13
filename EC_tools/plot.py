@@ -441,10 +441,7 @@ class SubComponents(object):
         entry_price = float(entry_price.iloc[0])
         exit_price = float(exit_price.iloc[0])
         stop_loss = float(stop_loss.iloc[0])
-        print("plot para")
-        print(type(entry_price), type(exit_price), type(stop_loss))
-        print(type(txt_shift_x), type(txt_shift_y))
-        print(type(start_x))
+
         # The EES lines
         self.ax.hlines(entry_price, self.axis_limit.start_line, 
                        self.axis_limit.end_line, color='#18833D', 

@@ -9,7 +9,7 @@ Created on Wed May 29 16:50:39 2024
 # make a Portfolio
 
 from EC_tools.portfolio import Asset, Portfolio
-#from EC_tools.position import Position, ExecutePosition
+from EC_tools.position import Position, ExecutePosition, PositionStatus
 from EC_tools.trade import Trade, trade_choice_simple, OneTradePerDay
 from EC_tools.backtest import extract_intraday_minute_data, \
                             prepare_signal_interest, plot_in_backtest
@@ -56,73 +56,25 @@ def setup_trade_test(date_interest, open_hr, close_hr, direction):
                                                        direction='backward')
     print('close', close_hr_dt, close_price)
      
+    return P1, day, target_entry, target_exit, \
+        stop_exit, open_hr_dt, close_hr_dt
 
-# test Buy case, 1) no trade, normal exit, stop loss, close case
-# test Sell case, 1) no trade, normal exit, stop loss, close case
 
-#date_interest = "2023-12-29" # no entry test case (Buy) Done
-#date_interest = "2023-12-06" # stop loss test case (Buy) Done
-#date_interest = "2021-03-17" #  sell at close case (Buy) Done
-#date_interest = "2021-04-01" #  normal exit case (Buy) 
 
-def test_trade_choice_simple_portfolio_buy_normalexit()->None:
+def onetradeperday(date_interest, direction):
     # Setting up the trade itself. First load the parameters
-    direction = 'Buy'
-    open_hr, close_hr = '0330', '2000'
-    #date_interest = "2023-12-29" # no entry test case (Buy) Done
-    #date_interest = "2023-12-06" # stop loss test case (Buy) Done
-    #date_interest = "2021-03-17" #  sell at close case (Buy) Done
-    date_interest = "2021-04-01" #  normal exit case (Buy) 
-    
-    # Use one day to test if the trade logic works
-    P1 = Portfolio()
-    USD_initial = Asset("USD", 1000000, "dollars", "Cash") # initial fund
-    P1.add(USD_initial)
-    
-    histroy_intraday_data = read.read_reformat_Portara_minute_data(FILENAME_MINUTE)
-    signal_table = prepare_signal_interest(FILENSME_BUYSELL_SIGNALS, trim = False)
-    
-    
-    day = extract_intraday_minute_data(histroy_intraday_data, date_interest, 
-                                 open_hr=open_hr, close_hr=close_hr)
-    signal_table = signal_table[signal_table['APC forecast period'] == date_interest] 
-    
-    print(signal_table)
-    
-    
-    target_entry, target_exit, stop_exit = float(signal_table['target entry'].iloc[0]), \
-                                            float(signal_table['target exit'].iloc[0]), \
-                                            float(signal_table['stop exit'].iloc[0])
-    
-    print(day['Date'].iloc[0], direction, target_entry, target_exit, stop_exit)
-    
-    open_hr_dt, open_price = read.find_closest_price(day,
-                                                       target_hr= open_hr,
-                                                       direction='forward')
-    
-    print('open',open_hr_dt, open_price)
-    
-    close_hr_dt, close_price = read.find_closest_price(day,
-                                                       target_hr= close_hr,
-                                                       direction='backward')
-    print('close', close_hr_dt, close_price)
-
-    
-# =============================================================================
-# 
-#     if direction == "Buy":
-#         give_obj_str_dict = {'name':"USD", 'unit':'dollars', 'type':'Cash'}
-#         get_obj_str_dict = {'name':"CLc1", 'unit':'contracts', 'type':'Future'}
-#         
-#     elif direction == "Sell":
-# 
-#         give_obj_str_dict = {'name':"CLc1", 'unit':'contracts', 'type':'Future'}
-#         get_obj_str_dict = {'name':"USD", 'unit':'dollars', 'type':'Cash'}
-#         
-# =============================================================================
     give_obj_name = "USD"
     get_obj_name = "CLc1"
+    open_hr, close_hr = '0330', '2000'
+
+    # set up the test
+    P1, day, target_entry, target_exit, \
+        stop_exit, open_hr_dt, close_hr_dt = setup_trade_test(date_interest, \
+                                                              open_hr, close_hr,\
+                                                                  direction)
+
     
+    # this is the main function to be tested
     EES_dict, trade_open, trade_close, pos_list, exec_pos_list = OneTradePerDay(
                             P1).run_trade(day, give_obj_name, get_obj_name, 
                                         50, target_entry, 
@@ -132,14 +84,122 @@ def test_trade_choice_simple_portfolio_buy_normalexit()->None:
     
     plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=False)
 
-    print(P1.pool)
+    return P1, day, target_entry, target_exit, \
+        stop_exit, open_hr_dt, close_hr_dt, EES_dict, trade_open, \
+            trade_close, pos_list, exec_pos_list
+            
+#%%
+############################################################################
+# Test area
+############################################################################
+# test Buy case, 1) no trade, normal exit, stop loss, close case
+# test Sell case, 1) no trade, normal exit, stop loss, close case
 
-    print(P1.master_table)
+date_interest_no_entry = "2023-12-29" # no entry test case (Buy) Done
+date_interest_stop_loss = "2023-12-06" # stop loss test case (Buy) Done
+date_interest_close_exit = "2021-03-17" #  sell at close case (Buy) Done
+date_interest_normal_exit = "2021-04-01" #  normal exit case (Buy) 
+
     
-  #  assert 
-    print(pos_list[0].status, pos_list[1].status, pos_list[2].status, pos_list[3].status)
-    print(exec_pos_list[0].status, exec_pos_list[1].status)
-    #print(pos_list, exec_pos_list)
-#    print(P1.log)
+def test_onetradeperday_buy_noentry() -> None:   
+    give_obj_name = "USD"
+    
+    P1, day, target_entry, target_exit, \
+        stop_exit, open_hr_dt, close_hr_dt, EES_dict, trade_open, \
+            trade_close, pos_list, exec_pos_list = onetradeperday(
+                                                        date_interest_no_entry,
+                                                        'Buy')
 
-test_trade_choice_simple_portfolio_buy_normalexit()
+    assert pos_list[0].status == PositionStatus.VOID
+    assert pos_list[1].status == PositionStatus.VOID
+    assert pos_list[2].status == PositionStatus.VOID
+    assert pos_list[3].status == PositionStatus.VOID
+    assert exec_pos_list[0] == None
+    assert exec_pos_list[1] == None
+
+    USD_amount = P1.master_table[P1.master_table['name'] == give_obj_name\
+                                 ]['quantity'].iloc[0]
+        
+    assert USD_amount == 1000000
+    assert len(P1.pool) == 1
+
+def test_trade_choice_simple_portfolio_buy_normalexit()->None:
+    # Setting up the trade itself. First load the parameters
+    give_obj_name = "USD"
+    get_obj_name = "CLc1"
+    
+    P1, day, target_entry, target_exit, \
+        stop_exit, open_hr_dt, close_hr_dt, EES_dict, trade_open, \
+            trade_close, pos_list, exec_pos_list = onetradeperday(
+                                                        date_interest_normal_exit,
+                                                        'Buy')
+
+
+    assert pos_list[0].status == PositionStatus.FILLED
+    assert pos_list[1].status == PositionStatus.FILLED
+    assert pos_list[2].status == PositionStatus.VOID
+    assert pos_list[3].status == PositionStatus.VOID
+    assert exec_pos_list[0].status == PositionStatus.FILLED
+    assert exec_pos_list[1].status == PositionStatus.FILLED
+
+    USD_amount = P1.master_table[P1.master_table['name'] == give_obj_name\
+                                 ]['quantity'].iloc[0]
+    CL_amount = P1.master_table[P1.master_table['name'] == get_obj_name\
+                                ]['quantity'].iloc[0]
+        
+    assert USD_amount > 1000000
+    assert CL_amount < 1
+    assert len(P1.pool) == 5
+    
+         
+def test_onetradeperday_buy_stoploss() -> None:   
+    give_obj_name = "USD"
+    get_obj_name = "CLc1"
+    
+    P1, day, target_entry, target_exit, \
+        stop_exit, open_hr_dt, close_hr_dt, EES_dict, trade_open, \
+            trade_close, pos_list, exec_pos_list = onetradeperday(
+                                                        date_interest_stop_loss,
+                                                        'Buy')
+
+
+    assert pos_list[0].status == PositionStatus.FILLED
+    assert pos_list[1].status == PositionStatus.VOID
+    assert pos_list[2].status == PositionStatus.FILLED
+    assert pos_list[3].status == PositionStatus.VOID
+    assert exec_pos_list[0].status == PositionStatus.FILLED
+    assert exec_pos_list[1].status == PositionStatus.FILLED
+
+    USD_amount = P1.master_table[P1.master_table['name'] == give_obj_name\
+                                 ]['quantity'].iloc[0]
+    CL_amount = P1.master_table[P1.master_table['name'] == get_obj_name\
+                                ]['quantity'].iloc[0]
+        
+    assert USD_amount < 1000000
+    assert CL_amount < 1
+    assert len(P1.pool) == 5
+    
+    
+def test_onetradeperday_buy_closeexit() -> None:   
+    give_obj_name = "USD"
+    get_obj_name = "CLc1"
+    
+    P1, day, target_entry, target_exit, \
+        stop_exit, open_hr_dt, close_hr_dt, EES_dict, trade_open, \
+            trade_close, pos_list, exec_pos_list = onetradeperday(
+                                                        date_interest_close_exit,
+                                                        'Buy')
+    assert pos_list[0].status == PositionStatus.FILLED
+    assert pos_list[1].status == PositionStatus.VOID
+    assert pos_list[2].status == PositionStatus.VOID
+    assert pos_list[3].status == PositionStatus.FILLED
+    assert exec_pos_list[0].status == PositionStatus.FILLED
+    assert exec_pos_list[1].status == PositionStatus.FILLED
+
+    CL_amount = P1.master_table[P1.master_table['name'] == get_obj_name\
+                                ]['quantity'].iloc[0]
+        
+    assert CL_amount < 1
+    assert len(P1.pool) == 5
+############################################################################
+#Sell side test
