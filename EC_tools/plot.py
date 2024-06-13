@@ -272,7 +272,7 @@ class PlotPricing(object):
         subcomp._add_trade_region = True
 
         # add the EES regions
-        if subcomp._add_EES_region == True:
+        if subcomp._add_EES_region:
                 
             if direction == "Buy":
                 entry_price = quant_price_list[1]
@@ -294,7 +294,7 @@ class PlotPricing(object):
                                 direction = direction)
             
         # add quantile lines to the plot
-        if subcomp._quant_lines == True:
+        if subcomp._quant_lines:
             subcomp.quant_lines(quant_list, quant_price_list, 
                                         txt_shift_x_date, txt_shift_y, 
                             start_x = self.axis_limit.start_line, 
@@ -302,7 +302,7 @@ class PlotPricing(object):
                             alpha = 0.5)
             
         # add cross over points
-        if subcomp._add_crossover_pts == True:
+        if subcomp._add_crossover_pts:
             bppt_x1 = [datetime.datetime.combine(datetime.date.today(), t) 
                        for t in bppt_x1]
             bppt_x2 = [datetime.datetime.combine(datetime.date.today(), t) 
@@ -313,7 +313,7 @@ class PlotPricing(object):
             subcomp.crossover_pts(bppt_x1, bppt_y1, bppt_x2, bppt_y2, 
                                   bppt_x3, bppt_y3)
             
-        if subcomp._add_trade_region == True:
+        if subcomp._add_trade_region:
             subcomp.trade_region(open_hr, close_hr)
             
         # add the buying and selling points
@@ -397,9 +397,9 @@ class SubComponents(object):
         """
 
         for quant, price in zip(quant_list, quant_price_list):
-            self.ax.hlines(price, start_x, end_x, color='#C26F05', 
+            self.ax.hlines(float(price.iloc[0]), start_x, end_x, color='#C26F05', 
                            alpha = alpha)
-            self.ax.text(start_x + txt_shift_x, price + txt_shift_y, quant, 
+            self.ax.text(start_x + txt_shift_x, float(price.iloc[0]) + txt_shift_y, quant, 
                      color=pt_col, bbox=dict(boxstyle="round",
                      ec= pt_col, fc='#C26F05'))        
     
@@ -437,7 +437,14 @@ class SubComponents(object):
             limit = 10000
         elif direction == "Neutral":
             limit = np.nan
-        
+            
+        entry_price = float(entry_price.iloc[0])
+        exit_price = float(exit_price.iloc[0])
+        stop_loss = float(stop_loss.iloc[0])
+        print("plot para")
+        print(type(entry_price), type(exit_price), type(stop_loss))
+        print(type(txt_shift_x), type(txt_shift_y))
+        print(type(start_x))
         # The EES lines
         self.ax.hlines(entry_price, self.axis_limit.start_line, 
                        self.axis_limit.end_line, color='#18833D', 
