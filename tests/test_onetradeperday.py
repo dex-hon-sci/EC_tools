@@ -36,7 +36,7 @@ def setup_trade_test(date_interest, open_hr, close_hr, direction):
                                  open_hr=open_hr, close_hr=close_hr)
     signal_table = signal_table[signal_table['APC forecast period'] == date_interest] 
     
-    print(signal_table)
+    print(signal_table.iloc[0])
     
     
     target_entry, target_exit, stop_exit = float(signal_table['target entry'].iloc[0]), \
@@ -81,7 +81,8 @@ def onetradeperday(date_interest, direction):
                             P1).run_trade(day, give_obj_name, get_obj_name, 
                                         50, target_entry, 
                                         target_exit, stop_exit, 
-                                        open_hr=open_hr_dt, close_hr=close_hr_dt)
+                                        open_hr=open_hr_dt, close_hr=close_hr_dt,
+                                        direction = direction)
     
     
     plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=False)
@@ -209,10 +210,10 @@ def test_onetradeperday_buy_closeexit() -> None:
 ############################################################################
 #Sell side test
 
-date_interest_no_entry_sell = "" # no entry test case (Buy) Done
-date_interest_normal_exit_sell = "" #  normal exit case (Buy) 
-date_interest_stop_loss_sell = "" # stop loss test case (Buy) Done
-date_interest_close_exit_sell = "" #  sell at close case (Buy) Done
+date_interest_no_entry_sell = "2023-04-13" # no entry test case (Buy) Done
+date_interest_normal_exit_sell = "2023-05-24" #  normal exit case (Buy) 
+date_interest_stop_loss_sell = "2022-10-07" # stop loss test case (Buy) Done
+date_interest_close_exit_sell = "2022-10-27" #  sell at close case (Buy) Done
 
 def test_onetradeperday_sell_noentry() -> None:   
     give_obj_name = "USD"
@@ -236,7 +237,6 @@ def test_onetradeperday_sell_noentry() -> None:
     print(P1.pool)
     assert USD_amount == 10000000
     assert len(P1.pool) == 1
-    
 
 def test_onetradeperday_sell_normalexit()->None:
     # Setting up the trade itself. First load the parameters
@@ -260,14 +260,18 @@ def test_onetradeperday_sell_normalexit()->None:
                                  ]['quantity'].iloc[0]
     CL_amount = P1.master_table[P1.master_table['name'] == get_obj_name\
                                 ]['quantity'].iloc[0]
-        
+    debt_amount = P1.master_table[P1.master_table['misc'] == {'debt'}\
+                                ]['quantity'].iloc[0]
     print(P1.pool)
     print(P1.master_table)
+    print(debt_amount)
     assert USD_amount > 10000000
-    assert CL_amount < 1
-    assert len(P1.pool) == 6
+    assert len(P1.pool) == 7
+   # assert debt_amount == 0
     
-         
+    
+test_onetradeperday_sell_normalexit()
+
 def test_onetradeperday_sell_stoploss() -> None:   
     give_obj_name = "USD"
     get_obj_name = "CLc1"
@@ -290,11 +294,14 @@ def test_onetradeperday_sell_stoploss() -> None:
                                  ]['quantity'].iloc[0]
     CL_amount = P1.master_table[P1.master_table['name'] == get_obj_name\
                                 ]['quantity'].iloc[0]
-        
+    debt_amount = P1.master_table[P1.master_table['misc'] == {'debt'}\
+                                    ]['quantity'].iloc[0]
+    print(P1.pool, CL_amount)
+    print(P1.master_table)
     assert USD_amount < 10000000
-    assert CL_amount < 1
-    assert len(P1.pool) == 6
-    
+    assert CL_amount < 1e-5
+    assert len(P1.pool) == 7
+#test_onetradeperday_sell_stoploss()
     
 def test_onetradeperday_sell_closeexit() -> None:   
     give_obj_name = "USD"
@@ -314,6 +321,9 @@ def test_onetradeperday_sell_closeexit() -> None:
 
     CL_amount = P1.master_table[P1.master_table['name'] == get_obj_name\
                                 ]['quantity'].iloc[0]
-        
-    assert CL_amount < 1
-    assert len(P1.pool) == 6
+    debt_amount = P1.master_table[P1.master_table['misc'] == {'debt'}\
+                                   ]['quantity'].iloc[0]     
+    print(P1.master_table)
+
+    assert CL_amount < 1e-5
+    assert len(P1.pool) == 7

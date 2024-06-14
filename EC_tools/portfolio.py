@@ -508,5 +508,8 @@ class Portfolio(object):
         asset_log = self.log[asset_name]
         return asset_log
 
+    def wipe_debt():
+        
+        return
 
     

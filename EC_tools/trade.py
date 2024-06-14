@@ -188,7 +188,33 @@ class Trade(object):
                            portfolio= self._portfolio, size = size,
                            fee = fee, pos_type = pos_type, open_time=open_time)
             
+        elif pos_type == 'Short-Borrow':
+            # an example, get_obj is the asset, give_obj is the cash
+            get_obj = Asset(get_obj_name, get_obj_quantity, 
+                            get_obj_unit, get_obj_type)
+            give_obj = Asset(give_obj_name, target_price*get_obj_quantity*size, 
+                                give_obj_unit, give_obj_type)
             
+            print('Short-Borrow', target_price, target_price*get_obj_quantity*size, get_obj_quantity)
+            print("Addposition", get_obj, give_obj)
+            
+            pos = Position(give_obj, get_obj, target_price, 
+                           portfolio= self._portfolio, size = size,
+                           fee = fee, pos_type = pos_type, open_time=open_time)
+            
+        elif pos_type == 'Short-Buyback':
+            # an example, get_obj is the asset, give_obj is the cash
+            get_obj = Asset(get_obj_name, get_obj_quantity, 
+                            get_obj_unit, get_obj_type)
+            give_obj = Asset(give_obj_name, target_price*get_obj_quantity*size, 
+                                give_obj_unit, give_obj_type)
+            
+            print('Short-Buyback', target_price, target_price*get_obj_quantity*size, get_obj_quantity)
+            print("Addposition", get_obj, give_obj)
+            
+            pos = Position(give_obj, get_obj, target_price, 
+                           portfolio= self._portfolio, size = size,
+                           fee = fee, pos_type = pos_type, open_time=open_time)
         # Add posiyion in the position book
         self.position_book.append(pos)
         
@@ -320,6 +346,7 @@ class OneTradePerDay(Trade):
         #### Collapse all these into an add_position function
         # Make positions for initial price estimation
         print('==entry==')
+        print(pos_type1, pos_type2)
         entry_pos = super().add_position(give_obj_name, get_obj_name, 
                                       get_obj_quantity, entry_price, 
                                       size = size, fee = None, pos_type = pos_type1,
@@ -422,6 +449,7 @@ class OneTradePerDay(Trade):
         elif pos_type == 'Short':
             pos_type1 = 'Short-Borrow'
             pos_type2 = 'Short-Buyback'
+            
         # Unpack inputs
         entry_pos, exit_pos, stop_pos, close_pos = pos_list[0], pos_list[1], \
                                                     pos_list[2], pos_list[3]
@@ -499,6 +527,7 @@ class OneTradePerDay(Trade):
         # change the price for the open position
         opening_pos.price = entry_pt[1]
         
+        print('Before execution', pos_type1, pos_type2)
         # Execute the positions
         ExecutePosition(opening_pos).fill_pos(fill_time = trade_open[0], 
                                             pos_type=pos_type1)
@@ -580,7 +609,8 @@ class OneTradePerDay(Trade):
 
 
         trade_open, trade_close, pos_list, exec_pos_list = \
-                                        self.execute_position(EES_dict, pos_list)
+                                        self.execute_position(EES_dict, pos_list,
+                                                              pos_type=pos_type)
 
         # the search function for entry and exit time should be completely 
         # sepearate to the trading actions

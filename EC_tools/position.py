@@ -209,35 +209,41 @@ class ExecutePosition(object):
 
 
         elif pos_type == 'Short-Borrow':
+            print('Execute Short-Borrow')
+
             # The sub method does not allow overwithdraw. 
             # Thus assume the give_obj is a {debt} object
             
             # here, assume give_obj = cash, get_obj = asset
             
-            debt_obj = self.position.get_obj
+            debt_obj = self.position.get_obj.copy()
             debt_obj.quantity = debt_obj.quantity*-1
             debt_obj.misc = {'debt'}
             
+            print("Borrowobj debtoj",self.position.get_obj, debt_obj)
+            
             # Issue a debt for borrowing
-            self.position.portfolio.add(debt_obj, datetime= fill_time)
+            self.position.portfolio.add(debt_obj, datetime = fill_time) # debt object
+            #self.position.portfolio.add(self.position.get_obj, datetime= fill_time) #actual asset
             
             # sell the asset here
-            self.position.portfolio.sub(self.position.get_obj, datetime= fill_time)
+            self.position.portfolio.sub(self.position.get_obj, datetime = fill_time)
             # earn the cash here
             self.position.portfolio.add(self.position.give_obj, datetime = fill_time)
 
             # Get the desired asset
         elif pos_type == 'Short-Buyback':
-            
+            print('Execute Short-Buyback')
+
             debt_obj = self.position.get_obj
             debt_obj.quantity = debt_obj.quantity
             debt_obj.misc = {'debt'}
             
             # normal long
             # subtract the cash here to buy back the asset
-            self.position.portfolio.sub(self.position.give_obj, datetime= fill_time)
+            self.position.portfolio.sub(self.position.give_obj, datetime = fill_time)
             # Get the desired asset the set balance out the debt object
-            self.position.portfolio.add(debt_obj, datetime = fill_time)
+            self.position.portfolio.add(self.position.get_obj, datetime = fill_time)
         
         # charge a fee if it exits
         if self.position.fee != None: #or self.position.fee > 0:

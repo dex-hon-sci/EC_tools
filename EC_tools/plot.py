@@ -570,7 +570,7 @@ def plot_minute(filename_minute, signal_filename, price_approx = 'Open',
     
     PP.plot_price(x,y, even_spaced_prices, pdf, 
                        quant_list, quant_price_list, 
-                       direction="Buy",
+                       direction=direction,
                        price_chart_title = "Date", 
                        bppt_x1 = [], bppt_y1 = [], 
                        bppt_x2 = [], bppt_y2 = [], 
@@ -588,7 +588,8 @@ if __name__ == "__main__":
     #date_interest = "2022-05-19"
     #date_interest = "2024-04-03"
     #date_interest = "2024-01-18"
-    date_interest = "2023-12-29"
+    #date_interest = "2023-12-29"
+    date_interest = "2022-10-07"
     
     plot_minute(filename_minute, signal_filename, 
                 date_interest = date_interest, direction="Sell")
