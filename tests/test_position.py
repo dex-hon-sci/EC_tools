@@ -77,14 +77,14 @@ def test_position_price_setter()-> None:
     
     PP = Position(USD, A, USD.quantity/ A.quantity, portfolio=P1, 
                     open_time = datetime.datetime(2020,1,1))    
+    PP.fix_quantity = USD.quantity
     # set new price
     PP.price = 21
     
-    print(PP.price)
+    print(PP.price, A.quantity, USD.quantity)
     assert PP.price == 21
     assert PP.get_obj.quantity == 1000/21
     assert A.quantity == 1000/21
-
 
 def test_Execute_fill_pos()-> None:
     P1 = Portfolio()

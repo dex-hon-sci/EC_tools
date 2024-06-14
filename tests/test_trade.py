@@ -84,7 +84,7 @@ def onetradeperday(date_interest, direction):
                                         open_hr=open_hr_dt, close_hr=close_hr_dt)
     
     
-    plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=True)
+    plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=False)
 
     return P1, day, target_entry, target_exit, \
         stop_exit, open_hr_dt, close_hr_dt, EES_dict, trade_open, \
@@ -122,7 +122,8 @@ def test_onetradeperday_buy_noentry() -> None:
     USD_amount = P1.master_table[P1.master_table['name'] == give_obj_name\
                                  ]['quantity'].iloc[0]
         
-    assert USD_amount == 1000000
+    print(P1.pool)
+    assert USD_amount == 10000000
     assert len(P1.pool) == 1
 
 def test_onetradeperday_buy_normalexit()->None:
@@ -150,7 +151,7 @@ def test_onetradeperday_buy_normalexit()->None:
         
     print(P1.pool)
     print(P1.master_table)
-    assert USD_amount > 1000000
+    assert USD_amount > 10000000
     assert CL_amount < 1
     assert len(P1.pool) == 6
     
@@ -178,7 +179,7 @@ def test_onetradeperday_buy_stoploss() -> None:
     CL_amount = P1.master_table[P1.master_table['name'] == get_obj_name\
                                 ]['quantity'].iloc[0]
         
-    assert USD_amount < 1000000
+    assert USD_amount < 10000000
     assert CL_amount < 1
     assert len(P1.pool) == 6
     
@@ -205,6 +206,6 @@ def test_onetradeperday_buy_closeexit() -> None:
     assert CL_amount < 1
     assert len(P1.pool) == 6
     
-test_onetradeperday_buy_normalexit()
+test_onetradeperday_buy_noentry()
 ############################################################################
 #Sell side test
