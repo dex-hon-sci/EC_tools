@@ -219,16 +219,16 @@ class Portfolio(object):
                 #print(list(temp_df['quantity']), sum(list(temp_df['quantity'])))
                 # the summed quantity
                 new_quantity = sum(list(temp_df['quantity']))
-                
+
                 # make new entry_dictionary                
                 new_entry_dict = {'name': temp_df['name'].iloc[0], 
                                   'quantity': new_quantity,
                                   'unit': temp_df['unit'].iloc[0],
                                   'asset_type': temp_df['asset_type'].iloc[0],
-                                  'misc': dict()}
+                                  'misc': [temp_df['misc'].iloc[0]]}
                 
                 new_entry_dict = pd.DataFrame(new_entry_dict, index=[len(table)])
-                
+
                 #store them in the lowest row
                 table = pd.concat([table, new_entry_dict], ignore_index = False)
 
@@ -315,6 +315,7 @@ class Portfolio(object):
         self.__pool_asset.append(asset)   # save new asset
         self.__pool_datetime.append(datetime) #record datetime
 
+        print("Add action activated", asset)
     
     def sub(self, asset,  datetime= datetime.datetime.today(),  
             asset_name="", quantity = 0, unit='contract', 
