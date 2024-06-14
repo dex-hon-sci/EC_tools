@@ -168,8 +168,6 @@ class Trade(object):
             give_obj = Asset(give_obj_name, target_price*get_obj_quantity*size, 
                                 give_obj_unit, give_obj_type)
             
-            print('Long-Buy', target_price, target_price*get_obj_quantity*size, get_obj_quantity)
-            print("Addposition", get_obj, give_obj)
             pos = Position(give_obj, get_obj, target_price, 
                            portfolio= self._portfolio, size = size,
                            fee = fee, pos_type = pos_type, open_time=open_time)
@@ -181,9 +179,6 @@ class Trade(object):
             give_obj = Asset(give_obj_name, target_price*get_obj_quantity*size, 
                                 give_obj_unit, give_obj_type)
             
-            print('Long-Sell', target_price, target_price*get_obj_quantity*size, get_obj_quantity)
-            print("Addposition", get_obj, give_obj)
-
             pos = Position(give_obj, get_obj, target_price, 
                            portfolio= self._portfolio, size = size,
                            fee = fee, pos_type = pos_type, open_time=open_time)
@@ -193,10 +188,7 @@ class Trade(object):
             get_obj = Asset(get_obj_name, get_obj_quantity, 
                             get_obj_unit, get_obj_type)
             give_obj = Asset(give_obj_name, target_price*get_obj_quantity*size, 
-                                give_obj_unit, give_obj_type)
-            
-            print('Short-Borrow', target_price, target_price*get_obj_quantity*size, get_obj_quantity)
-            print("Addposition", get_obj, give_obj)
+                                give_obj_unit, give_obj_type)    
             
             pos = Position(give_obj, get_obj, target_price, 
                            portfolio= self._portfolio, size = size,
@@ -208,9 +200,6 @@ class Trade(object):
                             get_obj_unit, get_obj_type)
             give_obj = Asset(give_obj_name, target_price*get_obj_quantity*size, 
                                 give_obj_unit, give_obj_type)
-            
-            print('Short-Buyback', target_price, target_price*get_obj_quantity*size, get_obj_quantity)
-            print("Addposition", get_obj, give_obj)
             
             pos = Position(give_obj, get_obj, target_price, 
                            portfolio= self._portfolio, size = size,
@@ -345,70 +334,26 @@ class OneTradePerDay(Trade):
         
         #### Collapse all these into an add_position function
         # Make positions for initial price estimation
-        print('==entry==')
-        print(pos_type1, pos_type2)
         entry_pos = super().add_position(give_obj_name, get_obj_name, 
                                       get_obj_quantity, entry_price, 
                                       size = size, fee = None, pos_type = pos_type1,
                                       open_time=open_time)
-        print(entry_pos.status)
 
-        print('==exit==')
         exit_pos = super().add_position(give_obj_name, get_obj_name, 
                           get_obj_quantity, exit_price, 
                           size = size, fee = fee, pos_type = pos_type2,
                           open_time=open_time)
 
-        print(exit_pos.status)
-
-        print('==stop==', get_obj_quantity)
         stop_pos = super().add_position(give_obj_name, get_obj_name, 
                           get_obj_quantity, stop_price, 
                           size = size, fee = fee, pos_type = pos_type2,
                           open_time=open_time)
-        print(stop_pos.status)
-
         
-        print('==close==')
         close_pos = super().add_position(give_obj_name, get_obj_name, 
                           get_obj_quantity, close_price,
                           size = size, fee = fee, pos_type = pos_type2,
                           open_time=open_time)
-        print(close_pos.status)
 
-        print('=========')
-  
-# =============================================================================
-#         print('==entry==')
-#         entry_pos = super().add_position(give_obj_name, get_obj_name, 
-#                                       get_obj_quantity, entry_price, 
-#                                       size = size, fee = fee, pos_type = pos_type1,
-#                                       open_time=open_time)
-# 
-#         print('==exit==')
-#         exit_pos = super().add_position(get_obj_name, give_obj_name, 
-#                           get_obj_quantity*exit_price, 1.0/exit_price, 
-#                           size = size, fee = fee, pos_type = pos_type2,
-#                           open_time=open_time)
-# 
-# 
-#         print('==stop==', get_obj_quantity)
-#         stop_pos = super().add_position(get_obj_name, give_obj_name, 
-#                           get_obj_quantity*stop_price, 1.0/stop_price, 
-#                           size = size, fee = fee, pos_type = pos_type2,
-#                           open_time=open_time)
-# 
-#         
-#         print('==close==')
-#         close_pos = super().add_position(get_obj_name, give_obj_name, 
-#                           get_obj_quantity*close_price, 1.0/close_price,
-#                           size = size, fee = fee, pos_type = pos_type2,
-#                           open_time=open_time)
-# 
-#         
-#         print('=========')
-#         
-# =============================================================================
         pos_list = [entry_pos, exit_pos, stop_pos, close_pos]
 
         return pos_list
@@ -482,13 +427,8 @@ class OneTradePerDay(Trade):
             trade_open, trade_close = entry_pt, exit_pt
             opening_pos, closing_pos = entry_pos, exit_pos
             
-            print("clos_get_obj", closing_pos.get_obj)
             # change the closing price
             closing_pos.price = round(exit_pt[1],9)
-            print("clos_get_obj", closing_pos.get_obj)
-
-            print("trade_open, trade_close", trade_open, trade_close)
-            print(entry_pos.status, exit_pos.status, stop_pos.status, close_pos.status)
             
             # Cancel all order positions
             ExecutePosition(stop_pos).cancel_pos(void_time= trade_close[0])
@@ -502,8 +442,6 @@ class OneTradePerDay(Trade):
             
             # change the closing price
             closing_pos.price = round(stop_pt[1],9)
-            print(closing_pos.price, round(1/stop_pt[1],9))
-            print(closing_pos.get_obj)
             
             # Cancel all order positions
             ExecutePosition(exit_pos).cancel_pos(void_time= trade_close[0])
@@ -525,7 +463,6 @@ class OneTradePerDay(Trade):
         # change the price for the open position
         opening_pos.price = entry_pt[1]
         
-        print('Before execution', pos_type1, pos_type2)
         # Execute the positions
         ExecutePosition(opening_pos).fill_pos(fill_time = trade_open[0], 
                                             pos_type=pos_type1)

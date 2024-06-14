@@ -79,9 +79,6 @@ class Position(object):
         self._check = (self._price  < correct_ratio + epi) and \
                         (self._price > correct_ratio- epi)
                         
-        print('correct ratio', correct_ratio, self.give_obj.quantity / (self.get_obj.quantity*self.size))
-        print('_check', self._price == correct_ratio)
-
         print('Position created.',self._check)
         #If this value is false, the position is automatically voided.
         if self._check == False:

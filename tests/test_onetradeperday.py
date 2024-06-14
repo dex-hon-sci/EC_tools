@@ -123,7 +123,7 @@ def test_onetradeperday_buy_noentry() -> None:
     USD_amount = P1.master_table[P1.master_table['name'] == give_obj_name\
                                  ]['quantity'].iloc[0]
         
-    print(P1.pool)
+    #print(P1.pool)
     assert USD_amount == 10000000
     assert len(P1.pool) == 1
 
@@ -150,8 +150,8 @@ def test_onetradeperday_buy_normalexit()->None:
     CL_amount = P1.master_table[P1.master_table['name'] == get_obj_name\
                                 ]['quantity'].iloc[0]
         
-    print(P1.pool)
-    print(P1.master_table)
+    #print(P1.pool)
+    #print(P1.master_table)
     assert USD_amount > 10000000
     assert CL_amount < 1
     assert len(P1.pool) == 6
@@ -234,7 +234,7 @@ def test_onetradeperday_sell_noentry() -> None:
     USD_amount = P1.master_table[P1.master_table['name'] == give_obj_name\
                                  ]['quantity'].iloc[0]
         
-    print(P1.pool)
+    #print(P1.pool)
     assert USD_amount == 10000000
     assert len(P1.pool) == 1
 
@@ -262,9 +262,9 @@ def test_onetradeperday_sell_normalexit()->None:
                                 ]['quantity'].iloc[0]
     debt_amount = P1.master_table[P1.master_table['misc'] == {'debt'}\
                                 ]['quantity'].iloc[0]
-    print(P1.pool)
-    print(P1.master_table)
-    print(debt_amount)
+    #print(P1.pool)
+    #print(P1.master_table)
+    #print(debt_amount)
     assert USD_amount > 10000000
     assert len(P1.pool) == 8
    # assert debt_amount == 0
@@ -296,8 +296,8 @@ def test_onetradeperday_sell_stoploss() -> None:
                                 ]['quantity'].iloc[0]
     debt_amount = P1.master_table[P1.master_table['misc'] == {'debt'}\
                                     ]['quantity'].iloc[0]
-    print(P1.pool, CL_amount)
-    print(P1.master_table)
+    #print(P1.pool, CL_amount)
+    #print(P1.master_table)
     assert USD_amount < 10000000
     assert CL_amount < 1e-5
     assert len(P1.pool) == 8
@@ -324,7 +324,7 @@ def test_onetradeperday_sell_closeexit() -> None:
                                 ]['quantity'].iloc[0]
     debt_amount = P1.master_table[P1.master_table['misc'] == {'debt'}\
                                    ]['quantity'].iloc[0]     
-    print(P1.master_table)
+    #print(P1.master_table)
 
     assert CL_amount < 1e-5
     assert len(P1.pool) == 8
