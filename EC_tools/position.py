@@ -44,6 +44,7 @@ class Position(object):
     size: float = 1
     fee: Asset = None
     pos_type: str = 'Long-Buy'
+    
     # position attribute adjustable
     open_time: datetime = datetime.datetime.now()
     fill_time: datetime = None

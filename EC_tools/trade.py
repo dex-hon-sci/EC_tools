@@ -443,8 +443,6 @@ class OneTradePerDay(Trade):
         if pos_type == 'Long':
             pos_type1 = 'Long-Buy'
             pos_type2 = 'Long-Sell'
-            #pos_type1 = 'Long'
-            #pos_type2 = 'Long'
 
         elif pos_type == 'Short':
             pos_type1 = 'Short-Borrow'

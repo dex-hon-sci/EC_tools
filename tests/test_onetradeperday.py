@@ -301,7 +301,8 @@ def test_onetradeperday_sell_stoploss() -> None:
     assert USD_amount < 10000000
     assert CL_amount < 1e-5
     assert len(P1.pool) == 8
-#test_onetradeperday_sell_stoploss()
+
+test_onetradeperday_sell_stoploss()
     
 def test_onetradeperday_sell_closeexit() -> None:   
     give_obj_name = "USD"

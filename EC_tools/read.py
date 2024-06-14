@@ -643,7 +643,7 @@ def find_minute_EES(histroy_data_intraday,
                       open_hr="0330", close_hr="1930", 
                       price_approx = 'Open', time_proxy= 'Time',
                       direction = 'Neutral',
-                      close_trade_hr='1925'):
+                      close_trade_hr='1925', dt_scale = 'datetime'):
     """
     Set the EES value given a minute intraday data.
 
@@ -679,6 +679,7 @@ def find_minute_EES(histroy_data_intraday,
     close_trade_hr : str, optional
         The final minute to finish off the trade in military time format. 
         The default is '1925'.
+    dt_scale :
 
     Raises
     ------
@@ -691,13 +692,27 @@ def find_minute_EES(histroy_data_intraday,
         A dictionary that cantains the possible EES points and time.
 
     """
+    # This function can be made in one more layer of abstraction. Work on this later
     
     # define subsample. turn the pandas series into a numpy array
     price_list = histroy_data_intraday[price_approx].to_numpy()
     time_list = histroy_data_intraday[time_proxy].to_numpy()
     
-    date_list = histroy_data_intraday['Date'].to_numpy()
+    # read in date list
+    date_list = histroy_data_intraday['Date'].to_numpy() 
+    # Temporary solution. Can be made using two to three time layer
+
+    # make datetime list
+    datetime_list = np.array([ datetime.datetime.combine(pd.to_datetime(d).date(), t) \
+                     for d, t in zip(date_list,time_list)])
     
+    if dt_scale == "time":
+        time_proxy_list = time_list
+    elif dt_scale == 'date':
+        time_proxy_list = date_list
+    elif dt_scale == 'datetime':
+        time_proxy_list = datetime_list
+
     # Find the crossover indices
     entry_pt_dict = find_crossover(price_list, target_entry)
     exit_pt_dict = find_crossover(price_list, target_exit)
@@ -719,40 +734,44 @@ def find_minute_EES(histroy_data_intraday,
         print("Buy")
         # for 'Buy' action EES sequence is drop,rise,drop
         entry_pts = price_list[entry_pt_dict['drop'][0]]
-        entry_times = time_list[entry_pt_dict['drop'][0]]
+        entry_times = time_proxy_list[entry_pt_dict['drop'][0]]
             
         exit_pts = price_list[exit_pt_dict['rise'][0]]
-        exit_times = time_list[exit_pt_dict['rise'][0]]
+        exit_times = time_proxy_list[exit_pt_dict['rise'][0]]
         
         stop_pts = price_list[stop_pt_dict['drop'][0]]
-        stop_times = time_list[stop_pt_dict['drop'][0]]
+        stop_times = time_proxy_list[stop_pt_dict['drop'][0]]
             
     elif direction == "Sell":
         print("Sell")
         # for 'Sell' action EES sequence is rise,drop,rise
         entry_pts = price_list[entry_pt_dict['rise'][0]]
-        entry_times = time_list[entry_pt_dict['rise'][0]]
+        entry_times = time_proxy_list[entry_pt_dict['rise'][0]]
             
         exit_pts = price_list[exit_pt_dict['drop'][0]]
-        exit_times = time_list[exit_pt_dict['drop'][0]]
+        exit_times = time_proxy_list[exit_pt_dict['drop'][0]]
         
         stop_pts = price_list[stop_pt_dict['rise'][0]]
-        stop_times = time_list[stop_pt_dict['rise'][0]]
+        stop_times = time_proxy_list[stop_pt_dict['rise'][0]]
     else:
         raise ValueError('Direction has to be either Buy, Sell, or Neutral.')
     
     # Define the closing time and closing price. Here we choose 19:25 for final trade
     #close_time = datetime.time(int(close_trade_hr[:2]),int(close_trade_hr[2:]))
     close_time = close_hr #quick fix. need some work
+    
     close_pt = price_list[np.where(time_list==close_time)[0]][0]
-        
+    close_date = date_list[np.where(time_list==close_time)[0]][0]
+
+    close_datetime = datetime.datetime.combine(pd.to_datetime(close_date).date(), close_time)
+
     # storage
     EES_dict = {'entry': list(zip(entry_times,entry_pts)),
                 'exit': list(zip(exit_times,exit_pts)),
                 'stop': list(zip(stop_times,stop_pts)),
-                'close': list((close_time, close_pt)) }
+                'close': list((close_datetime, close_pt)) }
 
-    #print('EES_dict', EES_dict)
+    print('EES_dict', EES_dict)
     return EES_dict
 
 #%% Construction Area
