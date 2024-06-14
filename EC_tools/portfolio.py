@@ -315,7 +315,7 @@ class Portfolio(object):
         self.__pool_asset.append(asset)   # save new asset
         self.__pool_datetime.append(datetime) #record datetime
 
-        print("Add action activated", asset)
+        #print("Add action activated", asset)
     
     def sub(self, asset,  datetime= datetime.datetime.today(),  
             asset_name="", quantity = 0, unit='contract', 

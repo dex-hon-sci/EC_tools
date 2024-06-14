@@ -79,7 +79,7 @@ class Position(object):
         self._check = (self._price  < correct_ratio + epi) and \
                         (self._price > correct_ratio- epi)
                         
-        print('Position created.',self._check)
+        print('Position created. Check:', self._check)
         #If this value is false, the position is automatically voided.
         if self._check == False:
             self.status = PositionStatus.VOID
@@ -167,7 +167,7 @@ class ExecutePosition(object):
             raise Exception("The position must be in Pending state to be filled.")
             
         port = self.position.portfolio
-        print('port.master_table', port.master_table)
+
         # check if you have the avaliable fund in the portfolio
         if port.master_table[port.master_table['name']==
                              self.position.give_obj.name]['quantity'].iloc[0] <\
@@ -179,7 +179,7 @@ class ExecutePosition(object):
     
 
         if pos_type == 'Long-Buy':
-            print('Execute Long-buy')
+            print('Execute Long-buy position.')
             
             # Pay pre-existing asset
             self.position.portfolio.sub(self.position.give_obj, datetime= fill_time)
@@ -188,7 +188,7 @@ class ExecutePosition(object):
             self.position.portfolio.add(self.position.get_obj, datetime = fill_time)
             
         elif pos_type == 'Long-Sell':
-            print('Execute Long-sell')
+            print('Execute Long-sell position.')
 
             # Pay pre-existing asset
             self.position.portfolio.sub(self.position.get_obj, datetime= fill_time)
@@ -198,7 +198,7 @@ class ExecutePosition(object):
 
 
         elif pos_type == 'Short-Borrow':
-            print('Execute Short-Borrow')
+            print('Execute Short-Borrow position.')
 
             # The sub method does not allow overwithdraw. 
             # Thus assume the give_obj is a {debt} object
@@ -221,9 +221,8 @@ class ExecutePosition(object):
             # Issue a debt object for recording the borrowingaction
             self.position.portfolio.add(debt_obj, datetime = fill_time) # debt object
 
-            # Get the desired asset
         elif pos_type == 'Short-Buyback':
-            print('Execute Short-Buyback')
+            print('Execute Short-Buyback position.')
 
             payback_debt_obj = replace(self.position.get_obj)
             payback_debt_obj.misc = {'debt'}

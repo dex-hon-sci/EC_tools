@@ -36,8 +36,7 @@ def setup_trade_test(date_interest, open_hr, close_hr, direction):
                                  open_hr=open_hr, close_hr=close_hr)
     signal_table = signal_table[signal_table['APC forecast period'] == date_interest] 
     
-    print(signal_table.iloc[0])
-    
+    #print(signal_table.iloc[0])
     
     target_entry, target_exit, stop_exit = float(signal_table['target entry'].iloc[0]), \
                                             float(signal_table['target exit'].iloc[0]), \
@@ -57,7 +56,7 @@ def setup_trade_test(date_interest, open_hr, close_hr, direction):
     print('close', close_hr_dt, close_price)
      
     
-    print(P1.master_table)
+    #print(P1.master_table)
     return P1, day, target_entry, target_exit, \
         stop_exit, open_hr_dt, close_hr_dt
 
@@ -263,7 +262,7 @@ def test_onetradeperday_sell_normalexit()->None:
     debt_amount = P1.master_table[P1.master_table['misc'] == {'debt'}\
                                 ]['quantity'].iloc[0]
     #print(P1.pool)
-    #print(P1.master_table)
+    print(P1.master_table)
     #print(debt_amount)
     assert USD_amount > 10000000
     assert len(P1.pool) == 8
@@ -301,8 +300,6 @@ def test_onetradeperday_sell_stoploss() -> None:
     assert USD_amount < 10000000
     assert CL_amount < 1e-5
     assert len(P1.pool) == 8
-
-test_onetradeperday_sell_stoploss()
     
 def test_onetradeperday_sell_closeexit() -> None:   
     give_obj_name = "USD"

@@ -80,8 +80,6 @@ def trade_choice_simple(EES_dict):
         DESCRIPTION.
 
     """
-
-    
     # add the amount of exchange
     trade_open, trade_close = (np.nan,np.nan), (np.nan,np.nan)
     # Trade logic
@@ -137,7 +135,7 @@ class Trade(object):
             The name of the get object.
         get_obj_quantity : float
             The quantity of the get object.
-        target_price : TYPE
+        target_price : float
             An initial target price for the position. It is subject to slight 
             changes during the backtest.
 
@@ -274,7 +272,7 @@ class OneTradePerDay(Trade):
                 for i, exit_cand in enumerate(EES_dict['exit']):  
                     if exit_cand[0] > entry_pt[0]:
                         earliest_exit = exit_cand
-                        print('earliest_exit', earliest_exit)
+                        #print('earliest_exit', earliest_exit)
                         break
 
             if len(EES_dict['stop']) > 0:
@@ -282,7 +280,7 @@ class OneTradePerDay(Trade):
                 for i, stop_cand in enumerate(EES_dict['stop']):
                     if stop_cand[0] > entry_pt[0]:
                         earliest_stop = stop_cand
-                        print('earliest_stop', earliest_stop)
+                        #print('earliest_stop', earliest_stop)
                         break
             
             # put in the new exit and stop
@@ -412,7 +410,7 @@ class OneTradePerDay(Trade):
         # Run diagnosis to decide which outcome it is for the day
         # Case 1: No trade because entry is not hit
         if entry_pt == (np.nan,np.nan):
-            print("No trade")
+            print("No trade.")
             # Cancel all order positions
             ExecutePosition(entry_pos).cancel_pos(void_time=close_pt[0])
             ExecutePosition(exit_pos).cancel_pos(void_time=close_pt[0])
@@ -436,7 +434,7 @@ class OneTradePerDay(Trade):
             
         # Case 3: stop loss
         elif exit_pt== (np.nan,np.nan) and stop_pt != (np.nan,np.nan):
-            print('stop loss')
+            print('Stop loss.')
             trade_open, trade_close = entry_pt, stop_pt
             opening_pos, closing_pos = entry_pos, stop_pos
             
@@ -449,7 +447,7 @@ class OneTradePerDay(Trade):
             
        # Case 4: Neither an exit or stop loss is hit, exit position at close time
         elif exit_pt== (np.nan,np.nan) and stop_pt == (np.nan,np.nan):
-            print("Sell at close")
+            print("Sell at close.")
             trade_open, trade_close = entry_pt, close_pt
             opening_pos, closing_pos = entry_pos, close_pos
 
@@ -519,12 +517,7 @@ class OneTradePerDay(Trade):
         EES_dict = read.find_minute_EES(day, target_entry, target_exit, stop_exit,
                           open_hr=open_hr, close_hr=close_hr, 
                           direction = direction)
-        
-        print('entry_exit', EES_dict['entry'], EES_dict['exit'], 
-              EES_dict['stop'], EES_dict['close'])
-        
-
-        #print("entry_pt, exit_pt, stop_pt, close_pt", entry_pt, exit_pt, stop_pt, close_pt)
+    
         # Input the position type
         if direction == 'Buy':
             pos_type= 'Long'
