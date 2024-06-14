@@ -29,7 +29,7 @@ ASSET_DICT = {"USD": {"unit":'dollars', "asset_type":'Cash'},
               "QOc1":  {"unit":'contracts',"asset_type":'Future'},
               "QOc2":  {"unit":'contracts',"asset_type":'Future'},
               "QPc1":  {"unit":'contracts',"asset_type":'Future'},
-              "QPc2":  {"unit":'contracts',"asset_type":'Future'},
+              "QPc2":  {"unit":'contracts',"asset_type":'Future'}
               }
 
 num_per_contract = {
@@ -42,20 +42,20 @@ num_per_contract = {
     'QOc1': 1000.0,
     'QOc2': 1000.0,
     'QPc1': 100.0,
-    'QPc2': 100.0,
+    'QPc2': 100.0
 }
 
 round_turn_fees = {
-'CLc1': 24.0,
-'CLc2': 24.0,
-'HOc1': 25.2,
-'HOc2': 25.2,
-'RBc1': 25.2,
-'RBc2': 25.2,
-'QOc1': 24.0,
-'QOc2': 24.0,
-'QPc1': 24.0,
-'QPc2': 24.0,
+    'CLc1': 24.0,
+    'CLc2': 24.0,
+    'HOc1': 25.2,
+    'HOc2': 25.2,
+    'RBc1': 25.2,
+    'RBc2': 25.2,
+    'QOc1': 24.0,
+    'QOc2': 24.0,
+    'QPc1': 24.0,
+    'QPc2': 24.0
 }
 
 
@@ -118,7 +118,7 @@ class Trade(object):
         self.position_book = []
         
     def add_position(self, give_obj_name, get_obj_name, get_obj_quantity, 
-                     target_price, size = 1, fee = None, 
+                     target_price, size = 1, fee = None, pos_type = 'Long',
                      open_time = datetime.datetime.now()):
         """
         A simple function that make the process of creating a position easier.
@@ -158,10 +158,38 @@ class Trade(object):
         give_obj = Asset(give_obj_name, target_price*get_obj_quantity, 
                             give_obj_unit, give_obj_type)
         
-        pos = Position(give_obj, get_obj, target_price, 
-                       portfolio= self._portfolio, size = size,
-                       fee = fee, open_time=open_time)
-        
+        # different type of posiitons
+        if pos_type == 'Long-Buy':
+            # an example, get_obj is the asset, give_obj is the cash
+            # Setup the amount of asset we want
+            get_obj = Asset(get_obj_name, get_obj_quantity, 
+                            get_obj_unit, get_obj_type)
+            # calculate the money we have to pay
+            give_obj = Asset(give_obj_name, target_price*get_obj_quantity*size, 
+                                give_obj_unit, give_obj_type)
+            
+            print('Long-Buy', target_price, target_price*get_obj_quantity*size, get_obj_quantity)
+            print("Addposition", get_obj, give_obj)
+            pos = Position(give_obj, get_obj, target_price, 
+                           portfolio= self._portfolio, size = size,
+                           fee = fee, pos_type = pos_type, open_time=open_time)
+            
+        elif pos_type == 'Long-Sell':
+            # an example, get_obj is the asset, give_obj is the cash
+            get_obj = Asset(get_obj_name, get_obj_quantity, 
+                            get_obj_unit, get_obj_type)
+            give_obj = Asset(give_obj_name, target_price*get_obj_quantity*size, 
+                                give_obj_unit, give_obj_type)
+            
+            print('Long-Sell', target_price, target_price*get_obj_quantity*size, get_obj_quantity)
+            print("Addposition", get_obj, give_obj)
+
+            pos = Position(give_obj, get_obj, target_price, 
+                           portfolio= self._portfolio, size = size,
+                           fee = fee, pos_type = pos_type, open_time=open_time)
+            
+            
+        # Add posiyion in the position book
         self.position_book.append(pos)
         
         return pos
@@ -179,7 +207,7 @@ class OneTradePerDay(Trade):
         at the closing hour.
         
     """
-    def  __init__(self, portfolio):
+    def __init__(self, portfolio):
         #self.trade_or_not = True
         super().__init__(portfolio)
         
@@ -210,7 +238,7 @@ class OneTradePerDay(Trade):
         """
         # A method that search for correct EES points from a EES_dict
         
-        #initialise
+        # initialise
         entry_pt, exit_pt = (np.nan,np.nan), (np.nan,np.nan)
         stop_pt, close_pt = (np.nan,np.nan), (np.nan,np.nan)
         
@@ -278,6 +306,9 @@ class OneTradePerDay(Trade):
         if pos_type == 'Long':
             pos_type1 = 'Long-Buy'
             pos_type2 = 'Long-Sell'
+            #pos_type1 = 'Long'
+            #pos_type2 = 'Long'
+
         elif pos_type == 'Short':
             pos_type1 = 'Short-Borrow'
             pos_type2 = 'Short-Buyback'
@@ -291,32 +322,66 @@ class OneTradePerDay(Trade):
         print('==entry==')
         entry_pos = super().add_position(give_obj_name, get_obj_name, 
                                       get_obj_quantity, entry_price, 
-                                      size = size, fee = fee, pos_type = pos_type1,
+                                      size = size, fee = None, pos_type = pos_type1,
                                       open_time=open_time)
+        print(entry_pos.status)
 
         print('==exit==')
-        exit_pos = super().add_position(get_obj_name, give_obj_name, 
-                          get_obj_quantity*exit_price, 1.0/exit_price, 
+        exit_pos = super().add_position(give_obj_name, get_obj_name, 
+                          get_obj_quantity, exit_price, 
                           size = size, fee = fee, pos_type = pos_type2,
                           open_time=open_time)
 
+        print(exit_pos.status)
 
         print('==stop==', get_obj_quantity)
-        stop_pos = super().add_position(get_obj_name, give_obj_name, 
-                          get_obj_quantity*stop_price, 1.0/stop_price, 
+        stop_pos = super().add_position(give_obj_name, get_obj_name, 
+                          get_obj_quantity, stop_price, 
                           size = size, fee = fee, pos_type = pos_type2,
                           open_time=open_time)
+        print(stop_pos.status)
 
         
         print('==close==')
-        close_pos = super().add_position(get_obj_name, give_obj_name, 
-                          get_obj_quantity*close_price, 1.0/close_price,
+        close_pos = super().add_position(give_obj_name, get_obj_name, 
+                          get_obj_quantity, close_price,
                           size = size, fee = fee, pos_type = pos_type2,
                           open_time=open_time)
+        print(close_pos.status)
 
-        
         print('=========')
-        
+  
+# =============================================================================
+#         print('==entry==')
+#         entry_pos = super().add_position(give_obj_name, get_obj_name, 
+#                                       get_obj_quantity, entry_price, 
+#                                       size = size, fee = fee, pos_type = pos_type1,
+#                                       open_time=open_time)
+# 
+#         print('==exit==')
+#         exit_pos = super().add_position(get_obj_name, give_obj_name, 
+#                           get_obj_quantity*exit_price, 1.0/exit_price, 
+#                           size = size, fee = fee, pos_type = pos_type2,
+#                           open_time=open_time)
+# 
+# 
+#         print('==stop==', get_obj_quantity)
+#         stop_pos = super().add_position(get_obj_name, give_obj_name, 
+#                           get_obj_quantity*stop_price, 1.0/stop_price, 
+#                           size = size, fee = fee, pos_type = pos_type2,
+#                           open_time=open_time)
+# 
+#         
+#         print('==close==')
+#         close_pos = super().add_position(get_obj_name, give_obj_name, 
+#                           get_obj_quantity*close_price, 1.0/close_price,
+#                           size = size, fee = fee, pos_type = pos_type2,
+#                           open_time=open_time)
+# 
+#         
+#         print('=========')
+#         
+# =============================================================================
         pos_list = [entry_pos, exit_pos, stop_pos, close_pos]
 
         return pos_list
@@ -348,6 +413,15 @@ class OneTradePerDay(Trade):
             The [opening_pos, closing_pos] .
 
         """
+        if pos_type == 'Long':
+            pos_type1 = 'Long-Buy'
+            pos_type2 = 'Long-Sell'
+            #pos_type1 = 'Long'
+            #pos_type2 = 'Long'
+
+        elif pos_type == 'Short':
+            pos_type1 = 'Short-Borrow'
+            pos_type2 = 'Short-Buyback'
         # Unpack inputs
         entry_pos, exit_pos, stop_pos, close_pos = pos_list[0], pos_list[1], \
                                                     pos_list[2], pos_list[3]
@@ -382,9 +456,11 @@ class OneTradePerDay(Trade):
             trade_open, trade_close = entry_pt, exit_pt
             opening_pos, closing_pos = entry_pos, exit_pos
             
+            print("clos_get_obj", closing_pos.get_obj)
             # change the closing price
-            closing_pos.price = round(1/exit_pt[1],9)
-            
+            closing_pos.price = round(exit_pt[1],9)
+            print("clos_get_obj", closing_pos.get_obj)
+
             print("trade_open, trade_close", trade_open, trade_close)
             print(entry_pos.status, exit_pos.status, stop_pos.status, close_pos.status)
             
@@ -399,7 +475,7 @@ class OneTradePerDay(Trade):
             opening_pos, closing_pos = entry_pos, stop_pos
             
             # change the closing price
-            closing_pos.price = round(1/stop_pt[1],9)
+            closing_pos.price = round(stop_pt[1],9)
             print(closing_pos.price, round(1/stop_pt[1],9))
             print(closing_pos.get_obj)
             
@@ -414,7 +490,7 @@ class OneTradePerDay(Trade):
             opening_pos, closing_pos = entry_pos, close_pos
 
             # change the closing price
-            closing_pos.price = round(1/close_pt[1],9)
+            closing_pos.price = round(close_pt[1],9)
             
             # Cancel all order positions
             ExecutePosition(stop_pos).cancel_pos(void_time=trade_close[0])
@@ -425,10 +501,10 @@ class OneTradePerDay(Trade):
         
         # Execute the positions
         ExecutePosition(opening_pos).fill_pos(fill_time = trade_open[0], 
-                                            pos_type=pos_type)
+                                            pos_type=pos_type1)
         
         ExecutePosition(closing_pos).fill_pos(fill_time = trade_close[0], 
-                                           pos_type=pos_type)
+                                           pos_type=pos_type2)
         
         # pack the outputs objects into lists
         exec_pos_list = [opening_pos,closing_pos]
@@ -493,11 +569,14 @@ class OneTradePerDay(Trade):
             
         EES_target_list = [target_entry, target_exit, 
                            stop_exit, EES_dict['close'][1]] 
-
+        
+        fee = Asset('USD', 24.0, 'dollars', 'Cash')
         # run the trade via position module
         pos_list = self.open_positions(give_obj_name, get_obj_name, \
                                        get_obj_quantity, EES_target_list, \
-                                           pos_type=pos_type)
+                                           pos_type=pos_type, 
+                                           size=num_per_contract[get_obj_name],
+                                           fee=fee)
 
 
         trade_open, trade_close, pos_list, exec_pos_list = \

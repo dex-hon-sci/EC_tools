@@ -25,7 +25,7 @@ def setup_trade_test(date_interest, open_hr, close_hr, direction):
         
     # Use one day to test if the trade logic works
     P1 = Portfolio()
-    USD_initial = Asset("USD", 1000000, "dollars", "Cash") # initial fund
+    USD_initial = Asset("USD", 10000000, "dollars", "Cash") # initial fund
     P1.add(USD_initial)
     
     histroy_intraday_data = read.read_reformat_Portara_minute_data(FILENAME_MINUTE)
@@ -56,6 +56,8 @@ def setup_trade_test(date_interest, open_hr, close_hr, direction):
                                                        direction='backward')
     print('close', close_hr_dt, close_price)
      
+    
+    print(P1.master_table)
     return P1, day, target_entry, target_exit, \
         stop_exit, open_hr_dt, close_hr_dt
 
@@ -82,7 +84,7 @@ def onetradeperday(date_interest, direction):
                                         open_hr=open_hr_dt, close_hr=close_hr_dt)
     
     
-    plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=False)
+    plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=True)
 
     return P1, day, target_entry, target_exit, \
         stop_exit, open_hr_dt, close_hr_dt, EES_dict, trade_open, \
@@ -123,7 +125,7 @@ def test_onetradeperday_buy_noentry() -> None:
     assert USD_amount == 1000000
     assert len(P1.pool) == 1
 
-def test_trade_choice_simple_portfolio_buy_normalexit()->None:
+def test_onetradeperday_buy_normalexit()->None:
     # Setting up the trade itself. First load the parameters
     give_obj_name = "USD"
     get_obj_name = "CLc1"
@@ -133,7 +135,6 @@ def test_trade_choice_simple_portfolio_buy_normalexit()->None:
             trade_close, pos_list, exec_pos_list = onetradeperday(
                                                         date_interest_normal_exit,
                                                         'Buy')
-
 
     assert pos_list[0].status == PositionStatus.FILLED
     assert pos_list[1].status == PositionStatus.FILLED
@@ -147,9 +148,11 @@ def test_trade_choice_simple_portfolio_buy_normalexit()->None:
     CL_amount = P1.master_table[P1.master_table['name'] == get_obj_name\
                                 ]['quantity'].iloc[0]
         
+    print(P1.pool)
+    print(P1.master_table)
     assert USD_amount > 1000000
     assert CL_amount < 1
-    assert len(P1.pool) == 5
+    assert len(P1.pool) == 6
     
          
 def test_onetradeperday_buy_stoploss() -> None:   
@@ -177,7 +180,7 @@ def test_onetradeperday_buy_stoploss() -> None:
         
     assert USD_amount < 1000000
     assert CL_amount < 1
-    assert len(P1.pool) == 5
+    assert len(P1.pool) == 6
     
     
 def test_onetradeperday_buy_closeexit() -> None:   
@@ -200,6 +203,8 @@ def test_onetradeperday_buy_closeexit() -> None:
                                 ]['quantity'].iloc[0]
         
     assert CL_amount < 1
-    assert len(P1.pool) == 5
+    assert len(P1.pool) == 6
+    
+test_onetradeperday_buy_normalexit()
 ############################################################################
 #Sell side test

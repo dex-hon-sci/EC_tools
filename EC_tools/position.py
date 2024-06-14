@@ -51,14 +51,25 @@ class Position(object):
     auto_adjust: bool = True
     pos_id: str = random_string()  
     
-    def __post_init__(self, void_time = datetime.datetime.now(), epi = 1e-8):
+    def __post_init__(self, void_time = datetime.datetime.now(), 
+                      epi = 1e-8):
         """
         The post init function that checks if the input price is correct.
         If it is not. the position is voided.
         
         """
         # check if the quantity of both assets are 
-        correct_ratio = self.give_obj.quantity / (self.get_obj.quantity*self.size)
+        #correct_ratio = self.give_obj.quantity / (self.get_obj.quantity*self.size)
+        
+        # reminder: give is cash, get is asset (usually)
+        if self.pos_type == 'Long-Buy' or 'Long-Sell':
+            correct_ratio = self.give_obj.quantity / (self.get_obj.quantity*self.size)
+
+        elif self.pos_type == 'Short-Borrow':
+            correct_ratio = self.give_obj.quantity / (self.get_obj.quantity*self.size)
+        elif self.pos_type == 'Short-Buyback':
+            correct_ratio =  (self.get_obj.quantity*self.size) / self.give_obj.quantity 
+
         #print(correct_ratio, self.price)
         #self._check = (self._price == correct_ratio)
         
@@ -66,6 +77,7 @@ class Position(object):
         # We consider it is equal to the correct ratio
         self._check = (self._price  < correct_ratio + epi) and \
                         (self._price > correct_ratio- epi)
+                        
         print('correct ratio', correct_ratio, self.give_obj.quantity / (self.get_obj.quantity*self.size))
         print('_check', self._price == correct_ratio)
 
@@ -76,6 +88,18 @@ class Position(object):
             self.void_time = void_time
             print("Position voided due to invalid price entry.")
             
+        # define fix quantity
+        self._fix_quantity = self.get_obj.quantity
+        
+    @property
+    def fix_quantity(self):
+        return self._fix_quantity
+    
+    @fix_quantity.setter
+    def fix_quantity(self, value):
+        self._fix_quantity = value
+        return self._fix_quantity
+    
     @property
     def price(self):
         # getter method for seld._price
@@ -85,7 +109,7 @@ class Position(object):
     def price(self, value):
         
         # check if the new price is the same 
-        if value != self.give_obj.quantity / self.get_obj.quantity:
+        if value != self.give_obj.quantity / (self.get_obj.quantity*self.size):
             if self.auto_adjust == True:
                 pass
             elif self.auto_adjust == False:
@@ -98,9 +122,12 @@ class Position(object):
         # Assuming the give_obj is the one in the portfolio, we anchor the 
         # exchange rate using what we have. So we only changes the quantity in
         # the get_obj atrribute
-        self.get_obj.quantity = self.give_obj.quantity / self._price
-        
-
+        if self.fix_quantity == self.give_obj.quantity:
+            self.get_obj.quantity = self.give_obj.quantity  / (self._price*self.size)
+            
+        elif self.fix_quantity == self.get_obj.quantity:
+            self.give_obj.quantity = self.get_obj.quantity*(self._price*self.size)
+            
 class ExecutePosition(object):
     """
     A class that execute the position.
@@ -115,7 +142,7 @@ class ExecutePosition(object):
             raise Exception("The position does not belong to a valid \
                             Portfolio.")
 
-    def fill_pos(self, fill_time = datetime.datetime.now(), pos_type='Long'):
+    def fill_pos(self, fill_time = datetime.datetime.now(), pos_type='Long-Buy'):
         """
         Fill position method.
 
@@ -142,6 +169,7 @@ class ExecutePosition(object):
             raise Exception("The position must be in Pending state to be filled.")
             
         port = self.position.portfolio
+        print('port.master_table', port.master_table)
         # check if you have the avaliable fund in the portfolio
         if port.master_table[port.master_table['name']==
                              self.position.give_obj.name]['quantity'].iloc[0] <\
@@ -151,21 +179,34 @@ class ExecutePosition(object):
                                                 self.position.give_obj.name))
         else: pass
     
-        self.position.status = PositionStatus.FILLED
-        self.position.fill_time = fill_time
         
         #add and sub portfolio
-        if pos_type == 'Long-Buy':
+        if pos_type == 'Long':
             # Pay pre-existing asset
             self.position.portfolio.sub(self.position.give_obj, datetime= fill_time)
             # Get the desired asset
             self.position.portfolio.add(self.position.get_obj, datetime = fill_time)
             
+        elif pos_type == 'Long-Buy':
+            print('Execute Long-buy')
+            # Pay pre-existing asset
+            self.position.portfolio.sub(self.position.give_obj, datetime= fill_time)
+            print("sub",self.position.give_obj)
+            # Get the desired asset
+            self.position.portfolio.add(self.position.get_obj, datetime = fill_time)
+            print("add",self.position.get_obj)
+            
         elif pos_type == 'Long-Sell':
+            print('Execute Long-sell')
+
             # Pay pre-existing asset
             self.position.portfolio.sub(self.position.get_obj, datetime= fill_time)
+            print("sub",self.position.get_obj)
+
             # Get the desired asset
             self.position.portfolio.add(self.position.give_obj, datetime = fill_time) 
+            print("add",self.position.give_obj)
+
 
         elif pos_type == 'Short-Borrow':
             # The sub method does not allow overwithdraw. 
@@ -177,7 +218,6 @@ class ExecutePosition(object):
             debt_obj.quantity = debt_obj.quantity*-1
             debt_obj.misc = {'debt'}
             
-    
             # Issue a debt for borrowing
             self.position.portfolio.add(debt_obj, datetime= fill_time)
             
@@ -190,19 +230,22 @@ class ExecutePosition(object):
         elif pos_type == 'Short-Buyback':
             
             debt_obj = self.position.get_obj
-            debt_obj.quantity = debt_obj.quantity*-1
+            debt_obj.quantity = debt_obj.quantity
             debt_obj.misc = {'debt'}
             
             # normal long
             # subtract the cash here to buy back the asset
             self.position.portfolio.sub(self.position.give_obj, datetime= fill_time)
-            # Get the desired asset
+            # Get the desired asset the set balance out the debt object
             self.position.portfolio.add(debt_obj, datetime = fill_time)
         
         # charge a fee if it exits
         if self.position.fee != None: #or self.position.fee > 0:
             self.position.portfolio.sub(self.position.fee, datetime= fill_time)
 
+        # change the position status and fill time
+        self.position.status = PositionStatus.FILLED
+        self.position.fill_time = fill_time
         
         return self.position
     
