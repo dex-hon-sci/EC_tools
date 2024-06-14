@@ -275,6 +275,13 @@ class OneTradePerDay(Trade):
             The position list: [entry_pos, exit_pos, stop_pos, close_pos].
 
         """
+        if pos_type == 'Long':
+            pos_type1 = 'Long-Buy'
+            pos_type2 = 'Long-Sell'
+        elif pos_type == 'Short':
+            pos_type1 = 'Short-Borrow'
+            pos_type2 = 'Short-Buyback'
+            
         # a method that execute the one trade per day based on the cases of the EES
         entry_price, exit_price = EES_target_list[0], EES_target_list[1]
         stop_price, close_price = EES_target_list[2], EES_target_list[3]
@@ -284,25 +291,28 @@ class OneTradePerDay(Trade):
         print('==entry==')
         entry_pos = super().add_position(give_obj_name, get_obj_name, 
                                       get_obj_quantity, entry_price, 
-                                      size = size,
-                                      fee = fee, open_time=open_time)
+                                      size = size, fee = fee, pos_type = pos_type1,
+                                      open_time=open_time)
 
         print('==exit==')
         exit_pos = super().add_position(get_obj_name, give_obj_name, 
                           get_obj_quantity*exit_price, 1.0/exit_price, 
-                          size = size, fee = fee, open_time=open_time)
+                          size = size, fee = fee, pos_type = pos_type2,
+                          open_time=open_time)
 
 
         print('==stop==', get_obj_quantity)
         stop_pos = super().add_position(get_obj_name, give_obj_name, 
                           get_obj_quantity*stop_price, 1.0/stop_price, 
-                          size = size, fee = fee, open_time=open_time)
+                          size = size, fee = fee, pos_type = pos_type2,
+                          open_time=open_time)
 
         
         print('==close==')
         close_pos = super().add_position(get_obj_name, give_obj_name, 
                           get_obj_quantity*close_price, 1.0/close_price,
-                          size = size, fee = fee, open_time=open_time)
+                          size = size, fee = fee, pos_type = pos_type2,
+                          open_time=open_time)
 
         
         print('=========')
@@ -440,17 +450,28 @@ class OneTradePerDay(Trade):
         ----------
         EES_dict : dict
             A dictionary for all possible EES values.
-        give_obj : TYPE
-            DESCRIPTION.
-        get_obj : TYPE
-            DESCRIPTION.
+        give_obj_name :
+            
+        get_obj_name :
+            
+        get_obj_quantity :
+            
+        target_entry :
+            
+        target_exit :
+            
+        stop_exit :
+            
+        open_hr :
+        
+        close_hr : 
+        
+        direction :
+            "Buy"
 
         Returns
         -------
-        trade_open : TYPE
-            DESCRIPTION.
-        trade_close : TYPE
-            DESCRIPTION.
+        EES_dict, trade_open, trade_close, pos_list, exec_pos_list
 
         """
         
