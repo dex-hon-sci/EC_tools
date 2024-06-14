@@ -266,7 +266,7 @@ def test_onetradeperday_sell_normalexit()->None:
     print(P1.master_table)
     print(debt_amount)
     assert USD_amount > 10000000
-    assert len(P1.pool) == 7
+    assert len(P1.pool) == 8
    # assert debt_amount == 0
     
     
@@ -300,7 +300,7 @@ def test_onetradeperday_sell_stoploss() -> None:
     print(P1.master_table)
     assert USD_amount < 10000000
     assert CL_amount < 1e-5
-    assert len(P1.pool) == 7
+    assert len(P1.pool) == 8
 #test_onetradeperday_sell_stoploss()
     
 def test_onetradeperday_sell_closeexit() -> None:   
@@ -326,4 +326,4 @@ def test_onetradeperday_sell_closeexit() -> None:
     print(P1.master_table)
 
     assert CL_amount < 1e-5
-    assert len(P1.pool) == 7
+    assert len(P1.pool) == 8

@@ -6,7 +6,7 @@ Created on Wed May 29 23:49:08 2024
 @author: dexter
 """
 # python import
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Protocol
 from enum import Enum, auto
 import datetime as datetime
@@ -179,33 +179,24 @@ class ExecutePosition(object):
                                                 self.position.give_obj.name))
         else: pass
     
-        
-        #add and sub portfolio
-        if pos_type == 'Long':
-            # Pay pre-existing asset
-            self.position.portfolio.sub(self.position.give_obj, datetime= fill_time)
-            # Get the desired asset
-            self.position.portfolio.add(self.position.get_obj, datetime = fill_time)
-            
-        elif pos_type == 'Long-Buy':
+
+        if pos_type == 'Long-Buy':
             print('Execute Long-buy')
+            
             # Pay pre-existing asset
             self.position.portfolio.sub(self.position.give_obj, datetime= fill_time)
-            print("sub",self.position.give_obj)
+            
             # Get the desired asset
             self.position.portfolio.add(self.position.get_obj, datetime = fill_time)
-            print("add",self.position.get_obj)
             
         elif pos_type == 'Long-Sell':
             print('Execute Long-sell')
 
             # Pay pre-existing asset
             self.position.portfolio.sub(self.position.get_obj, datetime= fill_time)
-            print("sub",self.position.get_obj)
 
             # Get the desired asset
             self.position.portfolio.add(self.position.give_obj, datetime = fill_time) 
-            print("add",self.position.give_obj)
 
 
         elif pos_type == 'Short-Borrow':
@@ -216,35 +207,37 @@ class ExecutePosition(object):
             
             # here, assume give_obj = cash, get_obj = asset
             
-            debt_obj = self.position.get_obj.copy()
+            debt_obj = replace(self.position.get_obj)
             debt_obj.quantity = debt_obj.quantity*-1
             debt_obj.misc = {'debt'}
             
-            print("Borrowobj debtoj",self.position.get_obj, debt_obj)
             
-            # Issue a debt for borrowing
-            self.position.portfolio.add(debt_obj, datetime = fill_time) # debt object
-            #self.position.portfolio.add(self.position.get_obj, datetime= fill_time) #actual asset
+            self.position.portfolio.add(self.position.get_obj, datetime= fill_time) #actual asset
+            
             
             # sell the asset here
             self.position.portfolio.sub(self.position.get_obj, datetime = fill_time)
             # earn the cash here
             self.position.portfolio.add(self.position.give_obj, datetime = fill_time)
+            
+            # Issue a debt object for recording the borrowingaction
+            self.position.portfolio.add(debt_obj, datetime = fill_time) # debt object
 
             # Get the desired asset
         elif pos_type == 'Short-Buyback':
             print('Execute Short-Buyback')
 
-            debt_obj = self.position.get_obj
-            debt_obj.quantity = debt_obj.quantity
-            debt_obj.misc = {'debt'}
+            payback_debt_obj = replace(self.position.get_obj)
+            payback_debt_obj.misc = {'debt'}
             
             # normal long
             # subtract the cash here to buy back the asset
             self.position.portfolio.sub(self.position.give_obj, datetime = fill_time)
             # Get the desired asset the set balance out the debt object
-            self.position.portfolio.add(self.position.get_obj, datetime = fill_time)
-        
+            # Buyback the debt object to settle the debt automatically
+            self.position.portfolio.add(payback_debt_obj, datetime = fill_time)
+
+
         # charge a fee if it exits
         if self.position.fee != None: #or self.position.fee > 0:
             self.position.portfolio.sub(self.position.fee, datetime= fill_time)
