@@ -25,7 +25,7 @@ def setup_trade_test(date_interest, open_hr, close_hr, direction):
         
     # Use one day to test if the trade logic works
     P1 = Portfolio()
-    USD_initial = Asset("USD", 10000000, "dollars", "Cash") # initial fund
+    USD_initial = Asset("USD", 10_000_000, "dollars", "Cash") # initial fund
     P1.add(USD_initial)
     
     histroy_intraday_data = read.read_reformat_Portara_minute_data(FILENAME_MINUTE)
@@ -84,7 +84,7 @@ def onetradeperday(date_interest, direction):
                                         direction = direction)
     
     
-    plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=False)
+    plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=True)
 
     return P1, day, target_entry, target_exit, \
         stop_exit, open_hr_dt, close_hr_dt, EES_dict, trade_open, \
@@ -155,7 +155,8 @@ def test_onetradeperday_buy_normalexit()->None:
     assert CL_amount < 1
     assert len(P1.pool) == 6
     
-         
+#test_onetradeperday_buy_normalexit()
+
 def test_onetradeperday_buy_stoploss() -> None:   
     give_obj_name = "USD"
     get_obj_name = "CLc1"

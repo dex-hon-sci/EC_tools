@@ -6,16 +6,16 @@ Created on Tue May 28 02:08:35 2024
 @author: dexter
 """
 
-PRICE_TABLE = {"CLc1": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL.day",
-               "CLc2": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL_d01.day",
-               "HOc1": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/HO.day",
-               "HOc2": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/HO_d01.day",
-               "RBc1": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/RB.day",
-               "RBc2": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/RB_d01.day",
-               "QOc1": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QO.day",
-               "QOc2": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QO_d01.day",
-               "QPc1": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QP.day",
-               "QPc2": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QP_d01.day"
+PRICE_TABLE = {"CLc1": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL.day",
+               "CLc2": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL_d01.day",
+               "HOc1": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/HO.day",
+               "HOc2": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/HO_d01.day",
+               "RBc1": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/RB.day",
+               "RBc2": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/RB_d01.day",
+               "QOc1": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QO.day",
+               "QOc2": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QO_d01.day",
+               "QPc1": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QP.day",
+               "QPc2": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QP_d01.day"
                }
 
 num_per_contract = {
@@ -50,6 +50,7 @@ import unittest
 from werkzeug import exceptions
 import datetime
 import pandas as pd
+import pytest
 
 from EC_tools.portfolio import Asset, Portfolio
 import EC_tools.utility as util
@@ -211,15 +212,59 @@ def test_sub_str()-> None:
     
     assert PP.master_table[PP.master_table['name']=='test']['quantity'].iloc[0] == 3
     
+def test_value_asset_value_total_value()-> None:
+    PP = Portfolio()
+    PP.add(CL1,datetime=day1)
+    PP.add(USD,datetime=day2)
+    PP.add(HO1,datetime=day3)
     
-class test_invalid(unittest.TestCase):
-    """
-    Test the invalid inputs and the Exception handling.
-    """
-    def test_table_invlaid(self) -> None:
-        PP = Portfolio()
+    assert len(PP.value(day1)) == 1
+    assert len(PP.value(day2)) == 2
+    assert len(PP.value(day3)) == 3
+    assert list(PP.value(day1).keys()) == ['CLc1']
+    assert list(PP.value(day2).keys()) == ['CLc1', 'USD']
+    assert list(PP.value(day3).keys()) == ['CLc1', 'USD', 'HOc1']
     
-        with self.assertRaises(Exception):
-            PP.table
-            
+    # check asset value
+    assert type(PP.asset_value('HOc1',day3)) == float
+    assert type(PP.asset_value('CLc1',day3)) == float
+    assert type(PP.asset_value('CLc1',day1)) == float
+    assert type(PP.asset_value('USD',day2)) == float
+    
+    # check total value 
+    assert PP.total_value(day1) < PP.total_value(day2) 
+    assert PP.total_value(day2) < PP.total_value(day3)
+    
+def test_log_asset_log() -> None:
+    PP = Portfolio()
+    PP.add(CL1,datetime=day1)
+    PP.add(USD,datetime=day2)
+    PP.add(HO1,datetime=day3)
+    
+    assert isinstance(PP.log, pd.DataFrame)
+    assert len(PP.log) == 3
+    assert isinstance(PP.asset_log('CLc1'), pd.Series)
+    assert len(PP.asset_log('CLc1')) == 3
+
+###################
+# Error test
+def test_table_invlaid()-> None:
+    PP = Portfolio()
+
+    with pytest.raises(Exception):
+        PP.table 
+        
+# =============================================================================
+#     
+# class test_invalid(unittest.TestCase):
+#     """
+#     Test the invalid inputs and the Exception handling.
+#     """
+#     def test_table_invlaid(self) -> None:
+#         PP = Portfolio()
+#     
+#         with self.assertRaises(Exception):
+#             PP.table
+#             
+# =============================================================================
         

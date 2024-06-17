@@ -79,7 +79,7 @@ class Position(object):
         self._check = (self._price  < correct_ratio + epi) and \
                         (self._price > correct_ratio- epi)
                         
-        print('Position created. Check:', self._check)
+        #print('Position created. Check:', self._check)
         #If this value is false, the position is automatically voided.
         if self._check == False:
             self.status = PositionStatus.VOID

@@ -18,9 +18,9 @@ from EC_tools.trade import  trade_choice_simple, OneTradePerDay
 import EC_tools.plot as plot
 from EC_tools.portfolio import Asset, Portfolio
 
-FILENAME_MINUTE = "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL_d01.001"
-FILENSME_BUYSELL_SIGNALS = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_CLc2_full.csv"
-SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_CLc2.csv"   
+FILENAME_MINUTE = "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/HO_d01.001"
+FILENSME_BUYSELL_SIGNALS = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_HOc2_full.csv"
+SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_HOc2.csv"   
 
 # tested
 def find_crossover(input_array, threshold):
@@ -427,10 +427,6 @@ def loop_date_portfolio(portfo, signal_table, histroy_intraday_data,
     """
     LEGACY looping method before the development of the Portfolio module
     """
-
-    P1 = Portfolio()
-    USD_initial = Asset("USD", 1000000, "dollars", "Cash") 
-    P1.add(USD_initial)  # add initial fund
     
     book = Bookkeep(bucket_type='backtest')
     dict_trade_PNL = book.make_bucket(keyword='benchmark')
@@ -462,7 +458,7 @@ def loop_date_portfolio(portfo, signal_table, histroy_intraday_data,
                                                            direction='backward')
         print('close', close_hr_dt, close_price)
     
-        
+        print('==================================')
         # The main Trade function here
         EES_dict, trade_open, trade_close, \
             pos_list, exec_pos_list = OneTradePerDay(portfo).run_trade(\
@@ -472,6 +468,7 @@ def loop_date_portfolio(portfo, signal_table, histroy_intraday_data,
                                             open_hr=open_hr_dt, 
                                             close_hr=close_hr_dt, 
                                             direction = direction)
+        print('==================================')
 
         # Bookkeeping area, generating data for the PNL file
         entry_price, exit_price = trade_open[1], trade_close[1]
@@ -507,11 +504,10 @@ def loop_date_portfolio(portfo, signal_table, histroy_intraday_data,
     #sort by date
     dict_trade_PNL = dict_trade_PNL.sort_values(by='date')
          
-    return dict_trade_PNL
+    return dict_trade_PNL, portfo
     
 
-@util.time_it
-@util.save_csv('benchmark_PNL_CLc2_full.csv')
+@util.time_it #@util.save_csv('benchmark_PNL_CLc1_full.csv')
 def run_backtest():
     # master function that runs the backtest itself.
     # The current method only allows one singular direction signal perday. and a set of constant EES
@@ -529,6 +525,7 @@ def run_backtest():
 
     return dict_trade_PNL
 
+@util.time_it
 def run_backtest_portfolio():
     # master function that runs the backtest itself.
     # The current method only allows one singular direction signal perday. and a set of constant EES
@@ -542,12 +539,13 @@ def run_backtest_portfolio():
     
     # Initialise Portfolio
     P1 = Portfolio()
-    USD_initial = Asset("USD", 1000000, "dollars", "Cash") # initial fund
+    USD_initial = Asset("USD", 10000000, "dollars", "Cash") # initial fund
     P1.add(USD_initial)
     
     # loop through the date and set the EES prices for each trading day   
     dict_trade_PNL, P1 = loop_date_portfolio(P1, trade_date_table, history_data,
-                                            asset_name="CLc2",
+                                            give_obj_name = "USD", get_obj_name = "CLc1",
+                                            get_obj_quantity = 10,
                                             open_hr='0330', close_hr='2000', 
                                             plot_or_not = False)    
 
@@ -561,5 +559,5 @@ def run_backtest_list():
 
 if __name__ == "__main__":
     
-    run_backtest()
-    #run_backtest_portfolio()
+    #run_backtest()
+    run_backtest_portfolio()

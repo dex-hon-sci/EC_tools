@@ -17,16 +17,16 @@ import pandas as pd
 # EC_tools import
 import EC_tools.read as read
 
-PRICE_DICT = {"CLc1": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL.day",
-               "CLc2": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL_d01.day",
-               "HOc1": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/HO.day",
-               "HOc2": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/HO_d01.day",
-               "RBc1": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/RB.day",
-               "RBc2": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/RB_d01.day",
-               "QOc1": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QO.day",
-               "QOc2": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QO_d01.day",
-               "QPc1": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QP.day",
-               "QPc2": "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QP_d01.day"
+PRICE_DICT = {"CLc1": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL.day",
+               "CLc2": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL_d01.day",
+               "HOc1": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/HO.day",
+               "HOc2": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/HO_d01.day",
+               "RBc1": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/RB.day",
+               "RBc2": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/RB_d01.day",
+               "QOc1": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QO.day",
+               "QOc2": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QO_d01.day",
+               "QPc1": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QP.day",
+               "QPc2": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QP_d01.day"
                }
 
 SIZE_DICT = {
@@ -376,10 +376,11 @@ class Portfolio(object):
         Parameters
         ----------
         datetime: datetime object
-        
+            The datetime for query.
         price_dict: dict
             A dictionary that contains the pricing data filename for each 
             assets. The default is PRICE_DICT.
+            
         size_dict: dict
             A dictionary that contains the size (for example, number of barrels)
             contained in each assets. The default is SIZE_DICT.
@@ -397,7 +398,7 @@ class Portfolio(object):
         
         value_dict = dict()
         
-        print(self.pool, date_time)
+        #print(self.pool, date_time)
         self.set_pool_window(self.__pool_datetime[0], date_time)
 
         for i, asset_name in enumerate(self.table['name']):
@@ -508,8 +509,8 @@ class Portfolio(object):
         asset_log = self.log[asset_name]
         return asset_log
 
-    def wipe_debt():
+    def wipe_debt(self):
         
-        return
+        return self.master_table
 
     
