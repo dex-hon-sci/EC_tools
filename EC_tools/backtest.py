@@ -20,7 +20,7 @@ from EC_tools.portfolio import Asset, Portfolio
 
 FILENAME_MINUTE = "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/HO.001"
 FILENSME_BUYSELL_SIGNALS = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_HOc1_full.csv"
-SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_HOc1.csv"   
+SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/benchmark_signal_test.csv"   
 
 # tested
 def find_crossover(input_array, threshold):
@@ -123,12 +123,20 @@ def prepare_signal_interest(filename_buysell_signals,
     signal_interest = pd.concat(signal_data, ignore_index=True)
 
     # make a column with Timestamp as its content
-    signal_interest['Date'] = pd.to_datetime(signal_interest["APC forecast period"], 
-                                  format='%Y-%m-%d')
-                                  
+    #signal_interest['Date'] = pd.to_datetime(signal_interest["APC forecast period"], 
+    #                              format='%Y-%m-%d')
+    #print(signal_interest['APC forecast period'], signal_interest['APC forecast period'].iloc[0])
+    #print(signal_interest['APC forecast period'].iloc[0][0:4], 
+    #      signal_interest['APC forecast period'].iloc[0][5:7],
+    #      signal_interest['APC forecast period'].iloc[0][8:])
+    signal_interest['Date'] =  [datetime.datetime(
+                                                year = int(str(x)[0:4]), 
+                                              month=int(str(x)[5:7]), 
+                                              day = int(str(x)[8:])) 
+                            for x in signal_interest['APC forecast period']]
     # sort the table by Date
     signal_interest.sort_values(by='Date', inplace=True)
-    
+
     return signal_interest
 
 #tested
@@ -334,12 +342,21 @@ def find_minute_EES(histroy_data_intraday,
     #print('EES_dict', EES_dict)
     return EES_dict
 
-
+def loop_date_full():
+    """
+    A method that loop through every single data points.
+    It is slow but can be used to teste path dependent signals.
+    
+    """
+    return 
 def loop_date(signal_table, histroy_intraday_data, open_hr='0330', 
               close_hr='1930',
               plot_or_not = False):
     """
-    LEGACY looping method before the development of the Portfolio module
+    Fast looping method that generate simple CSV output file.
+    This method isolate out the crossover points to find optimal EES 
+    using onetradeperday.    
+    
     """
     
     # make bucket 
@@ -381,9 +398,7 @@ def loop_date(signal_table, histroy_intraday_data, open_hr='0330',
 
         # make the trade.
         trade_open, trade_close = trade_choice_simple(EES_dict)
-        #trade_open, trade_close = None, None
-        # WIP
-        #entry_price, exit_price = None, None
+
         entry_price, exit_price = trade_open[1], trade_close[1]
         entry_datetime= trade_open[0]
         exit_datetime = trade_close[0]
@@ -430,6 +445,7 @@ def loop_date_portfolio(portfo, signal_table, histroy_intraday_data,
     
     book = Bookkeep(bucket_type='backtest')
     dict_trade_PNL = book.make_bucket(keyword='benchmark')
+    
     
     for date_interest, direction, target_entry, target_exit, \
         stop_exit, price_code in zip(signal_table['Date'], 
@@ -528,7 +544,7 @@ def run_backtest():
     return dict_trade_PNL
 
 @util.time_it
-@util.pickle_save('portfolio_HOc1.pkl')
+@util.pickle_save('portfolio_HOc1_test.pkl')
 def run_backtest_portfolio():
     # master function that runs the backtest itself.
     # The current method only allows one singular direction signal perday. and a set of constant EES
@@ -536,18 +552,27 @@ def run_backtest_portfolio():
     
     # read the reformatted minute history data
     history_data = read.read_reformat_Portara_minute_data(FILENAME_MINUTE)
-    
+
     # Find the date for trading, only "Buy" or "Sell" date are taken.
     trade_date_table = prepare_signal_interest(FILENSME_BUYSELL_SIGNALS, trim = False)
     
+    start_date = datetime.datetime(2021,1,1)
+    end_date = datetime.datetime(2024,5,1)
+    # Select for the date interval for investigation
+    history_data = history_data[(history_data['Date'] > start_date) & 
+                                (history_data['Date'] < end_date)]
+    
+    trade_date_table = trade_date_table[(trade_date_table['Date'] > start_date) & 
+                                        (trade_date_table['Date'] < end_date)]
+    
     # Initialise Portfolio
     P1 = Portfolio()
-    USD_initial = Asset("USD", 10_200_000, "dollars", "Cash") # initial fund
+    USD_initial = Asset("USD", 10_300_000, "dollars", "Cash") # initial fund
     P1.add(USD_initial,datetime=datetime.datetime(2020,12,31))
     
     # loop through the date and set the EES prices for each trading day   
     dict_trade_PNL, P1 = loop_date_portfolio(P1, trade_date_table, history_data,
-                                            give_obj_name = "USD", get_obj_name = "CLc2",
+                                            give_obj_name = "USD", get_obj_name = "HOc1",
                                             get_obj_quantity = 50,
                                             open_hr='1300', close_hr='1828', 
                                             plot_or_not = False)    
@@ -563,5 +588,5 @@ def run_backtest_list():
 
 if __name__ == "__main__":
     
-    run_backtest()
-    #run_backtest_portfolio()
+    #run_backtest()
+    run_backtest_portfolio()

@@ -8,6 +8,7 @@ Created on Tue Apr  2 14:09:54 2024
 import numpy as np
 import pandas as pd
 import datetime
+import pickle
 
 import EC_tools.utility as util
 
@@ -774,6 +775,12 @@ def find_minute_EES(histroy_data_intraday,
     #print('EES_dict', EES_dict)
     return EES_dict
 
+def open_portfolio(filename):
+    file = open(filename, 'rb')
+    
+    portfo = pickle.load(file)
+    
+    return portfo
 #%% Construction Area
 def extract_lag_data_to_list(signal_data, history_data_daily,lag_size=5):
     # make a list of lag data with a nested data structure.

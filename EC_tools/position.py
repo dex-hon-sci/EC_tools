@@ -173,7 +173,8 @@ class ExecutePosition(object):
                              self.position.give_obj.name]['quantity'].iloc[0] <\
                                                 self.position.give_obj.quantity:
                                                 
-            raise Exception('You do not have enough {} in your portfolio'.format(
+            raise Exception('{} action failed. You do not have enough {} in \
+                            your portfolio'.format(pos_type, 
                                                 self.position.give_obj.name))
         else: pass
     
