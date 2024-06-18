@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 
 #FILENAME = './data/profits_and_losses_data_benchmark_11_.xlsx'
-FILENAME = './benchmark_PNL_full_.xlsx'
+FILENAME = './result/benchmark_PNL_full_.xlsx'
 
 dataframe = pd.read_excel(FILENAME,sheet_name='Total')
 
@@ -136,6 +136,7 @@ cumPNL_all = fill_holes(cumPNL_all)
 # line_list = ['--','--', '--','--','--']
 # 
 # =============================================================================
+
 date_list = [date_CLc1, date_HOc1, date_RBc1, date_QOc1, date_QPc1]
 data_list = [cumPNL_50_CLc1, cumPNL_50_HOc1, cumPNL_50_RBc1, cumPNL_50_QOc1, cumPNL_50_QPc1]
 

@@ -10,6 +10,7 @@ import time
 import datetime
 import numpy as np
 import random
+import pickle
 
 def random_string(length:int=16):
     """
@@ -50,6 +51,19 @@ def save_csv(savefilename, save_or_not = True):
             data = func(*args, **kwargs)
             if save_or_not:
                 data.to_csv(savefilename, index=False)
+                return data
+            elif not save_or_not:
+                return data
+        return wrapper
+    return decorator
+         
+def pickle_save(savefilename, save_or_not = True):
+    file = open(savefilename, 'wb')
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            data = func(*args, **kwargs)
+            if save_or_not:
+                pickle.dump(data, file)
                 return data
             elif not save_or_not:
                 return data

@@ -156,6 +156,13 @@ class Trade(object):
         give_obj = Asset(give_obj_name, target_price*get_obj_quantity, 
                             give_obj_unit, give_obj_type)
         
+# =============================================================================
+#         # make position
+#         pos = Position(give_obj, get_obj, target_price, 
+#                         portfolio= self._portfolio, size = size,
+#                         fee = fee, pos_type = pos_type, open_time=open_time)
+# =============================================================================
+        
         # different type of posiitons
         if pos_type == 'Long-Buy':
             # an example, get_obj is the asset, give_obj is the cash
@@ -202,6 +209,8 @@ class Trade(object):
             pos = Position(give_obj, get_obj, target_price, 
                            portfolio= self._portfolio, size = size,
                            fee = fee, pos_type = pos_type, open_time=open_time)
+            
+            
         # Add posiyion in the position book
         self.position_book.append(pos)
         
@@ -418,7 +427,7 @@ class OneTradePerDay(Trade):
             ExecutePosition(close_pos).cancel_pos(void_time=close_pt[0])   
             
             return trade_open, trade_close, pos_list, exec_pos_list
-
+            
         # Case 2: An exit is hit, normal exit
         elif entry_pt and exit_pt != (np.nan,np.nan):
             print("Noraml exit.")
@@ -464,10 +473,13 @@ class OneTradePerDay(Trade):
         # Execute the positions
         ExecutePosition(opening_pos).fill_pos(fill_time = trade_open[0], 
                                             pos_type=pos_type1)
+        print(opening_pos.portfolio.master_table)
         
         ExecutePosition(closing_pos).fill_pos(fill_time = trade_close[0], 
                                            pos_type=pos_type2)
         
+        print(closing_pos.portfolio.master_table)
+
         # pack the outputs objects into lists
         exec_pos_list = [opening_pos,closing_pos]
         pos_list = [entry_pos, exit_pos, stop_pos, close_pos]

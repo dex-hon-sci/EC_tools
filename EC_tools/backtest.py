@@ -18,9 +18,9 @@ from EC_tools.trade import  trade_choice_simple, OneTradePerDay
 import EC_tools.plot as plot
 from EC_tools.portfolio import Asset, Portfolio
 
-FILENAME_MINUTE = "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/HO_d01.001"
-FILENSME_BUYSELL_SIGNALS = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_HOc2_full.csv"
-SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_HOc2.csv"   
+FILENAME_MINUTE = "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/HO.001"
+FILENSME_BUYSELL_SIGNALS = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_HOc1_full.csv"
+SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_HOc1.csv"   
 
 # tested
 def find_crossover(input_array, threshold):
@@ -463,11 +463,13 @@ def loop_date_portfolio(portfo, signal_table, histroy_intraday_data,
         EES_dict, trade_open, trade_close, \
             pos_list, exec_pos_list = OneTradePerDay(portfo).run_trade(\
                                             day, give_obj_name, get_obj_name, 
-                                            50, target_entry, 
+                                            get_obj_quantity, target_entry, 
                                             target_exit, stop_exit, 
                                             open_hr=open_hr_dt, 
                                             close_hr=close_hr_dt, 
                                             direction = direction)
+        print("----value----")
+        print("value",portfo.total_value(date_interest))
         print('==================================')
 
         # Bookkeeping area, generating data for the PNL file
@@ -526,6 +528,7 @@ def run_backtest():
     return dict_trade_PNL
 
 @util.time_it
+@util.pickle_save('portfolio_HOc1.pkl')
 def run_backtest_portfolio():
     # master function that runs the backtest itself.
     # The current method only allows one singular direction signal perday. and a set of constant EES
@@ -539,17 +542,18 @@ def run_backtest_portfolio():
     
     # Initialise Portfolio
     P1 = Portfolio()
-    USD_initial = Asset("USD", 10000000, "dollars", "Cash") # initial fund
-    P1.add(USD_initial)
+    USD_initial = Asset("USD", 10_200_000, "dollars", "Cash") # initial fund
+    P1.add(USD_initial,datetime=datetime.datetime(2020,12,31))
     
     # loop through the date and set the EES prices for each trading day   
     dict_trade_PNL, P1 = loop_date_portfolio(P1, trade_date_table, history_data,
-                                            give_obj_name = "USD", get_obj_name = "CLc1",
-                                            get_obj_quantity = 10,
-                                            open_hr='0330', close_hr='2000', 
+                                            give_obj_name = "USD", get_obj_name = "CLc2",
+                                            get_obj_quantity = 50,
+                                            open_hr='1300', close_hr='1828', 
                                             plot_or_not = False)    
+    print('master_table', P1.master_table)
 
-    return dict_trade_PNL, P1
+    return P1
 
 
 
@@ -559,5 +563,5 @@ def run_backtest_list():
 
 if __name__ == "__main__":
     
-    #run_backtest()
-    run_backtest_portfolio()
+    run_backtest()
+    #run_backtest_portfolio()

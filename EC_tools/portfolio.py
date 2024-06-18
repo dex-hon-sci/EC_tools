@@ -491,7 +491,7 @@ class Portfolio(object):
         # then loop through the pool history and 
         for i, item in enumerate(self.pool):
             value_entry = self.value(item[0])
-            #print('VE', item[0], value_entry)
+            print('VE', item[0], value_entry)
             #log.loc[i] = pd.Series(value_entry)
             log.append(value_entry)
 
