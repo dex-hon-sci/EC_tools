@@ -422,7 +422,8 @@ class Portfolio(object):
                 # The current version of this method only gets the price data iff 
                 # it exist in the table, i.e. it does not get anything outside of the trading days
                 target_time = date_time.strftime("%Y-%m-%d")
-                _ , value = read.find_closest_price_date(sub_price_table, target_time=target_time)
+                _ , value = read.find_closest_price_date(sub_price_table, 
+                                                         target_time=target_time)
                 
                 #value = float(sub_price_table[sub_price_table['Date'] == date_time]['Settle'].iloc[0])
                 quantity = int(self.table['quantity'].iloc[i])
@@ -489,9 +490,9 @@ class Portfolio(object):
         #columns = list(self.master_table['name'])
         log = list()
         # then loop through the pool history and 
-        for i, item in enumerate(self.pool):
-            value_entry = self.value(item[0])
-            print('VE', item[0], value_entry)
+        for i, item in enumerate(self.pool_datetime):
+            value_entry = self.value(item)
+            print('VE', item, value_entry)
             #log.loc[i] = pd.Series(value_entry)
             log.append(value_entry)
 

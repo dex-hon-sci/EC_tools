@@ -91,7 +91,6 @@ def cal_pdf(quant, cdf):
     """
     # Define the evenly spaced events for the cdf
     spaced_events = np.arange(np.min(cdf), np.max(cdf), 0.005)
-    
     #print(len(spaced_events))
     
     # interpolate the qunatile given the cdf

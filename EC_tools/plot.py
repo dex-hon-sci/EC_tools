@@ -303,13 +303,13 @@ class PlotPricing(object):
             
         # add cross over points
         if subcomp._add_crossover_pts:
-            bppt_x1 = [datetime.datetime.combine(datetime.date.today(), t) 
+            bppt_x1 = [datetime.datetime.combine(datetime.date.today(), t.time()) 
                        for t in bppt_x1]
-            bppt_x2 = [datetime.datetime.combine(datetime.date.today(), t) 
+            bppt_x2 = [datetime.datetime.combine(datetime.date.today(), t.time()) 
                        for t in bppt_x2]
-            bppt_x3 = [datetime.datetime.combine(datetime.date.today(), t) 
+            bppt_x3 = [datetime.datetime.combine(datetime.date.today(), t.time()) 
                        for t in bppt_x3]
-            
+
             subcomp.crossover_pts(bppt_x1, bppt_y1, bppt_x2, bppt_y2, 
                                   bppt_x3, bppt_y3)
             
@@ -510,7 +510,8 @@ class SubComponents(object):
         
         
 def plot_minute(filename_minute, signal_filename, price_approx = 'Open',
-                date_interest = "2022-05-19", direction = "Buy",
+                date_interest = "2022-05-19", direction = "Buy", 
+                APC_time_str = 'Forecast Period',
                 bppt_x1 =[], bppt_y1 = [], 
                 bppt_x2 =[], bppt_y2 = [], 
                 bppt_x3 =[], bppt_y3 = []):
@@ -538,14 +539,14 @@ def plot_minute(filename_minute, signal_filename, price_approx = 'Open',
 
     #read the APC file on the relevant date
     curve = read.read_apc_data(signal_filename)
-    curve = curve[curve['Forecast Period'] == date_interest]
+    curve = curve[curve[APC_time_str] == date_interest]
     
     # Calculate the pdf from the cdf for plotting
     quant0 = np.arange(0.0025, 0.9975, 0.0025)
+
     even_spaced_prices, pdf = mfunc.cal_pdf(quant0, curve.to_numpy()[0][1:-1])
-    
     #print("find_quant", mfunc.find_quant(curve.to_numpy()[0][1:-1], quant0, 97.9366))
-    
+    print(len(curve.to_numpy()[0][1:-1]), len(pdf))
     # Define the quantile list of interest based on a strategy
     # The lists are for marking the lines only. 
     quant_list=['q0.1','q0.4','q0.5','q0.6','q0.9']
@@ -572,24 +573,24 @@ def plot_minute(filename_minute, signal_filename, price_approx = 'Open',
                        quant_list, quant_price_list, 
                        direction=direction,
                        price_chart_title = "Date", 
-                       bppt_x1 = [], bppt_y1 = [], 
-                       bppt_x2 = [], bppt_y2 = [], 
-                       bppt_x3 =[], bppt_y3 = [])
+                       bppt_x1 = bppt_x1, bppt_y1 = bppt_y1, 
+                       bppt_x2 = bppt_x2, bppt_y2 = bppt_y2, 
+                       bppt_x3 = bppt_x3, bppt_y3 = bppt_y3)
     
     
 if __name__ == "__main__":
     
-    filename_daily = "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL.day"
+    filename_daily = "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QO.day"
     #################
     
-    filename_minute = "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL.001"
+    filename_minute = "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/QO.001"
     
-    signal_filename = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_CLc1.csv"
+    signal_filename = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_QOc1.csv"
     #date_interest = "2022-05-19"
     #date_interest = "2024-04-03"
     #date_interest = "2024-01-18"
     #date_interest = "2023-12-29"
-    date_interest = "2022-10-07"
+    date_interest = "2021-01-25"
     
     plot_minute(filename_minute, signal_filename, 
-                date_interest = date_interest, direction="Sell")
+                date_interest = date_interest, direction="Buy")
