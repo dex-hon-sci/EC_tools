@@ -402,10 +402,12 @@ class Portfolio(object):
         self.set_pool_window(self.__pool_datetime[0], date_time)
 
         for i, asset_name in enumerate(self.table['name']):
-            
+            print(asset_name)
             # specia handling the denomator asset (usually a currency)
             if asset_name == dntr:
+                dntr_value = float(self.table['quantity'].iloc[0])
                 value_dict[asset_name] = float(self.table['quantity'].iloc[0])
+                print('Cashhh')
             else:
             
                 # manage the size of the asset
@@ -424,14 +426,14 @@ class Portfolio(object):
                 target_time = date_time.strftime("%Y-%m-%d")
                 _ , value = read.find_closest_price_date(sub_price_table, 
                                                          target_time=target_time)
-                
+                print('value',value)
                 #value = float(sub_price_table[sub_price_table['Date'] == date_time]['Settle'].iloc[0])
                 quantity = int(self.table['quantity'].iloc[i])
                 
                 #new way to do things
                 #print('------------')
                 #print(_, asset_name, quantity, float(value.iloc[0]), size)
-                
+                print(asset_name, float(value.iloc[0])*quantity*size)
                 # storage
                 value_dict[asset_name] = float(value.iloc[0])*quantity*size
         

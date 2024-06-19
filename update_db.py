@@ -120,20 +120,20 @@ def download_latest_Portara():
     return None
 
 if __name__ == "__main__": 
-    save_filename_list = ["/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/experiment/APC_latest_CLc1.csv", 
-                     "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/experiment/APC_latest_HOc1.csv", 
-                     "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/experiment/APC_latest_RBc1.csv", 
-                     "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/experiment/APC_latest_QOc1.csv",
-                     "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/experiment/APC_latest_QPc1.csv" ]
+    save_filename_list = ["/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_CLc2.csv", 
+                     "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_HOc2.csv", 
+                     "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_RBc2.csv", 
+                     "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_QOc2.csv",
+                     "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_QPc2.csv" ]
 
-    categories_list = ['Argus Nymex WTI month 1, Daily', 
-                   'Argus Nymex Heating oil month 1, Daily', 
-                   'Argus Nymex RBOB Gasoline month 1, Daily', 
-                   'Argus Brent month 1, Daily', 
-                   'Argus ICE gasoil month 1, Daily']
+    categories_list = ['Argus Nymex WTI month 2, Daily', 
+                   'Argus Nymex Heating oil month 2, Daily', 
+                   'Argus Nymex RBOB Gasoline month 2, Daily', 
+                   'Argus Brent month 2, Daily', 
+                   'Argus ICE gasoil month 2, Daily']
 
     keywords_list = ["WTI","Heating", "Gasoline",'Brent', "gasoil"]
-    symbol_list = ['CLc1', 'HOc1', 'RBc1', 'QOc1', 'QPc1']
+    symbol_list = ['CLc2', 'HOc2', 'RBc2', 'QOc2', 'QPc2']
     
     
     download_latest_APC_list(AUTH_PACK, save_filename_list, categories_list, 
