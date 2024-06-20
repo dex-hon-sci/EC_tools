@@ -10,7 +10,6 @@ from run_gen_MR_dir import run_gen_MR_signals_list
 import datetime as datetime
 
 
-
 XL_TEMPLATE_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/template/Leigh1.xlsx"
 
 OUTPUT_FILENAME = "./temptemp.xlsx"
@@ -282,16 +281,23 @@ def gen_new_xlfile(xl_template_filename, output_filename,
     return wb_obj
 
 if __name__ == "__main__":
+    
+    # Define the date of interest
+    date_interest = datetime.datetime(2024,6,17) #datetime.datetime.today()
+
     XL_TEMPLATE_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/template/Leigh1.xlsx"
 
-    OUTPUT_FILENAME = "./temptemp.xlsx"
+    OUTPUT_FILENAME = "./XLS_trading_sheet_MR_benchmark_{}.xlsx".format(date_interest.strftime('%Y_%m_%d'))
     
-    date_interest = datetime.datetime.today()
+    #Define the end date as the date of interest
+    END_DATE = date_interest.strftime("%Y-%m-%d")
     
+    START_DATE = (date_interest - datetime.timedelta(days=4)).strftime("%Y-%m-%d")
+    START_DATE2 = (date_interest - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
     #Check and update everything
     
     # Run the strategy by list
-    SIGNAL_RESULT_DICT = run_MR_list('2024-06-13', '2024-06-16', '2024-06-20')
+    SIGNAL_RESULT_DICT = run_MR_list(START_DATE, START_DATE2, END_DATE)
 
     # Generate the excel file
     gen_new_xlfile(XL_TEMPLATE_FILENAME, OUTPUT_FILENAME, 
