@@ -781,6 +781,7 @@ def open_portfolio(filename):
     portfo = pickle.load(file)
     
     return portfo
+
 #%% Construction Area
 def extract_lag_data_to_list(signal_data, history_data_daily,lag_size=5):
     # make a list of lag data with a nested data structure.

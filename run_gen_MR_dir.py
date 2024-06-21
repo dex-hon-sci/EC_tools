@@ -31,43 +31,36 @@ __all__ = ['loop_signal','gen_signal_vector','run_gen_MR_signals',
 __author__="Dexter S.-H. Hon"
 
 
-save_filename_list = ["benchmark_signal_CLc2_full.csv", 
+SAVE_FILENAME_LIST = ["benchmark_signal_CLc2_full.csv", 
                  "benchmark_signal_HOc2_full.csv", 
                  "benchmark_signal_RBc2_full.csv", 
                  "benchmark_signal_QOc2_full.csv",
                  "benchmark_signal_QPc2_full.csv" ]
 
-categories_list = ['Argus Nymex WTI month 2, Daily', 
+
+CAT_LIST = ['Argus Nymex WTI month 2, Daily', 
                'Argus Nymex Heating oil month 2, Daily', 
                'Argus Nymex RBOB Gasoline month 2, Daily', 
                'Argus Brent month 2, Daily', 
                'Argus ICE gasoil month 2, Daily']
 
-keywords_list = ["WTI","Heating", "Gasoline",'Brent', "gasoil"]
-symbol_list = ['CLc2', 'HOc2', 'RBc2', 'QOc2', 'QPc2']
+KEYWORDS_LIST = ["WTI","Heating", "Gasoline",'Brent', "gasoil"]
+SYMBOL_LIST = ['CLc2', 'HOc2', 'RBc2', 'QOc2', 'QPc2']
 
-# =============================================================================
-# signal_list = ['./APC_latest_CLc2.csv',
-#               './APC_latest_HOc2.csv',
-#               './APC_latest_RBc2.csv',
-#               './APC_latest_QOc2.csv',
-#               './APC_latest_QPc2.csv']
-# =============================================================================
-
-signal_list= [ "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_CLc2.csv",
+SIGNAL_LIST= [ "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_CLc2.csv",
               "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_HOc2.csv",
               "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_RBc2.csv",
               "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_QOc2.csv",
             "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_QPc2.csv"]
 
-history_daily_list = ['../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL_d01.day',
+HISTORY_DAILY_LIST = ['../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL_d01.day',
                       '../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/HO_d01.day',
                       '../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/RB_d01.day',
                       '../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QO_d01.day',
                       '../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QP_d01.day']
                       
 
-history_minute_list = ["../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL_d01.001",
+HISTORY_MINUTE_LIST = ["../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL_d01.001",
                        "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/HO_d01.001",
                        "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/RB_d01.001",
                        "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/QO_d01.001",
@@ -246,7 +239,7 @@ def gen_signal_vector(signal_data, history_data, loop_start_date = ""): # WIP
 
 @util.time_it
 @util.save_csv("benchmark_signal_test.csv")
-def run_gen_MR_signals(auth_pack, asset_pack, start_date, start_date_2, end_date,
+def run_gen_MR_signals(auth_pack, asset_pack, start_date, end_date,
                        signal_filename, filename_daily, filename_minute,
                        update_apc = False):
     # input is a dictionary or json file
@@ -258,15 +251,9 @@ def run_gen_MR_signals(auth_pack, asset_pack, start_date, start_date_2, end_date
 
     # download the relevant APC data from the server
     if update_apc == True:
-# =============================================================================
-#         update_db.download_latest_APC_list(auth_pack, save_filename_list, 
-#                                            categories_list, keywords_list, 
-#                                            symbol_list) 
-# =============================================================================
         update_db.download_latest_APC(auth_pack, asset_pack)
 
     # The reading part takes the longest time: 13 seconds. The loop itself takes 
-    print('signal_filename', signal_filename)
     # input 1, APC. Load the master table in memory and test multple strategies   
     signal_data =  read.read_reformat_APC_data(signal_filename)
    
@@ -291,8 +278,9 @@ def run_gen_MR_signals(auth_pack, asset_pack, start_date, start_date_2, end_date
 
 # make a function to run multiple signal generation from a list
 # tested
+@util.time_it
 def run_gen_MR_signals_list(filename_list, categories_list, keywords_list, symbol_list, 
-                            start_date, start_date_2, end_date,
+                            start_date, end_date,
                             signal_list, history_daily_list, 
                             history_minute_list,save_or_not=False):
     # a function to download the APC of a list of asset
@@ -308,7 +296,7 @@ def run_gen_MR_signals_list(filename_list, categories_list, keywords_list, symbo
         def run_gen_MR_signals_indi(cat, key, sym):
             asset_pack = {'categories': cat, 'keywords': key, 'symbol': sym}
             signal_data = run_gen_MR_signals(auth_pack, asset_pack, 
-                                             start_date, start_date_2, end_date,
+                                             start_date, end_date,
                                              signal, history_daily, 
                                              history_minute) #WIP
             print("name {}".format(filename))
@@ -328,8 +316,7 @@ if __name__ == "__main__":
 #     end_date = "2024-03-13"
 # =============================================================================
     
-    start_date = "2021-01-10"
-    start_date_2 = "2020-12-15" # make it at least 5 days before the start_date
+    start_date = "2024-01-10"
     end_date = "2024-05-18"
     
     auth_pack = {'username': "dexter@eulercapital.com.au",
@@ -338,10 +325,10 @@ if __name__ == "__main__":
 
     #maybe I need an unpacking function here ro handle payload from json files
 
-    run_gen_MR_signals_list(save_filename_list, categories_list, keywords_list, symbol_list, 
-                            start_date, start_date_2, end_date,
-                            signal_list, history_daily_list, 
-                            history_minute_list)
+    run_gen_MR_signals_list(SAVE_FILENAME_LIST, CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, 
+                            start_date, end_date,
+                            SIGNAL_LIST, HISTORY_DAILY_LIST, 
+                            HISTORY_MINUTE_LIST)
 
 
 # =============================================================================

@@ -5,9 +5,11 @@ Created on Wed May 15 02:31:06 2024
 
 @author: dexter
 """
-import openpyxl
-from run_gen_MR_dir import run_gen_MR_signals_list
 import datetime as datetime
+import openpyxl
+
+from run_gen_MR_dir import run_gen_MR_signals_list
+import EC_tools.utility as util
 
 
 XL_TEMPLATE_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/template/Leigh1.xlsx"
@@ -138,8 +140,8 @@ CELL_LOC_DICT = {'CLc1' : {'signal_type': 'G6' , 'target_entry': 'G7',
                  }
 
 # Input the latest settlement data 
-auth_pack = {'username': "dexter@eulercapital.com.au",
-            'password':"76tileArg56!"}
+auth_pack = None#{'username': "dexter@eulercapital.com.au",
+            #'password':"76tileArg56!"}
 asset_pack = {"categories" : 'Argus Nymex Heating oil month 1 Daily',
               "keywords" : "Heating",
               "symbol": "HOc1"}
@@ -282,26 +284,30 @@ def gen_new_xlfile(xl_template_filename, output_filename,
 
 if __name__ == "__main__":
     
-    # Define the date of interest
-    date_interest = datetime.datetime(2024,6,17) #datetime.datetime.today()
-
-    XL_TEMPLATE_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/template/Leigh1.xlsx"
-
-    OUTPUT_FILENAME = "./XLS_trading_sheet_MR_benchmark_{}.xlsx".format(date_interest.strftime('%Y_%m_%d'))
+    @util.time_it
+    def run_things():
+        # Define the date of interest
+        date_interest = datetime.datetime(2024,6,17) #datetime.datetime.today()
     
-    #Define the end date as the date of interest
-    END_DATE = date_interest.strftime("%Y-%m-%d")
+        # Input and output filename
+        XL_TEMPLATE_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/template/Leigh1.xlsx"
+        OUTPUT_FILENAME = "./XLS_trading_sheet_MR_benchmark_{}.xlsx".format(
+                                            date_interest.strftime('%Y_%m_%d'))
+        
+        #Define the end date as the date of interest
+        END_DATE = date_interest.strftime("%Y-%m-%d")
+        
+        START_DATE = (date_interest - datetime.timedelta(days=4)).strftime("%Y-%m-%d")
+        START_DATE2 = (date_interest - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+        #Check and update everything
+        
+        # Run the strategy by list
+        SIGNAL_RESULT_DICT = run_MR_list(START_DATE, START_DATE2, END_DATE)
     
-    START_DATE = (date_interest - datetime.timedelta(days=4)).strftime("%Y-%m-%d")
-    START_DATE2 = (date_interest - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
-    #Check and update everything
-    
-    # Run the strategy by list
-    SIGNAL_RESULT_DICT = run_MR_list(START_DATE, START_DATE2, END_DATE)
-
-    # Generate the excel file
-    gen_new_xlfile(XL_TEMPLATE_FILENAME, OUTPUT_FILENAME, 
-                   date_interest, SIGNAL_RESULT_DICT, 
-                   cell_loc_dict = CELL_LOC_DICT, contract_num_dict=CONTRACT_NUM_DICT)
-    
+        # Generate the excel file
+        gen_new_xlfile(XL_TEMPLATE_FILENAME, OUTPUT_FILENAME, 
+                       date_interest, SIGNAL_RESULT_DICT, 
+                       cell_loc_dict = CELL_LOC_DICT, 
+                       contract_num_dict=CONTRACT_NUM_DICT)
+    run_things()
     # email this to the traders?
