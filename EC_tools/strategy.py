@@ -53,9 +53,9 @@ class MRStrategy(object):
             self._sell_cond = True
         return self._sell_cond
     
+    @property
     def neutral_cond(self):
         neutral_cond = not (self._buy_cond ^ self._sell_cond)
-        
         return neutral_cond
     
     def set_buy_cond(self):
@@ -116,28 +116,57 @@ class MRStrategy(object):
         # inputs
         quant_330UKtime = price_330
         lag5_price = history_data_lag5['Settle']
-    
+        
+#        curve_today = math_func.generic_spline(curve_today[])
+        #print('columns',apc_curve_lag5.columns.values)
+        # spline the APCs
+        quant_list = np.array(list(map(float, apc_curve_lag5.columns.values[1:-1])))
+        #print('quant_list', quant_list)
+        #print(apc_curve_lag5)
+        #print('HEY', [apc_curve_lag5.iloc[i][1:-1].to_numpy() for i in range(len(apc_curve_lag5))])
+        print(type(quant_list))
+        apc_curve_lag5_spline = [mfunc.generic_spline(quant_list, 
+                                    apc_curve_lag5.iloc[i][1:-1].to_numpy()) 
+                                  for i in range(len(apc_curve_lag5))]
+        
+        print('apc_curve_lag5_spline', [spline([0.5])[0] for spline in apc_curve_lag5_spline])
+        print('apc_curve_lag5_spline2', [apc_curve_lag5.iloc[-5]['0.5'],
+                                      apc_curve_lag5.iloc[-4]['0.5'],
+                                      apc_curve_lag5.iloc[-3]['0.5'],
+                                      apc_curve_lag5.iloc[-2]['0.5'],
+                                      apc_curve_lag5.iloc[-1]['0.5']])
+        
         # define the lag 2 days settlement prices
         history_data_lag2_close = lag5_price.iloc[-2]
         history_data_lag1_close = lag5_price.iloc[-1]
         
+        print('lag5', lag5_price.iloc[-2], lag5_price.iloc[-1])
         # The APC two days (lag2) before this date
-        signal_data_lag2_median =  apc_curve_lag5.iloc[-2]['0.5'] 
+        signal_data_lag2_median =  apc_curve_lag5_spline[-2]([0.5])[0]
         # The APC one day1 (lag1) before this date
-        signal_data_lag1_median =  apc_curve_lag5.iloc[-1]['0.5']
-
+        signal_data_lag1_median =  apc_curve_lag5_spline[-1]([0.5])[0]
+# =============================================================================
+#         # The APC two days (lag2) before this date
+#         signal_data_lag2_median =  apc_curve_lag5.iloc[-2]['0.5'] 
+#         # The APC one day1 (lag1) before this date
+#         signal_data_lag1_median =  apc_curve_lag5.iloc[-1]['0.5']
+# 
+# =============================================================================
         # Reminder: pulling directly from a list is a factor of 3 faster than   
         # doing spline everytime
         
         # calculate the 5 days average for closing price
         rollinglagq5day = np.average(lag5_price)         
                 
-        # calculate the median of the apc for the last five days
-        median_apc_5days = np.median([apc_curve_lag5.iloc[-5]['0.5'],
-                                      apc_curve_lag5.iloc[-4]['0.5'],
-                                      apc_curve_lag5.iloc[-3]['0.5'],
-                                      apc_curve_lag5.iloc[-2]['0.5'],
-                                      apc_curve_lag5.iloc[-1]['0.5']])
+        median_apc_5days = np.median([spline([0.5])[0] for spline in apc_curve_lag5_spline])
+# =============================================================================
+#         # calculate the median of the apc for the last five days
+#         median_apc_5days = np.median([apc_curve_lag5.iloc[-5]['0.5'],
+#                                       apc_curve_lag5.iloc[-4]['0.5'],
+#                                       apc_curve_lag5.iloc[-3]['0.5'],
+#                                       apc_curve_lag5.iloc[-2]['0.5'],
+#                                       apc_curve_lag5.iloc[-1]['0.5']])
+# =============================================================================
         
         #print('signal_data_lag', signal_data_lag2_median, signal_data_lag1_median)
         #print('history_data_lag', history_data_lag2_close, history_data_lag1_close)
@@ -193,6 +222,7 @@ class MRStrategy(object):
 
     def argus_benchmark_mode(price_330, history_data_lag5, apc_curve_lag5,
                                      curve_today):
+        
         # inputs
         quant_330UKtime = price_330
         lag5_price = history_data_lag5['Settle']

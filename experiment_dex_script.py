@@ -148,28 +148,25 @@ def simple_func(A):
 # 4% of SPY weight, drive large portion of growth (FAANG)
 # our own index with stock piles that has a certain quality
     
-A1 = simple_func(A1)
+# =============================================================================
+# A1 = simple_func(A1)
+# 
+# start_day = datetime.datetime(2024,2,10)
+# end_day =  datetime.datetime(2024,3,8)
+# 
+# A1_newpool = A1.set_pool_window(day1, end_day)
+# 
+# print('A1_newpool', A1_newpool)
+# print('====================================')
+# 
+# print(A1.value(end_day, PRICE_TABLE, size_dict = num_per_contract))
+# print('====================================')
+# 
+# =============================================================================
 
-start_day = datetime.datetime(2024,2,10)
-end_day =  datetime.datetime(2024,3,8)
+import sqlite3
 
-A1_newpool = A1.set_pool_window(day1, end_day)
+con = sqlite3.connect("tutorial.db")
+cur = con.cursor()
 
-print('A1_newpool', A1_newpool)
-print('====================================')
-
-print(A1.value(end_day, PRICE_TABLE, size_dict = num_per_contract))
-print('====================================')
-
-#print(A1.log)
-
-#values = [list(A2[i][1].__dict__.values()) for i in range(len(A2))]
-#keys = [list(A2[i][1].__dict__.keys()) for i in range(len(A2))][0]
-#print(values, keys)
-
-
-#A2 = simple_func2(A2)
-
-#print(A1.table)
-
-#print(A1.pool_df())
+print(con,cur)

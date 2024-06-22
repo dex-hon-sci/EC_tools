@@ -53,19 +53,22 @@ SIGNAL_LIST= [ "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_la
               "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_QOc2.csv",
             "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_QPc2.csv"]
 
-HISTORY_DAILY_LIST = ['../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL_d01.day',
-                      '../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/HO_d01.day',
-                      '../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/RB_d01.day',
-                      '../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QO_d01.day',
-                      '../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QP_d01.day']
+HISTORY_DAILY_LIST = [    
+     "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Day/CL_d01.day",
+    "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Day/HO_d01.day",
+    "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Day/RB_d01.day",
+    "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Day/QO_d01.day",
+    "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Day/QP_d01.day"]
                       
 
-HISTORY_MINUTE_LIST = ["../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL_d01.001",
-                       "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/HO_d01.001",
-                       "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/RB_d01.001",
-                       "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/QO_d01.001",
-                       "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/QP_d01.001"
-                       ]
+HISTORY_MINUTE_LIST = [
+    "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/CL_d01.001",
+    "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/HO_d01.001",
+    "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/RB_d01.001",
+    "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/QO_d01.001",
+    "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/QP_d01.001" ]
+
+
 
 
 def find_open_price(history_data_daily, history_data_minute, open_hr='0330'): #tested
@@ -147,6 +150,7 @@ def loop_signal(signal_data, history_data, open_price_data, start_date, end_date
         # This is the APC number only
         curve_this_date = APCs_this_date.to_numpy()[0][1:-1]
 
+
         # create input for bookkepping
         price_code = APCs_this_date['symbol'].to_list()[0]
         
@@ -170,6 +174,8 @@ def loop_signal(signal_data, history_data, open_price_data, start_date, end_date
                                                              history_data, 
                                                              forecast_date)
         
+        #print("apc_curve_lag5, history_data_lag5", apc_curve_lag5, history_data_lag5)
+
         # Run the strategy        
         direction = strategy.MRStrategy.argus_benchmark_strategy(
              price_330, history_data_lag5, apc_curve_lag5, APCs_this_date)
@@ -307,11 +313,6 @@ def run_gen_MR_signals_list(filename_list, categories_list, keywords_list, symbo
 
 if __name__ == "__main__":
 
-# =============================================================================
-#     start_date = "2024-01-10"
-#     start_date_2 = "2024-01-01" # make it at least 5 days before the start_date
-#     end_date = "2024-03-13"
-# =============================================================================
     
     start_date = "2024-01-10"
     end_date = "2024-05-18"
@@ -321,30 +322,30 @@ if __name__ == "__main__":
     
 
     #maybe I need an unpacking function here ro handle payload from json files
-
-    run_gen_MR_signals_list(SAVE_FILENAME_LIST, CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, 
-                            start_date, end_date,
-                            SIGNAL_LIST, HISTORY_DAILY_LIST, 
-                            HISTORY_MINUTE_LIST)
-
-
 # =============================================================================
-#     asset_pack = {"categories" : 'Argus Nymex Heating oil month 1 Daily',
-#                   "keywords" : "Heating",
-#                   "symbol": "HOc1"}
 # 
-#     #inputs: Portara data (1 Minute and Daily), APC
-#     signal_filename = "./APC_latest_HO.csv"
-#     filename_daily = "../test_MS/data_zeroadjust_intradayportara_attempt1/Daily/HO.day"
-#     filename_minute = "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/HO.001"
-# 
-#     # run signal for the individual asset
-#     dict_contracts_quant_signals = run_gen_MR_signals(auth_pack, asset_pack, 
-#                                                       start_date, start_date_2, 
-#                                                       end_date, signal_filename, 
-#                                                       filename_daily, 
-#                                                       filename_minute,update_apc=True)
+#     run_gen_MR_signals_list(SAVE_FILENAME_LIST, CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, 
+#                             start_date, end_date,
+#                             SIGNAL_LIST, HISTORY_DAILY_LIST, 
+#                             HISTORY_MINUTE_LIST)
 # 
 # =============================================================================
+
+    asset_pack = {"categories" : 'Argus Nymex Heating oil month 1 Daily',
+                  "keywords" : "Heating",
+                  "symbol": "HOc1"}
+
+    #inputs: Portara data (1 Minute and Daily), APC
+    signal_filename = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_HOc2.csv"
+    filename_daily = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Day/HO_d01.day"
+    filename_minute = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/HO_d01.001"
+
+    # run signal for the individual asset
+    dict_contracts_quant_signals = run_gen_MR_signals(auth_pack, asset_pack, 
+                                                      start_date,  
+                                                      end_date, signal_filename, 
+                                                      filename_daily, 
+                                                      filename_minute)
+
 
 

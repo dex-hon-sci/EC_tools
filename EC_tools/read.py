@@ -19,7 +19,7 @@ __all__ = ['get_apc_from_server','read_apc_data','read_portara_daily_data',
            'read_portara_minute_data','merge_portara_data',
            'portara_data_handling', 'extract_lag_data', 
            'read_reformat_Portara_minute_data', 'find_closest_price', 
-           'find_crossover', 'find_minute_EES']
+           'find_crossover', 'find_minute_EES','open_portfolio']
 
 __author__="Dexter S.-H. Hon"
 
@@ -562,7 +562,6 @@ def find_closest_price_generic(data, target_time='0330',
         
         
     # determine whether it is in the time frame of minutes,
-    
     
     #target_time_dt= datetime.time(hour=int(target_time[0:2]),minute=int(target_time[2:4]))
     target_time_dt = datetime.datetime.strftime(target_time, "%H%M")
