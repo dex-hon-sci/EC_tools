@@ -145,7 +145,7 @@ auth_pack = None#{'username': "dexter@eulercapital.com.au",
 asset_pack = {"categories" : 'Argus Nymex Heating oil month 1 Daily',
               "keywords" : "Heating",
               "symbol": "HOc1"}
-
+@util.time_it
 def make_new_symbol(date_interest,old_symbol, forward_unit=1):
     """
     A function that generate a new price symbol based on the month and year of 
@@ -158,8 +158,8 @@ def make_new_symbol(date_interest,old_symbol, forward_unit=1):
 
     return new_symbol
 
-
-def run_MR_list(start_date, start_date_2, end_date):
+@util.time_it
+def run_MR_list(start_date, end_date):
     """
     Run MR stratgy in a list.
 
@@ -180,14 +180,14 @@ def run_MR_list(start_date, start_date_2, end_date):
     """
     result = run_gen_MR_signals_list(FILENAME_LIST, CAT_LIST, KEYWORDS_LIST, 
                             SYMBOL_LIST, 
-                            start_date, start_date_2, end_date,
+                            start_date, end_date,
                             list(APC_FILE_LOC.values()), 
                             list(HISTORY_DAILY_FILE_LOC.values()), 
                             list(HISTORY_MINTUE_FILE_LOC.values())) 
-              
+
     return result
 
-
+@util.time_it
 def enter_new_value(workbook,date_interest, cell_loc_dict, signal_result_dict, 
                     contract_num_dict, output_filename):
     """
@@ -243,7 +243,7 @@ def enter_new_value(workbook,date_interest, cell_loc_dict, signal_result_dict,
        
     # a function that add new values into the new excel file
     return workbook
-
+@util.time_it
 def gen_new_xlfile(xl_template_filename, output_filename, 
                    date_interest, signal_result_dict,
                    cell_loc_dict = CELL_LOC_DICT, 
@@ -287,7 +287,7 @@ if __name__ == "__main__":
     @util.time_it
     def run_things():
         # Define the date of interest
-        date_interest = datetime.datetime(2024,6,17) #datetime.datetime.today()
+        date_interest = datetime.datetime(2024,6,1) #datetime.datetime.today()
     
         # Input and output filename
         XL_TEMPLATE_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/template/Leigh1.xlsx"
@@ -297,12 +297,12 @@ if __name__ == "__main__":
         #Define the end date as the date of interest
         END_DATE = date_interest.strftime("%Y-%m-%d")
         
-        START_DATE = (date_interest - datetime.timedelta(days=4)).strftime("%Y-%m-%d")
-        START_DATE2 = (date_interest - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+        START_DATE = (date_interest - datetime.timedelta(days=5)).strftime("%Y-%m-%d")
+        #START_DATE2 = (date_interest - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
         #Check and update everything
         
         # Run the strategy by list
-        SIGNAL_RESULT_DICT = run_MR_list(START_DATE, START_DATE2, END_DATE)
+        SIGNAL_RESULT_DICT = run_MR_list(START_DATE, END_DATE)
     
         # Generate the excel file
         gen_new_xlfile(XL_TEMPLATE_FILENAME, OUTPUT_FILENAME, 

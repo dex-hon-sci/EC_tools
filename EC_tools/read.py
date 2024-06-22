@@ -782,6 +782,19 @@ def open_portfolio(filename):
     
     return portfo
 
+
+def concat_CSVtable(filename_list, sort_by='Date'):
+    
+    master_table = pd.DataFrame()
+    
+    for filename in filename_list:
+        temp = pd.read_csv(filename)
+        master_table = pd.concat([master_table,temp])
+        
+    master_table.sort_values(by=sort_by)
+    print(master_table)
+    return master_table
+        
 #%% Construction Area
 def extract_lag_data_to_list(signal_data, history_data_daily,lag_size=5):
     # make a list of lag data with a nested data structure.
@@ -796,7 +809,7 @@ def render_PNL_xlsx(filename):
     """
     LEGACY function from Abbe.
     """
-    #WIP
+    #WIPis sql query fast
     
     # the function read in the backtest result to generate an xlsx file with PNL
     

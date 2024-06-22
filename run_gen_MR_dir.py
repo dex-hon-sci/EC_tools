@@ -90,8 +90,8 @@ def find_open_price(history_data_daily, history_data_minute, open_hr='0330'): #t
 
     """
     date_list = history_data_daily['Date'].to_list()
-    
     open_price_data = []
+    
     #loop through daily data to get the date
     for date in date_list:
         day_data = history_data_minute[history_data_minute['Date'] == date]
@@ -133,8 +133,8 @@ def loop_signal(signal_data, history_data, open_price_data, start_date, end_date
                                       (open_price_data['Date'] < end_date)]
 
     
-    print("length", len(portara_dat), len(APCs_dat), len(open_price_data))
-
+    #print("length", len(portara_dat), len(APCs_dat), len(open_price_data))
+    print('Start looping signal ...')
     # check if history data and opening price data are the same dimension
     
     # loop through every forecast date and contract symbol 
@@ -142,7 +142,7 @@ def loop_signal(signal_data, history_data, open_price_data, start_date, end_date
         this_date = portara_dat["Date"].iloc[i]
         
         # cross reference the APC list to get the APC of this date
-        APCs_this_date = APCs_dat[APCs_dat['Forecast Period']==this_date]
+        APCs_this_date = APCs_dat[APCs_dat['Forecast Period']==this_date] #<-- here add a condition matching the symbols
         forecast_date = APCs_this_date['Forecast Period'].to_list()[0] 
         # This is the APC number only
         curve_this_date = APCs_this_date.to_numpy()[0][1:-1]
@@ -238,7 +238,6 @@ def gen_signal_vector(signal_data, history_data, loop_start_date = ""): # WIP
 
 
 @util.time_it
-@util.save_csv("benchmark_signal_test.csv")
 def run_gen_MR_signals(auth_pack, asset_pack, start_date, end_date,
                        signal_filename, filename_daily, filename_minute,
                        update_apc = False):
@@ -252,7 +251,6 @@ def run_gen_MR_signals(auth_pack, asset_pack, start_date, end_date,
     # download the relevant APC data from the server
     if update_apc == True:
         update_db.download_latest_APC(auth_pack, asset_pack)
-
     # The reading part takes the longest time: 13 seconds. The loop itself takes 
     # input 1, APC. Load the master table in memory and test multple strategies   
     signal_data =  read.read_reformat_APC_data(signal_filename)
@@ -287,7 +285,6 @@ def run_gen_MR_signals_list(filename_list, categories_list, keywords_list, symbo
     # input username and password.json
     auth_pack = None
     output_dict = dict()
-    
     for filename, cat, key, sym, signal, history_daily, history_minute in zip(\
         filename_list, categories_list, keywords_list, symbol_list, signal_list, \
                                         history_daily_list, history_minute_list):
