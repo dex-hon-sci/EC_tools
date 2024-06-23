@@ -88,9 +88,28 @@ HISTORY_MINTUE_FILE_LOC = {
     "QPc1": "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/QP.001",
     "QPc2": "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/QP_d01.001"}
 
+ARGUS_BENCHMARK_SIGNAL_FILE_LOC = {
+    'CLc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_CLc1_full.csv',
+    'CLc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_CLc2_full.csv',
+    'HOc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_HOc1_full.csv',
+    'HOc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_HOc2_full.csv',
+    'RBc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_RBc1_full.csv',
+    'RBc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_RBc2_full.csv',
+    'QOc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_QOc1_full.csv',
+    'QOc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_QOc2_full.csv',
+    'QPc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_QPc1_full.csv',
+    'QPc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_QPc2_full.csv'
+    }
+    
+ARGUS_BENCHMARK_PNL_FILE_LOC = {}
+
+ARGUS_BENCHMARK_PNL_Portfolio_LOC = {}
 
 
-FILENAME_LIST = ['temp_signal_CLc1.csv',
+ARGUS_BENCHMARK_PNL_MASTER_FILE_LOC = None
+ARGUS_BENCHMARK_PNL_MASTER_Portfolio_LOC = None
+    
+TEMP_FILENAME_LIST = ['temp_signal_CLc1.csv',
             'temp_signal_CLc2.csv',
             'temp_signal_HOc1.csv',
             'temp_signal_HOc2.csv',
@@ -101,8 +120,6 @@ FILENAME_LIST = ['temp_signal_CLc1.csv',
             'temp_signal_QPc1.csv',
             'temp_signal_QPc2.csv'
             ]
-
-
 
 
 CAT_LIST = [ 'Argus Nymex WTI month 1, Daily', 
@@ -170,16 +187,4 @@ CELL_LOC_DICT = {'CLc1' : {'signal_type': 'G6' , 'target_entry': 'G7',
                            'target_exit': 'G125', 'stop_loss': 'G126', 
                            'symbol': 'I123', 'number': 'I124'}
                  }
-
-PRICE_DICT = {"CLc1": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL.day",
-               "CLc2": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL_d01.day",
-               "HOc1": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/HO.day",
-               "HOc2": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/HO_d01.day",
-               "RBc1": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/RB.day",
-               "RBc2": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/RB_d01.day",
-               "QOc1": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QO.day",
-               "QOc2": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QO_d01.day",
-               "QPc1": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QP.day",
-               "QPc2": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QP_d01.day"
-               }
 

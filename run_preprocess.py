@@ -14,29 +14,13 @@ import json
 import pickle
 
 from crudeoil_future_const import SYMBOL_LIST, HISTORY_DAILY_FILE_LOC,\
-                                HISTORY_MINTUE_FILE_LOC, APC_FILE_LOC
+                                HISTORY_MINTUE_FILE_LOC, APC_FILE_LOC,\
+                                    ARGUS_BENCHMARK_SIGNAL_FILE_LOC
 import EC_tools.read as read
 import EC_tools.utility as util
 from EC_tools.backtest import extract_intraday_minute_data
 # function that convert minute data into numpy array
 
-@util.time_it
-def create_history_pkl(file_loc_list, save_filename="myfile.pkl"):
-    # A function that that create a singular pkl containing all history data
-    master_dict = dict()
-    for symbol in SYMBOL_LIST:
-        print(symbol)
-        history_data = read.read_reformat_Portara_daily_data(file_loc_list[symbol])
-
-        # Add a symbol column
-        history_data['symbol'] = [symbol for i in range(len(history_data))]
-        
-        #storage
-        master_dict[symbol] = history_data
-            
-    output = open(save_filename, 'wb')
-    pickle.dump(master_dict, output)
-    output.close()  
 
 @util.time_it
 def create_aggegrate_pkl(file_loc_list, read_func, save_filename="myfile.pkl"):
@@ -54,7 +38,13 @@ def create_aggegrate_pkl(file_loc_list, read_func, save_filename="myfile.pkl"):
     output = open(save_filename, 'wb')
     pickle.dump(master_dict, output)
     output.close()  
-    
+        
+@util.time_it
+def merge_raw_data(filename_list, save_filename, sort_by = "Forecast Period"):
+    A = read.concat_CSVtable(filename_list, sort_by= sort_by)
+    A.to_csv(save_filename,index=False)
+    print(A)
+    return A
 # =============================================================================
 #     
 # def create_openprice_pkl(): # may not need it after the pickle operation
@@ -87,5 +77,7 @@ if __name__ == "__main__":
                          save_filename="crudeoil_future_daily_full.pkl")
     #create_aggegrate_pkl(HISTORY_MINTUE_FILE_LOC, read.read_reformat_Portara_minute_data,
     #                     save_filename="crudeoil_future_minute_full.pkl")
+    SIGNAL_LIST = list(ARGUS_BENCHMARK_SIGNAL_FILE_LOC.values())   
+    merge_raw_data(SIGNAL_LIST, "benchmark_signal_full.csv", sort_by="APC forecast period")
 
 #load_pkl('crudeoil_future_minute_full.pkl')
