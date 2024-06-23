@@ -145,11 +145,11 @@ def loop_signal(signal_data, history_data, open_price_data, start_date, end_date
         this_date = portara_dat["Date"].iloc[i]
         
         # cross reference the APC list to get the APC of this date
-        APCs_this_date = APCs_dat[APCs_dat['Forecast Period']==this_date] #<-- here add a condition matching the symbols
+        APCs_this_date = APCs_dat[(APCs_dat['Forecast Period']==this_date)] 
+        #& (APCs_dat['price code']== )] #<-- here add a condition matching the symbols
         forecast_date = APCs_this_date['Forecast Period'].to_list()[0] 
         # This is the APC number only
         curve_this_date = APCs_this_date.to_numpy()[0][1:-1]
-
 
         # create input for bookkepping
         price_code = APCs_this_date['symbol'].to_list()[0]
@@ -177,7 +177,7 @@ def loop_signal(signal_data, history_data, open_price_data, start_date, end_date
         #print("apc_curve_lag5, history_data_lag5", apc_curve_lag5, history_data_lag5)
 
         # Run the strategy        
-        direction = strategy.MRStrategy.argus_benchmark_strategy(
+        direction = strategy.MRStrategy().argus_benchmark_strategy(
              price_330, history_data_lag5, apc_curve_lag5, APCs_this_date)
         
         #direction = EC_strategy.MRStrategy.argus_benchmark_mode(
@@ -193,6 +193,11 @@ def loop_signal(signal_data, history_data, open_price_data, start_date, end_date
         
         print(forecast_date, full_contract_symbol,'MR signal generated!', i)
         print(open_price_data[open_price_data['Date']==this_date]['Time'].item(), price_330)
+    
+        # loop functions takes in a list of strategy calculation,
+        # loop functions takes in a list of EES values and methods
+        # loop functions takes in a list of Data generation method
+        
     
         # set resposne price.
         entry_price, exit_price, stop_loss = strategy.MRStrategy.set_EES_APC(
