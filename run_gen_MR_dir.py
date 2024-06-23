@@ -17,56 +17,20 @@ import numpy as np
 from scipy.interpolate import CubicSpline
 
 # EC_tools imports
-import EC_tools.strategy as strategy
+from EC_tools.strategy import MRStrategy
 import EC_tools.read as read
 import EC_tools.utility as util
 from EC_tools.bookkeep import Bookkeep
 import EC_tools.math_func as mfunc
 import update_db as update_db
+from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, \
+                                APC_FILE_LOC, HISTORY_DAILY_FILE_LOC, HISTORY_MINTUE_FILE_LOC
 
 
 __all__ = ['loop_signal','gen_signal_vector','run_gen_MR_signals', 
            'run_gen_MR_signals_list']
 
 __author__="Dexter S.-H. Hon"
-
-
-SAVE_FILENAME_LIST = ["benchmark_signal_CLc2_full.csv", 
-                 "benchmark_signal_HOc2_full.csv", 
-                 "benchmark_signal_RBc2_full.csv", 
-                 "benchmark_signal_QOc2_full.csv",
-                 "benchmark_signal_QPc2_full.csv" ]
-
-
-CAT_LIST = ['Argus Nymex WTI month 2, Daily', 
-               'Argus Nymex Heating oil month 2, Daily', 
-               'Argus Nymex RBOB Gasoline month 2, Daily', 
-               'Argus Brent month 2, Daily', 
-               'Argus ICE gasoil month 2, Daily']
-
-KEYWORDS_LIST = ["WTI","Heating", "Gasoline",'Brent', "gasoil"]
-SYMBOL_LIST = ['CLc2', 'HOc2', 'RBc2', 'QOc2', 'QPc2']
-
-SIGNAL_LIST= [ "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_CLc2.csv",
-              "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_HOc2.csv",
-              "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_RBc2.csv",
-              "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_QOc2.csv",
-            "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_QPc2.csv"]
-
-HISTORY_DAILY_LIST = [    
-     "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Day/CL_d01.day",
-    "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Day/HO_d01.day",
-    "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Day/RB_d01.day",
-    "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Day/QO_d01.day",
-    "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Day/QP_d01.day"]
-                      
-
-HISTORY_MINUTE_LIST = [
-    "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/CL_d01.001",
-    "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/HO_d01.001",
-    "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/RB_d01.001",
-    "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/QO_d01.001",
-    "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/QP_d01.001" ]
 
 
 
@@ -118,7 +82,7 @@ def find_open_price(history_data_daily, history_data_minute, open_hr='0330'): #t
     return open_price_data
 
 def loop_signal(signal_data, history_data, open_price_data, start_date, end_date, 
-                  strategy_name='benchmark',
+                   strategy_func, strategy_name='benchmark',  
                   contract_symbol_condse = False): #WIP
     
     # make an empty signal dictionary for storage
@@ -180,14 +144,14 @@ def loop_signal(signal_data, history_data, open_price_data, start_date, end_date
         #print("apc_curve_lag5, history_data_lag5", apc_curve_lag5, history_data_lag5)
 
         # Run the strategy        
-        direction = strategy.MRStrategy().argus_benchmark_strategy(
-             price_330, history_data_lag5, apc_curve_lag5, APCs_this_date)
+        direction = strategy_func(price_330, history_data_lag5, 
+                                  apc_curve_lag5, APCs_this_date)
         
         #direction = EC_strategy.MRStrategy.argus_benchmark_mode(
         #     price_330, history_data_lag5, apc_curve_lag5, APCs_this_date)
         
         # calculate the data needed for PNL analysis for this strategy
-        strategy_data = strategy.MRStrategy.gen_strategy_data(
+        strategy_data = MRStrategy.gen_strategy_data(
                                                         history_data_lag5, 
                                                          apc_curve_lag5, 
                                                          curve_this_date,
@@ -203,7 +167,7 @@ def loop_signal(signal_data, history_data, open_price_data, start_date, end_date
         
     
         # set resposne price.
-        entry_price, exit_price, stop_loss = strategy.MRStrategy.set_EES_APC(
+        entry_price, exit_price, stop_loss = MRStrategy.set_EES_APC(
                                                         direction, curve_this_date)
         EES = [entry_price, exit_price, stop_loss]
                        
@@ -286,7 +250,8 @@ def run_gen_MR_signals(auth_pack, asset_pack, start_date, end_date,
     dict_contracts_quant_signals = loop_signal(signal_data, 
                                                history_data_daily, 
                                                price_330,
-                                               start_date, end_date)
+                                               start_date, end_date, 
+                                               MRStrategy().argus_benchmark_strategy)
     
     # there are better ways than looping. here is a vectoralised method    
     return dict_contracts_quant_signals
@@ -332,10 +297,20 @@ if __name__ == "__main__":
     auth_pack = {'username': "dexter@eulercapital.com.au",
                 'password':"76tileArg56!"}
     
+    
+    SAVE_FILENAME_LIST = ["benchmark_signal_CLc2_full.csv", 
+                 "benchmark_signal_HOc2_full.csv", 
+                 "benchmark_signal_RBc2_full.csv", 
+                 "benchmark_signal_QOc2_full.csv",
+                 "benchmark_signal_QPc2_full.csv" ]
+
+    
 
     #maybe I need an unpacking function here ro handle payload from json files
 # =============================================================================
-# 
+#     SIGNAL_LIST = list(APC_FILE_LOC.values())
+#     HISTORY_DAILY_LIST = list(HISTORY_DAILY_LIST.values())
+#     HISTORY_MINUTE_LIST = list(HISTORY_MINUTE_LIST.values())
 #     run_gen_MR_signals_list(SAVE_FILENAME_LIST, CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, 
 #                             start_date, end_date,
 #                             SIGNAL_LIST, HISTORY_DAILY_LIST, 

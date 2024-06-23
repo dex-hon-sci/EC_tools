@@ -69,12 +69,6 @@ def prepare_signal_interest(filename_buysell_signals,
     signal_interest = pd.concat(signal_data, ignore_index=True)
 
     # make a column with Timestamp as its content
-    #signal_interest['Date'] = pd.to_datetime(signal_interest["APC forecast period"], 
-    #                              format='%Y-%m-%d')
-    #print(signal_interest['APC forecast period'], signal_interest['APC forecast period'].iloc[0])
-    #print(signal_interest['APC forecast period'].iloc[0][0:4], 
-    #      signal_interest['APC forecast period'].iloc[0][5:7],
-    #      signal_interest['APC forecast period'].iloc[0][8:])
     signal_interest['Date'] =  [datetime.datetime(
                                                 year = int(str(x)[0:4]), 
                                               month=int(str(x)[5:7]), 
