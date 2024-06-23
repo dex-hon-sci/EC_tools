@@ -17,13 +17,12 @@ import EC_tools.math_func as mfunc
 __author__="Dexter S.-H. Hon"
 
 class Strategy(Protocol):
-# make protocol class
-# condition array all([cond_1,cond_2]) == True then Buy
     def __init__(self):
         self._buy_cond_list = []
         self._sell_cond_list = []
-        self._direction = None
-        return None
+        self._buy_cond = False
+        self._sell_cond = False
+        self._direction = 'Neutral'
 
     def set_EES():
 

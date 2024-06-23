@@ -143,11 +143,14 @@ def loop_signal(signal_data, history_data, open_price_data, start_date, end_date
     # loop through every forecast date and contract symbol 
     for i in np.arange(len(portara_dat)): 
         this_date = portara_dat["Date"].iloc[i]
+        this_symbol = portara_dat["symbol"].iloc[i]
+
+        # cross reference the APC list to get the APC of this date and symbol
+        APCs_this_date = APCs_dat[(APCs_dat['Forecast Period']==this_date) & 
+                                  (APCs_dat['symbol']== this_symbol)] #<-- here add a condition matching the symbols
         
-        # cross reference the APC list to get the APC of this date
-        APCs_this_date = APCs_dat[(APCs_dat['Forecast Period']==this_date)] 
-        #& (APCs_dat['price code']== )] #<-- here add a condition matching the symbols
         forecast_date = APCs_this_date['Forecast Period'].to_list()[0] 
+        
         # This is the APC number only
         curve_this_date = APCs_this_date.to_numpy()[0][1:-1]
 
@@ -270,7 +273,11 @@ def run_gen_MR_signals(auth_pack, asset_pack, start_date, end_date,
     # start_date2 is a temporary solution 
     history_data_daily = read.read_reformat_Portara_daily_data(filename_daily)
     history_data_minute = read.read_reformat_Portara_minute_data(filename_minute)
-
+    
+    # Add a symbol column
+    history_data_daily['symbol'] = [symbol for i in range(len(history_data_daily))]
+    history_data_minute['symbol'] = [symbol for i in range(len(history_data_minute))]
+    
     # Find the opening price at 03:30 UK time. If not found, 
     #loop through the next 30 minutes to find the opening price
     price_330 = find_open_price(history_data_daily, history_data_minute)
@@ -336,9 +343,9 @@ if __name__ == "__main__":
 # 
 # =============================================================================
 
-    asset_pack = {"categories" : 'Argus Nymex Heating oil month 1 Daily',
+    asset_pack = {"categories" : 'Argus Nymex Heating oil month 2 Daily',
                   "keywords" : "Heating",
-                  "symbol": "HOc1"}
+                  "symbol": "HOc2"}
 
     #inputs: Portara data (1 Minute and Daily), APC
     signal_filename = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_HOc2.csv"

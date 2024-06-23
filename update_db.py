@@ -11,9 +11,10 @@ It pulls data from external servers to the local directory.
 """
 import datetime as datetime
 import pandas as pd
+
 import EC_tools.read as read
 import EC_tools.utility as util
-
+from crudeoil_future_const import APC_FILE_LOC, CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST
 __author__="Dexter S.-H. Hon"
 
 # =============================================================================
@@ -122,24 +123,27 @@ def download_latest_Portara():
 
 
 if __name__ == "__main__": 
-    save_filename_list = ["/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_CLc2.csv", 
-                     "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_HOc2.csv", 
-                     "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_RBc2.csv", 
-                     "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_QOc2.csv",
-                     "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_QPc2.csv" ]
-
-    categories_list = ['Argus Nymex WTI month 2, Daily', 
-                   'Argus Nymex Heating oil month 2, Daily', 
-                   'Argus Nymex RBOB Gasoline month 2, Daily', 
-                   'Argus Brent month 2, Daily', 
-                   'Argus ICE gasoil month 2, Daily']
-
-    keywords_list = ["WTI","Heating", "Gasoline",'Brent', "gasoil"]
-    symbol_list = ['CLc2', 'HOc2', 'RBc2', 'QOc2', 'QPc2']
+    SAVE_FILENAME_LIST = list(APC_FILE_LOC.values())
+# =============================================================================
+#     save_filename_list = ["/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_CLc2.csv", 
+#                      "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_HOc2.csv", 
+#                      "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_RBc2.csv", 
+#                      "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_QOc2.csv",
+#                      "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_QPc2.csv" ]
+# 
+#     categories_list = ['Argus Nymex WTI month 2, Daily', 
+#                    'Argus Nymex Heating oil month 2, Daily', 
+#                    'Argus Nymex RBOB Gasoline month 2, Daily', 
+#                    'Argus Brent month 2, Daily', 
+#                    'Argus ICE gasoil month 2, Daily']
+# 
+#     keywords_list = ["WTI","Heating", "Gasoline",'Brent', "gasoil"]
+#     symbol_list = ['CLc2', 'HOc2', 'RBc2', 'QOc2', 'QPc2']
+# =============================================================================
     
     
-    download_latest_APC_list(AUTH_PACK, save_filename_list, categories_list, 
-                             keywords_list, symbol_list,fast_dl=True)    
+    download_latest_APC_list(AUTH_PACK, SAVE_FILENAME_LIST, CAT_LIST, 
+                             KEYWORDS_LIST, SYMBOL_LIST,fast_dl=True)    
     #download_latest_APC(auth_pack, asset_pack)
 
     #download_latest_APC_fast(AUTH_PACK, ASSET_PACK, 

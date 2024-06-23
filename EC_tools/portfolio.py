@@ -16,31 +16,10 @@ import pandas as pd
 
 # EC_tools import
 import EC_tools.read as read
+from crudeoil_future_const import SIZE_DICT, HISTORY_DAILY_FILE_LOC
 
-PRICE_DICT = {"CLc1": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL.day",
-               "CLc2": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL_d01.day",
-               "HOc1": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/HO.day",
-               "HOc2": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/HO_d01.day",
-               "RBc1": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/RB.day",
-               "RBc2": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/RB_d01.day",
-               "QOc1": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QO.day",
-               "QOc2": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QO_d01.day",
-               "QPc1": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QP.day",
-               "QPc2": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QP_d01.day"
-               }
+PRICE_DICT = HISTORY_DAILY_FILE_LOC 
 
-SIZE_DICT = {
-    'CLc1': 1000.0,
-    'CLc2': 1000.0,
-    'HOc1': 42000.0,
-    'HOc2': 42000.0,
-    'RBc1': 42000.0,
-    'RBc2': 42000.0,
-    'QOc1': 1000.0,
-    'QOc2': 1000.0,
-    'QPc1': 100.0,
-    'QPc2': 100.0
-    }
 
 __all__ = ['Asset','Portfolio']
 

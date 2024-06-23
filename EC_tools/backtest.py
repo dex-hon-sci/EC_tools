@@ -366,7 +366,7 @@ def run_backtest_portfolio():
     trade_date_table = prepare_signal_interest(FILENSME_BUYSELL_SIGNALS, trim = False)
     
     start_date = datetime.datetime(2021,1,1)
-    end_date = datetime.datetime(2021,3,30)
+    end_date = datetime.datetime(2023,12,30)
     # Select for the date interval for investigation
     history_data = history_data[(history_data['Date'] > start_date) & 
                                 (history_data['Date'] < end_date)]
@@ -382,7 +382,7 @@ def run_backtest_portfolio():
     # loop through the date and set the EES prices for each trading day   
     P1 = loop_date_portfolio(P1, trade_date_table, history_data,
                                             give_obj_name = "USD", get_obj_name = "HOc1",
-                                            get_obj_quantity = 50,
+                                            get_obj_quantity = 10,
                                             open_hr='1300', close_hr='1828', 
                                             plot_or_not = False)    
     print('master_table', P1.master_table)

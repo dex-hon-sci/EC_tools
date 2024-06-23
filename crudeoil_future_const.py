@@ -8,8 +8,6 @@ Created on Sun Jun 23 09:00:12 2024
 
 # Define the contracts of interest
 
-
-
 ASSET_DICT = {"USD": {"unit":'dollars', "asset_type":'Cash'},
               "AUD": {"unit":'dollars',"asset_type":'Cash'},
               "CLc1": {"unit":'contracts',"asset_type":'Future'},
@@ -91,6 +89,7 @@ HISTORY_MINTUE_FILE_LOC = {
     "QPc2": "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/QP_d01.001"}
 
 
+
 FILENAME_LIST = ['temp_signal_CLc1.csv',
             'temp_signal_CLc2.csv',
             'temp_signal_HOc1.csv',
@@ -102,6 +101,9 @@ FILENAME_LIST = ['temp_signal_CLc1.csv',
             'temp_signal_QPc1.csv',
             'temp_signal_QPc2.csv'
             ]
+
+
+
 
 CAT_LIST = [ 'Argus Nymex WTI month 1, Daily', 
                'Argus Nymex Heating oil month 1, Daily', 
@@ -120,7 +122,7 @@ KEYWORDS_LIST = ["WTI","Heating", "Gasoline",'Brent', "gasoil",
 SYMBOL_LIST = list(HISTORY_DAILY_FILE_LOC.keys())
 
 # mapping for symbols for contract expiry months to months 
-months_to_symbols = {
+MONTHS_TO_SYMBOLS = {
    '1': 'F',
    '2': 'G',
    '3': 'H',

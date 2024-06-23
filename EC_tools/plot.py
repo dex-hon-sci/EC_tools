@@ -217,6 +217,7 @@ class PlotPricing(object):
         open_hr = o_hr.x[0] 
         close_hr = c_hr.x[0]
                 
+        
         #buy_time = datetime.time(hour = int(buy_time[-4:-2]), minute = int(buy_time[-2:]))    
         #sell_time = datetime.time(hour = int(sell_time[-4:-2]), minute = int(sell_time[-2:]))
         EES_txt_start_time = datetime.time(hour = 20, minute = 50)

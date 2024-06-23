@@ -363,7 +363,7 @@ def portara_data_handling(portara_dat):
     return portara_dat
 
 #tested
-def read_reformat_Portara_daily_data(filename):
+def read_reformat_Portara_daily_data(filename, add_col_data = {}):
     """
     Reformat the Portara minute data in a format readable by the scripts.
 
@@ -392,12 +392,18 @@ def read_reformat_Portara_daily_data(filename):
                                               month=int(str(x)[4:6]), 
                                               day = int(str(x)[6:])) 
                             for x in history_data['Date']]
-
+    match add_col_data:
+        case {} | [] | None:
+            pass
+        case _:
+            for key in add_col_data:
+                history_data[key] = add_col_data[key] 
+            
     return history_data
 
 
 #tested
-def read_reformat_Portara_minute_data(filename):
+def read_reformat_Portara_minute_data(filename,  add_col_data = {}):
     """
     Reformat the Portara minute data in a format readable by the scripts.
 
@@ -432,7 +438,14 @@ def read_reformat_Portara_minute_data(filename):
     bucket = util.convert_intmin_to_time(intmin) #, label='Time')
     
     history_data['Time'] = bucket
-
+    
+    match add_col_data:
+        case {} | [] | None:
+            pass
+        case _:
+            for key in add_col_data:
+                history_data[key] = add_col_data[key] 
+                
     return history_data
 
 
