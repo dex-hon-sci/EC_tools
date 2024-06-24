@@ -238,7 +238,8 @@ class ExecutePosition(object):
 
         # charge a fee if it exits
         if self.position.fee != None: #or self.position.fee > 0:
-            self.position.portfolio.sub(self.position.fee, datetime= fill_time)
+            payment_time = fill_time+datetime.timedelta(minutes=5)
+            self.position.portfolio.sub(self.position.fee, datetime= payment_time)
 
         # change the position status and fill time
         self.position.status = PositionStatus.FILLED

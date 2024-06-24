@@ -359,7 +359,8 @@ def run_backtest_portfolio():
     # Find the date for trading, only "Buy" or "Sell" date are taken.
     trade_date_table = prepare_signal_interest(FILENSME_BUYSELL_SIGNALS, trim = False)
     
-    start_date = datetime.datetime(2021,1,1)
+    #start_date = datetime.datetime(2021,1,1)
+    start_date = datetime.datetime(2023,1,1)
     end_date = datetime.datetime(2023,12,30)
     # Select for the date interval for investigation
     history_data = history_data[(history_data['Date'] > start_date) & 

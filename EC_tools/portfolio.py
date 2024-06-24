@@ -381,12 +381,12 @@ class Portfolio(object):
         self.set_pool_window(self.__pool_datetime[0], date_time)
 
         for i, asset_name in enumerate(self.table['name']):
-            print(asset_name)
+            #print(asset_name)
             # specia handling the denomator asset (usually a currency)
             if asset_name == dntr:
                 dntr_value = float(self.table['quantity'].iloc[0])
                 value_dict[asset_name] = float(self.table['quantity'].iloc[0])
-                print('Cashhh')
+                #print('Cashhh')
             else:
             
                 # manage the size of the asset
@@ -405,14 +405,14 @@ class Portfolio(object):
                 target_time = date_time.strftime("%Y-%m-%d")
                 _ , value = read.find_closest_price_date(sub_price_table, 
                                                          target_time=target_time)
-                print('value',value)
+                #print('value',value)
                 #value = float(sub_price_table[sub_price_table['Date'] == date_time]['Settle'].iloc[0])
                 quantity = int(self.table['quantity'].iloc[i])
                 
                 #new way to do things
                 #print('------------')
                 #print(_, asset_name, quantity, float(value.iloc[0]), size)
-                print(asset_name, float(value.iloc[0])*quantity*size)
+                #print(asset_name, float(value.iloc[0])*quantity*size)
                 # storage
                 value_dict[asset_name] = float(value.iloc[0])*quantity*size
         
@@ -460,7 +460,7 @@ class Portfolio(object):
         total_value = sum(self.value(datetime).values())
         return total_value
 
-    @property
+    @cached_property
     def log(self): # tested
         """
         The attribute that log the changes in values of each assets across 
@@ -470,16 +470,26 @@ class Portfolio(object):
         # Use the keys from the master table to construct the columns
         #columns = list(self.master_table['name'])
         log = list()
+        print("Generating Portfolio Log...")
         # then loop through the pool history and 
         for i, item in enumerate(self.pool_datetime):
             value_entry = self.value(item)
+            value_entry["Total"] = sum(list(value_entry.values()))
+            value_entry['Datetime'] = item
+
             print('VE', item, value_entry)
-            #log.loc[i] = pd.Series(value_entry)
             log.append(value_entry)
+            
 
         # return a log of the values of each asset by time
-
         self._log = pd.DataFrame(log)
+        
+        #reorganise columns order
+        asset_name_list = list(self.value(self.pool_datetime[-1]).keys())
+        self._log = self._log[['Datetime', 'Total']+asset_name_list]
+        
+        print("Log is avalibale.")
+
         return self._log
     
     def asset_log(self, asset_name): #tested

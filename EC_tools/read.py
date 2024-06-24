@@ -803,8 +803,7 @@ def concat_CSVtable(filename_list, sort_by='Date'):
         temp = pd.read_csv(filename)
         master_table = pd.concat([master_table,temp])
         
-    master_table.sort_values(by=sort_by)
-    print(master_table)
+    master_table.sort_values(by=sort_by, inplace=True)
     return master_table
         
 #%% Construction Area

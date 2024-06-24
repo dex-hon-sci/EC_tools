@@ -43,7 +43,6 @@ def create_aggegrate_pkl(file_loc_list, read_func, save_filename="myfile.pkl"):
 def merge_raw_data(filename_list, save_filename, sort_by = "Forecast Period"):
     A = read.concat_CSVtable(filename_list, sort_by= sort_by)
     A.to_csv(save_filename,index=False)
-    print(A)
     return A
 # =============================================================================
 #     

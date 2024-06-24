@@ -84,7 +84,7 @@ def onetradeperday(date_interest, direction):
                                         direction = direction)
     
     
-    plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=True)
+    plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=False)
 
     return P1, day, target_entry, target_exit, \
         stop_exit, open_hr_dt, close_hr_dt, EES_dict, trade_open, \
@@ -264,6 +264,7 @@ def test_onetradeperday_sell_normalexit()->None:
                                 ]['quantity'].iloc[0]
     #print(P1.pool)
     print(P1.master_table)
+    print(P1.log)
     #print(debt_amount)
     assert USD_amount > 10000000
     assert len(P1.pool) == 8
