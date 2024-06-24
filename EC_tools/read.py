@@ -792,6 +792,7 @@ def open_portfolio(filename):
     
     portfo = pickle.load(file)
     
+    file.close()
     return portfo
 
 

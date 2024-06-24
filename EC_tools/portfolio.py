@@ -251,14 +251,16 @@ class Portfolio(object):
         self._master_table  = self._make_table(self.pool)
         return self._master_table
     
-    def check_remainder(self, asset_name, quantity):
+    def check_remainder(self, asset_name, quantity, zeropoint = 0.0):
         """
         A function that check the remainder if there are enough asset of a 
         particular name in the portfolio
         
         """
-        return self.master_table[self.master_table['name']==\
-                                  asset_name]['quantity'].iloc[0] < quantity
+        baseline = self.master_table[self.master_table['name']==\
+                                  asset_name]['quantity'].iloc[0] - zeropoint
+            
+        return baseline < quantity
          
     
     def add(self, asset,  datetime= datetime.datetime.now(), 
@@ -298,7 +300,7 @@ class Portfolio(object):
     
     def sub(self, asset,  datetime= datetime.datetime.today(),  
             asset_name="", quantity = 0, unit='contract', 
-            asset_type='future'): #tested
+            asset_type='future', zeropoint = 0.0): #tested
         """
         A function that subtract an existing asset from the pool.
     
@@ -324,7 +326,8 @@ class Portfolio(object):
             #print(self.table[self.table['name']== asset_name]['quantity'].iloc[0])
             
             # check if the total amount is higher than the subtraction amount
-            if self.check_remainder(asset_name, asset.__dict__['quantity']):
+            if self.check_remainder(asset_name, asset.__dict__['quantity'],
+                                    zeropoint = zeropoint):
             #if asset.__dict__['quantity'] > self.master_table[self.master_table['name']==\
             #                                  asset_name]['quantity'].iloc[0]: # tested
                 raise Exception('There is not enough {} to be subtracted \
@@ -460,8 +463,78 @@ class Portfolio(object):
         total_value = sum(self.value(datetime).values())
         return total_value
 
+    def _make_log(self, simple_log = False):
+        """
+        An internal method to construct logs for the portfolio.
+        """
+        log = list()
+        print("Generating Portfolio Log...")
+        
+        if simple_log:
+        # simple_log make a log with only the inforamtion at the start of the day
+            temp = [datetime.datetime.combine(dt.date(), datetime.time(0,0)) 
+                                            for dt in self.pool_datetime]
+            time_list = list(set(temp))
+            print((time_list[-1]+datetime.timedelta(days=1)))
+            time_list = time_list + \
+                            [time_list[-1]+datetime.timedelta(days=1)]
+            print(time_list)
+
+        else:
+            time_list = self.pool_datetime
+            time_list = time_list + [time_list[-1]+datetime.timedelta(days=1)]
+            
+        #then loop through the pool history and store them in log list 
+        for i, item in enumerate(time_list):
+            value_entry = self.value(item)
+            value_entry["Total"] = sum(list(value_entry.values()))
+            value_entry['Datetime'] = item
+
+            print('VE', item, value_entry)
+            log.append(value_entry)
+            
+        # return a log of the values of each asset by time
+        self._log = pd.DataFrame(log)
+        
+        #reorganise columns order
+        asset_name_list = list(self.value(self.pool_datetime[-1]).keys())
+        self._log = self._log[['Datetime', 'Total']+asset_name_list]
+        
+        print("Log is avalibale.")     
+        
+        self._log.sort_values(by="Datetime", inplace = True, ignore_index= True)
+        return self._log
+    
     @cached_property
-    def log(self): # tested
+    def simple_log(self):
+        """
+        A simple log that only shows the Portfolio's value at 00:00:00 of the 
+        day.
+
+        Returns
+        -------
+        TYPE
+            DESCRIPTION.
+
+        """
+        return self._make_log(simple_log=True)
+    
+    @cached_property
+    def full_log(self):
+        """
+        A full log that only shows every entry in the changes in the 
+        Portfolio's value.
+
+        Returns
+        -------
+        TYPE
+            DESCRIPTION.
+
+        """
+        return self._make_log(simple_log=False)
+    
+    @cached_property
+    def log(self, simple_log = False): # tested
         """
         The attribute that log the changes in values of each assets across 
         all time.
@@ -471,8 +544,22 @@ class Portfolio(object):
         #columns = list(self.master_table['name'])
         log = list()
         print("Generating Portfolio Log...")
-        # then loop through the pool history and 
-        for i, item in enumerate(self.pool_datetime):
+        
+        if simple_log:
+        # simple_log make a log with only the inforamtion at the start of the day
+            temp = [dt.date() for dt in self.pool_datetime]
+            time_list = list(set(temp))
+            time_list = time_list + [(time_list[-1]+datetime.timedelta(days=1)).date()]
+
+        else:
+            time_list = self.pool_datetime
+            time_list = time_list + [time_list[-1]+datetime.timedelta(days=1)]
+
+        # add one more day to see the final value
+        print("time_list", time_list)
+        
+        # then loop through the pool history and store them in log list 
+        for i, item in enumerate(time_list):
             value_entry = self.value(item)
             value_entry["Total"] = sum(list(value_entry.values()))
             value_entry['Datetime'] = item
@@ -480,7 +567,6 @@ class Portfolio(object):
             print('VE', item, value_entry)
             log.append(value_entry)
             
-
         # return a log of the values of each asset by time
         self._log = pd.DataFrame(log)
         
@@ -505,4 +591,10 @@ class Portfolio(object):
         
         return self.master_table
 
+
     
+class PortfolioMetrics(Portfolio):
+    def __init__():
+        return
+    def sharpe_ratio(self):
+        return

@@ -490,7 +490,9 @@ class OneTradePerDay(Trade):
                                       get_obj_quantity,
                                       target_entry, target_exit, stop_exit,
                                       open_hr="0300", close_hr="2000", 
-                                      direction = "Buy"): 
+                                      direction = "Buy",
+                                      fee =  Asset('USD', 24.0, 'dollars', 
+                                                   'Cash')): 
         """
         This method only look into the data points that crosses the threashold.
         Thus it is fast but it only perform simple testing. 
@@ -539,7 +541,6 @@ class OneTradePerDay(Trade):
         EES_target_list = [target_entry, target_exit, 
                            stop_exit, EES_dict['close'][1]] 
         
-        fee = Asset('USD', 24.0, 'dollars', 'Cash')
         # run the trade via position module
         pos_list = self.open_positions(give_obj_name, get_obj_name, \
                                        get_obj_quantity, EES_target_list, \

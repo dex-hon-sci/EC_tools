@@ -86,26 +86,68 @@ class Position(object):
             self.void_time = void_time
             print("Position voided due to invalid price entry.")
             
-        # define fix quantity
+        # define fix quantity 
         self._fix_quantity = self.get_obj.quantity
         
     @property
     def fix_quantity(self):
+        """
+        This is a speical attribute for each position object. It defines which 
+        quantity to be fixed for an exchange to be executed when the price is 
+        not exactly as stated in the position object. It can either be 
+        self.give_obj.quantity or self.get_obj.quantity.
+
+        Returns
+        -------
+        TYPE
+            DESCRIPTION.
+
+        """
         return self._fix_quantity
     
     @fix_quantity.setter
     def fix_quantity(self, value):
+        """
+        Setter method to change the value of fix_quantity.
+
+        Parameters
+        ----------
+        value : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        TYPE
+            DESCRIPTION.
+
+        """
         self._fix_quantity = value
         return self._fix_quantity
     
     @property
     def price(self):
-        # getter method for seld._price
+        """
+        Getter method for calling position's price.
+
+        Returns
+        -------
+        TYPE
+            DESCRIPTION.
+
+        """
         return self._price
     
     @price.setter
     def price(self, value):
-        
+        """
+        Setter method for calling position's price.
+
+        Returns
+        -------
+        TYPE
+            DESCRIPTION.
+
+        """
         # check if the new price is the same 
         if value != self.give_obj.quantity / (self.get_obj.quantity*self.size):
             if self.auto_adjust == True:
@@ -167,6 +209,9 @@ class ExecutePosition(object):
             raise Exception("The position must be in Pending state to be filled.")
             
         port = self.position.portfolio
+        # define a delay time so that each entry would not be simultaneous.
+        # simultaneous entry results in fault calculation in the Portfolio method 
+        delay_time = datetime.timedelta(seconds=0.1) 
 
         # check if you have the avaliable fund in the portfolio
         if port.master_table[port.master_table['name']==
@@ -186,7 +231,8 @@ class ExecutePosition(object):
             self.position.portfolio.sub(self.position.give_obj, datetime= fill_time)
             
             # Get the desired asset
-            self.position.portfolio.add(self.position.get_obj, datetime = fill_time)
+            self.position.portfolio.add(self.position.get_obj, datetime = 
+                                                        fill_time + delay_time)
             
         elif pos_type == 'Long-Sell':
             print('Execute Long-sell position.')
@@ -195,7 +241,8 @@ class ExecutePosition(object):
             self.position.portfolio.sub(self.position.get_obj, datetime= fill_time)
 
             # Get the desired asset
-            self.position.portfolio.add(self.position.give_obj, datetime = fill_time) 
+            self.position.portfolio.add(self.position.give_obj, datetime = 
+                                                        fill_time + delay_time) 
 
 
         elif pos_type == 'Short-Borrow':
@@ -215,12 +262,15 @@ class ExecutePosition(object):
             
             
             # sell the asset here
-            self.position.portfolio.sub(self.position.get_obj, datetime = fill_time)
+            self.position.portfolio.sub(self.position.get_obj, datetime = 
+                                                fill_time + delay_time)
             # earn the cash here
-            self.position.portfolio.add(self.position.give_obj, datetime = fill_time)
+            self.position.portfolio.add(self.position.give_obj, datetime = 
+                                                fill_time + delay_time*2)
             
             # Issue a debt object for recording the borrowingaction
-            self.position.portfolio.add(debt_obj, datetime = fill_time) # debt object
+            self.position.portfolio.add(debt_obj, datetime = 
+                                                fill_time + delay_time*3) # debt object
 
         elif pos_type == 'Short-Buyback':
             print('Execute Short-Buyback position.')
@@ -233,12 +283,13 @@ class ExecutePosition(object):
             self.position.portfolio.sub(self.position.give_obj, datetime = fill_time)
             # Get the desired asset the set balance out the debt object
             # Buyback the debt object to settle the debt automatically
-            self.position.portfolio.add(payback_debt_obj, datetime = fill_time)
+            self.position.portfolio.add(payback_debt_obj, datetime = 
+                                                        fill_time + delay_time)
 
 
         # charge a fee if it exits
         if self.position.fee != None: #or self.position.fee > 0:
-            payment_time = fill_time+datetime.timedelta(minutes=5)
+            payment_time = fill_time+ + delay_time*10
             self.position.portfolio.sub(self.position.fee, datetime= payment_time)
 
         # change the position status and fill time
