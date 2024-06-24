@@ -541,7 +541,7 @@ class Portfolio(object):
         all time.
         
         """
-        asset_log = self.log[asset_name]
+        asset_log = self.full_log[asset_name]
         return asset_log
 
     def wipe_debt(self):

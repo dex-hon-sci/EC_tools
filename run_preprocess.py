@@ -19,7 +19,6 @@ from crudeoil_future_const import SYMBOL_LIST, HISTORY_DAILY_FILE_LOC,\
 import EC_tools.read as read
 import EC_tools.utility as util
 from EC_tools.backtest import extract_intraday_minute_data
-# function that convert minute data into numpy array
 
 
 @util.time_it
@@ -41,9 +40,11 @@ def create_aggegrate_pkl(file_loc_list, read_func, save_filename="myfile.pkl"):
         
 @util.time_it
 def merge_raw_data(filename_list, save_filename, sort_by = "Forecast Period"):
-    A = read.concat_CSVtable(filename_list, sort_by= sort_by)
-    A.to_csv(save_filename,index=False)
-    return A
+    merged_data = read.concat_CSVtable(filename_list, sort_by= sort_by)
+    merged_data.to_csv(save_filename,index=False)
+    return merged_data
+
+
 # =============================================================================
 #     
 # def create_openprice_pkl(): # may not need it after the pickle operation
@@ -68,14 +69,23 @@ def load_pkl(filename): # test function
     
     output.close()
     
-if __name__ == "__main__":
-
+def run_preprocess():
+    """
+    The main method for preprocessing. The aim of preprocessing is to create 
+    aggegrate pickle files so that the runtime of signal generation and back-test
+    can be reduced.
+    """
     create_aggegrate_pkl(APC_FILE_LOC, read.read_reformat_APC_data,
                          save_filename="crudeoil_future_APC_full.pkl")
     create_aggegrate_pkl(HISTORY_DAILY_FILE_LOC, read.read_reformat_Portara_daily_data,
                          save_filename="crudeoil_future_daily_full.pkl")
     #create_aggegrate_pkl(HISTORY_MINTUE_FILE_LOC, read.read_reformat_Portara_minute_data,
     #                     save_filename="crudeoil_future_minute_full.pkl")
+
+if __name__ == "__main__":
+    
+    run_preprocess()
+
     SIGNAL_LIST = list(ARGUS_BENCHMARK_SIGNAL_FILE_LOC.values())   
     merge_raw_data(SIGNAL_LIST, "benchmark_signal_full.csv", sort_by="APC forecast period")
 
