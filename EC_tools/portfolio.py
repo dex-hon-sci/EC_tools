@@ -384,7 +384,7 @@ class Portfolio(object):
         self.set_pool_window(self.__pool_datetime[0], date_time)
 
         for i, asset_name in enumerate(self.table['name']):
-            #print(asset_name)
+
             # specia handling the denomator asset (usually a currency)
             if asset_name == dntr:
                 dntr_value = float(self.table['quantity'].iloc[0])
@@ -474,11 +474,12 @@ class Portfolio(object):
         # simple_log make a log with only the inforamtion at the start of the day
             temp = [datetime.datetime.combine(dt.date(), datetime.time(0,0)) 
                                             for dt in self.pool_datetime]
-            time_list = list(set(temp))
-            print((time_list[-1]+datetime.timedelta(days=1)))
+            
+            # reorganised the time_list because set() function scramble the order
+            time_list = sorted(list(set(temp)))
+            # Add an extra day to see what is the earning for the last day
             time_list = time_list + \
                             [time_list[-1]+datetime.timedelta(days=1)]
-            print(time_list)
 
         else:
             time_list = self.pool_datetime
@@ -490,7 +491,7 @@ class Portfolio(object):
             value_entry["Total"] = sum(list(value_entry.values()))
             value_entry['Datetime'] = item
 
-            print('VE', item, value_entry)
+            #print('VE', item, value_entry)
             log.append(value_entry)
             
         # return a log of the values of each asset by time
@@ -506,7 +507,7 @@ class Portfolio(object):
         return self._log
     
     @cached_property
-    def simple_log(self):
+    def log(self):
         """
         A simple log that only shows the Portfolio's value at 00:00:00 of the 
         day.
@@ -533,51 +534,7 @@ class Portfolio(object):
         """
         return self._make_log(simple_log=False)
     
-    @cached_property
-    def log(self, simple_log = False): # tested
-        """
-        The attribute that log the changes in values of each assets across 
-        all time.
-        
-        """
-        # Use the keys from the master table to construct the columns
-        #columns = list(self.master_table['name'])
-        log = list()
-        print("Generating Portfolio Log...")
-        
-        if simple_log:
-        # simple_log make a log with only the inforamtion at the start of the day
-            temp = [dt.date() for dt in self.pool_datetime]
-            time_list = list(set(temp))
-            time_list = time_list + [(time_list[-1]+datetime.timedelta(days=1)).date()]
 
-        else:
-            time_list = self.pool_datetime
-            time_list = time_list + [time_list[-1]+datetime.timedelta(days=1)]
-
-        # add one more day to see the final value
-        print("time_list", time_list)
-        
-        # then loop through the pool history and store them in log list 
-        for i, item in enumerate(time_list):
-            value_entry = self.value(item)
-            value_entry["Total"] = sum(list(value_entry.values()))
-            value_entry['Datetime'] = item
-
-            print('VE', item, value_entry)
-            log.append(value_entry)
-            
-        # return a log of the values of each asset by time
-        self._log = pd.DataFrame(log)
-        
-        #reorganise columns order
-        asset_name_list = list(self.value(self.pool_datetime[-1]).keys())
-        self._log = self._log[['Datetime', 'Total']+asset_name_list]
-        
-        print("Log is avalibale.")
-
-        return self._log
-    
     def asset_log(self, asset_name): #tested
         """
         The log of the changes in values for a particular assets across 
