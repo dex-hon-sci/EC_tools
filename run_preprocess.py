@@ -27,7 +27,7 @@ from EC_tools.backtest import extract_intraday_minute_data
 def create_aggegrate_pkl(file_loc_list, read_func, save_filename="myfile.pkl"):
     master_dict = dict()
     for symbol in SYMBOL_LIST:
-        print(symbol)
+        #print(symbol)
         individual_data = read_func(file_loc_list[symbol])
 
         # Add a symbol column
@@ -59,11 +59,7 @@ def create_open_price_list(history_daily_file_loc, history_minute_file_loc):
         
     print("Open price data created.")
     
-@util.time_it
-def merge_raw_data(filename_list, save_filename, sort_by = "Forecast Period"):
-    merged_data = read.concat_CSVtable(filename_list, sort_by= sort_by)
-    merged_data.to_csv(save_filename,index=False)
-    return merged_data
+
 
 
 # =============================================================================
@@ -115,8 +111,5 @@ def run_preprocess():
 if __name__ == "__main__":
     
     run_preprocess()
-
-    SIGNAL_LIST = list(ARGUS_BENCHMARK_SIGNAL_FILE_LOC.values())   
-    merge_raw_data(SIGNAL_LIST, "benchmark_signal_full.csv", sort_by="APC forecast period")
 
 #load_pkl('crudeoil_future_minute_full.pkl')

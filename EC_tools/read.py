@@ -883,6 +883,12 @@ def concat_CSVtable(filename_list, sort_by='Date'):
         
     master_table.sort_values(by=sort_by, inplace=True)
     return master_table
+
+@util.time_it
+def merge_raw_data(filename_list, save_filename, sort_by = "Forecast Period"):
+    merged_data = concat_CSVtable(filename_list, sort_by= sort_by)
+    merged_data.to_csv(save_filename,index=False)
+    return merged_data
         
 #%% Construction Area
 def extract_lag_data_to_list(signal_data, history_data_daily,lag_size=5):

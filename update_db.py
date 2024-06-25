@@ -26,7 +26,7 @@ AUTH_PACK = {'username': "leigh@eulercapital.com.au",
             'password':"Li.96558356"}
 
 DATE_PACK = {"start_date": "2021-01-01",
-        "end_date": "2024-05-18"}
+        "end_date": "2024-06-18"}
 
 # =============================================================================
 ASSET_PACK = {'categories': 'Argus Nymex WTI month 1, Daily',

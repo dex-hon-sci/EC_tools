@@ -383,7 +383,6 @@ def run_backtest():
     # master function that runs the backtest itself.
     # The current method only allows one singular direction signal perday. and a set of constant EES
 
-    
     # read the reformatted minute history data
     history_data = read.read_reformat_Portara_minute_data(FILENAME_MINUTE)
     
@@ -398,11 +397,10 @@ def run_backtest():
 
 @util.time_it
 @util.pickle_save('portfolio_HOc1_test.pkl')
-def run_backtest_portfolio():
+def run_backtest_portfolio(start_date, end_date):
     # master function that runs the backtest itself.
     # The current method only allows one singular direction signal perday. and a set of constant EES
 
-    
     # read the reformatted minute history data
     history_data = read.read_reformat_Portara_minute_data(FILENAME_MINUTE)
 
@@ -412,6 +410,7 @@ def run_backtest_portfolio():
     #start_date = datetime.datetime(2021,1,1)
     start_date = datetime.datetime(2023,1,1)
     end_date = datetime.datetime(2023,12,30)
+    
     # Select for the date interval for investigation
     history_data = history_data[(history_data['Date'] > start_date) & 
                                 (history_data['Date'] < end_date)]
@@ -434,7 +433,16 @@ def run_backtest_portfolio():
 
     return P1
 
+## WIP area ###
+
+
 def run_backtest_portfolio_multistrategy(): 
+    
+    history_data = read.read_reformat_Portara_minute_data(FILENAME_MINUTE)
+
+    # Find the date for trading, only "Buy" or "Sell" date are taken.
+    trade_date_table = prepare_signal_interest(FILENSME_BUYSELL_SIGNALS, trim = False)
+    
     # Initialise Portfolio
     P1 = Portfolio()
     USD_initial = Asset("USD", 10_300_000, "dollars", "Cash") # initial fund
@@ -442,9 +450,8 @@ def run_backtest_portfolio_multistrategy():
     
     # a list of input files
     P1.loop_date_portfolio_multi_strategy()
-    return 
+    return P1
 
-## WIP area ###
 
 class LoopDate(object):
     def __init__(self):

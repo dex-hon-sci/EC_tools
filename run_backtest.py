@@ -5,13 +5,17 @@ Created on Tue May  7 23:46:42 2024
 
 @author: dexter
 """
+import datetime as datetime
+
 import EC_tools.read as read
 import EC_tools.backtest as backtest
 import EC_tools.utility as util
+from EC_tools.portfolio import Asset, Portfolio
 
 @util.time_it
 @util.save_csv('benchmark_PNL_QPc2_full.csv')
-def run_backtest(filename_minute,filename_buysell_signals):
+def run_backtest(filename_minute,filename_buysell_signals, 
+                 start_date, end_date):
     # The current method only allows one singular direction signal perday. and a set of constant EES
 
     # read the reformatted minute history data
@@ -19,7 +23,16 @@ def run_backtest(filename_minute,filename_buysell_signals):
     
     # Find the date for trading
     trade_date_table = backtest.prepare_signal_interest(filename_buysell_signals, trim = False)
-        
+    
+    start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")# datetime.datetime(2023,1,1)
+    end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")##datetime.datetime(2023,12,30)
+    
+    # Select for the date interval for investigation
+    history_data = history_data[(history_data['Date'] > start_date) & 
+                                (history_data['Date'] < end_date)]
+    
+    trade_date_table = trade_date_table[(trade_date_table['Date'] > start_date) & 
+                                        (trade_date_table['Date'] < end_date)]
     # loop through the date and set the EES prices for each trading day   
     dict_trade_PNL = backtest.loop_date(trade_date_table, history_data, 
                                         open_hr='0800', close_hr='1630',
@@ -29,13 +42,53 @@ def run_backtest(filename_minute,filename_buysell_signals):
 
     return dict_trade_PNL
 
+def run_backtest_portfolio(filename_minute, filename_buysell_signals, 
+                           start_date, end_date):
+    # master function that runs the backtest itself.
+    # The current method only allows one singular direction signal perday. and a set of constant EES
+
+    # read the reformatted minute history data
+    history_data = read.read_reformat_Portara_minute_data(filename_minute)
+
+    # Find the date for trading, only "Buy" or "Sell" date are taken.
+    trade_date_table = backtest.prepare_signal_interest(filename_buysell_signals, trim = False)
+    
+    start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")# datetime.datetime(2023,1,1)
+    end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")##datetime.datetime(2023,12,30)
+    
+    # Select for the date interval for investigation
+    history_data = history_data[(history_data['Date'] > start_date) & 
+                                (history_data['Date'] < end_date)]
+    
+    trade_date_table = trade_date_table[(trade_date_table['Date'] > start_date) & 
+                                        (trade_date_table['Date'] < end_date)]
+    
+    # Initialise Portfolio
+    P1 = Portfolio()
+    USD_initial = Asset("USD", 10_300_000, "dollars", "Cash") # initial fund
+    P1.add(USD_initial,datetime=datetime.datetime(2020,12,31))
+    
+    # loop through the date and set the EES prices for each trading day   
+    P1 = backtest.loop_date_portfolio(P1, trade_date_table, history_data,
+                                            give_obj_name = "USD", get_obj_name = "HOc1",
+                                            get_obj_quantity = 10,
+                                            open_hr='1300', close_hr='1828', 
+                                            plot_or_not = False)    
+    print('master_table', P1.master_table)
+
+    return P1
+
 def run_backtest_crude_oil():
     
     return
 
 if __name__ == "__main__":
     # master function that runs the backtest itself.
-    filename_minute = "../test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/QP_d01.001"
-    filename_buysell_signals = "./benchmark_signal_QPc2_full.csv"
+    FILENAME_MINUTE = "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/HO.001"
+    FILENAME_BUYSELL_SIGNALS = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_HOc1_full.csv"
+    SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/benchmark_signal_test.csv"   
     
-    run_backtest(filename_minute, filename_buysell_signals)
+    APC_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_HOc1.csv"  
+    
+    run_backtest_portfolio(FILENAME_MINUTE, FILENAME_BUYSELL_SIGNALS, 
+                           '2023-01-01', '2023-12-30')

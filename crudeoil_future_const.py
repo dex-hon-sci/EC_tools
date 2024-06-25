@@ -48,6 +48,30 @@ round_turn_fees = {
     'QPc2': 24.0
 }
 
+OPEN_HR_DICT = {
+    'CLc1': '0330',
+    'CLc2': '0330',
+    'HOc1': '1300',
+    'HOc2': '1300',
+    'RBc1': '1300',
+    'RBc2': '1300',
+    'QOc1': '0330',
+    'QOc2': '0330',
+    'QPc1': '0800',
+    'QPc2': '0800'}
+
+CLOSE_HR_DICT = {
+    'CLc1':'1958',
+    'CLc2':'1958',
+    'HOc1':'1828',
+    'HOc2':'1828',
+    'RBc1':'1828',
+    'RBc2':'1828',
+    'QOc1':'1958',
+    'QOc2':'1958',
+    'QPc1':'1628',
+    'QPc2':'1628'}
+
 
 # raw input file list
 APC_FILE_LOC = {
