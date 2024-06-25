@@ -70,6 +70,13 @@ def pickle_save(savefilename, save_or_not = True):
         return wrapper
     return decorator
          
+def load_pkl(filename): # test function
+    output = open(filename, 'rb')
+    my_pkl = pickle.load(output)
+    print("File:{} is loaded.".format(filename))
+    output.close()
+    return my_pkl
+
 def date_matching(date1,date2):
     # A simple function that ensure the date from two data sources match
     if date1 == date2:

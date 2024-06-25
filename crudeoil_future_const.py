@@ -88,6 +88,18 @@ HISTORY_MINTUE_FILE_LOC = {
     "QPc1": "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/QP.001",
     "QPc2": "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/QP_d01.001"}
 
+OPEN_PRICE_FILE_LOC = {    
+    "CLc1": "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/open_price/CL_op.day",
+    "CLc2": "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/open_price/CL_d01_op.day",
+    "HOc1": "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/open_price/HO_op.day",
+    "HOc2": "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/open_price/HO_d01_op.day",
+    "RBc1": "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/open_price/RB_op.day",
+    "RBc2": "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/open_price/RB_d01_op.day",
+    "QOc1": "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/open_price/QO_op.day",
+    "QOc2": "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/open_price/QO_d01_op.day",
+    "QPc1": "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/open_price/QP_op.day",
+    "QPc2": "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/open_price/QP_d01_op.day"}
+
 ARGUS_BENCHMARK_SIGNAL_FILE_LOC = {
     'CLc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_CLc1_full.csv',
     'CLc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_CLc2_full.csv',
@@ -100,8 +112,34 @@ ARGUS_BENCHMARK_SIGNAL_FILE_LOC = {
     'QPc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_QPc1_full.csv',
     'QPc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_QPc2_full.csv'
     }
-    
-ARGUS_BENCHMARK_PNL_FILE_LOC = {}
+
+ 
+ARGUS_BENCHMARK_PNL_FILE_LOC = {
+    'CLc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_PNL/benchmark_PNL_CLc1_full.csv',
+    'CLc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_PNL/benchmark_PNL_CLc2_full.csv',
+    'HOc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_PNL/benchmark_PNL_HOc1_full.csv',
+    'HOc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_PNL/benchmark_PNL_HOc2_full.csv',
+    'RBc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_PNL/benchmark_PNL_RBc1_full.csv',
+    'RBc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_PNL/benchmark_PNL_RBc2_full.csv',
+    'QOc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_PNL/benchmark_PNL_QOc1_full.csv',
+    'QOc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_PNL/benchmark_PNL_QOc2_full.csv',
+    'QPc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_PNL/benchmark_PNL_QPc1_full.csv',
+    'QPc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_PNL/benchmark_PNL_QPc2_full.csv'
+}
+
+
+TEST_FILE_LOC = {
+    'CLc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/test_results/test_CLc1_full.csv',
+    'CLc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/test_results/test_CLc2_full.csv',
+    'HOc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/test_results/test_HOc1_full.csv',
+    'HOc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/test_results/test_HOc2_full.csv',
+    'RBc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/test_results/test_RBc1_full.csv',
+    'RBc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/test_results/test_RBc2_full.csv',
+    'QOc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/test_results/test_QOc1_full.csv',
+    'QOc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/test_results/test_QOc2_full.csv',
+    'QPc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/test_results/test_QPc1_full.csv',
+    'QPc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/test_results/test_QPc2_full.csv'
+}
 
 ARGUS_BENCHMARK_PNL_Portfolio_LOC = {}
 

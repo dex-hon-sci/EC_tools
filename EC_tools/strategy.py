@@ -39,11 +39,11 @@ class MRStrategy(object):
     
     """
     def __init__(self):
-        self._buy_cond_list = []
-        self._sell_cond_list = []
+        self._buy_cond_list = [False]
+        self._sell_cond_list = [False]
         self._buy_cond = False
         self._sell_cond = False
-        self._direction = 'Neutral'
+        self._neutral_cond = False
     
     # make a list of lambda functions for the multiple conditions 
     # make a set of numbers for different EES (or EES range) 
@@ -51,20 +51,26 @@ class MRStrategy(object):
     
     @property
     def buy_cond(self):
-        if all(self._buy_cond_list) == True:
-            self._buy_cond = True
-        return self._buy_cond
+# =============================================================================
+#         print("biy_cond_list inside buy_cond", self._buy_cond_list)
+#         if all(self._buy_cond_list) == True:
+#             self._buy_cond = True
+# =============================================================================
+        return all(self._buy_cond_list)
     
     @property
     def sell_cond(self):
-        if all(self._sell_cond_list) == True:
-            self._sell_cond = True
-        return self._sell_cond
+# =============================================================================
+#         print("sell_cond_list inside sell_cond", self._sell_cond_list)
+#         if all(self._sell_cond_list) == True:
+#             self._sell_cond = True
+# =============================================================================
+        return all(self._sell_cond_list)
     
     @property
     def neutral_cond(self):
-        neutral_cond = not (self._buy_cond ^ self._sell_cond)
-        return neutral_cond
+        self._neutral_cond = not (self.buy_cond ^ self.sell_cond)
+        return self._neutral_cond
     
     @property
     def direction(self):
@@ -74,9 +80,9 @@ class MRStrategy(object):
         
         for direction_str in direction_dict:
             if direction_dict[direction_str]:
-                self._direction = direction_str
+                direction = direction_str
                 
-        return self._direction
+        return direction
 
     def argus_benchmark_strategy(self, open_price, history_data_lag5, apc_curve_lag5,
                                      curve_today, apc_mid_Q = 0.5, 
@@ -171,6 +177,9 @@ class MRStrategy(object):
         self._buy_cond_list = [cond1_buy, cond2_buy, cond3_buy, cond4_buy]
         self._sell_cond_list = [cond1_sell, cond2_sell, cond3_sell, cond4_sell]
 
+        #print("buy_cond",self._buy_cond_list, self.buy_cond)
+        #print("sell_cond",self._sell_cond_list, self.sell_cond)
+        #print("neutral_cond", self.neutral_cond)
         return self.direction
 
     def argus_benchmark_mode(price_330, history_data_lag5, apc_curve_lag5,

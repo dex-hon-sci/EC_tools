@@ -12,10 +12,12 @@ of the back-test workflow will be less time consuming.
 """
 import json
 import pickle
+import pandas as pd
 
 from crudeoil_future_const import SYMBOL_LIST, HISTORY_DAILY_FILE_LOC,\
                                 HISTORY_MINTUE_FILE_LOC, APC_FILE_LOC,\
-                                    ARGUS_BENCHMARK_SIGNAL_FILE_LOC
+                                    ARGUS_BENCHMARK_SIGNAL_FILE_LOC,\
+                                    OPEN_PRICE_FILE_LOC
 import EC_tools.read as read
 import EC_tools.utility as util
 from EC_tools.backtest import extract_intraday_minute_data
@@ -37,7 +39,26 @@ def create_aggegrate_pkl(file_loc_list, read_func, save_filename="myfile.pkl"):
     output = open(save_filename, 'wb')
     pickle.dump(master_dict, output)
     output.close()  
+
+@util.time_it
+def create_open_price_list(history_daily_file_loc, history_minute_file_loc):
+    
+    for symbol in SYMBOL_LIST:
+        history_daily_file = read.read_reformat_Portara_daily_data(
+                                        history_daily_file_loc[symbol])
+        history_minute_file = read.read_reformat_Portara_minute_data(
+                                        history_minute_file_loc[symbol])
         
+        @util.save_csv(OPEN_PRICE_FILE_LOC[symbol],save_or_not=True)
+        def cal_open_price_indi():
+            open_price = read.find_open_price(history_daily_file, history_minute_file)
+            return open_price
+        
+        # execution
+        cal_open_price_indi()
+        
+    print("Open price data created.")
+    
 @util.time_it
 def merge_raw_data(filename_list, save_filename, sort_by = "Forecast Period"):
     merged_data = read.concat_CSVtable(filename_list, sort_by= sort_by)
@@ -75,13 +96,21 @@ def run_preprocess():
     aggegrate pickle files so that the runtime of signal generation and back-test
     can be reduced.
     """
+    
+    # load all raw data into pkl format
     create_aggegrate_pkl(APC_FILE_LOC, read.read_reformat_APC_data,
                          save_filename="crudeoil_future_APC_full.pkl")
     create_aggegrate_pkl(HISTORY_DAILY_FILE_LOC, read.read_reformat_Portara_daily_data,
                          save_filename="crudeoil_future_daily_full.pkl")
     #create_aggegrate_pkl(HISTORY_MINTUE_FILE_LOC, read.read_reformat_Portara_minute_data,
     #                     save_filename="crudeoil_future_minute_full.pkl")
-
+    
+    # calculate and load the open price data into a pkl file
+    #create_open_price_list(HISTORY_DAILY_FILE_LOC, HISTORY_MINTUE_FILE_LOC)
+    create_aggegrate_pkl(OPEN_PRICE_FILE_LOC, read.read_reformat_openprice_data,
+                         save_filename="crudeoil_future_openprice_full.pkl")
+    
+    
 if __name__ == "__main__":
     
     run_preprocess()

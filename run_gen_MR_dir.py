@@ -110,8 +110,8 @@ def loop_signal(signal_data, history_data, open_price_data, start_date, end_date
         this_symbol = portara_dat["symbol"].iloc[i]
 
         # cross reference the APC list to get the APC of this date and symbol
-        APCs_this_date = APCs_dat[(APCs_dat['Forecast Period']==this_date) & 
-                                  (APCs_dat['symbol']== this_symbol)] #<-- here add a condition matching the symbols
+        APCs_this_date = APCs_dat[(APCs_dat['Forecast Period']==this_date) ]
+#                                  & (APCs_dat['symbol']== this_symbol)] #<-- here add a condition matching the symbols
         
         forecast_date = APCs_this_date['Forecast Period'].to_list()[0] 
         
@@ -124,10 +124,10 @@ def loop_signal(signal_data, history_data, open_price_data, start_date, end_date
         # The conidtions to decide whether we trim the full_contract_symbol
         # CLA2024J or CL24J
         if contract_symbol_condse == True:
-            temp = portara_dat['Contract Code'].to_list()[0]
+            temp = portara_dat['Contract Code'].to_list()[i]
             full_contract_symbol = str(temp)[0:2] + str(temp)[5:7] + str(temp)[-1]
         elif contract_symbol_condse == False:
-            full_contract_symbol = portara_dat['Contract Code'].to_list()[0]
+            full_contract_symbol = portara_dat['Contract Code'].to_list()[i]
 
         # find the quantile of the opening price
         price_330 = open_price_data[open_price_data['Date']==this_date]['Open Price'].item()
@@ -151,15 +151,14 @@ def loop_signal(signal_data, history_data, open_price_data, start_date, end_date
         #     price_330, history_data_lag5, apc_curve_lag5, APCs_this_date)
         
         # calculate the data needed for PNL analysis for this strategy
-        strategy_data = MRStrategy.gen_strategy_data(
-                                                        history_data_lag5, 
+        strategy_data = MRStrategy.gen_strategy_data(history_data_lag5, 
                                                          apc_curve_lag5, 
                                                          curve_this_date,
                                                          strategy_name=\
                                                              "benchmark")
         
-        print(forecast_date, full_contract_symbol,'MR signal generated!', i)
-        print(open_price_data[open_price_data['Date']==this_date]['Time'].item(), price_330)
+        print(forecast_date, full_contract_symbol,'MR signal generated!', direction,i)
+        #print(open_price_data[open_price_data['Date']==this_date]['Time'].item(), price_330)
     
         # loop functions takes in a list of strategy calculation,
         # loop functions takes in a list of EES values and methods
@@ -217,7 +216,8 @@ def gen_signal_vector(signal_data, history_data, loop_start_date = ""): # WIP
 
 @util.time_it
 def run_gen_MR_signals(auth_pack, asset_pack, start_date, end_date,
-                       signal_filename, filename_daily, filename_minute,
+                       signal_filename, filename_daily, filename_minute, 
+                       filename_openprice,
                        update_apc = False):
     # input is a dictionary or json file
     
@@ -255,6 +255,46 @@ def run_gen_MR_signals(auth_pack, asset_pack, start_date, end_date,
     
     # there are better ways than looping. here is a vectoralised method    
     return dict_contracts_quant_signals
+
+@util.time_it
+def run_gen_MR_signals_preloaded_list(filename_list, start_date, end_date,
+                       signal_pkl, history_daily_pkl,
+                       openprice_pkl, save_or_not = True):
+    
+    # run meanreversion signal generation on the basis of individual programme  
+    # Loop the whole list in one go with all the contracts or Loop it one contract at a time?
+    master_dict = dict()
+    symbol_list = list(signal_pkl.keys())
+    
+    for symbol in symbol_list:
+        filename = filename_list[symbol]
+        # The reading part takes the longest time: 13 seconds. The loop itself takes 
+        # input 1, APC. Load the master table in memory and test multple strategies  
+        @util.save_csv("{}".format(filename), save_or_not=save_or_not)
+        def run_gen_MR_indi():
+            signal_file = signal_pkl[symbol]
+           
+            # input 2, Portara history file.
+            history_daily_file = history_daily_pkl[symbol]
+            #history_minute_file = history_minute_pkl[symbol]
+            
+            # Find the opening price at 03:30 UK time. If not found, 
+            #loop through the next 30 minutes to find the opening price
+            #open_price = find_open_price(history_daily_file, history_minute_file)
+            open_price = openprice_pkl[symbol]
+
+            # The strategy will be ran in loop_signal decorator
+            dict_contracts_quant_signals = loop_signal(signal_file, 
+                                                       history_daily_file, 
+                                                       open_price,
+                                                       start_date, end_date, 
+                                                       MRStrategy().argus_benchmark_strategy)
+            return dict_contracts_quant_signals
+        
+
+        master_dict[symbol] = run_gen_MR_indi()
+    # there are better ways than looping. here is a vectoralised method    
+    return master_dict
 
 
 # make a function to run multiple signal generation from a list

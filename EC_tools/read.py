@@ -264,6 +264,7 @@ def read_portara_minute_data(filename, symbol, start_date, end_date,
 
     return portara_dat_2
 
+
 #@time_it
 def merge_portara_data(table1, table2):
     """
@@ -448,6 +449,23 @@ def read_reformat_Portara_minute_data(filename,  add_col_data = {}):
                 
     return history_data
 
+def read_reformat_openprice_data(filename):
+    openprice_data = pd.read_csv(filename)
+    
+    openprice_data["Date"] = [datetime.datetime(year = int(str(x)[0:4]), 
+                                              month=int(str(x)[5:7]), 
+                                              day = int(str(x)[8:])) 
+                            for x in openprice_data['Date']]
+    
+    # convert the format 1330 (int) to 13:30 (datetime.time) obejct
+    intmin = openprice_data['Time']
+    bucket = [datetime.datetime.strptime(intmin.iloc[i], "%H:%M:%S").time() 
+              for i in range(len(intmin))]
+    openprice_data['Time'] = bucket
+
+    
+    return openprice_data
+
 
 def read_reformat_APC_data(filename):
     signal_data =  pd.read_csv(filename)
@@ -594,6 +612,52 @@ def find_closest_price_generic(data, target_time='0330',
             target_price = data[data[time_proxy] == target_time_dt][price_proxy]
             
     return target_time_dt, target_price
+
+def find_open_price(history_data_daily, history_data_minute, open_hr='0330'): #tested
+    """
+    A function to search for the opening price of the day.
+    If at the opening hour, there are no bid or price information, the script 
+    loop through the next 30 minutes to find the opening price.
+
+    Parameters
+    ----------
+    history_data_daily : dataframe
+        The historical daily data.
+    history_data_minute : dataframe
+        The historical minute data.
+    open_hr : str, optional
+        Defining the opening hour. The default is '0330'.
+
+    Returns
+    -------
+    open_price_data: dataframe
+        A table consist of three columns: 'Date', 'Time', and 'Open Price'.
+
+    """
+    date_list = history_data_daily['Date'].to_list()
+    open_price_data = []
+    
+    #loop through daily data to get the date
+    for date in date_list:
+        day_data = history_data_minute[history_data_minute['Date'] == date]
+        
+        # Find the closest hour and price
+        open_hr_dt, open_price = find_closest_price(day_data,
+                                                            target_hr='0330')
+        #print('open_price',open_price)
+        if type(open_price) ==  float:
+            pass
+        elif len(open_price)!=1:
+            print(open_price)
+        #storage
+        #open_price_data.append((date.to_pydatetime(), open_hr_dt , 
+        #                        open_price.item()))
+        open_price_data.append((date.to_pydatetime(), open_hr_dt , 
+                                open_price))
+        
+    open_price_data = pd.DataFrame(open_price_data, columns=['Date', 'Time', 'Open Price'])
+
+    return open_price_data
 
 # tested
 def find_crossover(input_array, threshold):
@@ -788,13 +852,26 @@ def find_minute_EES(histroy_data_intraday,
     return EES_dict
 
 def open_portfolio(filename):
+    """
+    A handy function to open a portfolio. Nothing special but easy to remember.
+
+    Parameters
+    ----------
+    filename : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    portfo : TYPE
+        DESCRIPTION.
+
+    """
     file = open(filename, 'rb')
     
     portfo = pickle.load(file)
     
     file.close()
     return portfo
-
 
 def concat_CSVtable(filename_list, sort_by='Date'):
     

@@ -8,13 +8,14 @@ Created on Wed May 15 02:31:06 2024
 import datetime as datetime
 import openpyxl
 
-from run_gen_MR_dir import run_gen_MR_signals_list
+from run_gen_MR_dir import run_gen_MR_signals_list, run_gen_MR_signals_preloaded_list
 import EC_tools.utility as util
 from crudeoil_future_const import CELL_LOC_DICT, MONTHS_TO_SYMBOLS, \
-                                    FILENAME_LIST, CAT_LIST, KEYWORDS_LIST, \
+                                     CAT_LIST, KEYWORDS_LIST, \
                                         SYMBOL_LIST, APC_FILE_LOC, \
                                             HISTORY_DAILY_FILE_LOC, \
-                                                HISTORY_MINTUE_FILE_LOC
+                                                HISTORY_MINTUE_FILE_LOC, \
+                                                    TEST_FILE_LOC
 
 
 CONTRACT_NUM_DICT = {'CLc1': 50, 'CLc2': 50, 
@@ -23,8 +24,11 @@ CONTRACT_NUM_DICT = {'CLc1': 50, 'CLc2': 50,
                      'QOc1': 50, 'QOc2': 50,
                      'QPc1': 50, 'QPc2': 50,}
 
+SIGNAL_PKL = util.load_pkl("crudeoil_future_APC_full.pkl")
+HISTORY_DAILY_PKL = util.load_pkl("crudeoil_future_daily_full.pkl")
+#HISTORY_MINUTE_PKL = util.load_pkl("crudeoil_future_minute_full.pkl")
+OPENPRICE_PKL = util.load_pkl("crudeoil_future_openprice_full.pkl")
 
-@util.time_it
 def make_new_symbol(date_interest,old_symbol, forward_unit=1):
     """
     A function that generate a new price symbol based on the month and year of 
@@ -57,13 +61,20 @@ def run_MR_list(start_date, end_date):
         DESCRIPTION.
 
     """
-    result = run_gen_MR_signals_list(FILENAME_LIST, CAT_LIST, KEYWORDS_LIST, 
-                            SYMBOL_LIST, 
-                            start_date, end_date,
-                            list(APC_FILE_LOC.values()), 
-                            list(HISTORY_DAILY_FILE_LOC.values()), 
-                            list(HISTORY_MINTUE_FILE_LOC.values())) 
-
+# =============================================================================
+#     result = run_gen_MR_signals_list(FILENAME_LIST, CAT_LIST, KEYWORDS_LIST, 
+#                             SYMBOL_LIST, 
+#                             start_date, end_date,
+#                             list(APC_FILE_LOC.values()), 
+#                             list(HISTORY_DAILY_FILE_LOC.values()), 
+#                             list(HISTORY_MINTUE_FILE_LOC.values())) 
+# =============================================================================
+    SAVE_SIGNAL_FILENAME_LIST = TEST_FILE_LOC
+    result = run_gen_MR_signals_preloaded_list(SAVE_SIGNAL_FILENAME_LIST, 
+                                               start_date, end_date,
+                                               SIGNAL_PKL, HISTORY_DAILY_PKL, 
+                                               OPENPRICE_PKL,
+                                               save_or_not = False)
     return result
 
 @util.time_it
@@ -96,7 +107,6 @@ def enter_new_value(workbook,date_interest, cell_loc_dict, signal_result_dict,
     sheet_obj = workbook.active
     
     asset_name_list = list(cell_loc_dict.keys())
-
     for asset_name in asset_name_list:
     #if asset_name == 'CLc1':
         direction_cell = cell_loc_dict[asset_name]['signal_type']
@@ -122,6 +132,7 @@ def enter_new_value(workbook,date_interest, cell_loc_dict, signal_result_dict,
        
     # a function that add new values into the new excel file
     return workbook
+
 @util.time_it
 def gen_new_xlfile(xl_template_filename, output_filename, 
                    date_interest, signal_result_dict,
@@ -166,7 +177,7 @@ if __name__ == "__main__":
     @util.time_it
     def run_things():
         # Define the date of interest
-        date_interest = datetime.datetime(2024,6,1) #datetime.datetime.today()
+        date_interest = datetime.datetime(2024,5,1) #datetime.datetime.today()
     
         # Input and output filename
         XL_TEMPLATE_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/template/Leigh1.xlsx"
