@@ -378,60 +378,6 @@ def loop_date_portfolio_multi_strategy(portfo, signal_table, histroy_intraday_da
     return portfo
      
 
-@util.time_it #@util.save_csv('benchmark_PNL_CLc1_full.csv')
-def run_backtest():
-    # master function that runs the backtest itself.
-    # The current method only allows one singular direction signal perday. and a set of constant EES
-
-    # read the reformatted minute history data
-    history_data = read.read_reformat_Portara_minute_data(FILENAME_MINUTE)
-    
-    # Find the date for trading, only "Buy" or "Sell" date are taken.
-    trade_date_table = prepare_signal_interest(FILENSME_BUYSELL_SIGNALS, trim = False)
-        
-    # loop through the date and set the EES prices for each trading day   
-    dict_trade_PNL = loop_date(trade_date_table, history_data, open_hr='0330', 
-                  close_hr='2000', plot_or_not = False)    
-
-    return dict_trade_PNL
-
-@util.time_it
-@util.pickle_save('portfolio_HOc1_test.pkl')
-def run_backtest_portfolio(start_date, end_date):
-    # master function that runs the backtest itself.
-    # The current method only allows one singular direction signal perday. and a set of constant EES
-
-    # read the reformatted minute history data
-    history_data = read.read_reformat_Portara_minute_data(FILENAME_MINUTE)
-
-    # Find the date for trading, only "Buy" or "Sell" date are taken.
-    trade_date_table = prepare_signal_interest(FILENSME_BUYSELL_SIGNALS, trim = False)
-    
-    #start_date = datetime.datetime(2021,1,1)
-    start_date = datetime.datetime(2023,1,1)
-    end_date = datetime.datetime(2023,12,30)
-    
-    # Select for the date interval for investigation
-    history_data = history_data[(history_data['Date'] > start_date) & 
-                                (history_data['Date'] < end_date)]
-    
-    trade_date_table = trade_date_table[(trade_date_table['Date'] > start_date) & 
-                                        (trade_date_table['Date'] < end_date)]
-    
-    # Initialise Portfolio
-    P1 = Portfolio()
-    USD_initial = Asset("USD", 10_300_000, "dollars", "Cash") # initial fund
-    P1.add(USD_initial,datetime=datetime.datetime(2020,12,31))
-    
-    # loop through the date and set the EES prices for each trading day   
-    P1 = loop_date_portfolio(P1, trade_date_table, history_data,
-                                            give_obj_name = "USD", get_obj_name = "HOc1",
-                                            get_obj_quantity = 10,
-                                            open_hr='1300', close_hr='1828', 
-                                            plot_or_not = False)    
-    print('master_table', P1.master_table)
-
-    return P1
 
 ## WIP area ###
 
