@@ -40,7 +40,7 @@ class Bookkeep(object):
 
     H = ['target exit']
 
-    End = ['stop exit', 'direction', 'price code']
+    End = ['stop exit', 'direction', 'price code', 'strategy_id']
     
     
     benchmark_PNL = ['Price Code', 'predicted signal','date',

@@ -9,7 +9,8 @@ Created on Sat Jun 22 23:32:11 2024
 from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, \
                                 APC_FILE_LOC, HISTORY_DAILY_FILE_LOC, \
                                     HISTORY_MINTUE_FILE_LOC, \
-                                        ARGUS_BENCHMARK_SIGNAL_FILE_LOC, TEST_FILE_LOC
+                                        ARGUS_BENCHMARK_SIGNAL_FILE_LOC, TEST_FILE_LOC,\
+                                            ARGUS_BENCHMARK_SIGNAL_FILE_LOC
                                         
 from EC_tools.read import merge_portara_data
 import EC_tools.utility as util
@@ -25,10 +26,11 @@ def load_source_data():
     HISTORY_MINUTE_PKL = util.load_pkl("crudeoil_future_minute_full.pkl")
     OPENPRICE_PKL = util.load_pkl("crudeoil_future_openprice_full.pkl")
 
-    SAVE_SIGNAL_FILENAME_LIST = TEST_FILE_LOC
+    SAVE_SIGNAL_FILENAME_LIST = ARGUS_BENCHMARK_SIGNAL_FILE_LOC #TEST_FILE_LOC
     
-    return SIGNAL_PKL, HISTORY_DAILY_PKL, HISTORY_MINUTE_PKL, OPENPRICE_PKL,\
-                SAVE_SIGNAL_FILENAME_LIST
+    return SIGNAL_PKL, HISTORY_DAILY_PKL, \
+                HISTORY_MINUTE_PKL,  \
+                OPENPRICE_PKL, SAVE_SIGNAL_FILENAME_LIST
 
 
 def quick_backtest():
@@ -43,17 +45,22 @@ if __name__ == "__main__":
     print("===============Data Management=============")
     
     # run preprocessing (calculate earliest entry and update all database )
-    print("============Running Preprocessing==========")
     
     run_preprocess()
+    
     print("============Loading Source Files===========")
     
+    SIGNAL_PKL = util.load_pkl("crudeoil_future_APC_full.pkl")
+    HISTORY_DAILY_PKL = util.load_pkl("crudeoil_future_daily_full.pkl")
+    #HISTORY_MINUTE_PKL = util.load_pkl("crudeoil_future_minute_full.pkl")
+    OPENPRICE_PKL = util.load_pkl("crudeoil_future_openprice_full.pkl")
 
+    SAVE_SIGNAL_FILENAME_LIST = ARGUS_BENCHMARK_SIGNAL_FILE_LOC #TEST_FILE_LOC
     
-    SIGNAL_PKL, HISTORY_DAILY_PKL, HISTORY_MINUTE_PKL, OPENPRICE_PKL,\
-                                SAVE_SIGNAL_FILENAME_LIST = load_source_data()
+    #SIGNAL_PKL, HISTORY_DAILY_PKL, HISTORY_MINUTE_PKL, OPENPRICE_PKL,\
+    #                            SAVE_SIGNAL_FILENAME_LIST = load_source_data()
     
-    start_date = "2024-03-10"
+    start_date = "2021-01-05"
     end_date = "2024-05-18"
     
     print("=========Generating Buy/Sell Signals=======")

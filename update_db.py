@@ -107,6 +107,7 @@ def download_latest_APC_list(auth_pack, save_filename_list, categories_list,
                 signal_data = download_latest_APC(auth_pack, asset_pack)
                 
             print("File: {} is generated.".format(filename))
+            
 
             return signal_data
         
@@ -143,8 +144,5 @@ if __name__ == "__main__":
     
     
     download_latest_APC_list(AUTH_PACK, SAVE_FILENAME_LIST, CAT_LIST, 
-                             KEYWORDS_LIST, SYMBOL_LIST,fast_dl=True)    
+                             KEYWORDS_LIST, SYMBOL_LIST,fast_dl=False)    
     #download_latest_APC(auth_pack, asset_pack)
-
-    #download_latest_APC_fast(AUTH_PACK, ASSET_PACK, 
-    #            "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/dump/APC_latest_CLc1.csv")

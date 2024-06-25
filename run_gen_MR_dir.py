@@ -110,9 +110,9 @@ def loop_signal(signal_data, history_data, open_price_data, start_date, end_date
         this_symbol = portara_dat["symbol"].iloc[i]
 
         # cross reference the APC list to get the APC of this date and symbol
-        APCs_this_date = APCs_dat[(APCs_dat['Forecast Period']==this_date) ]
+        APCs_this_date = APCs_dat[(APCs_dat['Forecast Period']==this_date)]
 #                                  & (APCs_dat['symbol']== this_symbol)] #<-- here add a condition matching the symbols
-        
+        print(this_date, this_symbol, APCs_this_date['Forecast Period'].iloc[0])
         forecast_date = APCs_this_date['Forecast Period'].to_list()[0] 
         
         # This is the APC number only
@@ -157,8 +157,8 @@ def loop_signal(signal_data, history_data, open_price_data, start_date, end_date
                                                          strategy_name=\
                                                              "benchmark")
         
-        print(forecast_date, full_contract_symbol,'MR signal generated!', direction,i)
-        #print(open_price_data[open_price_data['Date']==this_date]['Time'].item(), price_330)
+        #print(forecast_date, full_contract_symbol,'MR signal generated!', direction,i)
+        
     
         # loop functions takes in a list of strategy calculation,
         # loop functions takes in a list of EES values and methods
@@ -172,7 +172,7 @@ def loop_signal(signal_data, history_data, open_price_data, start_date, end_date
                        
         # put all the data in a singular list
         data = [forecast_date, full_contract_symbol] + strategy_data + \
-                [price_330_quant] + EES + [direction, price_code]
+                [price_330_quant] + EES + [direction, price_code, strategy_name]
                 
         # Storing the data    
         dict_contracts_quant_signals = book.store_to_bucket_single(data)       
@@ -217,7 +217,6 @@ def gen_signal_vector(signal_data, history_data, loop_start_date = ""): # WIP
 @util.time_it
 def run_gen_MR_signals(auth_pack, asset_pack, start_date, end_date,
                        signal_filename, filename_daily, filename_minute, 
-                       filename_openprice,
                        update_apc = False):
     # input is a dictionary or json file
     

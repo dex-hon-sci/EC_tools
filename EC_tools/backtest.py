@@ -319,14 +319,64 @@ def loop_date_portfolio(portfo, signal_table, histroy_intraday_data,
     return portfo
     
 
-def loop_date_portfolio_multi_strategy():
+def loop_date_portfolio_multi_strategy(portfo, signal_table, histroy_intraday_data, 
+                        give_obj_name = "USD", get_obj_name = "CLc1", 
+                        get_obj_quantity = 50,
+                        open_hr='0330', close_hr='1930',
+                        plot_or_not = False):
     """
     A method that utilise one portfolio to run multi-strategy
     
     """
 
+    for date_interest, direction, target_entry, target_exit, \
+        stop_exit, price_code in zip(signal_table['Date'], 
+                                    signal_table['direction'], 
+                                    signal_table['target entry'],
+                                    signal_table['target exit'], 
+                                    signal_table['stop exit'],
+                                    signal_table['price code']):
+                                        
+        # Define the date of interest by reading TimeStamp. 
+        # We may want to remake all this and make Timestamp the universal 
+        # parameter when dealing with time
+        day = extract_intraday_minute_data(histroy_intraday_data, date_interest, 
+                                     open_hr=open_hr, close_hr=close_hr)
+        
+        print(day['Date'].iloc[0], direction, target_entry, target_exit, stop_exit)
+        
+        open_hr_dt, open_price = read.find_closest_price(day,
+                                                           target_hr= open_hr,
+                                                           direction='forward')
+        
+        print('open',open_hr_dt, open_price)
+        
+        close_hr_dt, close_price = read.find_closest_price(day,
+                                                           target_hr= close_hr,
+                                                           direction='backward')
+        print('close', close_hr_dt, close_price)
     
-    return 
+        print('==================================')
+        # The main Trade function here
+        EES_dict, trade_open, trade_close, \
+            pos_list, exec_pos_list = OneTradePerDay(portfo).run_trade(\
+                                            day, give_obj_name, get_obj_name, 
+                                            get_obj_quantity, target_entry, 
+                                            target_exit, stop_exit, 
+                                            open_hr=open_hr_dt, 
+                                            close_hr=close_hr_dt, 
+                                            direction = direction)
+        print("----value----")
+        print("value",portfo.total_value(date_interest))
+        print('==================================')
+
+                                    
+        # plotting mid-backtest
+        plot_in_backtest(date_interest, EES_dict, direction, 
+                         plot_or_not=plot_or_not)
+        
+    return portfo
+     
 
 @util.time_it #@util.save_csv('benchmark_PNL_CLc1_full.csv')
 def run_backtest():

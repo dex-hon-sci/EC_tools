@@ -96,6 +96,7 @@ def run_preprocess():
     aggegrate pickle files so that the runtime of signal generation and back-test
     can be reduced.
     """
+    print("============Running Preprocessing==========")
     
     # load all raw data into pkl format
     create_aggegrate_pkl(APC_FILE_LOC, read.read_reformat_APC_data,
