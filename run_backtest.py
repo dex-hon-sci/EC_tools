@@ -11,6 +11,7 @@ import EC_tools.read as read
 import EC_tools.backtest as backtest
 import EC_tools.utility as util
 from EC_tools.portfolio import Asset, Portfolio
+from crudeoil_future_const import OPEN_HR_DICT
 
 @util.time_it
 @util.save_csv('benchmark_PNL_QPc2_full.csv')
@@ -78,9 +79,29 @@ def run_backtest_portfolio(filename_minute, filename_buysell_signals,
 
     return P1
 
-def run_backtest_crude_oil():
+def run_backtest_portfolio_preloaded_list(master_buysell_signals_filename, 
+                                          histroy_intraday_data_pkl_filename,
+                                          start_date, end_date,
+                                          give_obj_name = "USD", 
+                                          get_obj_quantity = 3): 
     
-    return
+    histroy_intraday_data_pkl = util.load_pkl(histroy_intraday_data_pkl_filename)
+    # Find the date for trading, only "Buy" or "Sell" date are taken.
+    trade_date_table = backtest.prepare_signal_interest(master_buysell_signals_filename, 
+                                               trim = False)
+    
+    trade_date_table = trade_date_table[(trade_date_table['Date'] > start_date) & 
+                                        (trade_date_table['Date'] < end_date)]
+    
+    # Initialise Portfolio
+    P1 = Portfolio()
+    USD_initial = Asset("USD", 10_300_000, "dollars", "Cash") # initial fund
+    P1.add(USD_initial,datetime=datetime.datetime(2020,12,31))
+    
+    # a list of input files
+    P1 = backtest.loop_date_portfolio_preloaded_list(P1, trade_date_table, 
+                                           histroy_intraday_data_pkl)
+    return P1
 
 if __name__ == "__main__":
     # master function that runs the backtest itself.
@@ -90,5 +111,15 @@ if __name__ == "__main__":
     
     APC_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_HOc1.csv"  
     
-    run_backtest_portfolio(FILENAME_MINUTE, FILENAME_BUYSELL_SIGNALS, 
-                           '2023-01-01', '2023-12-30')
+    MASTER_SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/benchmark_signal_full.csv"
+    HISTORY_MINUTE_PKL_FILENAME ="/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_full.pkl"
+
+                                                    
+    #run_backtest_portfolio(FILENAME_MINUTE, FILENAME_BUYSELL_SIGNALS, 
+    #                       '2023-01-01', '2023-12-30')
+    
+    PP = run_backtest_portfolio_preloaded_list(MASTER_SIGNAL_FILENAME, 
+                                          HISTORY_MINUTE_PKL_FILENAME,
+                                          '2023-01-01', '2023-12-30')
+    
+    

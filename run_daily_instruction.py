@@ -61,14 +61,6 @@ def run_MR_list(start_date, end_date):
         DESCRIPTION.
 
     """
-# =============================================================================
-#     result = run_gen_MR_signals_list(FILENAME_LIST, CAT_LIST, KEYWORDS_LIST, 
-#                             SYMBOL_LIST, 
-#                             start_date, end_date,
-#                             list(APC_FILE_LOC.values()), 
-#                             list(HISTORY_DAILY_FILE_LOC.values()), 
-#                             list(HISTORY_MINTUE_FILE_LOC.values())) 
-# =============================================================================
     SAVE_SIGNAL_FILENAME_LIST = TEST_FILE_LOC
     result = run_gen_MR_signals_preloaded_list(SAVE_SIGNAL_FILENAME_LIST, 
                                                start_date, end_date,

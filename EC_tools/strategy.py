@@ -348,8 +348,8 @@ class MRStrategy(object):
         
         return data0
     
-    def set_EES_APC(cond, curve_today, buy_cond=(0.4,0.6,0.1), 
-                            sell_cond =(0.6,0.4,0.9)):
+    def set_EES_APC(cond, curve_today, buy_range=(0.4,0.6,0.1), 
+                            sell_range =(0.6,0.4,0.9)):
         """
         A generic method to set the entry, exit, and stop loss (ESS) prices 
         base on a cumulative probability distribution. 
@@ -387,20 +387,20 @@ class MRStrategy(object):
         
         if cond == "Buy":
             # (A) Entry region at price < APC p=0.4 and 
-            entry_price = float(curve_today(buy_cond[0]))
+            entry_price = float(curve_today(buy_range[0]))
             # (B) Exit price
-            exit_price = float(curve_today(buy_cond[1]))
+            exit_price = float(curve_today(buy_range[1]))
             # (C) Stop loss at APC p=0.1
-            stop_loss = float(curve_today(buy_cond[2]))
+            stop_loss = float(curve_today(buy_range[2]))
 
             
         elif cond == "Sell":
             # (A) Entry region at price > APC p=0.6 and 
-            entry_price = float(curve_today(sell_cond[0]))
+            entry_price = float(curve_today(sell_range[0]))
             # (B) Exit price
-            exit_price = float(curve_today(sell_cond[1]))
+            exit_price = float(curve_today(sell_range[1]))
             # (C) Stop loss at APC p=0.9
-            stop_loss = float(curve_today(sell_cond[2]))
+            stop_loss = float(curve_today(sell_range[2]))
             
         elif cond == "Neutral":
             entry_price = "NA"

@@ -82,7 +82,8 @@ def find_open_price(history_data_daily, history_data_minute, open_hr='0330'): #t
     return open_price_data
 
 def loop_signal(signal_data, history_data, open_price_data, start_date, end_date, 
-                   strategy_func, strategy_name='benchmark',  
+                   strategy_func, strategy_name='benchmark', 
+                   buy_range=(0.4,0.6,0.1), sell_range =(0.6,0.4,0.9),
                   contract_symbol_condse = False, loop_symbol = None): #WIP
     
     # make an empty signal dictionary for storage
@@ -163,7 +164,7 @@ def loop_signal(signal_data, history_data, open_price_data, start_date, end_date
                                                              strategy_name=\
                                                                  "benchmark")
             
-            #print(forecast_date, full_contract_symbol,'MR signal generated!', direction,i)
+            print(forecast_date, full_contract_symbol,'MR signal generated!', direction,i)
             
         
             # loop functions takes in a list of strategy calculation,
@@ -173,7 +174,10 @@ def loop_signal(signal_data, history_data, open_price_data, start_date, end_date
         
             # set resposne price.
             entry_price, exit_price, stop_loss = MRStrategy.set_EES_APC(
-                                                            direction, curve_this_date)
+                                                            direction, 
+                                                            curve_this_date,
+                                                            buy_range=buy_range, 
+                                                            sell_range=sell_range)
             EES = [entry_price, exit_price, stop_loss]
                            
             # put all the data in a singular list
@@ -223,7 +227,7 @@ def gen_signal_vector(signal_data, history_data, loop_start_date = ""): # WIP
 @util.time_it
 def run_gen_MR_signals(auth_pack, asset_pack, start_date, end_date,
                        signal_filename, filename_daily, filename_minute, 
-                       update_apc = False):
+                       buy_range=(0.4,0.6,0.1),sell_range =(0.6,0.4,0.9)):
     # input is a dictionary or json file
     
     # run meanreversion signal generation on the basis of individual programme  
@@ -231,9 +235,6 @@ def run_gen_MR_signals(auth_pack, asset_pack, start_date, end_date,
     
     symbol = asset_pack['symbol']
 
-    # download the relevant APC data from the server
-    if update_apc == True:
-        update_db.download_latest_APC(auth_pack, asset_pack)
     # The reading part takes the longest time: 13 seconds. The loop itself takes 
     # input 1, APC. Load the master table in memory and test multple strategies   
     signal_data =  read.read_reformat_APC_data(signal_filename)
@@ -256,15 +257,53 @@ def run_gen_MR_signals(auth_pack, asset_pack, start_date, end_date,
                                                history_data_daily, 
                                                price_330,
                                                start_date, end_date, 
-                                               MRStrategy().argus_benchmark_strategy)
+                                               MRStrategy().argus_benchmark_strategy,
+                                               buy_range=buy_range, 
+                                               sell_range=sell_range)
     
     # there are better ways than looping. here is a vectoralised method    
     return dict_contracts_quant_signals
 
+# make a function to run multiple signal generation from a list
+# tested
+@util.time_it
+def run_gen_MR_signals_list(filename_list, categories_list, keywords_list, symbol_list, 
+                            start_date, end_date,
+                            signal_list, history_daily_list, 
+                            history_minute_list,save_or_not=False,
+                            buy_range=(0.4,0.6,0.1),sell_range =(0.6,0.4,0.9)):
+    
+    # a function to download the APC of a list of asset
+    # input username and password.json
+    auth_pack = None
+    output_dict = dict()
+    for filename, cat, key, sym, signal, history_daily, history_minute in zip(\
+        filename_list, categories_list, keywords_list, symbol_list, signal_list, \
+                                        history_daily_list, history_minute_list):
+        @util.time_it
+        @util.save_csv("{}".format(filename), save_or_not=save_or_not)
+        def run_gen_MR_signals_indi(cat, key, sym):
+            asset_pack = {'categories': cat, 'keywords': key, 'symbol': sym}
+            signal_data = run_gen_MR_signals(auth_pack, asset_pack, 
+                                             start_date, end_date,
+                                             signal, history_daily, 
+                                             history_minute,
+                                             buy_range=buy_range, 
+                                             sell_range=sell_range) #WIP
+            print("name {}".format(filename))
+
+            return signal_data
+        
+        signal_data = run_gen_MR_signals_indi(cat, key, sym)
+        output_dict[sym] = signal_data
+        print("All asset signal generated!")
+    return output_dict
+
 @util.time_it
 def run_gen_MR_signals_preloaded_list(filename_list, start_date, end_date,
                        signal_pkl, history_daily_pkl,
-                       openprice_pkl, save_or_not = True):
+                       openprice_pkl, save_or_not = True,
+                       buy_range=(0.4,0.6,0.1),sell_range =(0.6,0.4,0.9)):
     
     # run meanreversion signal generation on the basis of individual programme  
     # Loop the whole list in one go with all the contracts or Loop it one contract at a time?
@@ -294,6 +333,8 @@ def run_gen_MR_signals_preloaded_list(filename_list, start_date, end_date,
                                                        open_price,
                                                        start_date, end_date, 
                                                        MRStrategy().argus_benchmark_strategy,
+                                                       buy_range=buy_range,
+                                                       sell_range=sell_range,
                                                        loop_symbol=symbol)
             return dict_contracts_quant_signals
         
@@ -301,38 +342,6 @@ def run_gen_MR_signals_preloaded_list(filename_list, start_date, end_date,
         master_dict[symbol] = run_gen_MR_indi()
     # there are better ways than looping. here is a vectoralised method    
     return master_dict
-
-
-# make a function to run multiple signal generation from a list
-# tested
-@util.time_it
-def run_gen_MR_signals_list(filename_list, categories_list, keywords_list, symbol_list, 
-                            start_date, end_date,
-                            signal_list, history_daily_list, 
-                            history_minute_list,save_or_not=False):
-    # a function to download the APC of a list of asset
-    # input username and password.json
-    auth_pack = None
-    output_dict = dict()
-    for filename, cat, key, sym, signal, history_daily, history_minute in zip(\
-        filename_list, categories_list, keywords_list, symbol_list, signal_list, \
-                                        history_daily_list, history_minute_list):
-        @util.time_it
-        @util.save_csv("{}".format(filename), save_or_not=save_or_not)
-        def run_gen_MR_signals_indi(cat, key, sym):
-            asset_pack = {'categories': cat, 'keywords': key, 'symbol': sym}
-            signal_data = run_gen_MR_signals(auth_pack, asset_pack, 
-                                             start_date, end_date,
-                                             signal, history_daily, 
-                                             history_minute) #WIP
-            print("name {}".format(filename))
-
-            return signal_data
-        
-        signal_data = run_gen_MR_signals_indi(cat, key, sym)
-        output_dict[sym] = signal_data
-        print("All asset signal generated!")
-    return output_dict
 
 if __name__ == "__main__":
 

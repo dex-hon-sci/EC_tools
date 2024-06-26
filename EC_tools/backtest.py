@@ -17,6 +17,7 @@ from EC_tools.bookkeep import Bookkeep
 from EC_tools.trade import  trade_choice_simple, OneTradePerDay
 import EC_tools.plot as plot
 from EC_tools.portfolio import Asset, Portfolio
+from crudeoil_future_const import OPEN_HR_DICT, CLOSE_HR_DICT
 
 FILENAME_MINUTE = "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/HO.001"
 FILENSME_BUYSELL_SIGNALS = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_HOc1_full.csv"
@@ -103,7 +104,6 @@ def extract_intraday_minute_data(histrot_intraday_data, date_interest,
         A table isolated by the date of interest.
 
     """    
-    print('open_hr', open_hr)
     # convert the string hour and minute input to datetime.time object
     
     if type(open_hr) == str:
@@ -267,6 +267,7 @@ def loop_date_portfolio(portfo, signal_table, histroy_intraday_data,
     """
     Portfolio module method.
     
+    
     """
     
     
@@ -319,45 +320,51 @@ def loop_date_portfolio(portfo, signal_table, histroy_intraday_data,
     return portfo
     
 
-def loop_date_portfolio_multi_strategy(portfo, signal_table, histroy_intraday_data, 
-                        give_obj_name = "USD", get_obj_name = "CLc1", 
-                        get_obj_quantity = 50,
-                        open_hr='0330', close_hr='1930',
-                        plot_or_not = False):
+def loop_date_portfolio_preloaded_list(portfo, signal_table, 
+                                       histroy_intraday_data_pkl, 
+                                        give_obj_name = "USD", 
+                                        get_obj_quantity = 3,
+                                        plot_or_not = False):
     """
     A method that utilise one portfolio to run multi-strategy
     
     """
-
-    for date_interest, direction, target_entry, target_exit, \
-        stop_exit, price_code in zip(signal_table['Date'], 
-                                    signal_table['direction'], 
-                                    signal_table['target entry'],
-                                    signal_table['target exit'], 
-                                    signal_table['stop exit'],
-                                    signal_table['price code']):
-                                        
-        # Define the date of interest by reading TimeStamp. 
-        # We may want to remake all this and make Timestamp the universal 
-        # parameter when dealing with time
-        day = extract_intraday_minute_data(histroy_intraday_data, date_interest, 
-                                     open_hr=open_hr, close_hr=close_hr)
-        
-        print(day['Date'].iloc[0], direction, target_entry, target_exit, stop_exit)
-        
-        open_hr_dt, open_price = read.find_closest_price(day,
-                                                           target_hr= open_hr,
-                                                           direction='forward')
-        
-        print('open',open_hr_dt, open_price)
-        
-        close_hr_dt, close_price = read.find_closest_price(day,
-                                                           target_hr= close_hr,
-                                                           direction='backward')
-        print('close', close_hr_dt, close_price)
+    #symbol_list = list(histroy_intraday_data_pkl.keys())
     
-        print('==================================')
-        # The main Trade function here
+    for i in range(len(signal_table)):
+        item = signal_table.iloc[i]
+                
+        symbol = item['price code']
+        direction = item['direction'] 
+        target_entry = item['target entry'] 
+        target_exit = item['target exit'] 
+        stop_exit = item['stop exit'] 
+        
+        date_interest = item['APC forecast period']
+        get_obj_name = item['price code']
+
+        open_hr = OPEN_HR_DICT[symbol]
+        close_hr = CLOSE_HR_DICT[symbol]
+                
+        histroy_intraday_data = histroy_intraday_data_pkl[symbol]
+
+        
+        day = extract_intraday_minute_data(histroy_intraday_data, date_interest, 
+                                      open_hr=open_hr, close_hr=close_hr)
+        
+        open_hr_dt, open_price = read.find_closest_price(day,target_hr= open_hr,
+                                                            direction='forward')
+        
+        #print('open',open_hr_dt, open_price)
+        
+        close_hr_dt, close_price = read.find_closest_price(day,target_hr= close_hr,
+                                                            direction='backward')
+        #print('close', close_hr_dt, close_price)
+    
+        #print('==================================')
+        
+        print(i, date_interest, direction, symbol)
+        
         EES_dict, trade_open, trade_close, \
             pos_list, exec_pos_list = OneTradePerDay(portfo).run_trade(\
                                             day, give_obj_name, get_obj_name, 
@@ -366,28 +373,33 @@ def loop_date_portfolio_multi_strategy(portfo, signal_table, histroy_intraday_da
                                             open_hr=open_hr_dt, 
                                             close_hr=close_hr_dt, 
                                             direction = direction)
-        print("----value----")
-        print("value",portfo.total_value(date_interest))
-        print('==================================')
-
-                                    
+                
         # plotting mid-backtest
         plot_in_backtest(date_interest, EES_dict, direction, 
-                         plot_or_not=plot_or_not)
+                          plot_or_not=plot_or_not)
         
     return portfo
-     
 
-
-## WIP area ###
-
-
-def run_backtest_portfolio_multistrategy(): 
+def run_backtest_portfolio_preloaded_list(master_buysell_signals_data, 
+                                          histroy_intraday_data_pkl,
+                                          start_date, end_date,
+                                          give_obj_name = "USD", 
+                                          get_obj_quantity = 3): 
     
-    history_data = read.read_reformat_Portara_minute_data(FILENAME_MINUTE)
-
+    
+    HISTORY_MINUTE_PKL = util.load_pkl(
+        "/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_full.pkl")
+    #MASTER_BUYSELL_SIGNALS_FILENAME = util.load_pkl("test_benchmark_signal_full.csv")
+   ## master_buysell_signals_data = pd.read_csv(
+   ##     "/home/dexter/Euler_Capital_codes/EC_tools/test_benchmark_signal_full.csv")
+    
     # Find the date for trading, only "Buy" or "Sell" date are taken.
-    trade_date_table = prepare_signal_interest(FILENSME_BUYSELL_SIGNALS, trim = False)
+    trade_date_table = prepare_signal_interest(
+        "/home/dexter/Euler_Capital_codes/EC_tools/benchmark_signal_full.csv", 
+                                               trim = False)
+    
+    trade_date_table = trade_date_table[(trade_date_table['Date'] > start_date) & 
+                                        (trade_date_table['Date'] < end_date)]
     
     # Initialise Portfolio
     P1 = Portfolio()
@@ -395,7 +407,8 @@ def run_backtest_portfolio_multistrategy():
     P1.add(USD_initial,datetime=datetime.datetime(2020,12,31))
     
     # a list of input files
-    P1.loop_date_portfolio_multi_strategy()
+    P1 = loop_date_portfolio_preloaded_list(P1, trade_date_table, 
+                                           histroy_intraday_data_pkl)
     return P1
 
 
@@ -404,6 +417,7 @@ class LoopDate(object):
         return 
 
 if __name__ == "__main__":
+    start_date = "2021-01-05"
+    end_date = "2024-05-18"
+    PP = run_backtest_portfolio_preloaded_list(start_date, end_date)
     
-    #run_backtest()
-    run_backtest_portfolio()
