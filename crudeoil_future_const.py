@@ -166,8 +166,6 @@ TEST_FILE_LOC = {
 }
 
 ARGUS_BENCHMARK_PNL_Portfolio_LOC = {}
-
-
 ARGUS_BENCHMARK_PNL_MASTER_FILE_LOC = None
 ARGUS_BENCHMARK_PNL_MASTER_Portfolio_LOC = None
     
@@ -185,18 +183,18 @@ TEMP_FILENAME_LIST = ['temp_signal_CLc1.csv',
 
 
 CAT_LIST = [ 'Argus Nymex WTI month 1, Daily', 
-               'Argus Nymex Heating oil month 1, Daily', 
-               'Argus Nymex RBOB Gasoline month 1, Daily', 
-               'Argus Brent month 1, Daily', 
-               'Argus ICE gasoil month 1, Daily',
                 'Argus Nymex WTI month 2, Daily', 
+               'Argus Nymex Heating oil month 1, Daily', 
                'Argus Nymex Heating oil month 2, Daily', 
+               'Argus Nymex RBOB Gasoline month 1, Daily', 
                'Argus Nymex RBOB Gasoline month 2, Daily', 
+               'Argus Brent month 1, Daily', 
                'Argus Brent month 2, Daily', 
+               'Argus ICE gasoil month 1, Daily',
                'Argus ICE gasoil month 2, Daily']
 
-KEYWORDS_LIST = ["WTI","Heating", "Gasoline",'Brent', "gasoil",
-                 "WTI","Heating", "Gasoline",'Brent', "gasoil"]
+KEYWORDS_LIST = ["WTI","WTI","Heating", "Heating","Gasoline","Gasoline",
+                 'Brent', 'Brent',"gasoil", 'gasoil']
 
 SYMBOL_LIST = list(HISTORY_DAILY_FILE_LOC.keys())
 

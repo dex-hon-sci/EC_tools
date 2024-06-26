@@ -473,12 +473,12 @@ class OneTradePerDay(Trade):
         # Execute the positions
         ExecutePosition(opening_pos).fill_pos(fill_time = trade_open[0], 
                                             pos_type=pos_type1)
-        print(opening_pos.portfolio.master_table)
+        #print(opening_pos.portfolio.master_table)
         
         ExecutePosition(closing_pos).fill_pos(fill_time = trade_close[0], 
                                            pos_type=pos_type2)
         
-        print(closing_pos.portfolio.master_table)
+        #print(closing_pos.portfolio.master_table)
 
         # pack the outputs objects into lists
         exec_pos_list = [opening_pos,closing_pos]

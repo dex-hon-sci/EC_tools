@@ -355,11 +355,9 @@ def loop_date_portfolio_preloaded_list(portfo, signal_table,
         open_hr_dt, open_price = read.find_closest_price(day,target_hr= open_hr,
                                                             direction='forward')
         
-        #print('open',open_hr_dt, open_price)
         
         close_hr_dt, close_price = read.find_closest_price(day,target_hr= close_hr,
                                                             direction='backward')
-        #print('close', close_hr_dt, close_price)
     
         #print('==================================')
         
@@ -380,36 +378,6 @@ def loop_date_portfolio_preloaded_list(portfo, signal_table,
         
     return portfo
 
-def run_backtest_portfolio_preloaded_list(master_buysell_signals_data, 
-                                          histroy_intraday_data_pkl,
-                                          start_date, end_date,
-                                          give_obj_name = "USD", 
-                                          get_obj_quantity = 3): 
-    
-    
-    HISTORY_MINUTE_PKL = util.load_pkl(
-        "/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_full.pkl")
-    #MASTER_BUYSELL_SIGNALS_FILENAME = util.load_pkl("test_benchmark_signal_full.csv")
-   ## master_buysell_signals_data = pd.read_csv(
-   ##     "/home/dexter/Euler_Capital_codes/EC_tools/test_benchmark_signal_full.csv")
-    
-    # Find the date for trading, only "Buy" or "Sell" date are taken.
-    trade_date_table = prepare_signal_interest(
-        "/home/dexter/Euler_Capital_codes/EC_tools/benchmark_signal_full.csv", 
-                                               trim = False)
-    
-    trade_date_table = trade_date_table[(trade_date_table['Date'] > start_date) & 
-                                        (trade_date_table['Date'] < end_date)]
-    
-    # Initialise Portfolio
-    P1 = Portfolio()
-    USD_initial = Asset("USD", 10_300_000, "dollars", "Cash") # initial fund
-    P1.add(USD_initial,datetime=datetime.datetime(2020,12,31))
-    
-    # a list of input files
-    P1 = loop_date_portfolio_preloaded_list(P1, trade_date_table, 
-                                           histroy_intraday_data_pkl)
-    return P1
 
 
 class LoopDate(object):
@@ -417,7 +385,10 @@ class LoopDate(object):
         return 
 
 if __name__ == "__main__":
-    start_date = "2021-01-05"
+    start_date = "2024-01-05"
     end_date = "2024-05-18"
-    PP = run_backtest_portfolio_preloaded_list(start_date, end_date)
+
+    #PP = run_backtest_portfolio_preloaded_list(MASTER_SIGNAL_FILENAME, 
+    #                                           HISTORY_MINUTE_PKL,
+    #                                           start_date, end_date)
     

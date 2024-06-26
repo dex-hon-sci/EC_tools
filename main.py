@@ -50,60 +50,63 @@ if __name__ == "__main__":
     
     # run preprocessing (calculate earliest entry and update all database )
     
-    run_preprocess()
+    #run_preprocess()
     
     print("============Loading Source Files===========")
     
-    SIGNAL_PKL = util.load_pkl(
-        "/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_APC_full.pkl")
-    HISTORY_DAILY_PKL = util.load_pkl(
-        "/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_daily_full.pkl")
-    #HISTORY_MINUTE_PKL = util.load_pkl("crudeoil_future_minute_full.pkl")
-    OPENPRICE_PKL = util.load_pkl(
-        "/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_openprice_full.pkl")
-
-    SAVE_SIGNAL_FILENAME_LIST = TEST_FILE_LOC #ARGUS_BENCHMARK_SIGNAL_FILE_LOC #TEST_FILE_LOC
-    
-    #SIGNAL_PKL, HISTORY_DAILY_PKL, HISTORY_MINUTE_PKL, OPENPRICE_PKL,\
-    #                            SAVE_SIGNAL_FILENAME_LIST = load_source_data()
+# =============================================================================
+#     SIGNAL_PKL = util.load_pkl(
+#         "/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_APC_full.pkl")
+#     HISTORY_DAILY_PKL = util.load_pkl(
+#         "/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_daily_full.pkl")
+#     #HISTORY_MINUTE_PKL = util.load_pkl("crudeoil_future_minute_full.pkl")
+#     OPENPRICE_PKL = util.load_pkl(
+#         "/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_openprice_full.pkl")
+# 
+#     SAVE_SIGNAL_FILENAME_LIST = ARGUS_BENCHMARK_SIGNAL_FILE_LOC #TEST_FILE_LOC
+#     
+#     #SIGNAL_PKL, HISTORY_DAILY_PKL, HISTORY_MINUTE_PKL, OPENPRICE_PKL,\
+#     #                            SAVE_SIGNAL_FILENAME_LIST = load_source_data()
+# =============================================================================
     
     start_date = "2021-01-05"
-    end_date = "2024-05-18"
+    end_date = "2024-06-15"
     
     print("=========Generating Buy/Sell Signals=======")
     
     # run strategy, let the user to choose strategy here (add strategy id)
     
-    run_gen_MR_signals_preloaded_list(SAVE_SIGNAL_FILENAME_LIST, 
-                                      start_date, end_date,
-                           SIGNAL_PKL, HISTORY_DAILY_PKL, OPENPRICE_PKL,
-                           save_or_not = True)
-    print("---------merge signals tables--------------")
-    
-    SIGNAL_LIST = list(ARGUS_BENCHMARK_SIGNAL_FILE_LOC.values())   
-    #SIGNAL_LIST = list(TEST_FILE_LOC.values())   
-    
-    MASTER_SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signal_full.csv"
-    merge_raw_data(SIGNAL_LIST, MASTER_SIGNAL_FILENAME, sort_by="APC forecast period")
-
+# =============================================================================
+#     run_gen_MR_signals_preloaded_list(SAVE_SIGNAL_FILENAME_LIST, 
+#                                       start_date, end_date,
+#                            SIGNAL_PKL, HISTORY_DAILY_PKL, OPENPRICE_PKL,
+#                            save_or_not = True)
+#     
+#     print("---------merge signals tables--------------")
+#     
+#     SIGNAL_LIST = list(ARGUS_BENCHMARK_SIGNAL_FILE_LOC.values())   
+#     #SIGNAL_LIST = list(TEST_FILE_LOC.values())   
+#     
+#     MASTER_SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signal_full.csv"
+#     merge_raw_data(SIGNAL_LIST, MASTER_SIGNAL_FILENAME, sort_by="APC forecast period")
+# 
+# =============================================================================
     print("=========Running Back-Testing =============")
     start_date = "2024-01-05"
-    end_date = "2024-05-18"
+    end_date = "2024-04-05"
     
-    MASTER_SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/benchmark_signal_full.csv"
-    #HISTORY_MINUTE_PKL = util.load_pkl(
-    #    "/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_full.pkl")
+        
+    MASTER_SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signal_full.csv"
+    HISTORY_MINUTE_PKL_FILENAME ="/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_full.pkl"
 
+
+
+    @util.time_it
+    def quick_backtest_time():
+        PP =  quick_backtest(MASTER_SIGNAL_FILENAME, HISTORY_MINUTE_PKL_FILENAME,start_date, end_date)
+        return PP
     
-    #PP =  quick_backtest(MASTER_SIGNAL_FILENAME, HISTORY_MINUTE_PKL,start_date, end_date)
+    PP = quick_backtest_time()
 
-
-#merge_CSV_table
-# opne_pickle
-
-
-# run backtest- let the user to generate backtest data using their method
-#run_backtest_portfolio
-
-# Visualise PNL plot and metrics.
-#run_PNL
+    # Visualise PNL plot and metrics.
+    #run_PNL

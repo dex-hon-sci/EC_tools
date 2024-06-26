@@ -133,6 +133,7 @@ class MRStrategy(object):
         
         # spline the APCs
         quant_list = np.array(list(map(float, apc_curve_lag5.columns.values[1:-1])))
+#        print(apc_curve_lag5.iloc[0][1:-1].to_numpy())
         apc_curve_lag5_spline = [mfunc.generic_spline(quant_list, 
                                     apc_curve_lag5.iloc[i][1:-1].to_numpy()) 
                                   for i in range(len(apc_curve_lag5))]
@@ -173,13 +174,31 @@ class MRStrategy(object):
         cond3_sell = rollinglagq5day > median_apc_5days
         # (3) price at today's opening hour below the 0.9 quantile of today's apc
         cond4_sell = open_price <= curve_today_spline([apc_trade_Qlimit[1]])[0] #float(curve_today['0.9'].iloc[0])
+
+        #print(apc_curve_lag5_spline[-2]([apc_mid_Q])[0])
+       
+# =============================================================================
+#         print("===================This is in the package")  
+#         print("cond1_buy", cond1_buy, history_data_lag2_close, signal_data_lag2_median)
+#         print("cond2_buy", cond2_buy, history_data_lag1_close, signal_data_lag1_median)
+#         print("cond3_buy", cond3_buy, rollinglagq5day,  median_apc_5days)
+#         print("cond4_buy", cond4_buy, open_price, curve_today_spline([apc_trade_Qlimit[0]])[0])
+#         print("====================")
+#         print("cond1_sell", cond1_sell, history_data_lag2_close, signal_data_lag2_median)
+#         print("cond2_sell", cond2_sell, history_data_lag1_close, signal_data_lag1_median)
+#         print("cond3_sell", cond3_sell, rollinglagq5day,  median_apc_5days)
+#         print("cond4_sell", cond4_sell, open_price, curve_today_spline([apc_trade_Qlimit[1]])[0])
+#         print("======================")
+# =============================================================================
         
         self._buy_cond_list = [cond1_buy, cond2_buy, cond3_buy, cond4_buy]
         self._sell_cond_list = [cond1_sell, cond2_sell, cond3_sell, cond4_sell]
 
-        #print("buy_cond",self._buy_cond_list, self.buy_cond)
-        #print("sell_cond",self._sell_cond_list, self.sell_cond)
-        #print("neutral_cond", self.neutral_cond)
+# =============================================================================
+#         print("buy_cond",self._buy_cond_list, self.buy_cond)
+#         print("sell_cond",self._sell_cond_list, self.sell_cond)
+#         print("neutral_cond", self.neutral_cond)
+# =============================================================================
         return self.direction
 
     def argus_benchmark_mode(price_330, history_data_lag5, apc_curve_lag5,

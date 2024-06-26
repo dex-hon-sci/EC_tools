@@ -95,7 +95,7 @@ def run_backtest_portfolio_preloaded_list(master_buysell_signals_filename,
     
     # Initialise Portfolio
     P1 = Portfolio()
-    USD_initial = Asset("USD", 10_300_000, "dollars", "Cash") # initial fund
+    USD_initial = Asset("USD", 10_000_000, "dollars", "Cash") # initial fund
     P1.add(USD_initial,datetime=datetime.datetime(2020,12,31))
     
     # a list of input files
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     
     APC_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_HOc1.csv"  
     
-    MASTER_SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/benchmark_signal_full.csv"
+    MASTER_SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signal_full.csv"
     HISTORY_MINUTE_PKL_FILENAME ="/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_full.pkl"
 
                                                     

@@ -164,7 +164,8 @@ def loop_signal(signal_data, history_data, open_price_data, start_date, end_date
                                                              strategy_name=\
                                                                  "benchmark")
             
-            print(forecast_date, full_contract_symbol,'MR signal generated!', direction,i)
+            #print(forecast_date, full_contract_symbol,'MR signal generated!', 
+            #       direction,i)
             
         
             # loop functions takes in a list of strategy calculation,
@@ -238,6 +239,7 @@ def run_gen_MR_signals(auth_pack, asset_pack, start_date, end_date,
     # The reading part takes the longest time: 13 seconds. The loop itself takes 
     # input 1, APC. Load the master table in memory and test multple strategies   
     signal_data =  read.read_reformat_APC_data(signal_filename)
+    
    
     # input 2, Portara history file.
     # start_date2 is a temporary solution 
@@ -260,6 +262,7 @@ def run_gen_MR_signals(auth_pack, asset_pack, start_date, end_date,
                                                MRStrategy().argus_benchmark_strategy,
                                                buy_range=buy_range, 
                                                sell_range=sell_range)
+    
     
     # there are better ways than looping. here is a vectoralised method    
     return dict_contracts_quant_signals
@@ -312,6 +315,7 @@ def run_gen_MR_signals_preloaded_list(filename_list, start_date, end_date,
     
     for symbol in symbol_list:
         filename = filename_list[symbol]
+        print(symbol, filename)
         # The reading part takes the longest time: 13 seconds. The loop itself takes 
         # input 1, APC. Load the master table in memory and test multple strategies  
         @util.save_csv("{}".format(filename), save_or_not=save_or_not)
@@ -321,10 +325,9 @@ def run_gen_MR_signals_preloaded_list(filename_list, start_date, end_date,
             # input 2, Portara history file.
             history_daily_file = history_daily_pkl[symbol]
             #history_minute_file = history_minute_pkl[symbol]
-            
+
             # Find the opening price at 03:30 UK time. If not found, 
-            #loop through the next 30 minutes to find the opening price
-            #open_price = find_open_price(history_daily_file, history_minute_file)
+            # loop through the next 30 minutes to find the opening price
             open_price = openprice_pkl[symbol]
 
             # The strategy will be ran in loop_signal decorator
@@ -346,8 +349,8 @@ def run_gen_MR_signals_preloaded_list(filename_list, start_date, end_date,
 if __name__ == "__main__":
 
     
-    start_date = "2024-01-10"
-    end_date = "2024-05-18"
+    start_date = "2024-05-15"
+    end_date = "2024-06-14"
     
     auth_pack = {'username': "dexter@eulercapital.com.au",
                 'password':"76tileArg56!"}

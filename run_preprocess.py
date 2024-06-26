@@ -27,7 +27,7 @@ from EC_tools.backtest import extract_intraday_minute_data
 def create_aggegrate_pkl(file_loc_list, read_func, save_filename="myfile.pkl"):
     master_dict = dict()
     for symbol in SYMBOL_LIST:
-        #print(symbol)
+        print(symbol)
         individual_data = read_func(file_loc_list[symbol])
 
         # Add a symbol column
@@ -60,15 +60,6 @@ def create_open_price_list(history_daily_file_loc, history_minute_file_loc):
     print("Open price data created.")
     
 
-
-
-# =============================================================================
-#     
-# def create_openprice_pkl(): # may not need it after the pickle operation
-#     
-#     return
-# =============================================================================
-
 @util.time_it    
 def load_pkl(filename): # test function
     output = open(filename, 'rb')
@@ -96,20 +87,19 @@ def run_preprocess():
     
     # load all raw data into pkl format
     create_aggegrate_pkl(APC_FILE_LOC, read.read_reformat_APC_data,
-                         save_filename="crudeoil_future_APC_full.pkl")
+                         save_filename="/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_APC_full.pkl")
     create_aggegrate_pkl(HISTORY_DAILY_FILE_LOC, read.read_reformat_Portara_daily_data,
-                         save_filename="crudeoil_future_daily_full.pkl")
-    #create_aggegrate_pkl(HISTORY_MINTUE_FILE_LOC, read.read_reformat_Portara_minute_data,
-    #                     save_filename="crudeoil_future_minute_full.pkl")
+                         save_filename="/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_daily_full.pkl")
+    create_aggegrate_pkl(HISTORY_MINTUE_FILE_LOC, read.read_reformat_Portara_minute_data,
+                         save_filename="/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_full.pkl")
     
     # calculate and load the open price data into a pkl file
     #create_open_price_list(HISTORY_DAILY_FILE_LOC, HISTORY_MINTUE_FILE_LOC)
     create_aggegrate_pkl(OPEN_PRICE_FILE_LOC, read.read_reformat_openprice_data,
-                         save_filename="crudeoil_future_openprice_full.pkl")
+                         save_filename="/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_openprice_full.pkl")
     
     
 if __name__ == "__main__":
     
     run_preprocess()
 
-#load_pkl('crudeoil_future_minute_full.pkl')
