@@ -34,15 +34,15 @@ class Position(object):
     
     """
     # key attributes
-    give_obj: Asset
-    get_obj: Asset
+    give_obj: dict#Asset
+    get_obj: dict#Asset
     _price: float
     status: PositionStatus = PositionStatus.PENDING
     portfolio: Portfolio = None
     
     # optional asset control
     size: float = 1
-    fee: Asset = None
+    fee: dict = None
     pos_type: str = 'Long-Buy'
     
     # position attribute adjustable
@@ -61,15 +61,14 @@ class Position(object):
         """
         # check if the quantity of both assets are 
         #correct_ratio = self.give_obj.quantity / (self.get_obj.quantity*self.size)
-        
         # reminder: give is cash, get is asset (usually)
         if self.pos_type == 'Long-Buy' or 'Long-Sell':
-            correct_ratio = self.give_obj.quantity / (self.get_obj.quantity*self.size)
+            correct_ratio = self.give_obj['quantity'] / (self.get_obj['quantity']*self.size)
 
         elif self.pos_type == 'Short-Borrow':
-            correct_ratio = self.give_obj.quantity / (self.get_obj.quantity*self.size)
+            correct_ratio = self.give_obj['quantity'] / (self.get_obj['quantity']*self.size)
         elif self.pos_type == 'Short-Buyback':
-            correct_ratio =  (self.get_obj.quantity*self.size) / self.give_obj.quantity 
+            correct_ratio =  (self.get_obj['quantity']*self.size) / self.give_obj['quantity'] 
 
         #print(correct_ratio, self.price)
         #self._check = (self._price == correct_ratio)
@@ -87,7 +86,7 @@ class Position(object):
             print("Position voided due to invalid price entry.")
             
         # define fix quantity 
-        self._fix_quantity = self.get_obj.quantity
+        self._fix_quantity = self.get_obj['quantity']
         
     @property
     def fix_quantity(self):
@@ -149,7 +148,7 @@ class Position(object):
 
         """
         # check if the new price is the same 
-        if value != self.give_obj.quantity / (self.get_obj.quantity*self.size):
+        if value != self.give_obj['quantity'] / (self.get_obj['quantity']*self.size):
             if self.auto_adjust == True:
                 pass
             elif self.auto_adjust == False:
@@ -162,11 +161,11 @@ class Position(object):
         # Assuming the give_obj is the one in the portfolio, we anchor the 
         # exchange rate using what we have. So we only changes the quantity in
         # the get_obj atrribute
-        if self.fix_quantity == self.give_obj.quantity:
-            self.get_obj.quantity = self.give_obj.quantity  / (self._price*self.size)
+        if self.fix_quantity == self.give_obj['quantity']:
+            self.get_obj['quantity'] = self.give_obj['quantity']  / (self._price*self.size)
             
-        elif self.fix_quantity == self.get_obj.quantity:
-            self.give_obj.quantity = self.get_obj.quantity*(self._price*self.size)
+        elif self.fix_quantity == self.get_obj['quantity']:
+            self.give_obj['quantity'] = self.get_obj['quantity']*(self._price*self.size)
             
 class ExecutePosition(object):
     """
@@ -215,17 +214,17 @@ class ExecutePosition(object):
 
         # check if you have the avaliable fund in the portfolio
         if port.master_table[port.master_table['name']==
-                             self.position.give_obj.name]['quantity'].iloc[0] <\
-                                                self.position.give_obj.quantity:
+                             self.position.give_obj['name']]['quantity'].iloc[0] <\
+                                                self.position.give_obj['quantity']:
                                                 
             raise Exception('{} action failed. You do not have enough {} in \
                             your portfolio'.format(pos_type, 
-                                                self.position.give_obj.name))
+                                                self.position.give_obj['name']))
         else: pass
     
 
         if pos_type == 'Long-Buy':
-            print('Execute Long-buy position.')
+            #print('Execute Long-buy position.')
             
             # Pay pre-existing asset
             self.position.portfolio.sub(self.position.give_obj, datetime= fill_time)
@@ -235,7 +234,7 @@ class ExecutePosition(object):
                                                         fill_time + delay_time)
             
         elif pos_type == 'Long-Sell':
-            print('Execute Long-sell position.')
+            #print('Execute Long-sell position.')
 
             # Pay pre-existing asset
             self.position.portfolio.sub(self.position.get_obj, datetime= fill_time)
@@ -246,16 +245,16 @@ class ExecutePosition(object):
 
 
         elif pos_type == 'Short-Borrow':
-            print('Execute Short-Borrow position.')
+            #print('Execute Short-Borrow position.')
 
             # The sub method does not allow overwithdraw. 
             # Thus assume the give_obj is a {debt} object
             
             # here, assume give_obj = cash, get_obj = asset
             
-            debt_obj = replace(self.position.get_obj)
-            debt_obj.quantity = debt_obj.quantity*-1
-            debt_obj.misc = {'debt'}
+            debt_obj = self.position.get_obj.copy() #replace(self.position.get_obj)
+            debt_obj['quantity'] = debt_obj['quantity']*-1
+            debt_obj['misc'] = {'debt'}
             
             
             self.position.portfolio.add(self.position.get_obj, datetime= fill_time) #actual asset
@@ -273,10 +272,10 @@ class ExecutePosition(object):
                                                 fill_time + delay_time*3) # debt object
 
         elif pos_type == 'Short-Buyback':
-            print('Execute Short-Buyback position.')
+            #print('Execute Short-Buyback position.')
 
-            payback_debt_obj = replace(self.position.get_obj)
-            payback_debt_obj.misc = {'debt'}
+            payback_debt_obj = self.position.get_obj.copy() #replace(self.position.get_obj)
+            payback_debt_obj['misc'] = {'debt'}
             
             # normal long
             # subtract the cash here to buy back the asset

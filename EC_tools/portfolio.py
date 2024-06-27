@@ -177,11 +177,18 @@ class Portfolio(object):
         
         # Find the keys and values for asset within a particular time window
         # The function operate on the previously defiend poo_window
-        values = [list(pool_type[i][1].__dict__.values()) 
+# =============================================================================
+#         values = [list(pool_type[i][1].__dict__.values()) 
+#                                   for i in range(len(pool_type))]
+#         keys = [list(pool_type[i][1].__dict__.keys()) 
+#                                   for i in range(len(pool_type))][0]
+# =============================================================================
+        
+        values = [list(pool_type[i][1].values()) 
                                   for i in range(len(pool_type))]
-        keys = [list(pool_type[i][1].__dict__.keys()) 
+        keys = [list(pool_type[i][1].keys()) 
                                   for i in range(len(pool_type))][0]
-    
+        
         # Load the inforamtion to self._table
         table = pd.DataFrame.from_records(data = values, columns = keys)
         
@@ -291,7 +298,11 @@ class Portfolio(object):
             # # search the dictionary to see what kind of asset is this 
             # (potential improvement)
             # make a new asset
-            asset = Asset(asset, quantity, unit, asset_type)
+            #asset = Asset(asset, quantity, unit, asset_type)
+            asset = {'name': asset, 'quantity': quantity, 
+                         'unit': unit, 'asset_type':asset_type, 'misc':{}}
+        elif type(asset) == dict:
+            pass
         
         self.__pool_asset.append(asset)   # save new asset
         self.__pool_datetime.append(datetime) #record datetime
@@ -337,14 +348,38 @@ class Portfolio(object):
                 unit = asset.__dict__['unit']
                 asset_type = asset.__dict__['asset_type']
                 pass
+            # make a new asset with a minus value for quantity
+            new_asset = Asset(asset_name, quantity*-1, unit, asset_type)
             
+        if type(asset) == dict:
+            # call the quantity from table
+            asset_name = asset['name']
+            #print(asset.__dict__['quantity'])
+            #print(self.table[self.table['name']== asset_name]['quantity'].iloc[0])
+            
+            # check if the total amount is higher than the subtraction amount
+            if self.check_remainder(asset_name, asset['quantity'],
+                                    zeropoint = zeropoint):
+            #if asset.__dict__['quantity'] > self.master_table[self.master_table['name']==\
+            #                                  asset_name]['quantity'].iloc[0]: # tested
+                raise Exception('There is not enough {} to be subtracted \
+                                from the portfolio.'.format(asset_name))
+            else:
+                quantity = asset['quantity']
+                unit = asset['unit']
+                asset_type = asset['asset_type']
+                pass
+            new_asset = {'name': asset_name, 'quantity': quantity*-1, 
+                         'unit': unit, 'asset_type':asset_type, 'misc':{}}
+
         if type(asset) == str: 
             # # search the dictionary to see what kind of asset is this
             # make a new asset
             asset_name = asset
             
-        # make a new asset with a minus value for quantity
-        new_asset = Asset(asset_name, quantity*-1, unit, asset_type)
+            # make a new asset with a minus value for quantity
+            new_asset = {'name': asset_name, 'quantity': quantity*-1, 
+                         'unit': unit, 'asset_type':asset_type, 'misc':{}}
         
         self.__pool_asset.append(new_asset)   # save new asset
         self.__pool_datetime.append(datetime) #record datetime
@@ -474,7 +509,7 @@ class Portfolio(object):
         # simple_log make a log with only the inforamtion at the start of the day
             temp = [datetime.datetime.combine(dt.date(), datetime.time(0,0)) 
                                             for dt in self.pool_datetime]
-            
+            print(temp)
             # reorganised the time_list because set() function scramble the order
             time_list = sorted(list(set(temp)))
             # Add an extra day to see what is the earning for the last day

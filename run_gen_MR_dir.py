@@ -14,7 +14,6 @@ import datetime as datetime
 # package imports
 import pandas as pd 
 import numpy as np
-from scipy.interpolate import CubicSpline
 
 # EC_tools imports
 from EC_tools.strategy import MRStrategy
@@ -22,7 +21,6 @@ import EC_tools.read as read
 import EC_tools.utility as util
 from EC_tools.bookkeep import Bookkeep
 import EC_tools.math_func as mfunc
-import update_db as update_db
 from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, \
                                 APC_FILE_LOC, HISTORY_DAILY_FILE_LOC, HISTORY_MINTUE_FILE_LOC
 
@@ -315,7 +313,6 @@ def run_gen_MR_signals_preloaded_list(filename_list, start_date, end_date,
     
     for symbol in symbol_list:
         filename = filename_list[symbol]
-        print(symbol, filename)
         # The reading part takes the longest time: 13 seconds. The loop itself takes 
         # input 1, APC. Load the master table in memory and test multple strategies  
         @util.save_csv("{}".format(filename), save_or_not=save_or_not)

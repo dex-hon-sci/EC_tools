@@ -51,24 +51,26 @@ class MRStrategy(object):
     
     @property
     def buy_cond(self):
-# =============================================================================
-#         print("biy_cond_list inside buy_cond", self._buy_cond_list)
-#         if all(self._buy_cond_list) == True:
-#             self._buy_cond = True
-# =============================================================================
+        """
+        The overall boolean value of the Buy condition
+
+        """
         return all(self._buy_cond_list)
     
     @property
     def sell_cond(self):
-# =============================================================================
-#         print("sell_cond_list inside sell_cond", self._sell_cond_list)
-#         if all(self._sell_cond_list) == True:
-#             self._sell_cond = True
-# =============================================================================
+        """
+        The overall boolean value of the Sell condition
+
+        """
         return all(self._sell_cond_list)
     
     @property
     def neutral_cond(self):
+        """
+        The overall boolean value of the Neutral condition
+
+        """
         self._neutral_cond = not (self.buy_cond ^ self.sell_cond)
         return self._neutral_cond
     

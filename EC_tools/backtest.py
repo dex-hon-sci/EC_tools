@@ -320,7 +320,7 @@ def loop_date_portfolio(portfo, signal_table, histroy_intraday_data,
     return portfo
     
 
-def loop_date_portfolio_preloaded_list(portfo, signal_table, 
+def loop_list_portfolio_preloaded_list(portfo, signal_table, 
                                        histroy_intraday_data_pkl, 
                                         give_obj_name = "USD", 
                                         get_obj_quantity = 3,
@@ -378,17 +378,25 @@ def loop_date_portfolio_preloaded_list(portfo, signal_table,
         
     return portfo
 
+def loop_date_portfolio_preloaded_list(portfo, signal_table, 
+                                       histroy_intraday_data_pkl, 
+                                        give_obj_name = "USD", 
+                                        get_obj_quantity = 3, 
+                                        time_proxy='APC forecast period'): #WIP
+    
+    date_list = list(signal_table[time_proxy])
+    date_list = list(set(date_list))
+    
+    print(date_list)
+    
+    #signal_table[signal_table['Date'] = ]
 
 
-class LoopDate(object):
+class LoopLib(object):
+    # A class that contains all Loop mechanism
     def __init__(self):
         return 
-
 if __name__ == "__main__":
-    start_date = "2024-01-05"
-    end_date = "2024-05-18"
+    MASTER_SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signal_full.csv"
+    HISTORY_MINUTE_PKL_FILENAME ="/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_full.pkl"
 
-    #PP = run_backtest_portfolio_preloaded_list(MASTER_SIGNAL_FILENAME, 
-    #                                           HISTORY_MINUTE_PKL,
-    #                                           start_date, end_date)
-    

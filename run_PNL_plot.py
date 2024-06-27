@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 
 #FILENAME = './data/profits_and_losses_data_benchmark_11_.xlsx'
-FILENAME = './result/benchmark_PNL_full_.xlsx'
+FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_PNL_xlsx/benchmark_PNL_full_.xlsx'
 
 dataframe = pd.read_excel(FILENAME,sheet_name='Total')
 

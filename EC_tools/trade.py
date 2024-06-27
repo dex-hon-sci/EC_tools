@@ -106,7 +106,7 @@ def trade_choice_simple(EES_dict):
                 
     return trade_open, trade_close 
     
-class Trade(object):
+class Trade(Protocol):
     """
     Parent class for all trading strategy. Universal functions are written here.
     
@@ -151,11 +151,18 @@ class Trade(object):
         give_obj_unit = ASSET_DICT[give_obj_name]['unit']
         give_obj_type = ASSET_DICT[give_obj_name]['asset_type']
         
-        get_obj = Asset(get_obj_name, get_obj_quantity, 
-                        get_obj_unit, get_obj_type)
-        give_obj = Asset(give_obj_name, target_price*get_obj_quantity, 
-                            give_obj_unit, give_obj_type)
-        
+# =============================================================================
+#         get_obj = Asset(get_obj_name, get_obj_quantity, 
+#                         get_obj_unit, get_obj_type)
+#         give_obj = Asset(give_obj_name, target_price*get_obj_quantity, 
+#                             give_obj_unit, give_obj_type)
+# =============================================================================
+        get_obj = {'name': get_obj_name, 'quantity': get_obj_quantity, 
+                     'unit': get_obj_unit, 'asset_type': get_obj_type,
+                     'misc': {}}
+        give_obj = {'name': give_obj_name, 'quantity': target_price*get_obj_quantity, 
+                     'unit':give_obj_unit, 'asset_type': give_obj_type, 
+                     'misc':{}}
 # =============================================================================
 #         # make position
 #         pos = Position(give_obj, get_obj, target_price, 
@@ -167,11 +174,14 @@ class Trade(object):
         if pos_type == 'Long-Buy':
             # an example, get_obj is the asset, give_obj is the cash
             # Setup the amount of asset we want
-            get_obj = Asset(get_obj_name, get_obj_quantity, 
-                            get_obj_unit, get_obj_type)
+            get_obj = {'name': get_obj_name, 'quantity': get_obj_quantity, 
+                         'unit': get_obj_unit, 'asset_type': get_obj_type,
+                         'misc': {}}
+
             # calculate the money we have to pay
-            give_obj = Asset(give_obj_name, target_price*get_obj_quantity*size, 
-                                give_obj_unit, give_obj_type)
+            give_obj = {'name': give_obj_name, 'quantity': target_price*get_obj_quantity*size, 
+                         'unit':give_obj_unit, 'asset_type': give_obj_type, 
+                         'misc':{}}
             
             pos = Position(give_obj, get_obj, target_price, 
                            portfolio= self._portfolio, size = size,
@@ -179,10 +189,12 @@ class Trade(object):
             
         elif pos_type == 'Long-Sell':
             # an example, get_obj is the asset, give_obj is the cash
-            get_obj = Asset(get_obj_name, get_obj_quantity, 
-                            get_obj_unit, get_obj_type)
-            give_obj = Asset(give_obj_name, target_price*get_obj_quantity*size, 
-                                give_obj_unit, give_obj_type)
+            get_obj = {'name': get_obj_name, 'quantity': get_obj_quantity, 
+                         'unit': get_obj_unit, 'asset_type': get_obj_type,
+                         'misc': {}}
+            give_obj = {'name': give_obj_name, 'quantity': target_price*get_obj_quantity*size, 
+                         'unit':give_obj_unit, 'asset_type': give_obj_type, 
+                         'misc':{}}
             
             pos = Position(give_obj, get_obj, target_price, 
                            portfolio= self._portfolio, size = size,
@@ -190,10 +202,12 @@ class Trade(object):
             
         elif pos_type == 'Short-Borrow':
             # an example, get_obj is the asset, give_obj is the cash
-            get_obj = Asset(get_obj_name, get_obj_quantity, 
-                            get_obj_unit, get_obj_type)
-            give_obj = Asset(give_obj_name, target_price*get_obj_quantity*size, 
-                                give_obj_unit, give_obj_type)    
+            get_obj = {'name': get_obj_name, 'quantity': get_obj_quantity, 
+                         'unit': get_obj_unit, 'asset_type': get_obj_type,
+                         'misc': {}}
+            give_obj = {'name': give_obj_name, 'quantity': target_price*get_obj_quantity*size, 
+                         'unit':give_obj_unit, 'asset_type': give_obj_type, 
+                         'misc':{}}  
             
             pos = Position(give_obj, get_obj, target_price, 
                            portfolio= self._portfolio, size = size,
@@ -201,10 +215,12 @@ class Trade(object):
             
         elif pos_type == 'Short-Buyback':
             # an example, get_obj is the asset, give_obj is the cash
-            get_obj = Asset(get_obj_name, get_obj_quantity, 
-                            get_obj_unit, get_obj_type)
-            give_obj = Asset(give_obj_name, target_price*get_obj_quantity*size, 
-                                give_obj_unit, give_obj_type)
+            get_obj = {'name': get_obj_name, 'quantity': get_obj_quantity, 
+                         'unit': get_obj_unit, 'asset_type': get_obj_type,
+                         'misc': {}}
+            give_obj = {'name': give_obj_name, 'quantity': target_price*get_obj_quantity*size, 
+                         'unit':give_obj_unit, 'asset_type': give_obj_type, 
+                         'misc':{}}  
             
             pos = Position(give_obj, get_obj, target_price, 
                            portfolio= self._portfolio, size = size,
@@ -419,7 +435,7 @@ class OneTradePerDay(Trade):
         # Run diagnosis to decide which outcome it is for the day
         # Case 1: No trade because entry is not hit
         if entry_pt == (np.nan,np.nan):
-            print("No trade.")
+            #print("No trade.")
             # Cancel all order positions
             ExecutePosition(entry_pos).cancel_pos(void_time=close_pt[0])
             ExecutePosition(exit_pos).cancel_pos(void_time=close_pt[0])
@@ -430,7 +446,7 @@ class OneTradePerDay(Trade):
             
         # Case 2: An exit is hit, normal exit
         elif entry_pt and exit_pt != (np.nan,np.nan):
-            print("Noraml exit.")
+            #print("Noraml exit.")
             trade_open, trade_close = entry_pt, exit_pt
             opening_pos, closing_pos = entry_pos, exit_pos
             
@@ -443,7 +459,7 @@ class OneTradePerDay(Trade):
             
         # Case 3: stop loss
         elif exit_pt== (np.nan,np.nan) and stop_pt != (np.nan,np.nan):
-            print('Stop loss.')
+            #print('Stop loss.')
             trade_open, trade_close = entry_pt, stop_pt
             opening_pos, closing_pos = entry_pos, stop_pos
             
@@ -456,7 +472,7 @@ class OneTradePerDay(Trade):
             
        # Case 4: Neither an exit or stop loss is hit, exit position at close time
         elif exit_pt== (np.nan,np.nan) and stop_pt == (np.nan,np.nan):
-            print("Sell at close.")
+            #print("Sell at close.")
             trade_open, trade_close = entry_pt, close_pt
             opening_pos, closing_pos = entry_pos, close_pos
 
@@ -491,8 +507,9 @@ class OneTradePerDay(Trade):
                                       target_entry, target_exit, stop_exit,
                                       open_hr="0300", close_hr="2000", 
                                       direction = "Buy",
-                                      fee =  Asset('USD', 24.0, 'dollars', 
-                                                   'Cash')): 
+                                      fee =  {'name':'USD', 'quantity':24.0, 
+                                              'unit':'dollats', 'asset_type': 
+                                                  'Cash'}): 
         """
         This method only look into the data points that crosses the threashold.
         Thus it is fast but it only perform simple testing. 

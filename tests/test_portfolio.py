@@ -56,16 +56,16 @@ from EC_tools.portfolio import Asset, Portfolio
 import EC_tools.utility as util
 
 # Define the test inputs for assets
-USD = Asset('USD', 1e7, 'dollars', 'Cash')
-CL1 = Asset("CLc1", 50, 'contracts', 'Future')
-CL2 = Asset("CLc2", 60, 'contracts', 'Future')
-CL3 = Asset('CLc1', 10, 'contracts', 'Future')
-HO1 = Asset('HOc1', 30, 'contracts', 'Future')
-QO1 = Asset('QOc1', 20, 'contracts', 'Future')
-CL4 = Asset('CLc1', 56, 'contracts', 'Future')
-CL5 = Asset('CLc2', 36, 'contracts', 'Future')
+USD = {'name': 'USD', 'quantity': 1e7, 'unit':'dollars', 'asset_type':'Cash', 'misc':{}}
+CL1 = {'name': "CLc1", 'quantity': 50, 'unit':'contracts', 'asset_type':'Future', 'misc':{}}
+CL2 = {'name': "CLc2", 'quantity': 60, 'unit':'contracts', 'asset_type':'Future', 'misc':{}}
+CL3 = {'name': 'CLc1', 'quantity': 10, 'unit':'contracts', 'asset_type':'Future', 'misc':{}}
+HO1 = {'name': 'HOc1', 'quantity': 30, 'unit':'contracts', 'asset_type':'Future', 'misc':{}}
+QO1 = {'name': 'QOc1', 'quantity': 20, 'unit':'contracts', 'asset_type':'Future', 'misc':{}}
+CL4 = {'name': 'CLc1', 'quantity': 56, 'unit':'contracts', 'asset_type':'Future', 'misc':{}}
+CL5 = {'name': 'CLc2', 'quantity': 36, 'unit':'contracts', 'asset_type':'Future', 'misc':{}}
+CL6 = {'name': 'CLc1', 'quantity': 20, 'unit':'contracts', 'asset_type':'Future', 'misc':{}}
 
-CL6 = Asset('CLc1',20,'contracts', 'Future')
 
 # Define the test inputs for datetime
 day1= datetime.datetime(2024,1,10)
@@ -193,10 +193,10 @@ def test_add_str()-> None:
     PP = Portfolio()
     PP.add('test',datetime=day1,quantity=10,unit='test unit', asset_type='test type')    
     
-    assert PP.pool_asset[0].name == 'test' 
-    assert PP.pool_asset[0].quantity == 10
-    assert PP.pool_asset[0].unit == 'test unit' 
-    assert PP.pool_asset[0].asset_type == 'test type' 
+    assert PP.pool_asset[0]['name'] == 'test' 
+    assert PP.pool_asset[0]['quantity'] == 10
+    assert PP.pool_asset[0]['unit'] == 'test unit' 
+    assert PP.pool_asset[0]['asset_type'] == 'test type' 
     
     
 def test_sub_str()-> None:
@@ -209,9 +209,9 @@ def test_sub_str()-> None:
            quantity=10,unit='test unit', asset_type='test type')    
 
     PP.sub('test', quantity=7)
-    
+    print(list(PP.pool[0]))
     assert PP.master_table[PP.master_table['name']=='test']['quantity'].iloc[0] == 3
-    
+test_sub_str() 
 def test_value_asset_value_total_value()-> None:
     PP = Portfolio()
     PP.add(CL1,datetime=day1)
@@ -240,11 +240,11 @@ def test_log_asset_log() -> None:
     PP.add(CL1,datetime=day1)
     PP.add(USD,datetime=day2)
     PP.add(HO1,datetime=day3)
-    
+    print(PP.log)
     assert isinstance(PP.log, pd.DataFrame)
-    assert len(PP.log) == 3
+    assert len(PP.log) == 4
     assert isinstance(PP.asset_log('CLc1'), pd.Series)
-    assert len(PP.asset_log('CLc1')) == 3
+    assert len(PP.asset_log('CLc1')) == 4
 
 ###################
 # Error test

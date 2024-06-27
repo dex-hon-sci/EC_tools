@@ -16,16 +16,16 @@ from EC_tools.backtest import extract_intraday_minute_data, \
 import EC_tools.read as read
 
 
-FILENAME_MINUTE = "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/CL.001"
+FILENAME_MINUTE = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/CL.001"
 FILENSME_BUYSELL_SIGNALS = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_CLc1_full.csv"
 SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_CLc1.csv"   
-
 
 def setup_trade_test(date_interest, open_hr, close_hr, direction):
         
     # Use one day to test if the trade logic works
     P1 = Portfolio()
-    USD_initial = Asset("USD", 10_000_000, "dollars", "Cash") # initial fund
+    USD_initial = {'name':"USD", 'quantity': 10_000_000, 'unit':"dollars", 
+                   'asset_type':"Cash", 'misc':{}} # initial fund
     P1.add(USD_initial)
     
     histroy_intraday_data = read.read_reformat_Portara_minute_data(FILENAME_MINUTE)
@@ -74,7 +74,7 @@ def onetradeperday(date_interest, direction):
                                                               open_hr, close_hr,\
                                                                   direction)
 
-    
+    print('1')
     # this is the main function to be tested
     EES_dict, trade_open, trade_close, pos_list, exec_pos_list = OneTradePerDay(
                             P1).run_trade(day, give_obj_name, get_obj_name, 
@@ -82,7 +82,8 @@ def onetradeperday(date_interest, direction):
                                         target_exit, stop_exit, 
                                         open_hr=open_hr_dt, close_hr=close_hr_dt,
                                         direction = direction)
-    
+    print('2')
+
     
     plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=False)
 
@@ -125,6 +126,8 @@ def test_onetradeperday_buy_noentry() -> None:
     #print(P1.pool)
     assert USD_amount == 10000000
     assert len(P1.pool) == 1
+    
+#test_onetradeperday_buy_noentry() 
 
 def test_onetradeperday_buy_normalexit()->None:
     # Setting up the trade itself. First load the parameters
@@ -263,8 +266,8 @@ def test_onetradeperday_sell_normalexit()->None:
     debt_amount = P1.master_table[P1.master_table['misc'] == {'debt'}\
                                 ]['quantity'].iloc[0]
     #print(P1.pool)
-    print(P1.master_table)
-    print(P1.log)
+    #print(P1.master_table)
+#    print(P1.log)
     #print(debt_amount)
     assert USD_amount > 10000000
     assert len(P1.pool) == 8

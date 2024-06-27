@@ -78,7 +78,8 @@ def run_backtest_portfolio(filename_minute, filename_buysell_signals,
     print('master_table', P1.master_table)
 
     return P1
-
+@util.time_it
+@util.save_csv('test_portfolio')
 def run_backtest_portfolio_preloaded_list(master_buysell_signals_filename, 
                                           histroy_intraday_data_pkl_filename,
                                           start_date, end_date,
@@ -95,11 +96,12 @@ def run_backtest_portfolio_preloaded_list(master_buysell_signals_filename,
     
     # Initialise Portfolio
     P1 = Portfolio()
-    USD_initial = Asset("USD", 10_000_000, "dollars", "Cash") # initial fund
+    USD_initial = {'name':"USD", 'quantity': 10_000_000, 'unit':"dollars", 
+                   'asset_type': "Cash", 'misc':{}} # initial fund
     P1.add(USD_initial,datetime=datetime.datetime(2020,12,31))
     
     # a list of input files
-    P1 = backtest.loop_date_portfolio_preloaded_list(P1, trade_date_table, 
+    P1 = backtest.loop_list_portfolio_preloaded_list(P1, trade_date_table, 
                                            histroy_intraday_data_pkl)
     return P1
 
@@ -113,7 +115,6 @@ if __name__ == "__main__":
     
     MASTER_SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signal_full.csv"
     HISTORY_MINUTE_PKL_FILENAME ="/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_full.pkl"
-
                                                     
     #run_backtest_portfolio(FILENAME_MINUTE, FILENAME_BUYSELL_SIGNALS, 
     #                       '2023-01-01', '2023-12-30')

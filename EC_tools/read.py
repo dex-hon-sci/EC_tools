@@ -796,7 +796,7 @@ def find_minute_EES(histroy_data_intraday,
     stop_pt_dict = find_crossover(price_list, stop_exit)
     
     if direction == "Neutral":
-        print("Neutral day")
+        #print("Neutral day")
         # for 'Neutral' action, all info are empty
         entry_pts = []
         entry_times = []
@@ -808,7 +808,7 @@ def find_minute_EES(histroy_data_intraday,
         stop_times = []
     
     elif direction == "Buy":
-        print("Finding Buy points.")
+        #print("Finding Buy points.")
         # for 'Buy' action EES sequence is drop,rise,drop
         entry_pts = price_list[entry_pt_dict['drop'][0]]
         entry_times = time_proxy_list[entry_pt_dict['drop'][0]]
@@ -820,7 +820,7 @@ def find_minute_EES(histroy_data_intraday,
         stop_times = time_proxy_list[stop_pt_dict['drop'][0]]
             
     elif direction == "Sell":
-        print("Finding Sell points.")
+        #print("Finding Sell points.")
         # for 'Sell' action EES sequence is rise,drop,rise
         entry_pts = price_list[entry_pt_dict['rise'][0]]
         entry_times = time_proxy_list[entry_pt_dict['rise'][0]]

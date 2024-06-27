@@ -169,7 +169,7 @@ if __name__ == "__main__":
     @util.time_it
     def run_things():
         # Define the date of interest
-        date_interest = datetime.datetime(2024,5,1) #datetime.datetime.today()
+        date_interest = datetime.datetime(2024,5,23) #datetime.datetime.today()
     
         # Input and output filename
         XL_TEMPLATE_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/template/Leigh1.xlsx"
