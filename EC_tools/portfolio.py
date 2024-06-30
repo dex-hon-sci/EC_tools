@@ -10,16 +10,21 @@ from dataclasses import dataclass, field
 from typing import Protocol
 from functools import cached_property
 import datetime as datetime
-
+import time as time
 # package import 
 import pandas as pd
 
 # EC_tools import
+import EC_tools.utility as util
 import EC_tools.read as read
 from crudeoil_future_const import SIZE_DICT, HISTORY_DAILY_FILE_LOC
 
-PRICE_DICT = HISTORY_DAILY_FILE_LOC 
+#PRICE_DICT = HISTORY_DAILY_FILE_LOC 
+    
+HISTORY_DAILY_PKL = util.load_pkl("/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_daily_full.pkl")
+PRICE_DICT = HISTORY_DAILY_PKL 
 
+#now we preload the price dict
 
 __all__ = ['Asset','Portfolio']
 
@@ -60,6 +65,8 @@ class Portfolio(object):
         self._master_table = None
         self._value = None
         self._log = None
+        self._zeropoint = 0.0
+        self._remainder_limiter = False
  
     @property
     def pool_asset(self):
@@ -174,8 +181,6 @@ class Portfolio(object):
             The resulting table.
 
         """
-
-        
         # Find the keys and values for asset within a particular time window
         # The function operate on the previously defiend poo_window
 # =============================================================================
@@ -259,14 +264,14 @@ class Portfolio(object):
         self._master_table  = self._make_table(self.pool)
         return self._master_table
     
-    def check_remainder(self, asset_name, quantity, zeropoint = 0.0):
+    def check_remainder(self, asset_name, quantity):
         """
         A function that check the remainder if there are enough asset of a 
         particular name in the portfolio
         
         """
         baseline = self.master_table[self.master_table['name']==\
-                                  asset_name]['quantity'].iloc[0] - zeropoint
+                                  asset_name]['quantity'].iloc[0] - self._zeropoint
             
         return baseline < quantity
          
@@ -312,7 +317,7 @@ class Portfolio(object):
     
     def sub(self, asset,  datetime= datetime.datetime.today(),  
             asset_name="", quantity = 0, unit='contract', 
-            asset_type='future', zeropoint = 0.0): #tested
+            asset_type='future'): #tested
         """
         A function that subtract an existing asset from the pool.
     
@@ -330,41 +335,16 @@ class Portfolio(object):
             The type name of the asset. The default is 'future'.
         
         """
-        # check if it asset is an asset format
-        if type(asset) == Asset:  
-            # call the quantity from table
-            asset_name = asset.__dict__['name']
-            #print(asset.__dict__['quantity'])
-            #print(self.table[self.table['name']== asset_name]['quantity'].iloc[0])
-            
-            # check if the total amount is higher than the subtraction amount
-            if self.check_remainder(asset_name, asset.__dict__['quantity'],
-                                    zeropoint = zeropoint):
-            #if asset.__dict__['quantity'] > self.master_table[self.master_table['name']==\
-            #                                  asset_name]['quantity'].iloc[0]: # tested
-                raise Exception('There is not enough {} to be subtracted \
-                                from the portfolio.'.format(asset_name))
-            else:
-                quantity = asset.__dict__['quantity']
-                unit = asset.__dict__['unit']
-                asset_type = asset.__dict__['asset_type']
-                pass
-            # make a new asset with a minus value for quantity
-            new_asset = Asset(asset_name, quantity*-1, unit, asset_type)
-            
+        # check if it asset is an asset format            
         if type(asset) == dict:
             # call the quantity from table
             asset_name = asset['name']
-            #print(asset.__dict__['quantity'])
-            #print(self.table[self.table['name']== asset_name]['quantity'].iloc[0])
             
             # check if the total amount is higher than the subtraction amount
-            if self.check_remainder(asset_name, asset['quantity'],
-                                    zeropoint = zeropoint):
-            #if asset.__dict__['quantity'] > self.master_table[self.master_table['name']==\
-            #                                  asset_name]['quantity'].iloc[0]: # tested
-                raise Exception('There is not enough {} to be subtracted \
-                                from the portfolio.'.format(asset_name))
+            if self._remainder_limiter:
+                if self.check_remainder(asset_name, asset['quantity']):
+                    raise Exception('There is not enough {} to be subtracted \
+                                    from the portfolio.'.format(asset_name))
             else:
                 quantity = asset['quantity']
                 unit = asset['unit']
@@ -385,6 +365,7 @@ class Portfolio(object):
         self.__pool_asset.append(new_asset)   # save new asset
         self.__pool_datetime.append(datetime) #record datetime
         
+    @util.time_it
     def value(self, date_time, price_dict = PRICE_DICT,   
               size_dict = SIZE_DICT, dntr='USD'): #WIP
         """
@@ -420,7 +401,7 @@ class Portfolio(object):
         self.set_pool_window(self.__pool_datetime[0], date_time)
 
         for i, asset_name in enumerate(self.table['name']):
-
+            print(asset_name)
             # specia handling the denomator asset (usually a currency)
             if asset_name == dntr:
                 dntr_value = float(self.table['quantity'].iloc[0])
@@ -434,27 +415,31 @@ class Portfolio(object):
                 else:
                     # Get the size of each asset
                     size = size_dict[asset_name]
-                    
-                asset_price_filename = price_dict[asset_name]
-                sub_price_table = read.read_reformat_Portara_daily_data(
-                                                        asset_price_filename)
-                
+                   
+                #asset_price_filename = price_dict[asset_name]
+                sub_price_table = price_dict[asset_name]
+                #sub_price_table = read.read_reformat_Portara_daily_data(
+                #                                        asset_price_filename)
+
                 # The current version of this method only gets the price data iff 
                 # it exist in the table, i.e. it does not get anything outside of the trading days
                 target_time = date_time.strftime("%Y-%m-%d")
-                _ , value = read.find_closest_price_date(sub_price_table, 
-                                                         target_time=target_time)
+               # value = sub_price_table['Open'][sub_price_table['Date'] == target_time].item()
+                value = sub_price_table.loc[target_time]['Open']
+               # _ , value = read.find_closest_price_date(sub_price_table, 
+               #                                          target_time=target_time)
                 #print('value',value)
                 #value = float(sub_price_table[sub_price_table['Date'] == date_time]['Settle'].iloc[0])
                 quantity = int(self.table['quantity'].iloc[i])
                 
-                #new way to do things
+                #new way to do things    return df['code2'].to_numpy()[df['code1'].to_numpy() == code].item()
+
                 #print('------------')
                 #print(_, asset_name, quantity, float(value.iloc[0]), size)
                 #print(asset_name, float(value.iloc[0])*quantity*size)
                 # storage
-                value_dict[asset_name] = float(value.iloc[0])*quantity*size
-        
+                value_dict[asset_name] = float(value)*quantity*size
+
         return value_dict
         
     def asset_value(self, asset_name, datetime, price_dict = PRICE_DICT,   
@@ -510,7 +495,6 @@ class Portfolio(object):
         # simple_log make a log with only the inforamtion at the start of the day
             temp = [datetime.datetime.combine(dt.date(), datetime.time(0,0)) 
                                             for dt in self.pool_datetime]
-            print(temp)
             # reorganised the time_list because set() function scramble the order
             time_list = sorted(list(set(temp)))
             # Add an extra day to see what is the earning for the last day
@@ -527,7 +511,7 @@ class Portfolio(object):
             value_entry["Total"] = sum(list(value_entry.values()))
             value_entry['Datetime'] = item
 
-            #print('VE', item, value_entry)
+            print('VE', item, value_entry)
             log.append(value_entry)
             
         # return a log of the values of each asset by time

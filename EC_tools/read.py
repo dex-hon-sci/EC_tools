@@ -393,14 +393,16 @@ def read_reformat_Portara_daily_data(filename, add_col_data = {}):
                                               month=int(str(x)[4:6]), 
                                               day = int(str(x)[6:])) 
                             for x in history_data['Date']]
+    history_data_reindex = history_data.set_index('Date',drop=False)
+    
     match add_col_data:
         case {} | [] | None:
             pass
         case _:
             for key in add_col_data:
-                history_data[key] = add_col_data[key] 
+                history_data_reindex[key] = add_col_data[key] 
             
-    return history_data
+    return history_data_reindex
 
 
 #tested
@@ -440,14 +442,16 @@ def read_reformat_Portara_minute_data(filename,  add_col_data = {}):
     
     history_data['Time'] = bucket
     
+    history_data_reindex = history_data.set_index('Date',drop=False)
+
     match add_col_data:
         case {} | [] | None:
             pass
         case _:
             for key in add_col_data:
-                history_data[key] = add_col_data[key] 
+                history_data_reindex[key] = add_col_data[key] 
                 
-    return history_data
+    return history_data_reindex
 
 def read_reformat_openprice_data(filename):
     openprice_data = pd.read_csv(filename)
@@ -463,8 +467,9 @@ def read_reformat_openprice_data(filename):
               for i in range(len(intmin))]
     openprice_data['Time'] = bucket
 
-    
-    return openprice_data
+    openprice_data_reindex = openprice_data.set_index('Date',drop=False)
+    print(openprice_data_reindex)
+    return openprice_data_reindex
 
 
 def read_reformat_APC_data(filename):
@@ -475,7 +480,8 @@ def read_reformat_APC_data(filename):
                                               day = int(str(x)[8:])) 
                             for x in signal_data['Forecast Period']]
     
-    return signal_data
+    signal_data_reindex = signal_data.set_index('Forecast Period',drop=False)
+    return signal_data_reindex
 
 #tested
 def extract_lag_data(signal_data, history_data, date, lag_size=5):
@@ -524,7 +530,30 @@ def extract_lag_data(signal_data, history_data, date, lag_size=5):
 # tested
 def find_closest_price(day_minute_data, target_hr='0330', direction='forward', 
                        step = 1, search_time = 1000):
-    
+    """
+    A method to find the closest price next to a traget hour
+
+    Parameters
+    ----------
+    day_minute_data : TYPE
+        DESCRIPTION.
+    target_hr : TYPE, optional
+        DESCRIPTION. The default is '0330'.
+    direction : TYPE, optional
+        DESCRIPTION. The default is 'forward'.
+    step : TYPE, optional
+        DESCRIPTION. The default is 1.
+    search_time : TYPE, optional
+        DESCRIPTION. The default is 1000.
+
+    Returns
+    -------
+    target_hr_dt : TYPE
+        DESCRIPTION.
+    TYPE
+        DESCRIPTION.
+
+    """
     # If the input is forward, the loop search forward a unit of minute (step)
     if direction == 'forward':
         step = 1.* step
@@ -567,13 +596,13 @@ def find_closest_price_date(data, target_time='2024-01-03',
     #initial estimation of the target price
     target_price = data[data[time_proxy] == target_time_dt][price_proxy]
     #loop through the next 30 days to find the opening price    
-    for i in range(search_time):    
+    for i in range(search_time): 
         if len(target_price) == 0:
             
             delta = datetime.timedelta(days = step)
             
             target_time_dt = target_time_dt + delta
-            
+            print(target_time_dt)
             target_price = data[data[time_proxy] == target_time_dt][price_proxy]
             
     return target_time_dt, target_price

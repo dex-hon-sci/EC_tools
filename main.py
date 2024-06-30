@@ -32,7 +32,7 @@ def load_source_data():
                 HISTORY_MINUTE_PKL,  \
                 OPENPRICE_PKL, SAVE_SIGNAL_FILENAME_LIST
 
-@util.pickle_save("/home/dexter/Euler_Capital_codes/EC_tools/results/portfolio_results/portfolio_nonconcurrent_10contracts_full.pkl")
+@util.pickle_save("/home/dexter/Euler_Capital_codes/EC_tools/results/portfolio_results/test_portfolio_nonconcurrent_10contracts_full.pkl")
 def quick_backtest(master_buysell_signals_data, histroy_intraday_data_pkl,
                                                        start_date, end_date):
     
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     
     # run preprocessing (calculate earliest entry and update all database )
     
-    #run_preprocess()
+    run_preprocess()
     
     print("============Loading Source Files===========")
     
@@ -70,7 +70,7 @@ if __name__ == "__main__":
 #     #                            SAVE_SIGNAL_FILENAME_LIST = load_source_data()
 # =============================================================================
     
-    start_date = "2021-01-05"
+    start_date = "2024-03-15"
     end_date = "2024-06-15"
     
     print("=========Generating Buy/Sell Signals=======")
@@ -93,7 +93,7 @@ if __name__ == "__main__":
 # 
 # =============================================================================
     print("=========Running Back-Testing =============")
-    start_date = "2021-01-05"
+    start_date = "2024-03-15"
     end_date = "2024-06-15"
     
         

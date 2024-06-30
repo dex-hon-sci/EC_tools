@@ -78,8 +78,7 @@ def run_backtest_portfolio(filename_minute, filename_buysell_signals,
     print('master_table', P1.master_table)
 
     return P1
-@util.time_it
-@util.save_csv('test_portfolio')
+
 def run_backtest_portfolio_preloaded_list(master_buysell_signals_filename, 
                                           histroy_intraday_data_pkl_filename,
                                           start_date, end_date,
