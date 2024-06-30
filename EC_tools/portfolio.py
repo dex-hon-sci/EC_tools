@@ -50,6 +50,7 @@ class Portfolio(object):
     This class manage everything related to the Portfolio.
     
     """
+    
     def __init__(self):
         self.__pool_asset = [] # set pool to be a private attribute
         self.__pool_datetime = []
