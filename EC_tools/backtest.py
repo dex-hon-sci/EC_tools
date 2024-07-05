@@ -25,6 +25,9 @@ SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/benchmark_sign
 
 APC_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_HOc1.csv"  
 
+
+__author__="Dexter S.-H. Hon"
+
 # tested
 def prepare_signal_interest(filename_buysell_signals, 
                             direction=["Buy", "Sell"], trim = False):

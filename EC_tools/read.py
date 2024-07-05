@@ -393,7 +393,8 @@ def read_reformat_Portara_daily_data(filename, add_col_data = {}):
                                               month=int(str(x)[4:6]), 
                                               day = int(str(x)[6:])) 
                             for x in history_data['Date']]
-    history_data_reindex = history_data.set_index('Date',drop=False)
+    #history_data_reindex = history_data.set_index('Date',drop=False)
+    history_data_reindex = history_data
     
     match add_col_data:
         case {} | [] | None:
@@ -442,7 +443,8 @@ def read_reformat_Portara_minute_data(filename,  add_col_data = {}):
     
     history_data['Time'] = bucket
     
-    history_data_reindex = history_data.set_index('Date',drop=False)
+    #history_data_reindex = history_data.set_index('Date',drop=False)
+    history_data_reindex = history_data
 
     match add_col_data:
         case {} | [] | None:
@@ -467,8 +469,9 @@ def read_reformat_openprice_data(filename):
               for i in range(len(intmin))]
     openprice_data['Time'] = bucket
 
-    openprice_data_reindex = openprice_data.set_index('Date',drop=False)
-    print(openprice_data_reindex)
+    #openprice_data_reindex = openprice_data.set_index('Date',drop=False)
+    openprice_data_reindex = openprice_data
+    #print(openprice_data_reindex)
     return openprice_data_reindex
 
 
@@ -480,7 +483,8 @@ def read_reformat_APC_data(filename):
                                               day = int(str(x)[8:])) 
                             for x in signal_data['Forecast Period']]
     
-    signal_data_reindex = signal_data.set_index('Forecast Period',drop=False)
+    #signal_data_reindex = signal_data.set_index('Forecast Period',drop=False)
+    signal_data_reindex = signal_data
     return signal_data_reindex
 
 #tested
@@ -509,13 +513,22 @@ def extract_lag_data(signal_data, history_data, date, lag_size=5):
     """
     # Find the row index of the history data first
     row_index = history_data.index[history_data['Date'] == date].tolist()[0]
-
+    
+    #lag_days = datetime.timedelta(days=lag_size)
+    
+    #lag5days = row_index-lag_days
+    #lag1day = row_index - datetime.timedelta(days=1)
+    #print('row_index', row_index, row_index-lag_size, row_index-1)
+    #print('lag_size', lag_size, row_index-lag_size, row_index - datetime.timedelta(days=1))
     # extract exactly 5 (default) lag days array
     history_data_lag = history_data.loc[row_index-lag_size:row_index-1]
-
+   #history_data_lag = history_data.loc[lag5days:lag1day]
+    
+   #print(history_data_lag)
     # use the relevant date from history data to get signal data to ensure matching date
     window = history_data_lag['Date'].tolist()
     # turn Timstamp into string
+    #print(window)
     window = [str(window[i])[0:10] for i in range(lag_size)]
         
     #Store the lag signal data in a list
@@ -602,7 +615,7 @@ def find_closest_price_date(data, target_time='2024-01-03',
             delta = datetime.timedelta(days = step)
             
             target_time_dt = target_time_dt + delta
-            print(target_time_dt)
+          #  print(target_time_dt)
             target_price = data[data[time_proxy] == target_time_dt][price_proxy]
             
     return target_time_dt, target_price

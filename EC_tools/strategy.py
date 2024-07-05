@@ -16,21 +16,26 @@ import EC_tools.math_func as mfunc
 # round trip fee 15 dollars
 __author__="Dexter S.-H. Hon"
 
+
+
 class Strategy(Protocol):
     def __init__(self):
-        self._buy_cond_list = []
-        self._sell_cond_list = []
+        self._buy_cond_list = [False]
+        self._sell_cond_list = [False]
         self._buy_cond = False
         self._sell_cond = False
         self._direction = 'Neutral'
 
-    def set_EES():
-
-        return
-    
     def gen_strategy_data():
-        return 
+        pass
     
+    def strategy_cond():
+        pass
+    
+    def set_EES():
+        pass
+    def apply_strategy():
+        pass
     # strategy cal_history -> direction, gen_data -> data, set_price -> EES
 
 class MRStrategy(object):
@@ -196,11 +201,6 @@ class MRStrategy(object):
         self._buy_cond_list = [cond1_buy, cond2_buy, cond3_buy, cond4_buy]
         self._sell_cond_list = [cond1_sell, cond2_sell, cond3_sell, cond4_sell]
 
-# =============================================================================
-#         print("buy_cond",self._buy_cond_list, self.buy_cond)
-#         print("sell_cond",self._sell_cond_list, self.sell_cond)
-#         print("neutral_cond", self.neutral_cond)
-# =============================================================================
         return self.direction
 
     def argus_benchmark_mode(price_330, history_data_lag5, apc_curve_lag5,
@@ -313,6 +313,97 @@ class MRStrategy(object):
                 
         return direction
     
+    def gen_strategy_data_2(history_data_lag5, apc_curve_lag5, curve_today,
+                          strategy_name="benchmark"):
+        quant0 = np.arange(0.0025, 0.9975, 0.0025)
+        
+        lag5_price = history_data_lag5['Settle']
+        print('lag5_price',lag5_price)
+        print(lag5_price.iloc[-5])
+        
+        # Find quants for the closing price for the past five days
+        lag5close_q = mfunc.find_quant(apc_curve_lag5.iloc[-5].to_numpy()[1:-1], 
+                                       quant0, lag5_price.iloc[-5])
+        lag4close_q = mfunc.find_quant(apc_curve_lag5.iloc[-4].to_numpy()[1:-1], 
+                                       quant0, lag5_price.iloc[-4])
+        lag3close_q = mfunc.find_quant(apc_curve_lag5.iloc[-3].to_numpy()[1:-1], 
+                                       quant0, lag5_price.iloc[-3])
+        lag2close_q = mfunc.find_quant(apc_curve_lag5.iloc[-2].to_numpy()[1:-1], 
+                                       quant0, lag5_price.iloc[-2])  
+        lag1close_q = mfunc.find_quant(apc_curve_lag5.iloc[-1].to_numpy()[1:-1], 
+                                       quant0, lag5_price.iloc[-1]) 
+        
+        rollingaverage5q = np.average([lag1close_q, lag2close_q, 
+                                       lag3close_q, lag4close_q, 
+                                       lag5close_q])
+        
+        data0 = [lag1close_q, lag2close_q, lag3close_q, lag4close_q, lag5close_q, 
+                 rollingaverage5q]    
+        
+        data1 = {'lag1close_q': lag1close_q, 'lag2close_q': lag2close_q, 
+                'lag3close_q': lag3close_q, 'lag4close_q': lag4close_q, 
+                'lag5close_q': lag5close_q, 'rollingaverage5q': rollingaverage5q}
+        
+        return data0
+    
+    def argus_exact_strategy(self, data0, open_price, curve_today, apc_mid_Q = 0.5, 
+                                 apc_trade_Qrange=(0.4,0.6), 
+                                 apc_trade_Qlimit=(0.05,0.95)):
+                             
+                             #open_price, history_data_lag5, apc_curve_lag5,
+                                     
+# =============================================================================
+#         
+#         # inputs
+#         lag5_price = history_data_lag5['Settle']
+# 
+#         quant0 = np.arange(0.0025, 0.9975, 0.0025)
+# 
+#         # spline the APCs
+#         quant_list = np.array(list(map(float, apc_curve_lag5.columns.values[1:-1])))
+#         
+#         apc_curve_lag5_spline = [mfunc.generic_spline(quant_list, 
+#                                     apc_curve_lag5.iloc[i][1:-1].to_numpy()) 
+#                                   for i in range(len(apc_curve_lag5))]
+#         
+#         data0 = self.gen_strategy_data_2(history_data_lag5, apc_curve_lag5, curve_today,
+#                               strategy_name="benchmark")
+#         
+# =============================================================================
+        quant_list = np.arange(0.0025, 0.9975, 0.0025)
+        #quant_list = np.array(list(map(float, curve_today.columns.values[1:-1])))
+
+        curve_today_spline = mfunc.generic_spline(quant_list, 
+                                    curve_today)
+        
+        lag2close_q = data0[0]
+        lag1close_q = data0[1]
+        rollingaverage5q = data0[-1]
+        
+        # "BUY" condition
+        # (1) Two consecutive days of closing price lower than the signal median
+        cond1_buy = (lag2close_q < 0.5)
+        cond2_buy = (lag1close_q < 0.5)
+        # (2) rolling 5 days average lower than the median apc 
+        cond3_buy = rollingaverage5q < 0.5
+        # (3) price at today's opening hour above the 0.1 quantile of today's apc
+        cond4_buy = open_price >= curve_today_spline([apc_trade_Qlimit[0]])[0]
+    
+        # "SELL" condition
+        # (1) Two consecutive days of closing price higher than the signal median
+        cond1_sell = (lag2close_q > 0.5)
+        cond2_sell = (lag1close_q > 0.5)    
+        # (2) rolling 5 days average higher than the median apc 
+        cond3_sell = rollingaverage5q > 0.5
+        # (3) price at today's opening hour below the 0.9 quantile of today's apc
+        cond4_sell = open_price <= curve_today_spline([apc_trade_Qlimit[1]])[0] 
+        
+        self._buy_cond_list = [cond1_buy, cond2_buy, cond3_buy, cond4_buy]
+        self._sell_cond_list = [cond1_sell, cond2_sell, cond3_sell, cond4_sell]
+        
+        return self.direction
+
+    
     def gen_strategy_data(history_data_lag5, apc_curve_lag5, curve_today,
                           strategy_name="benchmark"):
         """
@@ -339,6 +430,8 @@ class MRStrategy(object):
         quant0 = np.arange(0.0025, 0.9975, 0.0025)
         q_minus, q_plus = 0.4,0.6
         
+        lag5_price = history_data_lag5
+        
         if strategy_name == "benchmark":
             quantiles_forwantedprices = [0.1, 0.4, 0.5, 0.6, 0.9] 
         elif strategy_name == "mode":
@@ -358,6 +451,23 @@ class MRStrategy(object):
         
         roll5q = mfunc.find_quant(curve_today, quant0, rollinglagq5day) 
         
+        # Find quants for the closing price for the past five days
+        lag5close_q = mfunc.find_quant(apc_curve_lag5.iloc[-5].to_numpy()[1:-1], 
+                                       quant0, lag5_price.iloc[-5])
+        lag4close_q = mfunc.find_quant(apc_curve_lag5.iloc[-4].to_numpy()[1:-1], 
+                                       quant0, lag5_price.iloc[-4])
+        lag3close_q = mfunc.find_quant(apc_curve_lag5.iloc[-3].to_numpy()[1:-1], 
+                                       quant0, lag5_price.iloc[-3])
+        lag2close_q = mfunc.find_quant(apc_curve_lag5.iloc[-2].to_numpy()[1:-1], 
+                                       quant0, history_data_lag2_close)  
+        lag1close_q = mfunc.find_quant(apc_curve_lag5.iloc[-1].to_numpy()[1:-1], 
+                                       quant0, history_data_lag1_close) 
+        
+        rollingaverage5q = np.average([lag1close_q, lag2close_q, 
+                                       lag3close_q, lag4close_q, 
+                                       lag5close_q])
+        
+        
         data0 = [
             wanted_quantiles[0],
             wanted_quantiles[1],
@@ -368,6 +478,8 @@ class MRStrategy(object):
             ]            
         
         return data0
+    
+
     
     def set_EES_APC(cond, curve_today, buy_range=(0.4,0.6,0.1), 
                             sell_range =(0.6,0.4,0.9)):
@@ -434,12 +546,23 @@ class MRStrategy(object):
             
         return entry_price, exit_price, stop_loss
     
+
+class MRStrategyArgus(object):
+    """
+    Mean-Reversion Strategy. 
     
-MR_STRATEGIES = {'benchmark': MRStrategy.argus_benchmark_strategy,
-                      'mode': MRStrategy.argus_benchmark_mode}
+    """
+    def __init__(self):
+        self._buy_cond_list = [False]
+        self._sell_cond_list = [False]
+        self._buy_cond = False
+        self._sell_cond = False
+        self._neutral_cond = False
 
-
-
+    
+MR_STRATEGIES = {'benchmark': MRStrategy().argus_benchmark_strategy,
+                      'mode': MRStrategy().argus_benchmark_mode,
+                "argus_exact": MRStrategy().argus_exact_strategy}
 
 def apply_strategy(strategy_name:str):
      return MR_STRATEGIES[strategy_name]

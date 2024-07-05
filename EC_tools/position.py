@@ -27,6 +27,9 @@ class PositionStatus(Enum):
     VOID = "Cancelled" # When the position is cancelled
 
     
+class PositionType(Enum):
+    pass
+    
 @dataclass
 class Position(object):
     """

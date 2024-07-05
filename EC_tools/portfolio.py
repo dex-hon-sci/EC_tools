@@ -149,8 +149,11 @@ class Portfolio(object):
 
         """
         # define a window of interest amount the pool object
-        pool_df_interest = self.pool_df[(self.pool_df['datetime'] >= start_time) & 
+        #pool_df_interest = self.pool_df[(self.pool_df['datetime'] >= start_time) & 
+        #                        (self.pool_df['datetime'] <= end_time)]
+        pool_df_interest = self.pool_df.loc[(self.pool_df['datetime'] >= start_time) & 
                                 (self.pool_df['datetime'] <= end_time)]
+
         #print(pool_df_interest)
         ind = pool_df_interest.index.to_list()
         #print(ind)
@@ -401,7 +404,6 @@ class Portfolio(object):
         self.set_pool_window(self.__pool_datetime[0], date_time)
 
         for i, asset_name in enumerate(self.table['name']):
-            print(asset_name)
             # specia handling the denomator asset (usually a currency)
             if asset_name == dntr:
                 dntr_value = float(self.table['quantity'].iloc[0])
@@ -424,16 +426,15 @@ class Portfolio(object):
                 # The current version of this method only gets the price data iff 
                 # it exist in the table, i.e. it does not get anything outside of the trading days
                 target_time = date_time.strftime("%Y-%m-%d")
-               # value = sub_price_table['Open'][sub_price_table['Date'] == target_time].item()
-                value = sub_price_table.loc[target_time]['Open']
+                value = sub_price_table['Open'][sub_price_table['Date'] == target_time].item()
+                #value = sub_price_table.loc[target_time]['Open']
                # _ , value = read.find_closest_price_date(sub_price_table, 
                #                                          target_time=target_time)
                 #print('value',value)
                 #value = float(sub_price_table[sub_price_table['Date'] == date_time]['Settle'].iloc[0])
                 quantity = int(self.table['quantity'].iloc[i])
                 
-                #new way to do things    return df['code2'].to_numpy()[df['code1'].to_numpy() == code].item()
-
+                #new way to do things  
                 #print('------------')
                 #print(_, asset_name, quantity, float(value.iloc[0]), size)
                 #print(asset_name, float(value.iloc[0])*quantity*size)
@@ -511,7 +512,7 @@ class Portfolio(object):
             value_entry["Total"] = sum(list(value_entry.values()))
             value_entry['Datetime'] = item
 
-            print('VE', item, value_entry)
+            #print('VE', item, value_entry)
             log.append(value_entry)
             
         # return a log of the values of each asset by time

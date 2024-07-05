@@ -85,7 +85,7 @@ def onetradeperday(date_interest, direction):
     print('2')
 
     
-    plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=False)
+    plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=True)
 
     return P1, day, target_entry, target_exit, \
         stop_exit, open_hr_dt, close_hr_dt, EES_dict, trade_open, \
@@ -100,7 +100,7 @@ def onetradeperday(date_interest, direction):
 
 date_interest_no_entry_buy = "2023-12-29" # no entry test case (Buy) Done
 date_interest_stop_loss_buy = "2023-12-06" # stop loss test case (Buy) Done
-date_interest_close_exit_buy = "2021-03-17" #  sell at close case (Buy) Done
+date_interest_close_exit_buy = "2024-04-30" #  sell at close case (Buy) Done
 date_interest_normal_exit_buy = "2021-04-01" #  normal exit case (Buy) Done
 
     
@@ -158,7 +158,7 @@ def test_onetradeperday_buy_normalexit()->None:
     assert CL_amount < 1
     assert len(P1.pool) == 6
     
-#test_onetradeperday_buy_normalexit()
+test_onetradeperday_buy_normalexit()
 
 def test_onetradeperday_buy_stoploss() -> None:   
     give_obj_name = "USD"
@@ -209,7 +209,6 @@ def test_onetradeperday_buy_closeexit() -> None:
         
     assert CL_amount < 1
     assert len(P1.pool) == 6
-    
 ############################################################################
 #Sell side test
 
@@ -273,8 +272,7 @@ def test_onetradeperday_sell_normalexit()->None:
     assert len(P1.pool) == 8
    # assert debt_amount == 0
     
-    
-test_onetradeperday_sell_normalexit()
+test_onetradeperday_sell_normalexit()   
 
 def test_onetradeperday_sell_stoploss() -> None:   
     give_obj_name = "USD"

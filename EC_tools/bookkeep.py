@@ -47,15 +47,34 @@ class Bookkeep(object):
                      'return from trades', 'entry price','entry datetime',
                      'exit price', 'exit datetime', 'risk/reward value ratio']
     
+    benchmark_argus_format = ['Date', 'Price_Code', 'Direction', 'Commodity_name',
+                              'Contract_Month','Timezone', 
+                              'Valid_From_localtz_timestr', 'Valid_To_localtz_timestr', 
+                              'Target_Lower_Entry_Price', 'Target_Upper_Entry_Price',
+                              'Target_Lower_Exit_Price', 'Target_Upper_Exit_Price',
+                              'Stop_Exit_Price',
+                              'NCONS',	'NROLL', 'Signal_NCONS', 'Signal_NROLL',	
+                              'Quant_Close_Price_Lag_1', 'Quant_Close_Price_Lag_2',	
+                              'Quant_Close_Price_Lag_3', 'Quant_Close_Price_Lag_4',	
+                              'Quant_Close_Price_Lag_5','Quant_Close_Price_Lag_1_rm_5',	
+                              'Q0.25',	'Q0.4',	'Q0.6',	'Q0.75', 'strategy_name']
+    
+    argus_PNL = ['Trade_Id', 'Direction', 'Commodity', 'Price_Code', 
+                 'Contract_Month','Entry_Date',	'Entry_Datetime',	
+                 'Entry_Price',	'Exit_Date','Exit_Datetime','Exit_Price']
+    
     STRATEGY_SIGNAL_COL_DICT = {
             "benchmark": signal_columns + A + D + F + H + End, 
-            "mode": signal_columns + B + D + F + H + End 
+            "mode": signal_columns + B + D + F + H + End, 
+            "argus_exact": benchmark_argus_format
                    }
     
     BACKTEST_PNL_COL_DICT = {
             "benchmark": benchmark_PNL,
-            "mode": benchmark_PNL
-        }
+            "mode": benchmark_PNL,
+            "argus_exact": argus_PNL
+                    }
+    
     def __init__(self, bucket_type = 'backtest'):
         self.bucket =  dict() # the main bucket for book-keeping.
         

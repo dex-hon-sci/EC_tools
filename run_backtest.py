@@ -13,8 +13,9 @@ import EC_tools.utility as util
 from EC_tools.portfolio import Asset, Portfolio
 from crudeoil_future_const import OPEN_HR_DICT
 
+__author__="Dexter S.-H. Hon"
+
 @util.time_it
-@util.save_csv('benchmark_PNL_QPc2_full.csv')
 def run_backtest(filename_minute,filename_buysell_signals, 
                  start_date, end_date):
     # The current method only allows one singular direction signal perday. and a set of constant EES
@@ -42,6 +43,10 @@ def run_backtest(filename_minute,filename_buysell_signals,
     print(dict_trade_PNL[['date']])
 
     return dict_trade_PNL
+
+def run_backtest_list():
+    
+    return
 
 def run_backtest_portfolio(filename_minute, filename_buysell_signals, 
                            start_date, end_date):

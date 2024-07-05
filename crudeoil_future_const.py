@@ -137,7 +137,45 @@ ARGUS_BENCHMARK_SIGNAL_FILE_LOC = {
     'QPc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_QPc2_full.csv'
     }
 
- 
+ARGUS_BENCHMARK_SIGNAL_AMB_FILE_LOC = {
+    'CLc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals_amb/benchmark_signal_CLc1_full.csv',
+    'CLc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals_amb/benchmark_signal_CLc2_full.csv',
+    'HOc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals_amb/benchmark_signal_HOc1_full.csv',
+    'HOc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals_amb/benchmark_signal_HOc2_full.csv',
+    'RBc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals_amb/benchmark_signal_RBc1_full.csv',
+    'RBc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals_amb/benchmark_signal_RBc2_full.csv',
+    'QOc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals_amb/benchmark_signal_QOc1_full.csv',
+    'QOc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals_amb/benchmark_signal_QOc2_full.csv',
+    'QPc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals_amb/benchmark_signal_QPc1_full.csv',
+    'QPc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals_amb/benchmark_signal_QPc2_full.csv'
+    }
+
+ARGUS_BENCHMARK_SIGNAL_AMB_BUY_FILE_LOC = {
+    'CLc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals_amb_buy/benchmark_signal_CLc1_full.csv',
+    'CLc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals_amb_buy/benchmark_signal_CLc2_full.csv',
+    'HOc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals_amb_buy/benchmark_signal_HOc1_full.csv',
+    'HOc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals_amb_buy/benchmark_signal_HOc2_full.csv',
+    'RBc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals_amb_buy/benchmark_signal_RBc1_full.csv',
+    'RBc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals_amb_buy/benchmark_signal_RBc2_full.csv',
+    'QOc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals_amb_buy/benchmark_signal_QOc1_full.csv',
+    'QOc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals_amb_buy/benchmark_signal_QOc2_full.csv',
+    'QPc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals_amb_buy/benchmark_signal_QPc1_full.csv',
+    'QPc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals_amb_buy/benchmark_signal_QPc2_full.csv'
+    }
+
+ARGUS_BENCHMARK_SIGNAL_AMB_SELL_FILE_LOC = {
+    'CLc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals_amb_sell/benchmark_signal_CLc1_full.csv',
+    'CLc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals_amb_sell/benchmark_signal_CLc2_full.csv',
+    'HOc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals_amb_sell/benchmark_signal_HOc1_full.csv',
+    'HOc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals_amb_sell/benchmark_signal_HOc2_full.csv',
+    'RBc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals_amb_sell/benchmark_signal_RBc1_full.csv',
+    'RBc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals_amb_sell/benchmark_signal_RBc2_full.csv',
+    'QOc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals_amb_sell/benchmark_signal_QOc1_full.csv',
+    'QOc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals_amb_sell/benchmark_signal_QOc2_full.csv',
+    'QPc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals_amb_sell/benchmark_signal_QPc1_full.csv',
+    'QPc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals_amb_sell/benchmark_signal_QPc2_full.csv'
+    } 
+
 ARGUS_BENCHMARK_PNL_FILE_LOC = {
     'CLc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_PNL/benchmark_PNL_CLc1_full.csv',
     'CLc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_PNL/benchmark_PNL_CLc2_full.csv',
