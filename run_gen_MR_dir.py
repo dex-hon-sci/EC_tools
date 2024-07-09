@@ -17,6 +17,7 @@ import numpy as np
 
 # EC_tools imports
 from EC_tools.strategy import MRStrategy
+from EC_tools.strategy2 import MRStrategyArgus
 import EC_tools.read as read
 import EC_tools.utility as util
 from EC_tools.bookkeep import Bookkeep
@@ -32,11 +33,16 @@ __all__ = ['loop_signal','gen_signal_vector','run_gen_MR_signals',
 __author__="Dexter S.-H. Hon"
 
 
+MR_STRATEGIES_0 = {'benchmark': MRStrategy().argus_benchmark_strategy,
+                      'mode': MRStrategy().argus_benchmark_mode,
+                "argus_exact": MRStrategy().argus_exact_strategy}
+
 
 
 def loop_signal(book, signal_data, history_data, open_price_data,  
                    strategy_func, start_date, strategy_name='benchmark', 
                    buy_range=(0.4,0.6,0.1), sell_range =(0.6,0.4,0.9), 
+                   open_hr='', close_hr='',
                    commodity_name = '', Timezone= "",
                   contract_symbol_condse = False, loop_symbol = None): #WIP
 
@@ -131,7 +137,6 @@ def loop_signal(book, signal_data, history_data, open_price_data,
             EES = [entry_price, entry_price, exit_price, exit_price, stop_loss]
                         
      
-            open_hr, close_hr = None, None 
             NCONS,	NROLL,	Signal_NCONS, Signal_NROLL = 2, 5, None, None
             
             static_info = [commodity_name, full_contract_symbol, \
@@ -158,6 +163,127 @@ def loop_signal(book, signal_data, history_data, open_price_data,
     
     return dict_contracts_quant_signals
         
+def loop_signal_2(book, signal_data, history_data, open_price_data,  
+                   Strategy, start_date, strategy_name='benchmark', 
+                   buy_range=(0.4,0.6,0.1), sell_range =(0.6,0.4,0.9), 
+                   open_hr='', close_hr='',
+                   commodity_name = '', Timezone= "",
+                  contract_symbol_condse = False, loop_symbol = None): #WIP
+
+    #make bucket
+    bucket = book.make_bucket(keyword=strategy_name)
+    print('Start looping signal: {}...'.format(loop_symbol))
+    # check if history data and opening price data are the same dimension
+    print(history_data.index[history_data['Date'] == start_date].item())
+    print(history_data.index.to_numpy()[-1])
+    
+    # define the start and end of the loop by indices
+    start_index = history_data.index[history_data['Date'] == start_date].item()
+    end_index = history_data.index.to_numpy()[-1]
+    
+    # loop through every forecast date and contract symbol 
+    for i in np.arange(start_index, end_index): 
+        
+        this_date = history_data["Date"][i]
+        this_symbol = history_data["symbol"][i]
+        
+        print(this_date, this_symbol)
+        
+        # cross reference the APC list to get the APC of this date and symbol
+        APCs_this_date = signal_data[(signal_data['Forecast Period']==this_date)]
+#                                  & (APCs_dat['symbol']== this_symbol)] #<-- here add a condition matching the symbols
+        
+        if len(APCs_this_date) == 0:
+            print("APC data of {} from the date {} is missing".format(this_symbol, 
+                                                                      this_date.date()))
+            pass
+        else:
+            #print(this_date, this_symbol, APCs_this_date['Forecast Period'].iloc[0])
+            forecast_date = APCs_this_date['Forecast Period'].to_list()[0] 
+                        
+            # This is the APC number only
+            curve_this_date = APCs_this_date.to_numpy()[0][1:-1]
+    
+            # create input for bookkepping
+            price_code = APCs_this_date['symbol'].to_list()[0]
+            
+            # The conidtions to decide whether we trim the full_contract_symbol
+            # CLA2024J or CL24J
+            if contract_symbol_condse == True:
+                temp = history_data['Contract Code'][i]
+                full_contract_symbol = str(temp)[0:2] + str(temp)[5:7] + str(temp)[-1]
+            elif contract_symbol_condse == False:
+                full_contract_symbol = history_data['Contract Code'][i]
+    
+            # find the quantile of the opening price
+            price_330 = open_price_data[open_price_data['Date']==this_date]['Open Price'].item()
+    
+            # Find the quantile of the opening price
+            quant0 = np.arange(0.0025, 0.9975, 0.0025)
+            price_330_quant = mfunc.find_quant(curve_this_date, quant0, price_330)
+            
+            print(price_330_quant)
+            
+            # Get the extracted 5 days Lag data 
+            apc_curve_lag5, history_data_lag5 = read.extract_lag_data(signal_data, 
+                                                                 history_data, 
+                                                                 forecast_date)
+   
+            # calculate the data needed for PNL analysis for this strategy
+            strategy_data = Strategy.gen_strategy_data_2(history_data_lag5, 
+                                                             apc_curve_lag5, 
+                                                             curve_this_date,
+                                                             strategy_name=\
+                                                                 "benchmark")
+        
+            print('====================================')
+            # Run the strategy        
+            direction = Strategy(strategy_data, price_330, curve_this_date)
+            
+            
+            print(forecast_date, full_contract_symbol,'MR signal generated!', 
+                   direction,i)
+            print('====================================')
+        
+            # set resposne price.
+            entry_price, exit_price, stop_loss = MRStrategy.set_EES_APC(
+                                                            direction, 
+                                                            curve_this_date,
+                                                            buy_range=buy_range, 
+                                                            sell_range=sell_range)
+            
+            ##################
+            EES = [entry_price, entry_price, exit_price, exit_price, stop_loss]
+                        
+     
+            NCONS,	NROLL,	Signal_NCONS, Signal_NROLL = 2, 5, None, None
+            
+            static_info = [commodity_name, full_contract_symbol, \
+                           Timezone, open_hr, close_hr]
+                
+            startegy_cond = [NCONS,	NROLL,	Signal_NCONS,	Signal_NROLL]
+            
+            quantile_info = [entry_price, entry_price, exit_price, exit_price]
+            # put all the data in a singular list
+            data = [forecast_date, price_code] + [direction] + \
+                    static_info + EES+ startegy_cond+ strategy_data + \
+                    quantile_info + [strategy_name]
+                    
+            print(commodity_name)
+            print(data, type(data))
+            print(len(data),len(bucket.keys()))
+            # Storing the data    
+            bucket = book.store_to_bucket_single(data)       
+        
+    dict_contracts_quant_signals = pd.DataFrame(bucket)
+
+    #sort by date (the first column)
+    dict_contracts_quant_signals = dict_contracts_quant_signals.sort_values(by=
+                                    dict_contracts_quant_signals.columns.values[0])
+    
+    return dict_contracts_quant_signals
+
+
 def gen_signal_vector(signal_data, history_data, loop_start_date = ""): # WIP
     # make a vectoralised way to perform signal generation
 

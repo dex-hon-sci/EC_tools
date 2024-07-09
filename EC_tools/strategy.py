@@ -547,18 +547,6 @@ class MRStrategy(object):
         return entry_price, exit_price, stop_loss
     
 
-class MRStrategyArgus(object):
-    """
-    Mean-Reversion Strategy. 
-    
-    """
-    def __init__(self):
-        self._buy_cond_list = [False]
-        self._sell_cond_list = [False]
-        self._buy_cond = False
-        self._sell_cond = False
-        self._neutral_cond = False
-
     
 MR_STRATEGIES = {'benchmark': MRStrategy().argus_benchmark_strategy,
                       'mode': MRStrategy().argus_benchmark_mode,
