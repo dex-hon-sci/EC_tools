@@ -389,10 +389,20 @@ def read_reformat_Portara_daily_data(filename, add_col_data = {}):
     #history_data['Date'] = [str(x)[0:4] + '-' + str(x)[4:6] + '-' + str(x)[6:] 
     #                        for x in history_data['Date']]
     
-    history_data['Date'] = [datetime.datetime(year = int(str(x)[0:4]), 
-                                              month=int(str(x)[4:6]), 
-                                              day = int(str(x)[6:])) 
+    #history_data['Date'] = [datetime.datetime(year = int(str(x)[0:4]), 
+    #                                          month=int(str(x)[4:6]), 
+    #                                          day = int(str(x)[6:])) 
+    #                        for x in history_data['Date']]
+
+    print('history_date', history_data['Date'].iloc[-1], type(history_data['Date'].iloc[-1]))
+
+    history_data['Date'] = [datetime.datetime.strptime(str(x)[0:4]+str(x)[4:6]+str(x)[6:], '%Y%m%d')
                             for x in history_data['Date']]
+    
+    print('history_date', history_data['Date'].iloc[-1], type(history_data['Date'].iloc[-1]))
+    print('history_date', isinstance(history_data['Date'].iloc[-1], datetime.datetime))
+    print(history_data['Date'].iloc[-1] == datetime.datetime(year = 2024, 
+                                              month=6,day = 17) )
     #history_data_reindex = history_data.set_index('Date',drop=False)
     history_data_reindex = history_data
     
@@ -403,7 +413,7 @@ def read_reformat_Portara_daily_data(filename, add_col_data = {}):
             for key in add_col_data:
                 history_data_reindex[key] = add_col_data[key] 
             
-    return history_data_reindex
+    return history_data#history_data_reindex
 
 
 #tested
@@ -432,9 +442,11 @@ def read_reformat_Portara_minute_data(filename,  add_col_data = {}):
     #history_data['Date'] = [str(x)[0:4] + '-' + str(x)[4:6] + '-' + str(x)[6:] 
     #                        for x in history_data['Date']]
     
-    history_data['Date'] = [datetime.datetime(year = int(str(x)[0:4]), 
-                                              month=int(str(x)[4:6]), 
-                                              day = int(str(x)[6:])) 
+    #history_data['Date'] = [datetime.datetime(year = int(str(x)[0:4]), 
+    #                                          month=int(str(x)[4:6]), 
+    #                                          day = int(str(x)[6:])) 
+    #                        for x in history_data['Date']]
+    history_data['Date'] = [datetime.datetime.strptime(str(x)[0:4]+str(x)[4:6]+str(x)[6:], '%Y%m%d')
                             for x in history_data['Date']]
     
     # convert the format 1330 (int) to 13:30 (datetime.time) obejct
@@ -453,7 +465,7 @@ def read_reformat_Portara_minute_data(filename,  add_col_data = {}):
             for key in add_col_data:
                 history_data_reindex[key] = add_col_data[key] 
                 
-    return history_data_reindex
+    return history_data#history_data_reindex
 
 def read_reformat_openprice_data(filename):
     openprice_data = pd.read_csv(filename)
@@ -472,20 +484,21 @@ def read_reformat_openprice_data(filename):
     #openprice_data_reindex = openprice_data.set_index('Date',drop=False)
     openprice_data_reindex = openprice_data
     #print(openprice_data_reindex)
-    return openprice_data_reindex
+    return openprice_data #openprice_data_reindex
 
 
 def read_reformat_APC_data(filename):
     signal_data =  pd.read_csv(filename)
     
-    signal_data['Forecast Period'] = [datetime.datetime(year = int(str(x)[0:4]), 
-                                              month=int(str(x)[5:7]), 
-                                              day = int(str(x)[8:])) 
+    #signal_data['Forecast Period'] = [datetime.datetime(year = int(str(x)[0:4]), 
+    #                                          month=int(str(x)[5:7]), 
+    #                                          day = int(str(x)[8:])) 
+    #                        for x in signal_data['Forecast Period']]
+    signal_data['Forecast Period'] = [datetime.datetime.strptime(x, '%Y-%m-%d')
                             for x in signal_data['Forecast Period']]
-    
     #signal_data_reindex = signal_data.set_index('Forecast Period',drop=False)
     signal_data_reindex = signal_data
-    return signal_data_reindex
+    return signal_data #signal_data_reindex
 
 #tested
 def extract_lag_data(signal_data, history_data, date, lag_size=5):

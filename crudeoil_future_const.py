@@ -51,27 +51,38 @@ round_turn_fees = {
 OPEN_HR_DICT = {
     'CLc1':'0330',
     'CLc2':'0330',
-    'HOc1':'1300',
-    'HOc2':'1300',
-    'RBc1':'1300',
-    'RBc2':'1300',
-    'QOc1':'0330',
+    'HOc1':'1300', #0800 NY #1300 UTC
+    'HOc2':'1300', #0800 NY #1300 UTC
+    'RBc1':'1300', #0800 NY #1300 UTC
+    'RBc2':'1300', #0800 NY #1300 UTC
+    'QOc1':'0330', 
     'QOc2':'0330',
     'QPc1':'0800',
     'QPc2':'0800'}
 
 CLOSE_HR_DICT = {
-    'CLc1':'1958',
-    'CLc2':'1958',
-    'HOc1':'1828',
-    'HOc2':'1828',
-    'RBc1':'1828',
-    'RBc2':'1828',
-    'QOc1':'1958',
-    'QOc2':'1958',
-    'QPc1':'1628',
-    'QPc2':'1628'}
+    'CLc1':'1958', #2000
+    'CLc2':'1958', #2000
+    'HOc1':'1828', #1430 NY
+    'HOc2':'1828', #1430 NY
+    'RBc1':'1828', #1430 NY
+    'RBc2':'1828', #1430 NY
+    'QOc1':'1958', #2000
+    'QOc2':'1958', #2000
+    'QPc1':'1628', #1630
+    'QPc2':'1628'} #1630
 
+TIMEZONE_DICT = {
+    'CLc1':'Europe/London',
+    'CLc2':'Europe/London',
+    'HOc1':'America/New_York',
+    'HOc2':'America/New_York',
+    'RBc1':'America/New_York',
+    'RBc2':'America/New_York',
+    'QOc1':'Europe/London',
+    'QOc2':'Europe/London',
+    'QPc1':'Europe/London',
+    'QPc2':'Europe/London'}
 
 # raw input file list
 APC_FILE_LOC = {

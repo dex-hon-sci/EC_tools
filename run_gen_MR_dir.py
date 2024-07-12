@@ -24,7 +24,8 @@ from EC_tools.bookkeep import Bookkeep
 import EC_tools.math_func as mfunc
 from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, \
                                 APC_FILE_LOC, HISTORY_DAILY_FILE_LOC,\
-                                    HISTORY_MINTUE_FILE_LOC
+                                    HISTORY_MINTUE_FILE_LOC, TIMEZONE_DICT,\
+                                        OPEN_HR_DICT, CLOSE_HR_DICT
 
 
 __all__ = ['loop_signal','gen_signal_vector','run_gen_MR_signals', 
@@ -40,7 +41,7 @@ MR_STRATEGIES_0 = {'benchmark': MRStrategy().argus_benchmark_strategy,
 
 
 def loop_signal(book, signal_data, history_data, open_price_data,  
-                   strategy_func, start_date, strategy_name='benchmark', 
+                   strategy_func, start_date, end_date, strategy_name='benchmark', 
                    buy_range=(0.4,0.6,0.1), sell_range =(0.6,0.4,0.9), 
                    open_hr='', close_hr='',
                    commodity_name = '', Timezone= "",
@@ -50,11 +51,18 @@ def loop_signal(book, signal_data, history_data, open_price_data,
     bucket = book.make_bucket(keyword=strategy_name)
     print('Start looping signal: {}...'.format(loop_symbol))
     # check if history data and opening price data are the same dimension
+    print(history_data[history_data['Date'] == start_date],start_date, type(start_date))
+    print(history_data['Date'].iloc[0], type(history_data['Date'].iloc[0]))
     print(history_data.index[history_data['Date'] == start_date].item())
     print(history_data.index.to_numpy()[-1])
     
     start_index = history_data.index[history_data['Date'] == start_date].item()
-    end_index = history_data.index.to_numpy()[-1]
+    
+    #print(history_data[history_data['Date'] == start_date], start_date)
+    #print(history_data[history_data['Date'] == end_date],end_date)
+    
+    end_index = history_data.index[history_data['Date'] == end_date].item()
+    
     # loop through every forecast date and contract symbol 
     for i in np.arange(start_index,end_index): 
         
@@ -111,7 +119,8 @@ def loop_signal(book, signal_data, history_data, open_price_data,
             # loop functions takes in a list of Data generation method
             
             # calculate the data needed for PNL analysis for this strategy
-            strategy_data = MRStrategy.gen_strategy_data_2(history_data_lag5, 
+            strategy_data, quantile_info = MRStrategy.gen_strategy_data_2(
+                                                            history_data_lag5, 
                                                              apc_curve_lag5, 
                                                              curve_this_date,
                                                              strategy_name=\
@@ -127,14 +136,16 @@ def loop_signal(book, signal_data, history_data, open_price_data,
             print('====================================')
         
             # set resposne price.
-            entry_price, exit_price, stop_loss = MRStrategy.set_EES_APC(
+            entry_price, exit_price, stop_loss = MRStrategy.set_EES_APC_range(
                                                             direction, 
                                                             curve_this_date,
                                                             buy_range=buy_range, 
                                                             sell_range=sell_range)
             
             ##################
-            EES = [entry_price, entry_price, exit_price, exit_price, stop_loss]
+            EES = [entry_price[0], entry_price[1], 
+                   exit_price[0], exit_price[1], 
+                   stop_loss]
                         
      
             NCONS,	NROLL,	Signal_NCONS, Signal_NROLL = 2, 5, None, None
@@ -144,14 +155,15 @@ def loop_signal(book, signal_data, history_data, open_price_data,
                 
             startegy_cond = [NCONS,	NROLL,	Signal_NCONS,	Signal_NROLL]
             
-            quantile_info = [entry_price, entry_price, exit_price, exit_price]
             # put all the data in a singular list
             data = [forecast_date, price_code] + [direction] + \
                     static_info + EES+ startegy_cond+ strategy_data + \
                     quantile_info + [strategy_name]
-            print(commodity_name)
-            print(data, type(data))
-            print(len(data),len(bucket.keys()))
+                    
+            #print(commodity_name)
+            #print(data, type(data))
+            #print(len(data),len(bucket.keys()))
+            
             # Storing the data    
             bucket = book.store_to_bucket_single(data)       
         
@@ -164,7 +176,7 @@ def loop_signal(book, signal_data, history_data, open_price_data,
     return dict_contracts_quant_signals
         
 def loop_signal_2(book, signal_data, history_data, open_price_data,  
-                   Strategy, start_date, strategy_name='benchmark', 
+                   Strategy, start_date, end_date, strategy_name='benchmark', 
                    buy_range=(0.4,0.6,0.1), sell_range =(0.6,0.4,0.9), 
                    open_hr='', close_hr='',
                    commodity_name = '', Timezone= "",
@@ -179,7 +191,7 @@ def loop_signal_2(book, signal_data, history_data, open_price_data,
     
     # define the start and end of the loop by indices
     start_index = history_data.index[history_data['Date'] == start_date].item()
-    end_index = history_data.index.to_numpy()[-1]
+    end_index = history_data.index[history_data['Date'] == end_date].item()
     
     # loop through every forecast date and contract symbol 
     for i in np.arange(start_index, end_index): 
@@ -230,7 +242,7 @@ def loop_signal_2(book, signal_data, history_data, open_price_data,
                                                                  forecast_date)
    
             # calculate the data needed for PNL analysis for this strategy
-            strategy_data = Strategy.gen_strategy_data_2(history_data_lag5, 
+            strategy_data, quantile_info = Strategy.gen_strategy_data_2(history_data_lag5, 
                                                              apc_curve_lag5, 
                                                              curve_this_date,
                                                              strategy_name=\
@@ -246,32 +258,32 @@ def loop_signal_2(book, signal_data, history_data, open_price_data,
             print('====================================')
         
             # set resposne price.
-            entry_price, exit_price, stop_loss = MRStrategy.set_EES_APC(
+            entry_price, exit_price, stop_loss = MRStrategy.set_EES_APC_range(
                                                             direction, 
                                                             curve_this_date,
                                                             buy_range=buy_range, 
                                                             sell_range=sell_range)
             
             ##################
-            EES = [entry_price, entry_price, exit_price, exit_price, stop_loss]
+            EES = [entry_price, entry_price, exit_price, exit_price, stop_loss] # make this a range
                         
      
-            NCONS,	NROLL,	Signal_NCONS, Signal_NROLL = 2, 5, None, None
+            NCONS,	NROLL,	Signal_NCONS, Signal_NROLL = 2, 5, None, None # this need to be an output from the strategy class
             
             static_info = [commodity_name, full_contract_symbol, \
                            Timezone, open_hr, close_hr]
                 
-            startegy_cond = [NCONS,	NROLL,	Signal_NCONS,	Signal_NROLL]
+            startegy_cond = [NCONS,	NROLL,	Signal_NCONS, Signal_NROLL]
             
-            quantile_info = [entry_price, entry_price, exit_price, exit_price]
             # put all the data in a singular list
             data = [forecast_date, price_code] + [direction] + \
                     static_info + EES+ startegy_cond+ strategy_data + \
                     quantile_info + [strategy_name]
                     
-            print(commodity_name)
-            print(data, type(data))
-            print(len(data),len(bucket.keys()))
+            #print(commodity_name)
+            #print(data, type(data))
+            #print(len(data),len(bucket.keys()))
+            
             # Storing the data    
             bucket = book.store_to_bucket_single(data)       
         
@@ -312,11 +324,11 @@ def gen_signal_vector(signal_data, history_data, loop_start_date = ""): # WIP
     return dict_contracts_quant_signals
 
 
-@util.time_it
-@util.save_csv('test_argus_exact.csv')
 def run_gen_MR_signals(asset_pack, start_date, end_date,
                        signal_filename, filename_daily, filename_minute, 
                        buy_range=(0.4,0.6,0.1),sell_range =(0.6,0.4,0.9),
+                       open_hr='', close_hr='',
+                       commodity_name = '', Timezone= "",
                        start_date_pushback = 20):
     
     # run meanreversion signal generation on the basis of individual programme  
@@ -329,7 +341,6 @@ def run_gen_MR_signals(asset_pack, start_date, end_date,
     # input 1, APC. Load the master table in memory and test multple strategies   
     signal_data =  read.read_reformat_APC_data(signal_filename)
     
-   
     # input 2, Portara history file.
     # start_date2 is a temporary solution 
     history_data_daily = read.read_reformat_Portara_daily_data(filename_daily)
@@ -343,22 +354,38 @@ def run_gen_MR_signals(asset_pack, start_date, end_date,
     #loop through the next 30 minutes to find the opening price
     price_330 = read.find_open_price(history_data_daily, history_data_minute)
     
+    print(signal_data['Forecast Period'].iloc[0], type(signal_data['Forecast Period'].iloc[0]))
+    print(history_data_daily['Date'].iloc[0], type(history_data_daily['Date'].iloc[0]))
+    print(history_data_minute['Date'].iloc[0], type(history_data_minute['Date'].iloc[0]))
+    print(price_330['Date'].iloc[0], type(price_330['Date'].iloc[0]))
+    
     # make an empty signal dictionary for storage
     book = Bookkeep(bucket_type = 'mr_signals')
     
     start_date_lag = datetime.datetime.strptime(start_date, '%Y-%m-%d') - \
                             datetime.timedelta(days= start_date_pushback)
+    start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
+    end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
     
+    print('start_lag', start_date_lag, type(start_date_lag),
+          'start',start_date, type(start_date), 
+          'end',end_date, type(end_date))
+    def funcfunc(lss):
+        if lss == start_date:
+            return True
+    print('equal', history_data_daily['Date'].iloc[0] == datetime.datetime(2016,1,4))
+    print('equal', list(filter(funcfunc, history_data_daily['Date'].to_numpy())))
+    print('equal', history_data_daily[history_data_daily['Date'] == end_date])
+    print(history_data_daily['Date'])
     # Define a small window of interest
-    APCs_dat = signal_data[(signal_data['Forecast Period'] > start_date_lag) & 
-                                      (signal_data['Forecast Period'] < end_date)]
+    APCs_dat = signal_data[(signal_data['Forecast Period'] >= start_date_lag) & 
+                                      (signal_data['Forecast Period'] <= end_date)]
     
-    portara_dat = history_data_daily[(history_data_daily['Date'] > start_date_lag) & 
-                                      (history_data_daily['Date'] < end_date)]
+    portara_dat = history_data_daily[(history_data_daily['Date'] >= start_date_lag) & 
+                                      (history_data_daily['Date'] <= end_date)]
     
-    open_price_data = price_330[(price_330['Date'] > start_date_lag) & 
-                                      (price_330['Date'] < end_date)]
-    
+    open_price_data = price_330[(price_330['Date'] >= start_date_lag) & 
+                                      (price_330['Date'] <= end_date)]
     
     # The strategy will be ran in loop_signal decorator
     dict_contracts_quant_signals = loop_signal(book, 
@@ -366,13 +393,16 @@ def run_gen_MR_signals(asset_pack, start_date, end_date,
                                                portara_dat, 
                                                open_price_data,
                                                MRStrategy().argus_exact_strategy,
-                                               start_date,
+                                               start_date, end_date,
                                                strategy_name= 'argus_exact',
                                                buy_range=buy_range, 
                                                sell_range=sell_range,
-                                               commodity_name=commodity_name)
+                                               open_hr=open_hr, close_hr=close_hr,
+                                               commodity_name = commodity_name, 
+                                               Timezone= Timezone,
+                                               loop_symbol = symbol)
     
-    
+
     dict_contracts_quant_signals = pd.DataFrame(dict_contracts_quant_signals)
     
     #sort by date
@@ -387,8 +417,12 @@ def run_gen_MR_signals(asset_pack, start_date, end_date,
 def run_gen_MR_signals_list(filename_list, categories_list, keywords_list, symbol_list, 
                             start_date, end_date,
                             signal_list, history_daily_list, 
-                            history_minute_list,save_or_not=False,
-                            buy_range=(0.4,0.6,0.1),sell_range =(0.6,0.4,0.9)):
+                            history_minute_list,
+                            open_hr_dict, close_hr_dict, 
+                            timezone_dict,
+                            save_or_not=False,
+                            buy_range=([0.25,0.4],[0.6,0.75],0.05), 
+                            sell_range =([0.6,0.75],[0.25,0.4],0.95)):
     
     # a function to download the APC of a list of asset
     # input username and password.json
@@ -400,12 +434,21 @@ def run_gen_MR_signals_list(filename_list, categories_list, keywords_list, symbo
         @util.save_csv("{}".format(filename), save_or_not=save_or_not)
         def run_gen_MR_signals_indi(cat, key, sym):
             asset_pack = {'categories': cat, 'keywords': key, 'symbol': sym}
+            
+            open_hr = open_hr_dict[sym]
+            close_hr = close_hr_dict[sym]
+            Timezone= timezone_dict[sym]
+            
             signal_data = run_gen_MR_signals(asset_pack, 
                                              start_date, end_date,
                                              signal, history_daily, 
                                              history_minute,
                                              buy_range=buy_range, 
-                                             sell_range=sell_range) #WIP
+                                             sell_range=sell_range,
+                                             open_hr=open_hr, close_hr=close_hr,
+                                             commodity_name = key, 
+                                             Timezone= Timezone
+                                             ) #WIP
             print("name {}".format(filename))
 
             return signal_data
@@ -415,10 +458,13 @@ def run_gen_MR_signals_list(filename_list, categories_list, keywords_list, symbo
         print("All asset signal generated!")
     return output_dict
 
+
+
 @util.time_it
 def run_gen_MR_signals_preloaded_list(filename_list, start_date, end_date,
-                       signal_pkl, history_daily_pkl,
-                       openprice_pkl, save_or_not = True,
+                       signal_pkl, history_daily_pkl, openprice_pkl, 
+                       open_hr_dict, close_hr_dict, timezone_dict,
+                       save_or_not = True,
                        buy_range=(0.4,0.6,0.1),sell_range =(0.6,0.4,0.9)):
     
     # run meanreversion signal generation on the basis of individual programme  
@@ -432,26 +478,35 @@ def run_gen_MR_signals_preloaded_list(filename_list, start_date, end_date,
         # input 1, APC. Load the master table in memory and test multple strategies  
         @util.save_csv("{}".format(filename), save_or_not=save_or_not)
         def run_gen_MR_indi():
+            
+            book = Bookkeep(bucket_type = 'mr_signals')
+
+            #signal file input
             signal_file = signal_pkl[symbol]
            
             # input 2, Portara history file.
             history_daily_file = history_daily_pkl[symbol]
             #history_minute_file = history_minute_pkl[symbol]
-            book = Bookkeep(bucket_type = 'mr_signals')
-
+            
             # Find the opening price at 03:30 UK time. If not found, 
             # loop through the next 30 minutes to find the opening price
             open_price = openprice_pkl[symbol]
-
+            
+            open_hr = open_hr_dict[symbol]
+            close_hr = close_hr_dict[symbol]
+            Timezone= timezone_dict[symbol]
+            
             # The strategy will be ran in loop_signal decorator
             dict_contracts_quant_signals = loop_signal(book, signal_file, 
                                                        history_daily_file, 
                                                        open_price,
                                                        MRStrategy().argus_exact_strategy,
-                                                       start_date,
+                                                       start_date, end_date,
                                                        strategy_name= 'argus_exact',
                                                        buy_range=buy_range,
                                                        sell_range=sell_range,
+                                                       open_hr=open_hr, close_hr=close_hr,
+                                                       commodity_name = symbol, Timezone= Timezone,
                                                        loop_symbol=symbol)
             return dict_contracts_quant_signals
         
@@ -463,48 +518,53 @@ def run_gen_MR_signals_preloaded_list(filename_list, start_date, end_date,
 if __name__ == "__main__":
 
     
-    start_date = "2024-05-15"
+    start_date = "2021-01-04"
     end_date = "2024-06-14"
     
-    auth_pack = {'username': "dexter@eulercapital.com.au",
-                'password':"76tileArg56!"}
     
     
-    SAVE_FILENAME_LIST = ["benchmark_signal_CLc2_full.csv", 
-                 "benchmark_signal_HOc2_full.csv", 
-                 "benchmark_signal_RBc2_full.csv", 
-                 "benchmark_signal_QOc2_full.csv",
-                 "benchmark_signal_QPc2_full.csv" ]
+    SAVE_FILENAME_LIST = [
+                 "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_CLc1_full.csv", 
+                 "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_CLc2_full.csv", 
+                 "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_HOc1_full.csv", 
+                 "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_HOc2_full.csv", 
+                 "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_RBc1_full.csv", 
+                 "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_RBc2_full.csv", 
+                 "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_QOc1_full.csv",
+                 "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_QOc2_full.csv",
+                 "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_QPc1_full.csv",
+                 "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_QPc2_full.csv" ]
 
     
 
-    #maybe I need an unpacking function here ro handle payload from json files
+    #maybe I need an unpacking function here to handle payload from json files
+    SIGNAL_LIST = list(APC_FILE_LOC.values())
+    HISTORY_DAILY_LIST = list(HISTORY_DAILY_FILE_LOC.values())
+    HISTORY_MINUTE_LIST = list(HISTORY_MINTUE_FILE_LOC.values())
+    
+    run_gen_MR_signals_list(SAVE_FILENAME_LIST, CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, 
+                            start_date, end_date,
+                            SIGNAL_LIST, HISTORY_DAILY_LIST, HISTORY_MINUTE_LIST,
+                            OPEN_HR_DICT, CLOSE_HR_DICT, TIMEZONE_DICT,save_or_not=True)
+
+
 # =============================================================================
-#     SIGNAL_LIST = list(APC_FILE_LOC.values())
-#     HISTORY_DAILY_LIST = list(HISTORY_DAILY_LIST.values())
-#     HISTORY_MINUTE_LIST = list(HISTORY_MINUTE_LIST.values())
-#     run_gen_MR_signals_list(SAVE_FILENAME_LIST, CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, 
-#                             start_date, end_date,
-#                             SIGNAL_LIST, HISTORY_DAILY_LIST, 
-#                             HISTORY_MINUTE_LIST)
+#     asset_pack = {"categories" : 'Argus Nymex Heating oil month 1 Daily',
+#                   "keywords" : "Heating",
+#                   "symbol": "HOc1"}
+# 
+#     #inputs: Portara data (1 Minute and Daily), APC
+#     signal_filename = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_HOc1.csv"
+#     filename_daily = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Day/HO.day"
+#     filename_minute = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/HO.001"
+# 
+#     # run signal for the individual asset
+#     dict_contracts_quant_signals = run_gen_MR_signals(asset_pack, 
+#                                                       start_date,  
+#                                                       end_date, signal_filename, 
+#                                                       filename_daily, 
+#                                                       filename_minute)
+# 
 # 
 # =============================================================================
-
-    asset_pack = {"categories" : 'Argus Nymex Heating oil month 1 Daily',
-                  "keywords" : "Heating",
-                  "symbol": "HOc1"}
-
-    #inputs: Portara data (1 Minute and Daily), APC
-    signal_filename = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_HOc1.csv"
-    filename_daily = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Day/HO.day"
-    filename_minute = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/HO.001"
-
-    # run signal for the individual asset
-    dict_contracts_quant_signals = run_gen_MR_signals(asset_pack, 
-                                                      start_date,  
-                                                      end_date, signal_filename, 
-                                                      filename_daily, 
-                                                      filename_minute)
-
-
 

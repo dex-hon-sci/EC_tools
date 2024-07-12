@@ -11,7 +11,6 @@ from typing import Protocol
 
 import EC_tools.math_func as mfunc
 
-# round trip fee 15 dollars
 __author__="Dexter S.-H. Hon"
 
 class Strategy(Protocol):
@@ -23,7 +22,7 @@ class Strategy(Protocol):
     
     The trading instructions in question does not contain information about 
     the style of trading (e.g., one entry per day, or more), It is solely 
-    informational on where you should buy/sell 
+    informational on where you should buy/sell.
     
     """
     def __init__(self):
@@ -33,7 +32,44 @@ class Strategy(Protocol):
         self._sell_cond = False
         self._neutral_cond = False
         self._direction = 'Neutral'
+        
+    @property
+    def buy_cond(self):
+        """
+        The overall boolean value of the Buy condition
 
+        """
+        return all(self._buy_cond_list)
+    
+    @property
+    def sell_cond(self):
+        """
+        The overall boolean value of the Sell condition
+
+        """
+        return all(self._sell_cond_list)
+    
+    @property
+    def neutral_cond(self):
+        """
+        The overall boolean value of the Neutral condition
+
+        """
+        self._neutral_cond = not (self.buy_cond ^ self.sell_cond)
+        return self._neutral_cond
+    
+    @property
+    def direction(self):
+        # make direction dictionary
+        direction_dict = {"Buy": self.buy_cond, "Sell": self.sell_cond, 
+                          "Neutral": self.neutral_cond}
+        
+        for direction_str in direction_dict:
+            if direction_dict[direction_str]:
+                direction = direction_str
+                
+        return direction
+    
     def gen_data():
         pass
     
@@ -57,22 +93,18 @@ class MRStrategyArgus(Strategy):
     """
     def __init__(self, curve_today, 
                  quant_list = np.arange(0.0025, 0.9975, 0.0025)):
+        
+        super().__init__()
+        
         self._curve_today = curve_today
         self._quant_list = quant_list
         self._curve_today_spline = mfunc.generic_spline(self._quant_list, 
                                                         self._curve_today)
         
-        super().__init__()
-
         self._sub_buy_cond_dict = dict()
         self._sub_sell_cond_dict = dict()
         self.strategy_name = 'argus_exact'
-        #self._buy_cond_list = [False]
-        #self._sell_cond_list = [False]
-        #self._buy_cond = False
-        #self._sell_cond = False
-        #self._neutral_cond = False
-        #self._direction = 'Neutral'
+
 
     
     def gen_data(self, history_data_lag5, apc_curve_lag5):
@@ -130,7 +162,7 @@ class MRStrategyArgus(Strategy):
                                     i, _ in enumerate(apc_curve_lag)]
         # Note that the list goes like this [lag1q,lag2q,...]
         
-
+        # calculate the rolling average
         rollingaverage_q = np.average(lag_list)
         
 
@@ -146,8 +178,8 @@ class MRStrategyArgus(Strategy):
                                  apc_trade_Qlimit=(0.05,0.95)):
     
 
-        lag2close_q = data['lag_list'][1]
-        lag1close_q = data['lag_list'][0]
+        #lag2close_q = data['lag_list'][1]
+        #lag1close_q = data['lag_list'][0]
         rollingaverage_q = data['rollingaverage']
 
         lag_close_q_list = [data['lag_list'][i] for i in range(total_lag_days)]
@@ -173,8 +205,6 @@ class MRStrategyArgus(Strategy):
                                                     apc_trade_Qlimit[1]])[0])]
         
         
-
-    
         self._sub_buy_cond_dict = {'NCONS': cond_buy_list_1,	
                              'NROLL': cond_buy_list_2,
                              'OP_WITHIN': cond_buy_list_3}

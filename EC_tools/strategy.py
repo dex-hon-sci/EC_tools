@@ -315,11 +315,15 @@ class MRStrategy(object):
     
     def gen_strategy_data_2(history_data_lag5, apc_curve_lag5, curve_today,
                           strategy_name="benchmark"):
-        quant0 = np.arange(0.0025, 0.9975, 0.0025)
+
         
         lag5_price = history_data_lag5['Settle']
-        print('lag5_price',lag5_price)
-        print(lag5_price.iloc[-5])
+        #print('lag5_price',lag5_price)
+        #print(lag5_price.iloc[-5])
+        
+        quant0 = np.arange(0.0025, 0.9975, 0.0025)
+        curve_today_spline = mfunc.generic_spline(quant0, 
+                                    curve_today)
         
         # Find quants for the closing price for the past five days
         lag5close_q = mfunc.find_quant(apc_curve_lag5.iloc[-5].to_numpy()[1:-1], 
@@ -340,11 +344,11 @@ class MRStrategy(object):
         data0 = [lag1close_q, lag2close_q, lag3close_q, lag4close_q, lag5close_q, 
                  rollingaverage5q]    
         
-        data1 = {'lag1close_q': lag1close_q, 'lag2close_q': lag2close_q, 
-                'lag3close_q': lag3close_q, 'lag4close_q': lag4close_q, 
-                'lag5close_q': lag5close_q, 'rollingaverage5q': rollingaverage5q}
-        
-        return data0
+        data1 = [float(curve_today_spline(0.25)), 
+                 float(curve_today_spline(0.4)), 
+                 float(curve_today_spline(0.6)), 
+                 float(curve_today_spline(0.75))]
+        return data0, data1
     
     def argus_exact_strategy(self, data0, open_price, curve_today, apc_mid_Q = 0.5, 
                                  apc_trade_Qrange=(0.4,0.6), 
@@ -546,7 +550,45 @@ class MRStrategy(object):
             
         return entry_price, exit_price, stop_loss
     
+    def set_EES_APC_range(cond, curve_today, buy_range=([0.25,0.4],[0.6,0.75],0.05), 
+                            sell_range =([0.6,0.75],[0.25,0.4],0.95)):
+        
+        quant0 = np.arange(0.0025, 0.9975, 0.0025)
+        curve_today = CubicSpline(quant0, curve_today)
+        
+        if cond == "Buy":
+            # (A) Entry region at price < APC p=0.4 and 
+            entry_price = [float(curve_today(buy_range[0][0])), 
+                           float(curve_today(buy_range[0][1]))]
+            # (B) Exit price
+            exit_price = [float(curve_today(buy_range[1][0])), 
+                          float(curve_today(buy_range[1][1]))] 
+            # (C) Stop loss at APC p=0.1
+            stop_loss = float(curve_today(buy_range[2]))
 
+            
+        elif cond == "Sell":
+            # (A) Entry region at price > APC p=0.6 and 
+            entry_price = [float(curve_today(sell_range[0][0])), 
+                           float(curve_today(sell_range[0][1]))]
+            # (B) Exit price
+            exit_price = [float(curve_today(sell_range[1][0])), 
+                          float(curve_today(sell_range[1][1]))]
+            # (C) Stop loss at APC p=0.9
+            stop_loss = float(curve_today(sell_range[2]))
+            
+        elif cond == "Neutral":
+            entry_price = ["NA", "NA"]
+            exit_price = ["NA", "NA"]
+            stop_loss = "NA"
+        else:
+            raise Exception(
+                'Unaccepted input, condition needs to be either Buy, \
+                    Sell, or Neutral.')
+            
+        return entry_price, exit_price, stop_loss
+    
+    
     
 MR_STRATEGIES = {'benchmark': MRStrategy().argus_benchmark_strategy,
                       'mode': MRStrategy().argus_benchmark_mode,
