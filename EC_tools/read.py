@@ -394,15 +394,16 @@ def read_reformat_Portara_daily_data(filename, add_col_data = {}):
     #                                          day = int(str(x)[6:])) 
     #                        for x in history_data['Date']]
 
-    print('history_date', history_data['Date'].iloc[-1], type(history_data['Date'].iloc[-1]))
 
     history_data['Date'] = [datetime.datetime.strptime(str(x)[0:4]+str(x)[4:6]+str(x)[6:], '%Y%m%d')
                             for x in history_data['Date']]
-    
-    print('history_date', history_data['Date'].iloc[-1], type(history_data['Date'].iloc[-1]))
-    print('history_date', isinstance(history_data['Date'].iloc[-1], datetime.datetime))
-    print(history_data['Date'].iloc[-1] == datetime.datetime(year = 2024, 
-                                              month=6,day = 17) )
+# =============================================================================
+#     
+#     print('history_date', history_data['Date'].iloc[-1], type(history_data['Date'].iloc[-1]))
+#     print('history_date', isinstance(history_data['Date'].iloc[-1], datetime.datetime))
+#     print(history_data['Date'].iloc[-1] == datetime.datetime(year = 2024, 
+#                                               month=6,day = 17) )
+# =============================================================================
     #history_data_reindex = history_data.set_index('Date',drop=False)
     history_data_reindex = history_data
     
@@ -525,8 +526,9 @@ def extract_lag_data(signal_data, history_data, date, lag_size=5):
 
     """
     # Find the row index of the history data first
-    row_index = history_data.index[history_data['Date'] == date].tolist()[0]
-    
+    #row_index = history_data.index[history_data['Date'] == date].tolist()[0]
+    row_index = history_data.index[history_data['Date'] == date].item()
+    #print('row_index',row_index)
     #lag_days = datetime.timedelta(days=lag_size)
     
     #lag5days = row_index-lag_days
@@ -537,20 +539,23 @@ def extract_lag_data(signal_data, history_data, date, lag_size=5):
     history_data_lag = history_data.loc[row_index-lag_size:row_index-1]
    #history_data_lag = history_data.loc[lag5days:lag1day]
     
-   #print(history_data_lag)
+    #print('history_data_lag', history_data_lag)
     # use the relevant date from history data to get signal data to ensure matching date
     window = history_data_lag['Date'].tolist()
+    #print('window',history_data_lag['Date'].tolist())
+
     # turn Timstamp into string
     #print(window)
-    window = [str(window[i])[0:10] for i in range(lag_size)]
+    #window = [str(window[i])[0:10] for i in range(lag_size)]
         
     #Store the lag signal data in a list
+    #signal_data_lag = signal_data[signal_data['Forecast Period'] == window[0]]
     signal_data_lag = signal_data[signal_data['Forecast Period'] == window[0]]
     
     for i in range(lag_size-1):
         curve = signal_data[signal_data['Forecast Period'] == window[i+1]]
         signal_data_lag = pd.concat([signal_data_lag, curve])
-        
+
     return signal_data_lag, history_data_lag
 
 # tested

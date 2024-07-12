@@ -96,7 +96,20 @@ class Bookkeep(object):
         """
         A simple function to store data in a bucket one entry at a time. 
 
-        Parameters
+        ParametersCurrent date and timeSaturday July 13, 2024 06:32:52 (AEST) Canberra, Australia (GMT +1000)
+ 
+Family nameHON
+Given name(s)Suei Hei
+Visa descriptionTEMPORARY RESIDENT
+Document numberA61335077
+Visa class / subclassVC / 485
+Visa streamPost-Higher Education Work
+Visa applicantPrimary
+Visa grant date24 January 2023
+Visa expiry date24 January 2027
+LocationOffshore
+Visa statusIn Effect
+
         ----------
         data : list
             A list of data to put into the bucket.

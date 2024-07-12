@@ -324,7 +324,6 @@ class MRStrategy(object):
         quant0 = np.arange(0.0025, 0.9975, 0.0025)
         curve_today_spline = mfunc.generic_spline(quant0, 
                                     curve_today)
-        
         # Find quants for the closing price for the past five days
         lag5close_q = mfunc.find_quant(apc_curve_lag5.iloc[-5].to_numpy()[1:-1], 
                                        quant0, lag5_price.iloc[-5])
@@ -374,6 +373,7 @@ class MRStrategy(object):
 #                               strategy_name="benchmark")
 #         
 # =============================================================================
+
         quant_list = np.arange(0.0025, 0.9975, 0.0025)
         #quant_list = np.array(list(map(float, curve_today.columns.values[1:-1])))
 
@@ -470,7 +470,6 @@ class MRStrategy(object):
         rollingaverage5q = np.average([lag1close_q, lag2close_q, 
                                        lag3close_q, lag4close_q, 
                                        lag5close_q])
-        
         
         data0 = [
             wanted_quantiles[0],
@@ -589,10 +588,3 @@ class MRStrategy(object):
         return entry_price, exit_price, stop_loss
     
     
-    
-MR_STRATEGIES = {'benchmark': MRStrategy().argus_benchmark_strategy,
-                      'mode': MRStrategy().argus_benchmark_mode,
-                "argus_exact": MRStrategy().argus_exact_strategy}
-
-def apply_strategy(strategy_name:str):
-     return MR_STRATEGIES[strategy_name]

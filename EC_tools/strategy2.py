@@ -69,21 +69,17 @@ class Strategy(Protocol):
                 direction = direction_str
                 
         return direction
+
     
-    def gen_data():
-        pass
-    
-    def add_cond():
-        pass
-    
-    def run_cond():
-        pass
-    
-    def set_EES():
-        pass
-    
-    def apply_strategy():
-        pass
+    def apply_strategy(self, history_data_lag5, apc_curve_lag5, open_price):
+        
+        data = self.gen_data_2(history_data_lag5, apc_curve_lag5)
+        
+        self.run_cond(data, open_price)
+        
+        EES = self.set_EES()
+        
+        return
     
 class MRStrategyArgus(Strategy):
     """
@@ -105,47 +101,47 @@ class MRStrategyArgus(Strategy):
         self._sub_sell_cond_dict = dict()
         self.strategy_name = 'argus_exact'
 
-
+# =============================================================================
+#     def gen_data(self, history_data_lag5, apc_curve_lag5):
+#                               
+#         """
+#         A method that generate all the data needed for the strategy. The ouput
+#         of this functions contain all the quantity that will be and can be used 
+#         in creating variation of this strategy.
+#         
+#         """
+#         
+#         lag5_price = history_data_lag5['Settle']
+#         
+#         
+#         # Find quants for the closing price for the past five days
+#         lag5close_q = mfunc.find_quant(apc_curve_lag5.iloc[-5].to_numpy()[1:-1], 
+#                                        self._quant_list, lag5_price.iloc[-5])
+#         lag4close_q = mfunc.find_quant(apc_curve_lag5.iloc[-4].to_numpy()[1:-1], 
+#                                        self._quant_list, lag5_price.iloc[-4])
+#         lag3close_q = mfunc.find_quant(apc_curve_lag5.iloc[-3].to_numpy()[1:-1], 
+#                                        self._quant_list, lag5_price.iloc[-3])
+#         lag2close_q = mfunc.find_quant(apc_curve_lag5.iloc[-2].to_numpy()[1:-1], 
+#                                        self._quant_list, lag5_price.iloc[-2])  
+#         lag1close_q = mfunc.find_quant(apc_curve_lag5.iloc[-1].to_numpy()[1:-1], 
+#                                        self._quant_list, lag5_price.iloc[-1]) 
+#         
+#         rollingaverage5q = np.average([lag1close_q, lag2close_q, 
+#                                        lag3close_q, lag4close_q, 
+#                                        lag5close_q])
+#         
+#         data0 = [lag1close_q, lag2close_q, lag3close_q, lag4close_q, lag5close_q, 
+#                  rollingaverage5q]    
+#         
+#         data1 = {'lag1close_q': lag1close_q, 'lag2close_q': lag2close_q, 
+#                 'lag3close_q': lag3close_q, 'lag4close_q': lag4close_q, 
+#                 'lag5close_q': lag5close_q, 'rollingaverage5q': rollingaverage5q}
+#         
+#         return data0
+# =============================================================================
     
-    def gen_data(self, history_data_lag5, apc_curve_lag5):
-                              
-        """
-        A method that generate all the data needed for the strategy. The ouput
-        of this functions contain all the quantity that will be and can be used 
-        in creating variation of this strategy.
-        
-        """
-        
-        lag5_price = history_data_lag5['Settle']
-        
-        
-        # Find quants for the closing price for the past five days
-        lag5close_q = mfunc.find_quant(apc_curve_lag5.iloc[-5].to_numpy()[1:-1], 
-                                       self._quant_list, lag5_price.iloc[-5])
-        lag4close_q = mfunc.find_quant(apc_curve_lag5.iloc[-4].to_numpy()[1:-1], 
-                                       self._quant_list, lag5_price.iloc[-4])
-        lag3close_q = mfunc.find_quant(apc_curve_lag5.iloc[-3].to_numpy()[1:-1], 
-                                       self._quant_list, lag5_price.iloc[-3])
-        lag2close_q = mfunc.find_quant(apc_curve_lag5.iloc[-2].to_numpy()[1:-1], 
-                                       self._quant_list, lag5_price.iloc[-2])  
-        lag1close_q = mfunc.find_quant(apc_curve_lag5.iloc[-1].to_numpy()[1:-1], 
-                                       self._quant_list, lag5_price.iloc[-1]) 
-        
-        rollingaverage5q = np.average([lag1close_q, lag2close_q, 
-                                       lag3close_q, lag4close_q, 
-                                       lag5close_q])
-        
-        data0 = [lag1close_q, lag2close_q, lag3close_q, lag4close_q, lag5close_q, 
-                 rollingaverage5q]    
-        
-        data1 = {'lag1close_q': lag1close_q, 'lag2close_q': lag2close_q, 
-                'lag3close_q': lag3close_q, 'lag4close_q': lag4close_q, 
-                'lag5close_q': lag5close_q, 'rollingaverage5q': rollingaverage5q}
-        
-        return data0
-    
-    def gen_data_2(self, history_data_lag, apc_curve_lag, 
-                            price_proxy = 'Settle'):
+    def gen_data(self, history_data_lag, apc_curve_lag, 
+                            price_proxy = 'Settle', qunatile = [0.25,0.4,0.6,0.75]):
                               
         """
         A method that generate all the data needed for the strategy. The ouput
@@ -166,9 +162,16 @@ class MRStrategyArgus(Strategy):
         rollingaverage_q = np.average(lag_list)
         
 
-        data1 = {'lag_list': lag_list, 'rollingaverage': rollingaverage_q}
+        strategy_info = {'lag_list': lag_list, 'rollingaverage': rollingaverage_q}
         
-        return data1
+        qunatile_info = self._curve_today_spline(qunatile)
+                #[float(self._curve_today_spline(0.25)), 
+                # float(self._curve_today_spline(0.4)), 
+                # float(self._curve_today_spline(0.6)), 
+                # float(self._curve_today_spline(0.75))]
+
+        
+        return strategy_info, qunatile_info
         
     
     def run_cond(self, data, open_price, total_lag_days = 2, 
@@ -248,17 +251,3 @@ class MRStrategyArgus(Strategy):
             
         return entry_price, exit_price, stop_loss
     
-    
-    def apply_strategy(self, history_data_lag5, apc_curve_lag5, open_price):
-        
-        data = self.gen_data_2(history_data_lag5, apc_curve_lag5)
-        
-        self.run_cond(data, open_price)
-        
-        EES = self.set_EES()
-        
-        
-        return
-    
-    def gen_bookkeep_data():
-        pass
