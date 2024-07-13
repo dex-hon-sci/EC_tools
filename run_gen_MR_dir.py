@@ -179,7 +179,7 @@ def loop_signal(book, signal_data, history_data, open_price_data,
         
 
 def loop_signal_2(book, signal_data, history_data, open_price_data,  
-                   strategy_func, start_date, end_date, strategy_name='benchmark', 
+                   Strategy, start_date, end_date, strategy_name='benchmark', 
                    buy_range=(0.4,0.6,0.1), sell_range =(0.6,0.4,0.9), 
                    open_hr='', close_hr='',
                    commodity_name = '', Timezone= "",
@@ -254,10 +254,16 @@ def loop_signal_2(book, signal_data, history_data, open_price_data,
                                                              curve_this_date,
                                                              strategy_name=\
                                                                  "benchmark")
-        
+                
+                
+            strategy_data2, quantile_info2 = Strategy(curve_this_date).\
+                                            gen_data(history_data_lag5, apc_curve_lag5)
+                                            
             print('====================================')
             # Run the strategy        
-            direction = strategy_func(strategy_data, price_330, curve_this_date)
+            direction = Strategy(curve_this_date).run_cond(price_330)
+            
+            #(strategy_data, price_330, curve_this_date)
             
             
             print(forecast_date, full_contract_symbol,'MR signal generated!', 

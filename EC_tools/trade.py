@@ -575,6 +575,39 @@ class OneTradePerDay(Trade):
         return EES_dict, trade_open, trade_close, pos_list, exec_pos_list            
 
     
+class MultiTradePerDay(Trade):
+    """
+    A class that perform multiple trade per day, the simplest form of trading.
+    
+    Four possible outcomes:
+    1) Find the earliest entry point in the price action chart, 
+    2) exit the position  as soon as the price it the target entry. 
+    3) If the price hit the stop loss first, exit at stop loass. 
+    4) If netiher the target exit nor the stop loss is hit, exit the trade 
+        at the closing hour.
+        
+    """
+    def __init__(self, portfolio):
+        #self.trade_or_not = True
+        super().__init__(portfolio)
+        
+    @staticmethod
+    def find_EES_values(EES_dict):
+        pass
+    
+    def open_positions():
+        pass
+    
+    def execute_position():
+        pass
+        
+    def run_trade(self):
+        pass
+    
+class BiDirectionalTrade(Trade):
+    def __init__(self, portfolio):
+        #self.trade_or_not = True
+        super().__init__(portfolio)
 # =============================================================================
 #  under construction
 # @dataclass

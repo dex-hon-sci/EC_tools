@@ -31,7 +31,15 @@ class Strategy(Protocol):
         self._buy_cond = False
         self._sell_cond = False
         self._neutral_cond = False
-        self._direction = 'Neutral'
+        
+        self.cond_dict = {"Buy": self._buy_cond_list, 
+                          "Sell": self._sell_cond_list,
+                          'Neutral': []}
+        self.direction_dict = {"Buy": self.buy_cond, 
+                               "Sell": self.sell_cond, 
+                               "Neutral": self.neutral_cond} # make direction dictionary
+
+        self._direction = 'Neutral' # make the default value of a strategy 'Neutral'
         
     @property
     def buy_cond(self):
@@ -60,31 +68,20 @@ class Strategy(Protocol):
     
     @property
     def direction(self):
-        # make direction dictionary
-        direction_dict = {"Buy": self.buy_cond, "Sell": self.sell_cond, 
-                          "Neutral": self.neutral_cond}
         
-        for direction_str in direction_dict:
-            if direction_dict[direction_str]:
-                direction = direction_str
+        for direction_str in self.direction_dict:
+            if self.direction_dict[direction_str]:
+                self._direction = direction_str
                 
-        return direction
+        return self._direction
 
     
-    def apply_strategy(self, history_data_lag5, apc_curve_lag5, open_price):
-        
-        data = self.gen_data_2(history_data_lag5, apc_curve_lag5)
-        
-        self.run_cond(data, open_price)
-        
-        EES = self.set_EES()
-        
-        return
+
     
 class MRStrategyArgus(Strategy):
     """
     Mean-Reversion Strategy based on Argus Possibility Curves. 
-    This class allows one to 
+    This class allows us to ... 
     
     """
     def __init__(self, curve_today, 
@@ -99,6 +96,8 @@ class MRStrategyArgus(Strategy):
         
         self._sub_buy_cond_dict = dict()
         self._sub_sell_cond_dict = dict()
+        self.sub_cond_dict = {'Buy':[], 'Sell':[], 'Neutral': []}
+
         self.strategy_name = 'argus_exact'
 
 # =============================================================================
@@ -139,6 +138,15 @@ class MRStrategyArgus(Strategy):
 #         
 #         return data0
 # =============================================================================
+    def flatten_sub_cond_dict(self):
+        # a method that turn a sub_cond_dict into a cond_dict assuming the 
+        # subgroups are only one layer deep.
+        
+        for key in self.sub_cond_dict:
+            lis = self.sub_cond_dict[key].values()
+            flatList = sum(lis, [])
+            self.cond_dict[key] = flatList
+        return 
     
     def gen_data(self, history_data_lag, apc_curve_lag, 
                             price_proxy = 'Settle', qunatile = [0.25,0.4,0.6,0.75]):
@@ -207,42 +215,112 @@ class MRStrategyArgus(Strategy):
         cond_sell_list_3 = [(open_price <= self._curve_today_spline([
                                                     apc_trade_Qlimit[1]])[0])]
         
+        # save the condtion boolean value to the sub-condition dictionary
+        self._sub_buy_cond_dict = {'NCONS': [cond_buy_list_1],	
+                             'NROLL': [cond_buy_list_2],
+                             'OP_WITHIN': [cond_buy_list_3]}
+        self._sub_sell_cond_dict = {'NCONS': [cond_sell_list_1],	
+                             'NROLL': [cond_sell_list_2],
+                             'OP_WITHIN': [cond_sell_list_3]}
         
-        self._sub_buy_cond_dict = {'NCONS': cond_buy_list_1,	
-                             'NROLL': cond_buy_list_2,
-                             'OP_WITHIN': cond_buy_list_3}
-        self._sub_sell_cond_dict = {'NCONS': cond_sell_list_1,	
-                             'NROLL': cond_sell_list_2,
-                             'OP_WITHIN': cond_sell_list_3}
+        # Store all sub-conditions into 
+        self.sub_cond_dict = {'Buy':[sum(self._sub_buy_cond_dict[key],[]) 
+                                for key in self._sub_buy_cond_dict], 
+                         'Sell':[sum(self._sub_sell_cond_dict[key],[]) 
+                                 for key in self._sub_buy_cond_dict], 
+                         'Neutral': []}
+        
+        # flatten the sub-conditoion list and sotre them in the condition list
+        self.flatten_sub_cond_dict()
+
+        # Create the condtion info for bookkeeping
+        NCONS,	NROLL = len(self._sub_buy_cond_dict['NCONS']), \
+                                        len(self._sub_buy_cond_dict['NROLL'])
+                                        
+        # Find the Boolean value for each buy conditions subgroup
+        sub_buy_1 = all(self._sub_buy_cond_dict['NCONS'])
+        sub_buy_2 = all(self._sub_buy_cond_dict['NROLL'])
+        # Find the Boolean value for each Sell conditions subgroup
+        sub_sell_1 = all(self._sub_sell_cond_dict['NCONS'])
+        sub_sell_2 = all(self._sub_sell_cond_dict['NROLL'])
+                
+        # Construct condtion dictionaray for each condition
+        cond_dict_1 = {'Buy': sub_buy_1, 'Sell': sub_sell_1, 'Neutral': sub_buy_1 ^ sub_sell_1}
+        cond_dict_2 = {'Buy': sub_buy_2, 'Sell': sub_sell_2, 'Neutral': sub_buy_1 ^ sub_sell_1}
+        
+        # Degine the name for the Buy/Sell action for each condition subgroups
+        Signal_NCONS  = [key for key in cond_dict_1 if cond_dict_1[key] == True][0]
+        Signal_NROLL  = [key for key in cond_dict_2 if cond_dict_2[key] == True][0]
+
+        # Put the condition info in a list
+        cond_info = [NCONS,	NROLL, Signal_NCONS, Signal_NROLL]
+        
+        return self.direction, cond_info
+        
     
-        
-        return self.direction
-        
+# =============================================================================
+#     def set_EES(self, cond, buy_range=(0.4,0.6,0.1), 
+#                             sell_range =(0.6,0.4,0.9)):
+#         
+#         
+#         if self.direction == "Buy":
+#             # (A) Entry region at price < APC p=0.4 and 
+#             entry_price = float(self._curve_today(buy_range[0]))
+#             # (B) Exit price
+#             exit_price = float(self._curve_today(buy_range[1]))
+#             # (C) Stop loss at APC p=0.1
+#             stop_loss = float(self._curve_today(buy_range[2]))
+# 
+#             
+#         elif self.direction == "Sell":
+#             # (A) Entry region at price > APC p=0.6 and 
+#             entry_price = float(self._curve_today(sell_range[0]))
+#             # (B) Exit price
+#             exit_price = float(self._curve_today(sell_range[1]))
+#             # (C) Stop loss at APC p=0.9
+#             stop_loss = float(self._curve_today(sell_range[2]))
+#             
+#         elif self.direction == "Neutral":
+#             entry_price = "NA"
+#             exit_price = "NA"
+#             stop_loss = "NA"
+#         else:
+#             raise Exception(
+#                 'Unaccepted input, condition needs to be either Buy, \
+#                     Sell, or Neutral.')
+#             
+#         return entry_price, exit_price, stop_loss
+# =============================================================================
     
-    def set_EES(self, cond, buy_range=(0.4,0.6,0.1), 
-                            sell_range =(0.6,0.4,0.9)):
+    def set_EES(self, cond, buy_range=([0.25,0.4],[0.6,0.75],0.05), 
+                            sell_range =([0.6,0.75],[0.25,0.4],0.95)):
         
+
         
         if self.direction == "Buy":
             # (A) Entry region at price < APC p=0.4 and 
-            entry_price = float(self._curve_today(buy_range[0]))
+            entry_price = [float(self._curve_today(buy_range[0][0])), 
+                           float(self._curve_today(buy_range[0][1]))]
             # (B) Exit price
-            exit_price = float(self._curve_today(buy_range[1]))
+            exit_price = [float(self._curve_today(buy_range[1][0])), 
+                          float(self._curve_today(buy_range[1][1]))] 
             # (C) Stop loss at APC p=0.1
             stop_loss = float(self._curve_today(buy_range[2]))
 
             
         elif self.direction == "Sell":
             # (A) Entry region at price > APC p=0.6 and 
-            entry_price = float(self._curve_today(sell_range[0]))
+            entry_price = [float(self._curve_today(sell_range[0][0])), 
+                           float(self._curve_today(sell_range[0][1]))]
             # (B) Exit price
-            exit_price = float(self._curve_today(sell_range[1]))
+            exit_price = [float(self._curve_today(sell_range[1][0])), 
+                          float(self._curve_today(sell_range[1][1]))]
             # (C) Stop loss at APC p=0.9
             stop_loss = float(self._curve_today(sell_range[2]))
             
         elif self.direction == "Neutral":
-            entry_price = "NA"
-            exit_price = "NA"
+            entry_price = ["NA", "NA"]
+            exit_price = ["NA", "NA"]
             stop_loss = "NA"
         else:
             raise Exception(
@@ -251,3 +329,12 @@ class MRStrategyArgus(Strategy):
             
         return entry_price, exit_price, stop_loss
     
+    def apply_strategy(self, history_data_lag5, apc_curve_lag5, open_price):
+        
+        strategy_info, qunatile_info = self.gen_data(history_data_lag5, apc_curve_lag5)
+        
+        self.run_cond(strategy_info, open_price)
+        
+        EES = self.set_EES()
+        
+        return
