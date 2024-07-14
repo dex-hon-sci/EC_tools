@@ -33,15 +33,15 @@ class Strategy(Protocol):
     
     """
     def __init__(self):
-        self._buy_cond_list = [False]
-        self._sell_cond_list = [False]
+        #self._buy_cond_list = [False]
+        #self._sell_cond_list = [False]
         self._buy_cond = False
         self._sell_cond = False
         self._neutral_cond = True
         
-        self.cond_dict = {"Buy": self._buy_cond_list, 
-                          "Sell": self._sell_cond_list,
-                          'Neutral': []}
+        self.cond_dict = {"Buy": [False], 
+                          "Sell": [False]}
+                          #'Neutral': []}
 # =============================================================================
 #         self.direction_dict = {"Buy": self.buy_cond, 
 #                                "Sell": self.sell_cond, 
@@ -56,7 +56,7 @@ class Strategy(Protocol):
         The overall boolean value of the Buy condition
 
         """
-        self._buy_cond = all(self._buy_cond_list)
+        self._buy_cond = all(self.cond_dict['Buy'])
         return self._buy_cond
     
     @property
@@ -65,7 +65,7 @@ class Strategy(Protocol):
         The overall boolean value of the Sell condition
 
         """
-        self._sell_cond = all(self._sell_cond_list)
+        self._sell_cond = all(self.cond_dict['Sell'])
         return self._sell_cond
     
     @property
@@ -163,7 +163,7 @@ class MRStrategyArgus(Strategy):
         # subgroups are only one layer deep.
         
         for key in self.sub_cond_dict:
-            lis = self.sub_cond_dict[key].values()
+            lis = self.sub_cond_dict[key]
             flatList = sum(lis, [])
             self.cond_dict[key] = flatList
          
@@ -184,6 +184,7 @@ class MRStrategyArgus(Strategy):
         lag_list = [mfunc.find_quant(apc_curve_lag.iloc[i].to_numpy()[1:-1], 
                                      self._quant_list, lag_price.iloc[i]) for 
                                     i in range(len(apc_curve_lag))]
+        lag_list.reverse()
         # Note that the list goes like this [lag1q,lag2q,...]
         
         # calculate the rolling average
@@ -214,7 +215,7 @@ class MRStrategyArgus(Strategy):
         # consecutive days of closing price lower than the signal median
         cond_buy_list_1 = list(map(lambda x, y: x < y, lag_close_q_list, mid_Q_list))
         # (2) rolling 5 days average lower than the median apc 
-        cond_buy_list_2 = list(map(lambda x, y: x < y, rollingaverage_q, apc_mid_Q))
+        cond_buy_list_2 = [(rollingaverage_q < apc_mid_Q)]
         # (3) price at today's opening hour above the 0.1 quantile of today's apc
         cond_buy_list_3 = [(open_price >= self._curve_today_spline([
                                                     apc_trade_Qlimit[0]])[0])]
@@ -223,7 +224,7 @@ class MRStrategyArgus(Strategy):
         # (1) Two consecutive days of closing price higher than the signal median
         cond_sell_list_1 = list(map(lambda x, y: x > y, lag_close_q_list, mid_Q_list))
         # (2) rolling 5 days average higher than the median apc 
-        cond_sell_list_2 = list(map(lambda x, y: x > y, rollingaverage_q, apc_mid_Q))
+        cond_sell_list_2 = [(rollingaverage_q > apc_mid_Q)]
         # (3) price at today's opening hour below the 0.9 quantile of today's apc
         cond_sell_list_3 = [(open_price <= self._curve_today_spline([
                                                     apc_trade_Qlimit[1]])[0])]
@@ -240,27 +241,31 @@ class MRStrategyArgus(Strategy):
         self.sub_cond_dict = {'Buy':[sum(self._sub_buy_cond_dict[key],[]) 
                                 for key in self._sub_buy_cond_dict], 
                          'Sell':[sum(self._sub_sell_cond_dict[key],[]) 
-                                 for key in self._sub_buy_cond_dict], 
-                         'Neutral': []}
+                                 for key in self._sub_buy_cond_dict]}
         
         # flatten the sub-conditoion list and sotre them in the condition list
         self.flatten_sub_cond_dict()
-
+        print(self.cond_dict)
+        print(self._sub_buy_cond_dict, self._sub_sell_cond_dict)
+        print(self.direction)
         # Create the condtion info for bookkeeping
-        NCONS,	NROLL = len(self._sub_buy_cond_dict['NCONS']), \
-                                        len(self._sub_buy_cond_dict['NROLL'])
+        NCONS,	NROLL = len(self._sub_buy_cond_dict['NCONS'][0]), \
+                                        len(data['lag_list'])
                                         
         # Find the Boolean value for each buy conditions subgroup
-        sub_buy_1 = all(self._sub_buy_cond_dict['NCONS'])
-        sub_buy_2 = all(self._sub_buy_cond_dict['NROLL'])
+        sub_buy_1 = all(self._sub_buy_cond_dict['NCONS'][0])
+        sub_buy_2 = all(self._sub_buy_cond_dict['NROLL'][0])
         # Find the Boolean value for each Sell conditions subgroup
-        sub_sell_1 = all(self._sub_sell_cond_dict['NCONS'])
-        sub_sell_2 = all(self._sub_sell_cond_dict['NROLL'])
+        sub_sell_1 = all(self._sub_sell_cond_dict['NCONS'][0])
+        sub_sell_2 = all(self._sub_sell_cond_dict['NROLL'][0])
                 
         # Construct condtion dictionaray for each condition
-        cond_dict_1 = {'Buy': sub_buy_1, 'Sell': sub_sell_1, 'Neutral': sub_buy_1 ^ sub_sell_1}
-        cond_dict_2 = {'Buy': sub_buy_2, 'Sell': sub_sell_2, 'Neutral': sub_buy_1 ^ sub_sell_1}
+        cond_dict_1 = {'Buy': sub_buy_1, 'Sell': sub_sell_1, 
+                       'Neutral': not(sub_buy_1 ^ sub_sell_1)}
+        cond_dict_2 = {'Buy': sub_buy_2, 'Sell': sub_sell_2, 
+                       'Neutral': not(sub_buy_1 ^ sub_sell_1)}
         
+        print(cond_dict_1, cond_dict_2)
         # Degine the name for the Buy/Sell action for each condition subgroups
         Signal_NCONS  = [key for key in cond_dict_1 if cond_dict_1[key] == True][0]
         Signal_NROLL  = [key for key in cond_dict_2 if cond_dict_2[key] == True][0]
@@ -310,28 +315,28 @@ class MRStrategyArgus(Strategy):
         
 
         
-        if self.direction == "Buy":
+        if self.direction == SignalStatus.BUY:
             # (A) Entry region at price < APC p=0.4 and 
-            entry_price = [float(self._curve_today(buy_range[0][0])), 
-                           float(self._curve_today(buy_range[0][1]))]
+            entry_price = [float(self._curve_today_spline(buy_range[0][0])), 
+                           float(self._curve_today_spline(buy_range[0][1]))]
             # (B) Exit price
-            exit_price = [float(self._curve_today(buy_range[1][0])), 
-                          float(self._curve_today(buy_range[1][1]))] 
+            exit_price = [float(self._curve_today_spline(buy_range[1][0])), 
+                          float(self._curve_today_spline(buy_range[1][1]))] 
             # (C) Stop loss at APC p=0.1
-            stop_loss = float(self._curve_today(buy_range[2]))
+            stop_loss = float(self._curve_today_spline(buy_range[2]))
 
             
-        elif self.direction == "Sell":
+        elif self.direction == SignalStatus.SELL:
             # (A) Entry region at price > APC p=0.6 and 
-            entry_price = [float(self._curve_today(sell_range[0][0])), 
-                           float(self._curve_today(sell_range[0][1]))]
+            entry_price = [float(self._curve_today_spline(sell_range[0][0])), 
+                           float(self._curve_today_spline(sell_range[0][1]))]
             # (B) Exit price
-            exit_price = [float(self._curve_today(sell_range[1][0])), 
-                          float(self._curve_today(sell_range[1][1]))]
+            exit_price = [float(self._curve_today_spline(sell_range[1][0])), 
+                          float(self._curve_today_spline(sell_range[1][1]))]
             # (C) Stop loss at APC p=0.9
-            stop_loss = float(self._curve_today(sell_range[2]))
+            stop_loss = float(self._curve_today_spline(sell_range[2]))
             
-        elif self.direction == "Neutral":
+        elif self.direction == SignalStatus.NEUTRAL:
             entry_price = ["NA", "NA"]
             exit_price = ["NA", "NA"]
             stop_loss = "NA"
