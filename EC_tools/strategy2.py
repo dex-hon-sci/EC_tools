@@ -8,10 +8,17 @@ Created on Thu Jul  4 04:59:37 2024
 import numpy as np
 from scipy.interpolate import CubicSpline
 from typing import Protocol
+from enum import Enum, auto
 
 import EC_tools.math_func as mfunc
 
 __author__="Dexter S.-H. Hon"
+
+class SignalStatus(Enum):
+    BUY = "Buy" # When the position is added but not filled
+    SELL = "Sell" # When the position is executed
+    NEUTRAL = "Neutral" # When the position is cancelled
+
 
 class Strategy(Protocol):
     """
@@ -30,16 +37,18 @@ class Strategy(Protocol):
         self._sell_cond_list = [False]
         self._buy_cond = False
         self._sell_cond = False
-        self._neutral_cond = False
+        self._neutral_cond = True
         
         self.cond_dict = {"Buy": self._buy_cond_list, 
                           "Sell": self._sell_cond_list,
                           'Neutral': []}
-        self.direction_dict = {"Buy": self.buy_cond, 
-                               "Sell": self.sell_cond, 
-                               "Neutral": self.neutral_cond} # make direction dictionary
+# =============================================================================
+#         self.direction_dict = {"Buy": self.buy_cond, 
+#                                "Sell": self.sell_cond, 
+#                                "Neutral": self.neutral_cond} # make direction dictionary
+# =============================================================================
 
-        self._direction = 'Neutral' # make the default value of a strategy 'Neutral'
+        self._direction = SignalStatus.NEUTRAL # make the default value of a strategy 'Neutral'
         
     @property
     def buy_cond(self):
@@ -47,7 +56,8 @@ class Strategy(Protocol):
         The overall boolean value of the Buy condition
 
         """
-        return all(self._buy_cond_list)
+        self._buy_cond = all(self._buy_cond_list)
+        return self._buy_cond
     
     @property
     def sell_cond(self):
@@ -55,7 +65,8 @@ class Strategy(Protocol):
         The overall boolean value of the Sell condition
 
         """
-        return all(self._sell_cond_list)
+        self._sell_cond = all(self._sell_cond_list)
+        return self._sell_cond
     
     @property
     def neutral_cond(self):
@@ -69,13 +80,22 @@ class Strategy(Protocol):
     @property
     def direction(self):
         
-        for direction_str in self.direction_dict:
-            if self.direction_dict[direction_str]:
-                self._direction = direction_str
-                
-        return self._direction
+        if self.buy_cond == True:
+            self._direction = SignalStatus.BUY
+        
+        if self.sell_cond == True:
+                self._direction = SignalStatus.SELL
 
-    
+        if self.neutral_cond == True:
+            self._direction = SignalStatus.NEUTRAL
+
+        return self._direction
+        
+# =============================================================================
+#         for direction_str in self.direction_dict:
+#             if self.direction_dict[direction_str]:
+#                 self._direction = direction_str
+# =============================================================================
 
     
 class MRStrategyArgus(Strategy):
@@ -146,7 +166,7 @@ class MRStrategyArgus(Strategy):
             lis = self.sub_cond_dict[key].values()
             flatList = sum(lis, [])
             self.cond_dict[key] = flatList
-        return 
+         
     
     def gen_data(self, history_data_lag, apc_curve_lag, 
                             price_proxy = 'Settle', qunatile = [0.25,0.4,0.6,0.75]):
@@ -163,7 +183,7 @@ class MRStrategyArgus(Strategy):
         
         lag_list = [mfunc.find_quant(apc_curve_lag.iloc[i].to_numpy()[1:-1], 
                                      self._quant_list, lag_price.iloc[i]) for 
-                                    i, _ in enumerate(apc_curve_lag)]
+                                    i in range(len(apc_curve_lag))]
         # Note that the list goes like this [lag1q,lag2q,...]
         
         # calculate the rolling average
@@ -173,11 +193,6 @@ class MRStrategyArgus(Strategy):
         strategy_info = {'lag_list': lag_list, 'rollingaverage': rollingaverage_q}
         
         qunatile_info = self._curve_today_spline(qunatile)
-                #[float(self._curve_today_spline(0.25)), 
-                # float(self._curve_today_spline(0.4)), 
-                # float(self._curve_today_spline(0.6)), 
-                # float(self._curve_today_spline(0.75))]
-
         
         return strategy_info, qunatile_info
         
@@ -189,8 +204,6 @@ class MRStrategyArgus(Strategy):
                                  apc_trade_Qlimit=(0.05,0.95)):
     
 
-        #lag2close_q = data['lag_list'][1]
-        #lag1close_q = data['lag_list'][0]
         rollingaverage_q = data['rollingaverage']
 
         lag_close_q_list = [data['lag_list'][i] for i in range(total_lag_days)]
@@ -291,7 +304,7 @@ class MRStrategyArgus(Strategy):
 #             
 #         return entry_price, exit_price, stop_loss
 # =============================================================================
-    
+
     def set_EES(self, cond, buy_range=([0.25,0.4],[0.6,0.75],0.05), 
                             sell_range =([0.6,0.75],[0.25,0.4],0.95)):
         

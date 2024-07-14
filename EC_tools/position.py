@@ -28,7 +28,13 @@ class PositionStatus(Enum):
 
     
 class PositionType(Enum):
-    pass
+    """
+    """
+    LONG_BUY = 'Long-Buy'
+    LONG_SELL = 'Long-Sell'
+    SHORT_BORROW = 'Short-Borrow'
+    SHORT_BUYBACK = 'Short-Buyback'
+    
     
 @dataclass
 class Position(object):

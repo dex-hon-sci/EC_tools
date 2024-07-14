@@ -179,7 +179,8 @@ def loop_signal(book, signal_data, history_data, open_price_data,
         
 
 def loop_signal_2(book, signal_data, history_data, open_price_data,  
-                   Strategy, start_date, end_date, strategy_name='benchmark', 
+                   Strategy: MRStrategyArgus, start_date, end_date,
+                   strategy_name='benchmark', 
                    buy_range=(0.4,0.6,0.1), sell_range =(0.6,0.4,0.9), 
                    open_hr='', close_hr='',
                    commodity_name = '', Timezone= "",
