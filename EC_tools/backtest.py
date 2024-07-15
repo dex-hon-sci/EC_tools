@@ -19,11 +19,12 @@ import EC_tools.plot as plot
 from EC_tools.portfolio import Asset, Portfolio
 from crudeoil_future_const import OPEN_HR_DICT, CLOSE_HR_DICT
 
-FILENAME_MINUTE = "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/intraday/1 Minute/HO.001"
+FILENAME_MINUTE =  "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/HO.001"
 FILENSME_BUYSELL_SIGNALS = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_HOc1_full.csv"
 SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/benchmark_signal_test.csv"   
 
 APC_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_HOc1.csv"  
+
 
 
 __author__="Dexter S.-H. Hon"

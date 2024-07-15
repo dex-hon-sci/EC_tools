@@ -219,6 +219,9 @@ def loop_signal_2(book, signal_data, history_data, open_price_data,
             # create input for bookkepping
             price_code = APCs_this_date['symbol'].to_list()[0]
             
+            # find the quantile of the opening price
+            price_330 = open_price_data[open_price_data['Date']==this_date]['Open Price'].item()
+            
             # The conidtions to decide whether we trim the full_contract_symbol
             # CLA2024J or CL24J
             if contract_symbol_condse == True:
@@ -226,79 +229,34 @@ def loop_signal_2(book, signal_data, history_data, open_price_data,
                 full_contract_symbol = str(temp)[0:2] + str(temp)[5:7] + str(temp)[-1]
             elif contract_symbol_condse == False:
                 full_contract_symbol = history_data['Contract Code'][i]
-    
-            # find the quantile of the opening price
-            price_330 = open_price_data[open_price_data['Date']==this_date]['Open Price'].item()
-    
-            # Find the quantile of the opening price
-            quant0 = np.arange(0.0025, 0.9975, 0.0025)
-            price_330_quant = mfunc.find_quant(curve_this_date, quant0, price_330)
             
-            #print(price_330_quant)
-            
-            # Get the extracted 5 days Lag data 
+            # Get the extracted 5 days Lag data. This is the main input to be
+            # put into the Stragey function
             apc_curve_lag5, history_data_lag5 = read.extract_lag_data(signal_data, 
                                                                  history_data, 
                                                                  forecast_date)
             
-            #print("apc_curve_lag5, history_data_lag5", apc_curve_lag5, history_data_lag5)
-    
-        
-            # loop functions takes in a list of strategy calculation,
-            # loop functions takes in a list of EES values and methods
-            # loop functions takes in a list of Data generation method
+
+            # Apply the strategy, The Strategy is variable
+            strategy_output = Strategy(curve_this_date).apply_strategy(
+                                     history_data_lag5, apc_curve_lag5, price_330)
+
+            # Rename the strategy ouputs
+            direction = strategy_output['direction']
+            strategy_data = strategy_output['data']
             
-            # calculate the data needed for PNL analysis for this strategy
-            strategy_data, quantile_info = MRStrategy.gen_strategy_data_2(
-                                                            history_data_lag5, 
-                                                             apc_curve_lag5, 
-                                                             curve_this_date,
-                                                             strategy_name=\
-                                                                 "benchmark")
-                
-                
-            strategy_data2, quantile_info2 = Strategy(curve_this_date).\
-                                            gen_data(history_data_lag5, apc_curve_lag5)
-                                            
             print('====================================')
-            # Run the strategy        
-            direction = Strategy(curve_this_date).run_cond(price_330)
-            
-            #(strategy_data, price_330, curve_this_date)
-            
-            
             print(forecast_date, full_contract_symbol,'MR signal generated!', 
                    direction,i)
-            print('====================================')
         
-            # set resposne price.
-            entry_price, exit_price, stop_loss = MRStrategy.set_EES_APC_range(
-                                                            direction, 
-                                                            curve_this_date,
-                                                            buy_range=buy_range, 
-                                                            sell_range=sell_range)
-            
-            ##################
-            EES = [entry_price[0], entry_price[1], 
-                   exit_price[0], exit_price[1], 
-                   stop_loss]
-                        
-     
-            NCONS,	NROLL,	Signal_NCONS, Signal_NROLL = 2, 5, None, None
-            
+
+            # make a list of data to be written into bookkeep
             static_info = [commodity_name, full_contract_symbol, \
                            Timezone, open_hr, close_hr]
                 
-            startegy_cond = [NCONS,	NROLL,	Signal_NCONS,	Signal_NROLL]
-            
             # put all the data in a singular list
             data = [forecast_date, price_code] + [direction] + \
-                    static_info + EES+ startegy_cond+ strategy_data + \
-                    quantile_info + [strategy_name]
-                    
-            #print(commodity_name)
-            #print(data, type(data))
-            #print(len(data),len(bucket.keys()))
+                    static_info + strategy_data
             
             # Storing the data    
             bucket = book.store_to_bucket_single(data)       
@@ -410,11 +368,9 @@ def run_gen_MR_signals(asset_pack, start_date, end_date,
     #print(APCs_dat, portara_dat, open_price_data)
     
     # The strategy will be ran in loop_signal decorator
-    dict_contracts_quant_signals = loop_signal(book, 
-                                               APCs_dat, 
-                                               portara_dat, 
-                                               open_price_data,
-                                               MRStrategy().argus_exact_strategy,
+    dict_contracts_quant_signals = loop_signal_2(book, 
+                                               APCs_dat, portara_dat, open_price_data,
+                                               MRStrategyArgus,
                                                start_date, end_date,
                                                strategy_name= 'argus_exact',
                                                buy_range=buy_range, 
@@ -528,7 +484,8 @@ def run_gen_MR_signals_preloaded_list(filename_list, start_date, end_date,
                                                        buy_range=buy_range,
                                                        sell_range=sell_range,
                                                        open_hr=open_hr, close_hr=close_hr,
-                                                       commodity_name = symbol, Timezone= Timezone,
+                                                       commodity_name = symbol, 
+                                                       Timezone= Timezone,
                                                        loop_symbol=symbol)
             return dict_contracts_quant_signals
         
@@ -546,16 +503,16 @@ if __name__ == "__main__":
     
     
     SAVE_FILENAME_LIST = [
-                 "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short/argus_exact_signal_CLc1_short.csv", 
-                 "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short/argus_exact_signal_CLc2_short.csv", 
-                 "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short/argus_exact_signal_HOc1_short.csv", 
-                 "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short/argus_exact_signal_HOc2_short.csv", 
-                 "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short/argus_exact_signal_RBc1_short.csv", 
-                 "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short/argus_exact_signal_RBc2_short.csv", 
-                 "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short/argus_exact_signal_QOc1_short.csv",
-                 "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short/argus_exact_signal_QOc2_short.csv",
-                 "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short/argus_exact_signal_QPc1_short.csv",
-                 "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short/argus_exact_signal_QPc2_short.csv" ]
+                 "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short_2/argus_exact_signal_CLc1_short.csv", 
+                 "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short_2/argus_exact_signal_CLc2_short.csv", 
+                 "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short_2/argus_exact_signal_HOc1_short.csv", 
+                 "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short_2/argus_exact_signal_HOc2_short.csv", 
+                 "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short_2/argus_exact_signal_RBc1_short.csv", 
+                 "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short_2/argus_exact_signal_RBc2_short.csv", 
+                 "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short_2/argus_exact_signal_QOc1_short.csv",
+                 "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short_2/argus_exact_signal_QOc2_short.csv",
+                 "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short_2/argus_exact_signal_QPc1_short.csv",
+                 "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short_2/argus_exact_signal_QPc2_short.csv" ]
 
     
 

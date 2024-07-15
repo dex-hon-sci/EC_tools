@@ -33,15 +33,12 @@ class Strategy(Protocol):
     
     """
     def __init__(self):
-        #self._buy_cond_list = [False]
-        #self._sell_cond_list = [False]
         self._buy_cond = False
         self._sell_cond = False
         self._neutral_cond = True
         
         self.cond_dict = {"Buy": [False], 
                           "Sell": [False]}
-                          #'Neutral': []}
 # =============================================================================
 #         self.direction_dict = {"Buy": self.buy_cond, 
 #                                "Sell": self.sell_cond, 
@@ -91,12 +88,6 @@ class Strategy(Protocol):
 
         return self._direction
         
-# =============================================================================
-#         for direction_str in self.direction_dict:
-#             if self.direction_dict[direction_str]:
-#                 self._direction = direction_str
-# =============================================================================
-
     
 class MRStrategyArgus(Strategy):
     """
@@ -120,44 +111,6 @@ class MRStrategyArgus(Strategy):
 
         self.strategy_name = 'argus_exact'
 
-# =============================================================================
-#     def gen_data(self, history_data_lag5, apc_curve_lag5):
-#                               
-#         """
-#         A method that generate all the data needed for the strategy. The ouput
-#         of this functions contain all the quantity that will be and can be used 
-#         in creating variation of this strategy.
-#         
-#         """
-#         
-#         lag5_price = history_data_lag5['Settle']
-#         
-#         
-#         # Find quants for the closing price for the past five days
-#         lag5close_q = mfunc.find_quant(apc_curve_lag5.iloc[-5].to_numpy()[1:-1], 
-#                                        self._quant_list, lag5_price.iloc[-5])
-#         lag4close_q = mfunc.find_quant(apc_curve_lag5.iloc[-4].to_numpy()[1:-1], 
-#                                        self._quant_list, lag5_price.iloc[-4])
-#         lag3close_q = mfunc.find_quant(apc_curve_lag5.iloc[-3].to_numpy()[1:-1], 
-#                                        self._quant_list, lag5_price.iloc[-3])
-#         lag2close_q = mfunc.find_quant(apc_curve_lag5.iloc[-2].to_numpy()[1:-1], 
-#                                        self._quant_list, lag5_price.iloc[-2])  
-#         lag1close_q = mfunc.find_quant(apc_curve_lag5.iloc[-1].to_numpy()[1:-1], 
-#                                        self._quant_list, lag5_price.iloc[-1]) 
-#         
-#         rollingaverage5q = np.average([lag1close_q, lag2close_q, 
-#                                        lag3close_q, lag4close_q, 
-#                                        lag5close_q])
-#         
-#         data0 = [lag1close_q, lag2close_q, lag3close_q, lag4close_q, lag5close_q, 
-#                  rollingaverage5q]    
-#         
-#         data1 = {'lag1close_q': lag1close_q, 'lag2close_q': lag2close_q, 
-#                 'lag3close_q': lag3close_q, 'lag4close_q': lag4close_q, 
-#                 'lag5close_q': lag5close_q, 'rollingaverage5q': rollingaverage5q}
-#         
-#         return data0
-# =============================================================================
     def flatten_sub_cond_dict(self):
         # a method that turn a sub_cond_dict into a cond_dict assuming the 
         # subgroups are only one layer deep.
@@ -169,7 +122,8 @@ class MRStrategyArgus(Strategy):
          
     
     def gen_data(self, history_data_lag, apc_curve_lag, 
-                            price_proxy = 'Settle', qunatile = [0.25,0.4,0.6,0.75]):
+                            price_proxy = 'Settle', 
+                            qunatile = [0.25,0.4,0.6,0.75]):
                               
         """
         A method that generate all the data needed for the strategy. The ouput
@@ -177,7 +131,6 @@ class MRStrategyArgus(Strategy):
         in creating variation of this strategy.
         
         """
-        
         lag_price = history_data_lag[price_proxy]
         
         
@@ -191,14 +144,16 @@ class MRStrategyArgus(Strategy):
         rollingaverage_q = np.average(lag_list)
         
 
-        strategy_info = {'lag_list': lag_list, 'rollingaverage': rollingaverage_q}
+        strategy_info = {'lag_list': lag_list, 
+                         'rollingaverage': rollingaverage_q}
         
-        qunatile_info = self._curve_today_spline(qunatile)
+        qunatile_info = list(self._curve_today_spline(qunatile))
         
         return strategy_info, qunatile_info
         
     
-    def run_cond(self, data, open_price, total_lag_days = 2, 
+    def run_cond(self, data, open_price, 
+                                 total_lag_days = 2, 
                                  apc_mid_Q = 0.5, 
                                  apc_trade_Qrange=(0.4,0.6), 
                                  apc_trade_Qmargin = (0.1,0.9),
@@ -245,9 +200,7 @@ class MRStrategyArgus(Strategy):
         
         # flatten the sub-conditoion list and sotre them in the condition list
         self.flatten_sub_cond_dict()
-        print(self.cond_dict)
-        print(self._sub_buy_cond_dict, self._sub_sell_cond_dict)
-        print(self.direction)
+
         # Create the condtion info for bookkeeping
         NCONS,	NROLL = len(self._sub_buy_cond_dict['NCONS'][0]), \
                                         len(data['lag_list'])
@@ -265,7 +218,6 @@ class MRStrategyArgus(Strategy):
         cond_dict_2 = {'Buy': sub_buy_2, 'Sell': sub_sell_2, 
                        'Neutral': not(sub_buy_1 ^ sub_sell_1)}
         
-        print(cond_dict_1, cond_dict_2)
         # Degine the name for the Buy/Sell action for each condition subgroups
         Signal_NCONS  = [key for key in cond_dict_1 if cond_dict_1[key] == True][0]
         Signal_NROLL  = [key for key in cond_dict_2 if cond_dict_2[key] == True][0]
@@ -274,41 +226,7 @@ class MRStrategyArgus(Strategy):
         cond_info = [NCONS,	NROLL, Signal_NCONS, Signal_NROLL]
         
         return self.direction, cond_info
-        
-    
-# =============================================================================
-#     def set_EES(self, cond, buy_range=(0.4,0.6,0.1), 
-#                             sell_range =(0.6,0.4,0.9)):
-#         
-#         
-#         if self.direction == "Buy":
-#             # (A) Entry region at price < APC p=0.4 and 
-#             entry_price = float(self._curve_today(buy_range[0]))
-#             # (B) Exit price
-#             exit_price = float(self._curve_today(buy_range[1]))
-#             # (C) Stop loss at APC p=0.1
-#             stop_loss = float(self._curve_today(buy_range[2]))
-# 
-#             
-#         elif self.direction == "Sell":
-#             # (A) Entry region at price > APC p=0.6 and 
-#             entry_price = float(self._curve_today(sell_range[0]))
-#             # (B) Exit price
-#             exit_price = float(self._curve_today(sell_range[1]))
-#             # (C) Stop loss at APC p=0.9
-#             stop_loss = float(self._curve_today(sell_range[2]))
-#             
-#         elif self.direction == "Neutral":
-#             entry_price = "NA"
-#             exit_price = "NA"
-#             stop_loss = "NA"
-#         else:
-#             raise Exception(
-#                 'Unaccepted input, condition needs to be either Buy, \
-#                     Sell, or Neutral.')
-#             
-#         return entry_price, exit_price, stop_loss
-# =============================================================================
+
 
     def set_EES(self, cond, buy_range=([0.25,0.4],[0.6,0.75],0.05), 
                             sell_range =([0.6,0.75],[0.25,0.4],0.95)):
@@ -349,10 +267,28 @@ class MRStrategyArgus(Strategy):
     
     def apply_strategy(self, history_data_lag5, apc_curve_lag5, open_price):
         
-        strategy_info, qunatile_info = self.gen_data(history_data_lag5, apc_curve_lag5)
+        strategy_info, quantile_info = self.gen_data(history_data_lag5, apc_curve_lag5)
         
-        self.run_cond(strategy_info, open_price)
+        direction, cond_info = self.run_cond(strategy_info, open_price)
         
-        EES = self.set_EES()
+        entry_price, exit_price, stop_loss = self.set_EES(self.direction)
         
-        return
+        # Bookkeeping area
+        EES = [entry_price[0], entry_price[1], 
+               exit_price[0], exit_price[1], 
+               stop_loss]
+        
+        # Turn strategy_info from dict to list
+        strategy_info_list = strategy_info['lag_list'] + [strategy_info['rollingaverage']]
+        
+        # put all the data in a singular list. This is to be added in the 
+        # data list in the loop
+        #print(EES+ cond_info, strategy_info_list, quantile_info, [self.strategy_name])
+        #print(type(EES+ cond_info), type(strategy_info_list), type(quantile_info), type([self.strategy_name]))
+        
+        data =  EES+ cond_info + strategy_info_list + \
+                quantile_info + [self.strategy_name]
+        
+        return {'data': data, 'direction': direction}
+    
+#class MRStrategyArgus(Strategy):
