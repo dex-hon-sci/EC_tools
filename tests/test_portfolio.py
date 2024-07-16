@@ -211,7 +211,7 @@ def test_sub_str()-> None:
     PP.sub('test', quantity=7)
     print(list(PP.pool[0]))
     assert PP.master_table[PP.master_table['name']=='test']['quantity'].iloc[0] == 3
-test_sub_str() 
+
 def test_value_asset_value_total_value()-> None:
     PP = Portfolio()
     PP.add(CL1,datetime=day1)
@@ -240,12 +240,14 @@ def test_log_asset_log() -> None:
     PP.add(CL1,datetime=day1)
     PP.add(USD,datetime=day2)
     PP.add(HO1,datetime=day3)
-    print(PP.log)
+    print(PP.master_table)
+    print(PP.pool)
+    print(PP.full_log)
     assert isinstance(PP.log, pd.DataFrame)
     assert len(PP.log) == 4
     assert isinstance(PP.asset_log('CLc1'), pd.Series)
     assert len(PP.asset_log('CLc1')) == 4
-
+test_log_asset_log()
 ###################
 # Error test
 def test_table_invlaid()-> None:

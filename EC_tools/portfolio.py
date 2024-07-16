@@ -130,6 +130,7 @@ class Portfolio(object):
         self._pool_window = self.pool
         return self._pool_window
     
+    @util.time_it
     def set_pool_window(self, start_time=datetime.datetime(1900,1,1), 
                                 end_time=datetime.datetime(2200,12,31)):
         """
@@ -204,7 +205,7 @@ class Portfolio(object):
         # Handle repeating aseet type
         for index, (val_name, misc) in enumerate(zip(table['name'], table['misc'])):
             
-            temp_df = table[(table['name'] == val_name) & (table['misc'] == misc)]
+            temp_df = table[(table['name'] == val_name) & (table['misc'] == misc)] # add more conditions with unit and type
             
             # If the asset is unique in the pool, pass.
             if len(temp_df) == 1:
@@ -422,11 +423,14 @@ class Portfolio(object):
                 sub_price_table = price_dict[asset_name]
                 #sub_price_table = read.read_reformat_Portara_daily_data(
                 #                                        asset_price_filename)
-
                 # The current version of this method only gets the price data iff 
                 # it exist in the table, i.e. it does not get anything outside of the trading days
                 target_time = date_time.strftime("%Y-%m-%d")
-                value = sub_price_table['Open'][sub_price_table['Date'] == target_time].item()
+                
+                #print('TT',target_time, sub_price_table[(sub_price_table['Date'] > datetime.datetime(2024,2,28)) 
+                #                                        & (sub_price_table['Date'] < datetime.datetime(2024,3,6))])
+                
+                value = sub_price_table['Settle'][sub_price_table['Date'] == target_time].item()
                 #value = sub_price_table.loc[target_time]['Open']
                # _ , value = read.find_closest_price_date(sub_price_table, 
                #                                          target_time=target_time)
@@ -497,17 +501,22 @@ class Portfolio(object):
             temp = [datetime.datetime.combine(dt.date(), datetime.time(0,0)) 
                                             for dt in self.pool_datetime]
             # reorganised the time_list because set() function scramble the order
+            # Use the set function to output a unique datetime list
             time_list = sorted(list(set(temp)))
             # Add an extra day to see what is the earning for the last day
-            time_list = time_list + \
-                            [time_list[-1]+datetime.timedelta(days=1)]
+            #time_list = time_list + \
+            #                [time_list[-1]+datetime.timedelta(days=1)]
 
         else:
             time_list = self.pool_datetime
-            time_list = time_list + [time_list[-1]+datetime.timedelta(days=1)]
+        # Add an entry at the end of the day to see what is the earning for the last day
+        last_dt = datetime.datetime.combine(time_list[-1].date(), datetime.time(23,59))
+        time_list = time_list + [last_dt]
+        
             
         #then loop through the pool history and store them in log list 
-        for i, item in enumerate(time_list):
+        for item in time_list:
+            print(item)
             value_entry = self.value(item)
             value_entry["Total"] = sum(list(value_entry.values()))
             value_entry['Datetime'] = item

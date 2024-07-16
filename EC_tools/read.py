@@ -855,7 +855,7 @@ def find_minute_EES(histroy_data_intraday,
     exit_pt_dict = find_crossover(price_list, target_exit)
     stop_pt_dict = find_crossover(price_list, stop_exit)
     
-    if direction == "Neutral":
+    if direction == "Neitral":
         #print("Neutral day")
         # for 'Neutral' action, all info are empty
         entry_pts = []

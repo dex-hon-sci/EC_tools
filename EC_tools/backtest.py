@@ -9,6 +9,7 @@ Created on Thu Apr 18 18:22:17 2024
 import pandas as pd
 import numpy as np
 import datetime as datetime
+from typing import Protocol
 
 # import from EC_tools
 import EC_tools.read as read
@@ -59,26 +60,26 @@ def prepare_signal_interest(filename_buysell_signals,
     # This may cut down the computing and memory cost when dealing with large 
     # table.
     if trim == True:
-        buysell_signals_data = buysell_signals_data[['APC forecast period', 
-                                                     'direction']]
+        buysell_signals_data = buysell_signals_data[['Date', 
+                                                     'Direction']]
     elif trim == False:
         pass
     
     # Select for the signals in direction list.
     signal_data = []
     for i in direction:
-        temp = buysell_signals_data[buysell_signals_data['direction'] == i]
+        temp = buysell_signals_data[buysell_signals_data['Direction'] == i]
         signal_data.append(temp)
-    
     # concatenate the list of signals
     signal_interest = pd.concat(signal_data, ignore_index=True)
+
 
     # make a column with Timestamp as its content
     signal_interest['Date'] =  [datetime.datetime(
                                                 year = int(str(x)[0:4]), 
                                               month=int(str(x)[5:7]), 
                                               day = int(str(x)[8:])) 
-                            for x in signal_interest['APC forecast period']]
+                            for x in signal_interest['Date']]
     # sort the table by Date
     signal_interest.sort_values(by='Date', inplace=True)
 
@@ -169,7 +170,16 @@ def plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=False):
     elif plot_or_not == False:
         pass
 
+class Loop(Protocol):
+    pass
+class LoopCrossPoints(Loop):
+    pass
 
+class LoopLib(object):
+    # A class that contains all Loop mechanism
+    def __init__(self):
+        return 
+    
 def loop_date_full():
     """
     A method that loop through every single data points.
@@ -327,7 +337,7 @@ def loop_date_portfolio(portfo, signal_table, histroy_intraday_data,
 def loop_list_portfolio_preloaded_list(portfo, signal_table, 
                                        histroy_intraday_data_pkl, 
                                         give_obj_name = "USD", 
-                                        get_obj_quantity = 3,
+                                        get_obj_quantity = 1,
                                         plot_or_not = False):
     """
     A method that utilise one portfolio to run multi-strategy
@@ -338,15 +348,35 @@ def loop_list_portfolio_preloaded_list(portfo, signal_table,
     for i in range(len(signal_table)):
         item = signal_table.iloc[i]
                 
-        symbol = item['price code']
-        direction = item['direction'] 
-        target_entry = item['target entry'] 
-        target_exit = item['target exit'] 
-        stop_exit = item['stop exit'] 
+# =============================================================================
+#         symbol = item['price code']
+#         direction = item['direction'] 
+#         target_entry = item['target entry'] 
+#         target_exit = item['target exit'] 
+#         stop_exit = item['stop exit'] 
+#         
+#         date_interest = item['APC forecast period']
+#         get_obj_name = item['price code']
+# =============================================================================
+        symbol = item['Price_Code']
+        direction = item['Direction'] 
         
-        date_interest = item['APC forecast period']
-        get_obj_name = item['price code']
+        if direction == 'Buy':
+            target_entry = item['Target_Upper_Entry_Price']
+            target_exit = item['Target_Lower_Exit_Price'] 
 
+        elif direction == 'Sell':
+            target_entry = item['Target_Lower_Entry_Price']
+            target_exit = item['Target_Upper_Exit_Price'] 
+
+        else:
+            target_entry, target_exit = 'NA', 'NA'
+            
+        stop_exit = item['Stop_Exit_Price'] 
+        
+        date_interest = item['Date']
+        get_obj_name = item['Price_Code']
+        
         open_hr = OPEN_HR_DICT[symbol]
         close_hr = CLOSE_HR_DICT[symbol]
                 
@@ -396,10 +426,6 @@ def loop_date_portfolio_preloaded_list(portfo, signal_table,
     #signal_table[signal_table['Date'] = ]
 
 
-class LoopLib(object):
-    # A class that contains all Loop mechanism
-    def __init__(self):
-        return 
 if __name__ == "__main__":
     MASTER_SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signal_full.csv"
     HISTORY_MINUTE_PKL_FILENAME ="/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_full.pkl"

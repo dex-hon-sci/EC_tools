@@ -344,8 +344,6 @@ class OneTradePerDay(Trade):
         if pos_type == 'Long':
             pos_type1 = 'Long-Buy'
             pos_type2 = 'Long-Sell'
-            #pos_type1 = 'Long'
-            #pos_type2 = 'Long'
 
         elif pos_type == 'Short':
             pos_type1 = 'Short-Borrow'
@@ -592,17 +590,134 @@ class MultiTradePerDay(Trade):
         super().__init__(portfolio)
         
     @staticmethod
-    def find_EES_values(EES_dict):
-        pass
+    def find_EES_values(self, EES_dict):
+        return OneTradePerDay(self.portfolio).find_EES_values(EES_dict)
     
-    def open_positions():
-        pass
-    
-    def execute_position():
-        pass
+    def open_positions(self, give_obj_name, get_obj_name, 
+                              get_obj_quantity, EES_target_list, pos_type,
+                              size = 1, fee = None, 
+                              open_time = datetime.datetime.now()):
         
-    def run_trade(self):
-        pass
+        if pos_type == 'Long':
+            pos_type1 = 'Long-Buy'
+            pos_type2 = 'Long-Sell'
+
+        elif pos_type == 'Short':
+            pos_type1 = 'Short-Borrow'
+            pos_type2 = 'Short-Buyback'
+            
+        # a method that execute the one trade per day based on the cases of the EES
+        entry_price, exit_price = EES_target_list[0], EES_target_list[1]
+        stop_price, close_price = EES_target_list[2], EES_target_list[3]
+        
+        #### Collapse all these into an add_position function
+        # Make positions for initial price estimation
+        entry_pos = super().add_position(give_obj_name, get_obj_name, 
+                                      get_obj_quantity, entry_price, 
+                                      size = size, fee = None, pos_type = pos_type1,
+                                      open_time=open_time)
+
+        exit_pos = super().add_position(give_obj_name, get_obj_name, 
+                          get_obj_quantity, exit_price, 
+                          size = size, fee = fee, pos_type = pos_type2,
+                          open_time=open_time)
+
+        stop_pos = super().add_position(give_obj_name, get_obj_name, 
+                          get_obj_quantity, stop_price, 
+                          size = size, fee = fee, pos_type = pos_type2,
+                          open_time=open_time)
+        
+        close_pos = super().add_position(give_obj_name, get_obj_name, 
+                          get_obj_quantity, close_price,
+                          size = size, fee = fee, pos_type = pos_type2,
+                          open_time=open_time)
+
+        pos_list = [entry_pos, exit_pos, stop_pos, close_pos]
+
+        return pos_list
+        
+    
+    def execute_position(self, EES_dict, pos_list, pos_type="Long"):
+        # A method that search for correct EES points from a EES_dict
+        
+        # initialise
+        entry_pt, exit_pt = (np.nan,np.nan), (np.nan,np.nan)
+        stop_pt, close_pt = (np.nan,np.nan), (np.nan,np.nan)
+        
+        earliest_exit, earliest_stop = exit_pt, stop_pt
+        
+        # closr_pt always exist so we do it outside of the switch cases
+        close_pt = EES_dict['close']
+
+        # To get the correct EES and close time and price
+        if len(EES_dict['entry']) == 0: # entry price not hit. No trade that day.
+            pass
+        else:
+            # choose the entry point
+            entry_pt = EES_dict['entry'][0]
+            
+            if len(EES_dict['exit']) > 0:
+                # Find exit point candidates
+                for i, exit_cand in enumerate(EES_dict['exit']):  
+                    if exit_cand[0] > entry_pt[0]:
+                        earliest_exit = exit_cand
+                        #print('earliest_exit', earliest_exit)
+                        break
+
+            if len(EES_dict['stop']) > 0:
+                # Finde stop loss point candidates
+                for i, stop_cand in enumerate(EES_dict['stop']):
+                    if stop_cand[0] > entry_pt[0]:
+                        earliest_stop = stop_cand
+                        #print('earliest_stop', earliest_stop)
+                        break
+            
+            # put in the new exit and stop
+            exit_pt = earliest_exit
+            stop_pt = earliest_stop
+
+        return entry_pt, exit_pt, stop_pt, close_pt
+        
+    def run_trade(self, day, give_obj_name, get_obj_name, 
+                                      get_obj_quantity,
+                                      target_entry, target_exit, stop_exit,
+                                      open_hr="0300", close_hr="2000", 
+                                      direction = "Buy",
+                                      fee =  {'name':'USD', 'quantity':24.0, 
+                                              'unit':'dollats', 'asset_type': 
+                                                  'Cash'}):
+        
+        #Find the minute that the price crosses the EES values
+        EES_dict = read.find_minute_EES(day, target_entry, target_exit, stop_exit,
+                          open_hr=open_hr, close_hr=close_hr, 
+                          direction = direction)
+    
+        # Input the position type
+        if direction == 'Buy':
+            pos_type= 'Long'
+        elif direction == 'Sell':
+            pos_type = 'Short'
+            
+        EES_target_list = [target_entry, target_exit, 
+                           stop_exit, EES_dict['close'][1]] 
+        
+        pos_list_bundle = []
+        for i in range(10):
+            # run the trade via position module
+            pos_list = self.open_positions(give_obj_name, get_obj_name, \
+                                           get_obj_quantity, EES_target_list, \
+                                               pos_type=pos_type, 
+                                               size=num_per_contract[get_obj_name],
+                                               fee=fee)
+        
+        
+            trade_open, trade_close, pos_list, exec_pos_list = \
+                                            self.execute_position(EES_dict, pos_list,
+                                                                  pos_type=pos_type)
+
+        # the search function for entry and exit time should be completely 
+        # sepearate to the trading actions
+        return EES_dict, trade_open, trade_close, pos_list, exec_pos_list 
     
 class BiDirectionalTrade(Trade):
     def __init__(self, portfolio):

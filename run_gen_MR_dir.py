@@ -37,10 +37,6 @@ __author__="Dexter S.-H. Hon"
 MR_STRATEGIES_0 = {"argus_exact": MRStrategyArgus}
 
 
-
-
-        
-
 def loop_signal(book, signal_data, history_data, open_price_data,  
                    Strategy: MRStrategyArgus, start_date, end_date,
                    strategy_name='benchmark', 
@@ -323,7 +319,7 @@ def run_gen_MR_signals_preloaded_list(filename_list, start_date, end_date,
             dict_contracts_quant_signals = loop_signal(book, signal_file, 
                                                        history_daily_file, 
                                                        open_price,
-                                                       MRStrategy().argus_exact_strategy,
+                                                       MRStrategyArgus,
                                                        start_date, end_date,
                                                        strategy_name= 'argus_exact',
                                                        buy_range=buy_range,
@@ -342,22 +338,23 @@ def run_gen_MR_signals_preloaded_list(filename_list, start_date, end_date,
 if __name__ == "__main__":
 
     
-    start_date = "2022-01-03"
+    #start_date = "2022-01-03"
+    start_date = "2021-01-11"
     end_date = "2024-06-17"
     
     
     
     SAVE_FILENAME_LIST = [
-    "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short_2/argus_exact_signal_CLc1_short.csv", 
-    "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short_2/argus_exact_signal_CLc2_short.csv", 
-    "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short_2/argus_exact_signal_HOc1_short.csv", 
-    "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short_2/argus_exact_signal_HOc2_short.csv", 
-    "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short_2/argus_exact_signal_RBc1_short.csv", 
-    "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short_2/argus_exact_signal_RBc2_short.csv", 
-    "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short_2/argus_exact_signal_QOc1_short.csv",
-    "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short_2/argus_exact_signal_QOc2_short.csv",
-    "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short_2/argus_exact_signal_QPc1_short.csv",
-    "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short_2/argus_exact_signal_QPc2_short.csv" 
+    "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_CLc1_full.csv", 
+    "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_CLc2_full.csv", 
+    "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_HOc1_full.csv", 
+    "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_HOc2_full.csv", 
+    "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_RBc1_full.csv", 
+    "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_RBc2_full.csv", 
+    "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_QOc1_full.csv",
+    "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_QOc2_full.csv",
+    "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_QPc1_full.csv",
+    "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_QPc2_full.csv" 
     ]
 
     

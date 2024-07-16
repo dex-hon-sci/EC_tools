@@ -282,6 +282,6 @@ class MRStrategyArgus(Strategy):
         data =  EES+ cond_info + strategy_info_list + \
                 quantile_info + [self.strategy_name]
         
-        return {'data': data, 'direction': direction}
+        return {'data': data, 'direction': direction.value}
     
 #class MRStrategyArgus(Strategy):
