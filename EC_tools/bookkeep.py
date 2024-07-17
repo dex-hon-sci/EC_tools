@@ -61,7 +61,8 @@ class Bookkeep(object):
     
     argus_PNL = ['Trade_Id', 'Direction', 'Commodity', 'Price_Code', 
                  'Contract_Month','Entry_Date',	'Entry_Datetime',	
-                 'Entry_Price',	'Exit_Date','Exit_Datetime','Exit_Price']
+                 'Entry_Price','Exit_Datetime','Exit_Price',
+                 'Return_Trades', 'Risk_Reward_Ratio', 'strategy_name']
     
     STRATEGY_SIGNAL_COL_DICT = {
             "benchmark": signal_columns + A + D + F + H + End, 

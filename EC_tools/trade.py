@@ -228,7 +228,7 @@ class Trade(Protocol):
             
             
         # Add posiyion in the position book
-        self.position_book.append(pos)
+        #self.position_book.append(pos)
         
         return pos
 
@@ -583,6 +583,7 @@ class MultiTradePerDay(Trade):
     3) If the price hit the stop loss first, exit at stop loass. 
     4) If netiher the target exit nor the stop loss is hit, exit the trade 
         at the closing hour.
+    But if the exit position is triggered, it find the next best open position.
         
     """
     def __init__(self, portfolio):
@@ -691,6 +692,8 @@ class MultiTradePerDay(Trade):
         EES_dict = read.find_minute_EES(day, target_entry, target_exit, stop_exit,
                           open_hr=open_hr, close_hr=close_hr, 
                           direction = direction)
+        
+        open_hr_dt = None
     
         # Input the position type
         if direction == 'Buy':
@@ -698,17 +701,19 @@ class MultiTradePerDay(Trade):
         elif direction == 'Sell':
             pos_type = 'Short'
             
-        EES_target_list = [target_entry, target_exit, 
-                           stop_exit, EES_dict['close'][1]] 
-        
+
         pos_list_bundle = []
         for i in range(10):
+            open_hr_dt = None
+            EES_target_list = [target_entry, target_exit, 
+                               stop_exit, EES_dict['close'][1]] 
             # run the trade via position module
             pos_list = self.open_positions(give_obj_name, get_obj_name, \
                                            get_obj_quantity, EES_target_list, \
                                                pos_type=pos_type, 
                                                size=num_per_contract[get_obj_name],
-                                               fee=fee)
+                                               fee=fee, open_time = open_hr)
+                                               #open_time = open_hr_dt)  # add open time in position
         
         
             trade_open, trade_close, pos_list, exec_pos_list = \

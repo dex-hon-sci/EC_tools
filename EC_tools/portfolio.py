@@ -426,7 +426,7 @@ class Portfolio(object):
                 # The current version of this method only gets the price data iff 
                 # it exist in the table, i.e. it does not get anything outside of the trading days
                 target_time = date_time.strftime("%Y-%m-%d")
-                
+                print(sub_price_table['Settle'], target_time)
                 #print('TT',target_time, sub_price_table[(sub_price_table['Date'] > datetime.datetime(2024,2,28)) 
                 #                                        & (sub_price_table['Date'] < datetime.datetime(2024,3,6))])
                 

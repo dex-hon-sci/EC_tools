@@ -21,11 +21,12 @@ from EC_tools.strategy import MRStrategyArgus
 import EC_tools.read as read
 import EC_tools.utility as util
 from EC_tools.bookkeep import Bookkeep
-import EC_tools.math_func as mfunc
+#import EC_tools.math_func as mfunc
 from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, \
                                 APC_FILE_LOC, HISTORY_DAILY_FILE_LOC,\
                                     HISTORY_MINTUE_FILE_LOC, TIMEZONE_DICT,\
-                                        OPEN_HR_DICT, CLOSE_HR_DICT
+                                        OPEN_HR_DICT, CLOSE_HR_DICT,\
+                                        ARGUS_EXACT_SIGNAL_FILE_SHORT_LOC
 
 
 __all__ = ['loop_signal','gen_signal_vector','run_gen_MR_signals', 
@@ -239,12 +240,10 @@ def run_gen_MR_signals_list(Strategy,
                             history_minute_list,
                             open_hr_dict, close_hr_dict, 
                             timezone_dict,
-                            save_or_not=False,
                             buy_range=([0.25,0.4],[0.6,0.75],0.05), 
-                            sell_range =([0.6,0.75],[0.25,0.4],0.95)):
+                            sell_range =([0.6,0.75],[0.25,0.4],0.95),
+                            save_or_not=False):
     
-    # a function to download the APC of a list of asset
-    # input username and password.json
     output_dict = dict()
     for filename, cat, key, sym, signal, history_daily, history_minute in zip(\
         filename_list, categories_list, keywords_list, symbol_list, signal_list, \
@@ -338,24 +337,27 @@ def run_gen_MR_signals_preloaded_list(filename_list, start_date, end_date,
 if __name__ == "__main__":
 
     
-    #start_date = "2022-01-03"
-    start_date = "2021-01-11"
+    start_date = "2022-01-03"
+    #start_date = "2021-01-11"
     end_date = "2024-06-17"
     
     
     
-    SAVE_FILENAME_LIST = [
-    "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_CLc1_full.csv", 
-    "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_CLc2_full.csv", 
-    "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_HOc1_full.csv", 
-    "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_HOc2_full.csv", 
-    "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_RBc1_full.csv", 
-    "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_RBc2_full.csv", 
-    "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_QOc1_full.csv",
-    "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_QOc2_full.csv",
-    "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_QPc1_full.csv",
-    "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_QPc2_full.csv" 
-    ]
+    SAVE_FILENAME_LIST = list(ARGUS_EXACT_SIGNAL_FILE_SHORT_LOC.values())
+# =============================================================================
+#     [
+#     "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short/argus_exact_signal_CLc1_full.csv", 
+#     "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short/argus_exact_signal_CLc2_full.csv", 
+#     "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short/argus_exact_signal_HOc1_full.csv", 
+#     "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_HOc2_full.csv", 
+#     "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_RBc1_full.csv", 
+#     "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_RBc2_full.csv", 
+#     "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_QOc1_full.csv",
+#     "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_QOc2_full.csv",
+#     "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_QPc1_full.csv",
+#     "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_QPc2_full.csv" 
+#     ]
+# =============================================================================
 
     
 
@@ -371,7 +373,10 @@ if __name__ == "__main__":
                             SAVE_FILENAME_LIST, CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, 
                             start_date, end_date,
                             SIGNAL_LIST, HISTORY_DAILY_LIST, HISTORY_MINUTE_LIST,
-                            OPEN_HR_DICT, CLOSE_HR_DICT, TIMEZONE_DICT,save_or_not=True)
+                            OPEN_HR_DICT, CLOSE_HR_DICT, TIMEZONE_DICT,
+                            buy_range=([0.25,0.4],[0.6,0.75],0.05), 
+                            sell_range =([0.6,0.75],[0.25,0.4],0.95),
+                            save_or_not=True)
 
 
 # =============================================================================

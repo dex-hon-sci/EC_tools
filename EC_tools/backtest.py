@@ -188,27 +188,63 @@ def loop_date_full():
     """
     return 
 
-def loop_date(signal_table, histroy_intraday_data, open_hr='0330', 
+def loop_date(trade_choice, signal_table, histroy_intraday_data, open_hr='0330', 
               close_hr='1930',
-              plot_or_not = False):
+              plot_or_not = False, sort_by = 'Entry_Date'):
     """
     Fast looping method that generate simple CSV output file.
     This method isolate out the crossover points to find optimal EES 
-    using onetradeperday.    
+    using onetradeperday. This loop is meant to be fast and only produce a 
+    simple table, not a portfolio file.
     
     """
+
+    symbol_list = signal_table['Price_Code']
+    direction_list = signal_table['Direction'] 
+    commodity_list = signal_table['Commodity_name']
     
+    upper_entry_list= signal_table['Target_Upper_Entry_Price']
+    lower_entry_list = signal_table['Target_Lower_Entry_Price'] 
+    
+    upper_exit_list = signal_table['Target_Upper_Exit_Price']
+    lower_exit_list = signal_table['Target_Lower_Exit_Price'] 
+        
+    stop_exit_list = signal_table['Stop_Exit_Price'] 
+    
+    date_interest_list = signal_table['Date']
+    full_contract_symbol_list = signal_table['Contract_Month']
+
+    get_obj_name_list = signal_table['Price_Code']
+    strategy_name_list = signal_table['strategy_name']
+        
     # make bucket 
     book = Bookkeep(bucket_type='backtest')
-    dict_trade_PNL = book.make_bucket(keyword='benchmark')
+    dict_trade_PNL = book.make_bucket(keyword='argus_exact')
     
-    for date_interest, direction, target_entry, target_exit, stop_exit, price_code in zip(
-            signal_table['Date'], 
-            signal_table['direction'], 
-            signal_table['target entry'],
-            signal_table['target exit'], 
-            signal_table['stop exit'],
-            signal_table['price code']):
+    trade_id = 0
+    for date_interest, direction, commodity_name, \
+        upper_target_entry, lower_target_entry,\
+            upper_target_exit, lower_target_exit, \
+                stop_exit, price_code, full_contract_symbol, \
+                    strategy_name in zip(date_interest_list,  \
+                                            direction_list, commodity_list,
+                                            upper_entry_list, lower_entry_list,
+                                            upper_exit_list,  lower_exit_list,
+                                            stop_exit_list, symbol_list,
+                                            full_contract_symbol_list,
+                                            strategy_name_list):
+                                
+                                
+        if direction == 'Buy':
+            target_entry = upper_target_entry
+            target_exit = lower_target_exit
+    
+        elif direction == 'Sell':
+            target_entry = lower_target_entry
+            target_exit = upper_target_exit
+    
+        else:
+            target_entry_list, target_exit_list = 'NA', 'NA'
         
         # Define the date of interest by reading TimeStamp. 
         # We may want to remake all this and make Timestamp the universal 
@@ -222,12 +258,12 @@ def loop_date(signal_table, histroy_intraday_data, open_hr='0330',
                                                            target_hr= open_hr,
                                                            direction='forward')
         
-        print('open',open_hr_dt, open_price)
+        #print('open',open_hr_dt, open_price)
         
         close_hr_dt, close_price = read.find_closest_price(day,
                                                            target_hr= close_hr,
                                                            direction='backward')
-        print('close', close_hr_dt, close_price)
+        #print('close', close_hr_dt, close_price)
 
         
         # make a dictionary for all the possible EES time and values
@@ -236,7 +272,7 @@ def loop_date(signal_table, histroy_intraday_data, open_hr='0330',
                           direction = direction)
 
         # make the trade.
-        trade_open, trade_close = trade_choice_simple(EES_dict)
+        trade_open, trade_close = trade_choice(EES_dict)
 
         entry_price, exit_price = trade_open[1], trade_close[1]
         entry_datetime= trade_open[0]
@@ -253,27 +289,36 @@ def loop_date(signal_table, histroy_intraday_data, open_hr='0330',
 
 
         # put all the data in a singular list
-        data = [price_code, direction, date_interest,
-                return_trades, entry_price,  entry_datetime,
-                    exit_price, exit_datetime, risk_reward_ratio]
+        #data = [price_code, direction, date_interest,
+        #        return_trades, entry_price,  entry_datetime,
+        #            exit_price, exit_datetime, risk_reward_ratio]
+        # Trade_Id	Direction	Commodity	Price_Code	Contract_Month	Entry_Date	Entry_Datetime	Entry_Price	Exit_Date	Exit_Datetime	Exit_Price
         
+        data = [trade_id, direction, commodity_name,  price_code, 
+                full_contract_symbol, date_interest,
+                  entry_datetime, entry_price,
+                     exit_datetime, exit_price, 
+                     return_trades, risk_reward_ratio, strategy_name]
+
         # Storing the data    
         dict_trade_PNL = book.store_to_bucket_single(data)
                                     
         # plotting mid-backtest
         plot_in_backtest(date_interest, EES_dict, direction, 
                          plot_or_not=plot_or_not)
+        
+        trade_id = trade_id +1       
 
-        print('info', data)
+        #print('info', data)
         
     dict_trade_PNL = pd.DataFrame(dict_trade_PNL)
-    
     #sort by date
-    dict_trade_PNL = dict_trade_PNL.sort_values(by='date')
+    dict_trade_PNL = dict_trade_PNL.sort_values(by=sort_by)
          
     return dict_trade_PNL
     
-def loop_date_portfolio(portfo, signal_table, histroy_intraday_data, 
+def loop_date_portfolio(portfo, TradeMethod, 
+                        signal_table, histroy_intraday_data, 
                         give_obj_name = "USD", get_obj_name = "CLc1", 
                         get_obj_quantity = 50,
                         open_hr='0330', close_hr='1930',
@@ -315,7 +360,7 @@ def loop_date_portfolio(portfo, signal_table, histroy_intraday_data,
         print('==================================')
         # The main Trade function here
         EES_dict, trade_open, trade_close, \
-            pos_list, exec_pos_list = OneTradePerDay(portfo).run_trade(\
+            pos_list, exec_pos_list = TradeMethod(portfo).run_trade(\
                                             day, give_obj_name, get_obj_name, 
                                             get_obj_quantity, target_entry, 
                                             target_exit, stop_exit, 
@@ -334,7 +379,8 @@ def loop_date_portfolio(portfo, signal_table, histroy_intraday_data,
     return portfo
     
 
-def loop_list_portfolio_preloaded_list(portfo, signal_table, 
+def loop_list_portfolio_preloaded_list(portfo, TradeMethod,
+                                       signal_table, 
                                        histroy_intraday_data_pkl, 
                                         give_obj_name = "USD", 
                                         get_obj_quantity = 1,
@@ -398,7 +444,7 @@ def loop_list_portfolio_preloaded_list(portfo, signal_table,
         print(i, date_interest, direction, symbol)
         
         EES_dict, trade_open, trade_close, \
-            pos_list, exec_pos_list = OneTradePerDay(portfo).run_trade(\
+            pos_list, exec_pos_list = TradeMethod(portfo).run_trade(\
                                             day, give_obj_name, get_obj_name, 
                                             get_obj_quantity, target_entry, 
                                             target_exit, stop_exit, 
