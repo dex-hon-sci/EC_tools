@@ -26,7 +26,8 @@ from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, \
                                 APC_FILE_LOC, HISTORY_DAILY_FILE_LOC,\
                                     HISTORY_MINTUE_FILE_LOC, TIMEZONE_DICT,\
                                         OPEN_HR_DICT, CLOSE_HR_DICT,\
-                                        ARGUS_EXACT_SIGNAL_FILE_SHORT_LOC
+                                        ARGUS_EXACT_SIGNAL_FILE_SHORT_LOC,\
+                                            ARGUS_EXACT_SIGNAL_FILE_LOC
 
 
 __all__ = ['loop_signal','gen_signal_vector','run_gen_MR_signals', 
@@ -230,7 +231,6 @@ def run_gen_MR_signals(asset_pack, start_date, end_date,
     # there are better ways than looping. here is a vectoralised method    
     return dict_contracts_quant_signals
 
-# make a function to run multiple signal generation from a list
 # tested
 @util.time_it
 def run_gen_MR_signals_list(Strategy, 
@@ -337,29 +337,11 @@ def run_gen_MR_signals_preloaded_list(filename_list, start_date, end_date,
 if __name__ == "__main__":
 
     
-    start_date = "2022-01-03"
-    #start_date = "2021-01-11"
+    #start_date = "2022-01-03"
+    start_date = "2021-01-11"
     end_date = "2024-06-17"
     
-    
-    
-    SAVE_FILENAME_LIST = list(ARGUS_EXACT_SIGNAL_FILE_SHORT_LOC.values())
-# =============================================================================
-#     [
-#     "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short/argus_exact_signal_CLc1_full.csv", 
-#     "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short/argus_exact_signal_CLc2_full.csv", 
-#     "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short/argus_exact_signal_HOc1_full.csv", 
-#     "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_HOc2_full.csv", 
-#     "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_RBc1_full.csv", 
-#     "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_RBc2_full.csv", 
-#     "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_QOc1_full.csv",
-#     "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_QOc2_full.csv",
-#     "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_QPc1_full.csv",
-#     "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_QPc2_full.csv" 
-#     ]
-# =============================================================================
-
-    
+    SAVE_FILENAME_LIST = list(ARGUS_EXACT_SIGNAL_FILE_LOC.values())
 
     #maybe I need an unpacking function here to handle payload from json files
     SIGNAL_LIST = list(APC_FILE_LOC.values())
