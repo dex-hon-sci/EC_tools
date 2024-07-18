@@ -337,11 +337,11 @@ def run_gen_MR_signals_preloaded_list(filename_list, start_date, end_date,
 if __name__ == "__main__":
 
     
-    #start_date = "2022-01-03"
-    start_date = "2021-01-11"
+    start_date = "2022-01-03"
+    #start_date = "2021-01-11"
     end_date = "2024-06-17"
     
-    SAVE_FILENAME_LIST = list(ARGUS_EXACT_SIGNAL_FILE_LOC.values())
+    SAVE_FILENAME_LIST = list(ARGUS_EXACT_SIGNAL_FILE_SHORT_LOC.values())
 
     #maybe I need an unpacking function here to handle payload from json files
     SIGNAL_LIST = list(APC_FILE_LOC.values())

@@ -167,8 +167,8 @@ class MRStrategyArgus(Strategy):
         # (2) rolling 5 days average lower than the median apc 
         cond_buy_list_2 = [(rollingaverage_q < apc_mid_Q)]
         # (3) price at today's opening hour above the 0.1 quantile of today's apc
-        cond_buy_list_3 = [(open_price >= self._curve_today_spline([
-                                                    apc_trade_Qlimit[0]])[0])]
+        #cond_buy_list_3 = [(open_price >= self._curve_today_spline([
+        #                                            apc_trade_Qlimit[0]])[0])]
         
         # "SELL" condition
         # (1) Two consecutive days of closing price higher than the signal median
@@ -176,16 +176,16 @@ class MRStrategyArgus(Strategy):
         # (2) rolling 5 days average higher than the median apc 
         cond_sell_list_2 = [(rollingaverage_q > apc_mid_Q)]
         # (3) price at today's opening hour below the 0.9 quantile of today's apc
-        cond_sell_list_3 = [(open_price <= self._curve_today_spline([
-                                                    apc_trade_Qlimit[1]])[0])]
+        #cond_sell_list_3 = [(open_price <= self._curve_today_spline([
+        #                                            apc_trade_Qlimit[1]])[0])]
         
         # save the condtion boolean value to the sub-condition dictionary
         self._sub_buy_cond_dict = {'NCONS': [cond_buy_list_1],	
-                             'NROLL': [cond_buy_list_2],
-                             'OP_WITHIN': [cond_buy_list_3]}
+                             'NROLL': [cond_buy_list_2]}
+                             #'OP_WITHIN': [cond_buy_list_3]}
         self._sub_sell_cond_dict = {'NCONS': [cond_sell_list_1],	
-                             'NROLL': [cond_sell_list_2],
-                             'OP_WITHIN': [cond_sell_list_3]}
+                             'NROLL': [cond_sell_list_2]}
+                             #'OP_WITHIN': [cond_sell_list_3]}
         
         # Store all sub-conditions into 
         self.sub_cond_dict = {'Buy':[sum(self._sub_buy_cond_dict[key],[]) 
@@ -265,11 +265,19 @@ class MRStrategyArgus(Strategy):
         direction, cond_info = self.run_cond(strategy_info, open_price)
         
         entry_price, exit_price, stop_loss = self.set_EES(self.direction)
-        
+
+        if direction == SignalStatus.BUY:
+            entry_price_val, exit_price_val = entry_price[1], exit_price[0]
+        elif direction == SignalStatus.SELL:
+            entry_price_val, exit_price_val = entry_price[0], exit_price[1]
+        elif direction == SignalStatus.NEUTRAL:
+            entry_price_val, exit_price_val = entry_price[0], exit_price[0]
+            
         # Bookkeeping area
         EES = [entry_price[0], entry_price[1], 
                exit_price[0], exit_price[1], 
                stop_loss]
+        EES_val = [entry_price_val, exit_price_val, stop_loss]
         
         # Turn strategy_info from dict to list
         strategy_info_list = strategy_info['lag_list'] + [strategy_info['rollingaverage']]
@@ -279,8 +287,8 @@ class MRStrategyArgus(Strategy):
         #print(EES+ cond_info, strategy_info_list, quantile_info, [self.strategy_name])
         #print(type(EES+ cond_info), type(strategy_info_list), type(quantile_info), type([self.strategy_name]))
         
-        data =  EES+ cond_info + strategy_info_list + \
-                quantile_info + [self.strategy_name]
+        data =  EES + cond_info + strategy_info_list + \
+                quantile_info + EES_val + [self.strategy_name]
         
         return {'data': data, 'direction': direction.value}
     

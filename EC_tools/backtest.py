@@ -216,6 +216,7 @@ def loop_date(trade_choice, signal_table, histroy_intraday_data, open_hr='0330',
 
     get_obj_name_list = signal_table['Price_Code']
     strategy_name_list = signal_table['strategy_name']
+    
         
     # make bucket 
     book = Bookkeep(bucket_type='backtest')
@@ -292,12 +293,15 @@ def loop_date(trade_choice, signal_table, histroy_intraday_data, open_hr='0330',
         #data = [price_code, direction, date_interest,
         #        return_trades, entry_price,  entry_datetime,
         #            exit_price, exit_datetime, risk_reward_ratio]
-        # Trade_Id	Direction	Commodity	Price_Code	Contract_Month	Entry_Date	Entry_Datetime	Entry_Price	Exit_Date	Exit_Datetime	Exit_Price
+        # Trade_Id	Direction	Commodity	Price_Code	
+        # Contract_Month
+        #Entry_Date	Entry_Datetime	Entry_Price	
+        # Exit_Date	Exit_Datetime	Exit_Price
         
         data = [trade_id, direction, commodity_name,  price_code, 
-                full_contract_symbol, date_interest,
-                  entry_datetime, entry_price,
-                     exit_datetime, exit_price, 
+                full_contract_symbol, 
+                date_interest, entry_datetime, entry_price, 
+                  date_interest, exit_datetime, exit_price, 
                      return_trades, risk_reward_ratio, strategy_name]
 
         # Storing the data    
