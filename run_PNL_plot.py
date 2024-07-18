@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 
 #FILENAME = './data/profits_and_losses_data_benchmark_11_.xlsx'
+#FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_PNL_xlsx/benchmark_PNL_full_.xlsx'
 FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_PNL_xlsx/benchmark_PNL_full_.xlsx'
 
 dataframe = pd.read_excel(FILENAME,sheet_name='Total')
@@ -144,7 +145,7 @@ label_list = ['CLc1 (x50)', 'HOc1 (x50)', 'RBc1 (x50)', 'QOc1 (x50)', 'QPc1 (x50
 col_list = ['#62A0E1','#EB634E','#E99938','#5CDE93','#6ABBC6']
 line_list = ['-','-', '-','-','-']
 
-def PNL_plot(x,y):
+def cumPNL_plot(x,y):
     plt.style.use('dark_background')
 
     # plotting area
@@ -168,5 +169,7 @@ def PNL_plot(x,y):
     plt.grid()
     
     plt.show()
+def cumPNL_compare():
+    return
     
 PNL_plot(date_all, cumPNL_all)

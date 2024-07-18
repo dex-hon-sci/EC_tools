@@ -27,7 +27,8 @@ from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, \
                                     HISTORY_MINTUE_FILE_LOC, TIMEZONE_DICT,\
                                         OPEN_HR_DICT, CLOSE_HR_DICT,\
                                         ARGUS_EXACT_SIGNAL_FILE_SHORT_LOC,\
-                                            ARGUS_EXACT_SIGNAL_FILE_LOC
+                                            ARGUS_EXACT_SIGNAL_FILE_LOC,\
+                                            ARGUS_EXACT_SIGNAL_AMB_FILE_LOC
 
 
 __all__ = ['loop_signal','gen_signal_vector','run_gen_MR_signals', 
@@ -337,11 +338,11 @@ def run_gen_MR_signals_preloaded_list(filename_list, start_date, end_date,
 if __name__ == "__main__":
 
     
-    start_date = "2022-01-03"
-    #start_date = "2021-01-11"
+    #start_date = "2022-01-03"
+    start_date = "2021-01-11"
     end_date = "2024-06-17"
     
-    SAVE_FILENAME_LIST = list(ARGUS_EXACT_SIGNAL_FILE_SHORT_LOC.values())
+    SAVE_FILENAME_LIST = list(ARGUS_EXACT_SIGNAL_AMB_FILE_LOC.values())
 
     #maybe I need an unpacking function here to handle payload from json files
     SIGNAL_LIST = list(APC_FILE_LOC.values())
@@ -356,8 +357,8 @@ if __name__ == "__main__":
                             start_date, end_date,
                             SIGNAL_LIST, HISTORY_DAILY_LIST, HISTORY_MINUTE_LIST,
                             OPEN_HR_DICT, CLOSE_HR_DICT, TIMEZONE_DICT,
-                            buy_range=([0.25,0.4],[0.6,0.75],0.05), 
-                            sell_range =([0.6,0.75],[0.25,0.4],0.95),
+                            buy_range=([0.25,0.4],[0.8,0.9],0.3), 
+                            sell_range =([0.6,0.75],[0.1,0.2],0.7),
                             save_or_not=True)
 
 

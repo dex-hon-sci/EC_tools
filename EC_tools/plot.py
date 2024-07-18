@@ -581,12 +581,12 @@ def plot_minute(filename_minute, signal_filename, price_approx = 'Open',
     
 if __name__ == "__main__":
     
-    filename_daily = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Day/QO.day"
+    filename_daily = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Day/CL.day"
     #################
     
-    filename_minute = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/QO.001"
+    filename_minute = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/CL.001"
     
-    signal_filename = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_QOc1.csv"
+    signal_filename = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_CLc1.csv"
     
     
     #FILENAME_MINUTE = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/CL.001"
@@ -597,7 +597,8 @@ if __name__ == "__main__":
     #date_interest = "2024-04-03"
     #date_interest = "2024-01-18"
     #date_interest = "2023-12-29"
-    date_interest = "2024-03-25"
+    #date_interest = "2023-11-01"
+    date_interest = "2024-06-14"
     
     plot_minute(filename_minute, signal_filename, 
                 date_interest = date_interest, direction="Buy")

@@ -11,12 +11,14 @@ import time
 import EC_tools.read as read
 import EC_tools.backtest as backtest
 import EC_tools.utility as util
-from EC_tools.trade import OneTradePerDay, trade_choice_simple
+from EC_tools.trade import OneTradePerDay, trade_choice_simple, \
+                            trade_choice_simple_2, trade_choice_simple_3
 from EC_tools.portfolio import Asset, Portfolio
 from crudeoil_future_const import OPEN_HR_DICT, CLOSE_HR_DICT, \
-                                ARGUS_EXACT_PNL_SHORT_LOC, ARGUS_EXACT_SIGNAL_FILE_LOC, \
+                                 ARGUS_EXACT_SIGNAL_FILE_LOC, \
                                     ARGUS_EXACT_PNL_SHORT_LOC, HISTORY_MINTUE_FILE_LOC,\
-                                    ARGUS_EXACT_PNL_LOC
+                                    ARGUS_EXACT_PNL_LOC, ARGUS_EXACT_SIGNAL_AMB_FILE_LOC,\
+                                        ARGUS_EXACT_PNL_AMB_LOC
 
 
 __author__="Dexter S.-H. Hon"
@@ -66,7 +68,7 @@ def run_backtest_list(trade_choice,
         
         open_hr = open_hr_dict[sym]
         close_hr = close_hr_dict[sym]
-        
+        print("Running backtest on {}".format(sym))
         @util.save_csv("{}".format(save_filename), save_or_not=save_or_not)
         def run_backtest_indi(trade_choice, 
                               filename_minute,filename_buysell_signals, 
@@ -79,7 +81,7 @@ def run_backtest_list(trade_choice,
             return backtest_data
                        
             
-        backtest_data = run_backtest_indi(trade_choice_simple, 
+        backtest_data = run_backtest_indi(trade_choice, 
                                           history_minute_file, signal_filename,
                                           start_date, end_date, 
                                           open_hr=open_hr, close_hr=close_hr)
@@ -173,9 +175,8 @@ if __name__ == "__main__":
     MASTER_SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_full.csv"
     HISTORY_MINUTE_PKL_FILENAME ="/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_full.pkl"
 
-    #run_backtest(trade_choice_simple,FILENAME_MINUTE, FILENAME_BUYSELL_SIGNALS, "2022-01-03", "2024-06-17")
-    SAVE_FILENAME_LIST = list(ARGUS_EXACT_PNL_LOC.values())
-    SIGNAL_FILENAME_LIST = list(ARGUS_EXACT_SIGNAL_FILE_LOC.values())
+    SAVE_FILENAME_LIST = list(ARGUS_EXACT_PNL_AMB_LOC.values())
+    SIGNAL_FILENAME_LIST = list(ARGUS_EXACT_SIGNAL_AMB_FILE_LOC.values())
     SYMBOL_LIST = list(ARGUS_EXACT_PNL_LOC.keys())
     HISTORY_MINUTE_FILENAME_LIST = list(HISTORY_MINTUE_FILE_LOC.values())
         
@@ -183,7 +184,10 @@ if __name__ == "__main__":
     start_date = "2021-01-11"
     end_date = "2024-06-17"
     
-    run_backtest_list(trade_choice_simple, 
+    #run_backtest(trade_choice_simple_2,FILENAME_MINUTE, FILENAME_BUYSELL_SIGNALS, 
+    #             "2022-01-03", "2024-06-17")
+
+    backtest_result = run_backtest_list(trade_choice_simple_3, 
                       SAVE_FILENAME_LIST, SYMBOL_LIST,
                           SIGNAL_FILENAME_LIST, HISTORY_MINUTE_FILENAME_LIST,
                                     start_date, end_date,

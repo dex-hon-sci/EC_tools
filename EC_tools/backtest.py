@@ -15,7 +15,7 @@ from typing import Protocol
 import EC_tools.read as read
 import EC_tools.utility as util
 from EC_tools.bookkeep import Bookkeep
-from EC_tools.trade import  trade_choice_simple, OneTradePerDay
+from EC_tools.trade import  trade_choice_simple, OneTradePerDay, trade_choice_simple_3
 import EC_tools.plot as plot
 from EC_tools.portfolio import Asset, Portfolio
 from crudeoil_future_const import OPEN_HR_DICT, CLOSE_HR_DICT
@@ -188,7 +188,8 @@ def loop_date_full():
     """
     return 
 
-def loop_date(trade_choice, signal_table, histroy_intraday_data, open_hr='0330', 
+def loop_date(trade_choice: trade_choice_simple_3, 
+              signal_table, histroy_intraday_data, open_hr='0330', 
               close_hr='1930',
               plot_or_not = False, sort_by = 'Entry_Date'):
     """
@@ -253,7 +254,7 @@ def loop_date(trade_choice, signal_table, histroy_intraday_data, open_hr='0330',
         day = extract_intraday_minute_data(histroy_intraday_data, date_interest, 
                                      open_hr=open_hr, close_hr=close_hr)
         
-        print(day['Date'].iloc[0], direction, target_entry, target_exit, stop_exit)
+        #print(day['Date'].iloc[0], direction, target_entry, target_exit, stop_exit)
         
         open_hr_dt, open_price = read.find_closest_price(day,
                                                            target_hr= open_hr,
@@ -274,10 +275,14 @@ def loop_date(trade_choice, signal_table, histroy_intraday_data, open_hr='0330',
 
         # make the trade.
         trade_open, trade_close = trade_choice(EES_dict)
-
-        entry_price, exit_price = trade_open[1], trade_close[1]
-        entry_datetime= trade_open[0]
-        exit_datetime = trade_close[0]
+        
+        if trade_open != (np.nan, np.nan) and trade_close == (np.nan, np.nan):
+            raise Exception('trade WTF {},{}'.format(trade_open, trade_close))
+       # print('trade', trade_open, trade_close)
+            
+        entry_price,  entry_datetime= trade_open[1], trade_open[0]
+        exit_price, exit_datetime = trade_close[1], trade_close[0]
+        
         
         # calculate statistics EES_dict
         if direction == "Buy": # for buy, we are longing
@@ -445,7 +450,7 @@ def loop_list_portfolio_preloaded_list(portfo, TradeMethod,
     
         #print('==================================')
         
-        print(i, date_interest, direction, symbol)
+       # print(i, date_interest, direction, symbol)
         
         EES_dict, trade_open, trade_close, \
             pos_list, exec_pos_list = TradeMethod(portfo).run_trade(\

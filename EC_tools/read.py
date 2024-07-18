@@ -895,20 +895,34 @@ def find_minute_EES(histroy_data_intraday,
     
     # Define the closing time and closing price. Here we choose 19:25 for final trade
     #close_time = datetime.time(int(close_trade_hr[:2]),int(close_trade_hr[2:]))
-    close_time = close_hr #quick fix. need some work
     
-    close_pt = price_list[np.where(time_list==close_time)[0]][0]
-    close_date = date_list[np.where(time_list==close_time)[0]][0]
+# =============================================================================
+#     close_time = close_hr #quick fix. need some work
+#     
+#     close_pt = price_list[np.where(time_list==close_time)[0]][0]
+#     close_date = date_list[np.where(time_list==close_time)[0]][0]
+# =============================================================================
+    close_time = close_hr
+    close_hr_str = close_hr.strftime("%H%M")
+    #print(type(close_hr),close_hr, close_hr_str)
+    ## Find the closest price and datettime instead of having it at exactly the close time
+    close_date_new, close_pt = find_closest_price(histroy_data_intraday, 
+                                              target_hr=close_hr_str, 
+                                              direction='backward')
+    close_date = date_list[np.where(time_list==close_date_new)[0]][0]
 
-    close_datetime = datetime.datetime.combine(pd.to_datetime(close_date).date(), close_time)
+    #print('close_date, close_pt', close_date, close_pt)
+
+    close_datetime = datetime.datetime.combine(pd.to_datetime(close_date).date(), 
+                                               close_date_new)
 
     # storage
     EES_dict = {'entry': list(zip(entry_times,entry_pts)),
                 'exit': list(zip(exit_times,exit_pts)),
                 'stop': list(zip(stop_times,stop_pts)),
-                'close': list((close_datetime, close_pt)) }
+                'close': tuple((close_datetime, close_pt)) }
 
-    #print('EES_dict', EES_dict)
+    #print('EES_dict', EES_dict['close'])
     return EES_dict
 
 def open_portfolio(filename):
