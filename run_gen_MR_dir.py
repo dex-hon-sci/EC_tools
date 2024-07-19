@@ -28,7 +28,8 @@ from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, \
                                         OPEN_HR_DICT, CLOSE_HR_DICT,\
                                         ARGUS_EXACT_SIGNAL_FILE_SHORT_LOC,\
                                             ARGUS_EXACT_SIGNAL_FILE_LOC,\
-                                            ARGUS_EXACT_SIGNAL_AMB_FILE_LOC
+                                            ARGUS_EXACT_SIGNAL_AMB_FILE_LOC,\
+                                            ARGUS_EXACT_SIGNAL_AMB2_FILE_LOC
 
 
 __all__ = ['loop_signal','gen_signal_vector','run_gen_MR_signals', 
@@ -43,7 +44,7 @@ MR_STRATEGIES_0 = {"argus_exact": MRStrategyArgus}
 def loop_signal(book, signal_data, history_data, open_price_data,  
                    Strategy: MRStrategyArgus, start_date, end_date,
                    strategy_name='benchmark', 
-                   buy_range=(0.4,0.6,0.1), sell_range =(0.6,0.4,0.9), 
+                   buy_range=([0.25,0.4],[0.6,0.75],0.05), sell_range =([0.6,0.75],[0.25,0.4],0.95), 
                    open_hr='', close_hr='',
                    commodity_name = '', Timezone= "",
                   contract_symbol_condse = False, loop_symbol = None): #WIP
@@ -101,7 +102,8 @@ def loop_signal(book, signal_data, history_data, open_price_data,
 
             # Apply the strategy, The Strategy is variable
             strategy_output = Strategy(curve_this_date).apply_strategy(
-                                     history_data_lag5, apc_curve_lag5, price_330)
+                                     history_data_lag5, apc_curve_lag5, price_330,
+                                     buy_range=buy_range, sell_range=sell_range)
 
             # Rename the strategy ouputs
             direction = strategy_output['direction']
@@ -162,7 +164,8 @@ def gen_signal_vector(signal_data, history_data, loop_start_date = ""): # WIP
 
 def run_gen_MR_signals(asset_pack, start_date, end_date,
                        signal_filename, filename_daily, filename_minute, 
-                       buy_range=(0.4,0.6,0.1),sell_range =(0.6,0.4,0.9),
+                       buy_range=([0.25,0.4],[0.6,0.75],0.05), 
+                       sell_range =([0.6,0.75],[0.25,0.4],0.95), 
                        open_hr='', close_hr='',
                        commodity_name = '', Timezone= "",
                        start_date_pushback = 20):
@@ -342,7 +345,7 @@ if __name__ == "__main__":
     start_date = "2021-01-11"
     end_date = "2024-06-17"
     
-    SAVE_FILENAME_LIST = list(ARGUS_EXACT_SIGNAL_AMB_FILE_LOC.values())
+    SAVE_FILENAME_LIST = list(ARGUS_EXACT_SIGNAL_AMB2_FILE_LOC.values())
 
     #maybe I need an unpacking function here to handle payload from json files
     SIGNAL_LIST = list(APC_FILE_LOC.values())
@@ -357,8 +360,8 @@ if __name__ == "__main__":
                             start_date, end_date,
                             SIGNAL_LIST, HISTORY_DAILY_LIST, HISTORY_MINUTE_LIST,
                             OPEN_HR_DICT, CLOSE_HR_DICT, TIMEZONE_DICT,
-                            buy_range=([0.25,0.4],[0.8,0.9],0.3), 
-                            sell_range =([0.6,0.75],[0.1,0.2],0.7),
+                            buy_range=([0.25,0.4],[0.7,0.8],0.1), 
+                            sell_range =([0.6,0.75],[0.2,0.3],0.9),
                             save_or_not=True)
 
 

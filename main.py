@@ -13,8 +13,9 @@ from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, \
                                             ARGUS_BENCHMARK_SIGNAL_FILE_LOC,\
                                                 ARGUS_EXACT_SIGNAL_FILE_LOC,\
                                             ARGUS_EXACT_SIGNAL_FILE_SHORT_LOC,\
-                                            ARGUS_EXACT_PNL_SHORT_LOC,\
-                                            ARGUS_EXACT_PNL_LOC
+                                            ARGUS_EXACT_PNL_SHORT_LOC, ARGUS_EXACT_PNL_LOC,\
+                                            ARGUS_EXACT_SIGNAL_AMB_FILE_LOC, ARGUS_EXACT_PNL_AMB_LOC,\
+                                                ARGUS_EXACT_SIGNAL_AMB2_FILE_LOC, ARGUS_EXACT_PNL_AMB2_LOC
                                         
 from crudeoil_future_const import ARGUS_BENCHMARK_SIGNAL_AMB_FILE_LOC, \
                                 ARGUS_BENCHMARK_SIGNAL_AMB_BUY_FILE_LOC, \
@@ -109,10 +110,9 @@ if __name__ == "__main__":
     
     #SIGNAL_LIST = list(SAVE_SIGNAL_FILENAME_LIST.values())   
     #SIGNAL_LIST = list(TEST_FILE_LOC.values())   
-    
-    #SIGNAL_LIST = list(ARGUS_EXACT_SIGNAL_FILE_SHORT_LOC.values())
-    #MASTER_SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short_2_3cond.csv"
-    #merge_raw_data(SIGNAL_LIST, MASTER_SIGNAL_FILENAME, sort_by="Date")
+    SIGNAL_LIST = list(ARGUS_EXACT_SIGNAL_AMB2_FILE_LOC.values())
+    MASTER_SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_amb2.csv"
+    merge_raw_data(SIGNAL_LIST, MASTER_SIGNAL_FILENAME, sort_by="Date")
 
     print("=========Running Back-Testing =============")
     start_date = "2024-03-15"
@@ -130,8 +130,9 @@ if __name__ == "__main__":
         return PP
     
     #PP = quick_backtest_time()
-    PNL_LIST = list(ARGUS_EXACT_PNL_LOC.values())
-    MASTER_PNL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_PNL_full.csv"
+    PNL_LIST = list(ARGUS_EXACT_PNL_AMB2_LOC.values())
+    MASTER_PNL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_PNL_amb2_full.csv"
     merge_raw_data(PNL_LIST, MASTER_PNL_FILENAME, sort_by="Entry_Date")
+    
     ## Visualise PNL plot and metrics.
     ##run_PNL

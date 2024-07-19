@@ -15,7 +15,7 @@ from datetime import datetime
 
 #FILENAME = './data/profits_and_losses_data_benchmark_11_.xlsx'
 #FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_PNL_xlsx/benchmark_PNL_full_.xlsx'
-FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_PNL_xlsx/benchmark_PNL_full_.xlsx'
+FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_PNL_amb2_full_.xlsx'
 
 dataframe = pd.read_excel(FILENAME,sheet_name='Total')
 
@@ -25,27 +25,27 @@ dataframe_RBc1 = pd.read_excel(FILENAME, sheet_name='RBc1')
 dataframe_QOc1 = pd.read_excel(FILENAME, sheet_name='QOc1')
 dataframe_QPc1 = pd.read_excel(FILENAME, sheet_name='QPc1')
 
-dataframe_CLc2 = pd.read_excel(FILENAME, sheet_name='CLc1')
+dataframe_CLc2 = pd.read_excel(FILENAME, sheet_name='CLc2')
 dataframe_HOc2 = pd.read_excel(FILENAME, sheet_name='HOc2')
 dataframe_RBc2 = pd.read_excel(FILENAME, sheet_name='RBc2')
 dataframe_QOc2 = pd.read_excel(FILENAME, sheet_name='QOc2')
 dataframe_QPc2 = pd.read_excel(FILENAME, sheet_name='QPc2')
 
-
-date_all = dataframe['date'].to_numpy()
+date_match_col = 'Entry_Date'
+date_all = dataframe[date_match_col].to_numpy()
 cumPNL_all = dataframe['cumulative P&L from trades for contracts (x 50)'].to_numpy()
 
-date_CLc1 = dataframe_CLc1['date'].to_numpy()
-date_HOc1 = dataframe_HOc1['date'].to_numpy()
-date_RBc1 = dataframe_RBc1['date'].to_numpy()
-date_QOc1 = dataframe_QOc1['date'].to_numpy()
-date_QPc1 = dataframe_QPc1['date'].to_numpy()
+date_CLc1 = dataframe_CLc1[date_match_col].to_numpy()
+date_HOc1 = dataframe_HOc1[date_match_col].to_numpy()
+date_RBc1 = dataframe_RBc1[date_match_col].to_numpy()
+date_QOc1 = dataframe_QOc1[date_match_col].to_numpy()
+date_QPc1 = dataframe_QPc1[date_match_col].to_numpy()
 
-date_CLc2 = dataframe_CLc2['date'].to_numpy()
-date_HOc2 = dataframe_HOc2['date'].to_numpy()
-date_RBc2 = dataframe_RBc2['date'].to_numpy()
-date_QOc2 = dataframe_QOc2['date'].to_numpy()
-date_QPc2 = dataframe_QPc2['date'].to_numpy()
+date_CLc2 = dataframe_CLc2[date_match_col].to_numpy()
+date_HOc2 = dataframe_HOc2[date_match_col].to_numpy()
+date_RBc2 = dataframe_RBc2[date_match_col].to_numpy()
+date_QOc2 = dataframe_QOc2[date_match_col].to_numpy()
+date_QPc2 = dataframe_QPc2[date_match_col].to_numpy()
 
 date_all = np.array([datetime.strptime(date_all[i], '%Y-%m-%d') 
                       for i in range(len(date_all))])
@@ -172,4 +172,4 @@ def cumPNL_plot(x,y):
 def cumPNL_compare():
     return
     
-PNL_plot(date_all, cumPNL_all)
+cumPNL_plot(date_all, cumPNL_all)

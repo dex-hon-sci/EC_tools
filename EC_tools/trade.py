@@ -229,22 +229,22 @@ def trade_choice_simple_3(EES_dict):
         
         #see which points comes the earliest
         if exit_pt == (np.nan,np.nan) and stop_pt == (np.nan,np.nan):
-            print('both null')
+            #print('both null')
             trade_close = close_pt
         elif exit_pt != (np.nan,np.nan) and stop_pt == (np.nan,np.nan):
             trade_close = exit_pt
-            print('stop null')
+            #print('stop null')
 
         elif exit_pt == (np.nan,np.nan) and stop_pt != (np.nan,np.nan):
             trade_close = stop_pt
-            print('exit null')
+            #print('exit null')
 
         elif exit_pt != (np.nan,np.nan) and stop_pt != (np.nan,np.nan):
             if exit_pt[0] >= stop_pt[0]:
-                print('stop loss')
+                #print('stop loss')
                 trade_close = stop_pt
             elif exit_pt[0] < stop_pt[0]:
-                print('exit')
+                #print('exit')
                 trade_close = exit_pt
         else:
             raise Exception("WTF")

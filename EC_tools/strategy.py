@@ -258,13 +258,30 @@ class MRStrategyArgus(Strategy):
             
         return entry_price, exit_price, stop_loss
     
-    def apply_strategy(self, history_data_lag5, apc_curve_lag5, open_price):
+    def apply_strategy(self, history_data_lag5, apc_curve_lag5, open_price, 
+                       qunatile = [0.25,0.4,0.6,0.75],
+                        total_lag_days = 2, 
+                        apc_mid_Q = 0.5, 
+                        #apc_trade_Qrange=(0.4,0.6), 
+                        #apc_trade_Qmargin = (0.1,0.9),
+                        #apc_trade_Qlimit=(0.05,0.95)
+                       buy_range=([0.25,0.4],[0.6,0.75],0.05), 
+                       sell_range =([0.6,0.75],[0.25,0.4],0.95)):
         
-        strategy_info, quantile_info = self.gen_data(history_data_lag5, apc_curve_lag5)
+        strategy_info, quantile_info = self.gen_data(history_data_lag5, apc_curve_lag5,
+                                                     qunatile = [0.25,0.4,0.6,0.75])
         
-        direction, cond_info = self.run_cond(strategy_info, open_price)
+        direction, cond_info = self.run_cond(strategy_info, open_price,
+                                             total_lag_days = total_lag_days, 
+                                             apc_mid_Q = apc_mid_Q)
+                                             
+                                             #apc_trade_Qrange=apc_trade_Qrange, 
+                                             #apc_trade_Qmargin = apc_trade_Qmargin,
+                                             #apc_trade_Qlimit=apc_trade_Qlimit)
         
-        entry_price, exit_price, stop_loss = self.set_EES(self.direction)
+        entry_price, exit_price, stop_loss = self.set_EES(self.direction, 
+                                                          buy_range=buy_range, 
+                                                          sell_range=sell_range)
 
         if direction == SignalStatus.BUY:
             entry_price_val, exit_price_val = entry_price[1], exit_price[0]
