@@ -25,7 +25,7 @@ import EC_tools.utility as util
 from run_preprocess import run_preprocess
 from run_gen_MR_dir import run_gen_MR_signals_list, run_gen_MR_signals_preloaded_list
 from run_backtest import run_backtest_portfolio_preloaded_list
-
+from run_PNL_plot import cumPNL_plot
 @util.time_it
 def load_source_data():
     #load the pkl 
@@ -49,6 +49,18 @@ def quick_backtest(master_buysell_signals_data, histroy_intraday_data_pkl,
                                               start_date, end_date, 
                                               get_obj_quantity = 10)
     return PP
+
+
+
+def run_main():
+    run_preprocess()
+
+    SIGNAL_PKL, HISTORY_DAILY_PKL, HISTORY_MINUTE_PKL, OPENPRICE_PKL,\
+                                SAVE_SIGNAL_FILENAME_LIST = load_source_data()
+
+
+    return
+
 
 if __name__ == "__main__":
 
@@ -136,3 +148,4 @@ if __name__ == "__main__":
     
     ## Visualise PNL plot and metrics.
     ##run_PNL
+    #cumPNL_plot()

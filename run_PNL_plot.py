@@ -16,8 +16,8 @@ import datetime as datetime
 #FILENAME = './data/profits_and_losses_data_benchmark_11_.xlsx'
 #FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_PNL_xlsx/benchmark_PNL_full_.xlsx'
 ARGUS_EXACT_PNL_FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_PNL_full_.xlsx'
-ARGUS_EXACT_PNL_AMB_FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_PNL_amb1_full_.xlsx'
-ARGUS_EXACT_PNL2_AMB_FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_PNL_amb2_full_.xlsx'
+ARGUS_EXACT_PNL_AMB_FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_PNL_amb_full_.xlsx'
+ARGUS_EXACT_PNL_AMB2_FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_PNL_amb2_full_.xlsx'
 
 symbol_list = ['CLc1', 'HOc1', 'RBc1', 'QOc1', 'QPc1', 'CLc2', 'HOc2', 'RBc2', 'QOc2', 'QPc2']
 label_list = ['CLc1 (x50)', 'HOc1 (x50)', 'RBc1 (x50)', 'QOc1 (x50)', 'QPc1 (x50)', 'CLc2 (x50)', 'HOc2 (x50)', 'RBc2 (x50)', 'QOc2 (x50)', 'QPc2 (x50)']
@@ -56,7 +56,7 @@ def extract_PNLplot_input(filename, sheet_name='Total', date_col = 'Entry_Date',
     return date_all, cumPNL_all
 
 
-def cumPNL_plot(date, PNL, return_rate=[], line_color = 'w', label = 'All',  
+def cumPNL_plot(date, PNL, return_rate, line_color = 'w', label = 'All',  
                  sub_date_list=[], sub_data_list=[], sub_line_list = [],
                  sub_label_list = [], sub_col_list = []):
     
@@ -142,10 +142,19 @@ if __name__=='__main__':
     #               sub_col_list = col_list, 
     #               sub_line_list =line_list)
     # =============================================================================
+    strategy_date_list = [extract_PNLplot_input(ARGUS_EXACT_PNL_FILENAME)[0],
+                          extract_PNLplot_input(ARGUS_EXACT_PNL_AMB_FILENAME)[0], 
+                          extract_PNLplot_input(ARGUS_EXACT_PNL_AMB2_FILENAME)[0]]
+    strategy_data_list = [extract_PNLplot_input(ARGUS_EXACT_PNL_FILENAME)[1],
+                          extract_PNLplot_input(ARGUS_EXACT_PNL_AMB_FILENAME)[1], 
+                          extract_PNLplot_input(ARGUS_EXACT_PNL_AMB2_FILENAME)[1]]
+    strategy_label_list = ['Argus_Exact', 'Ambituous', 'Ambituous2']
+    strategy_col_list = ['w','w','w']
+    strategy_line_list = ['solid','dotted', 'dashed']
     
-    
-    cumPNL_plot([], [], [], label='All (x50)',
-                  sub_date_list=date_list, sub_data_list=data_list,
-                  sub_label_list = label_list,
-                  sub_col_list = col_list, 
-                  sub_line_list =line_list)
+    cumPNL_plot([], [], [], label='',
+                  sub_date_list=strategy_date_list,
+                  sub_data_list=strategy_data_list,
+                  sub_label_list = strategy_label_list,
+                  sub_col_list = strategy_col_list, 
+                  sub_line_list =strategy_line_list)

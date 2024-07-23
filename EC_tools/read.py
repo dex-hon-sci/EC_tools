@@ -11,6 +11,7 @@ import datetime
 import pickle
 
 import EC_tools.utility as util
+from crudeoil_future_const import round_turn_fees, SIZE_DICT
 
 # Argus API 
 from EC_tools.ArgusPossibilityCurves2 import ArgusPossibilityCurves
@@ -964,65 +965,79 @@ def merge_raw_data(filename_list, save_filename, sort_by = "Forecast Period"):
     merged_data.to_csv(save_filename,index=False)
     return merged_data
         
+
+def render_PNL_xlsx(listfiles, number_contracts_list = [5,10,15,20,25,50], suffix='_.xlsx'):
+    """
+    LEGACY function from Abbe.
+    A function that read in the back-test result to generate an xlsx PNL file 
+
+    
+    """
+    for fn in listfiles: 
+        
+        # regular output
+        price_codes = list(SIZE_DICT.keys())
+        dat = pd.read_csv(fn)
+        
+        with pd.ExcelWriter(fn[:-4]+suffix) as excel_writer: 
+            
+            dattotal = dat
+            dattotal = dattotal.sort_values(by='Entry_Date')
+            dattotal['number barrels/gallons'] = dattotal['Price_Code'].apply(
+                                                        lambda x: SIZE_DICT[x])
+            dattotal['fees'] = dattotal['Price_Code'].apply(
+                                                    lambda x: round_turn_fees[x])
+            dattotal['fees'] = np.where(np.isnan(dattotal['Entry_Price']), 
+                                                    0.0, dattotal['fees'])
+            
+            # Make columns for scaled returns
+            dattotal['scaled returns from trades'] =  dattotal['Return_Trades']*\
+                                                        dattotal['number barrels/gallons']\
+                                                            - dattotal['fees']
+            
+            for num_contracts in number_contracts_list:
+                col_name = 'scaled returns from trades (x {})'.format(num_contracts)
+                dattotal[col_name] = dattotal['scaled returns from trades'] * num_contracts
+                
+            # Make columns for cumulative returns
+            dattotal['cumulative P&L from trades'] = np.cumsum(dattotal['scaled returns from trades']) 
+
+            cum_col_name_list = ['cumulative P&L from trades']
+            for num_contracts in number_contracts_list:
+                cum_col_name = 'cumulative P&L from trades for contracts (x {})'.format(num_contracts)
+                PNL_col_name = 'scaled returns from trades (x {})'.format(num_contracts)
+                
+                dattotal[cum_col_name] = np.cumsum(dattotal[PNL_col_name]) 
+                cum_col_name_list.append(cum_col_name)
+
+            
+            dattotal.to_excel(excel_writer=excel_writer, sheet_name='Total')
+        
+            # make sub-spread sheet for output sorted by individual asset 
+            for _, pc in enumerate(price_codes): 
+                # recalculate the cumulative returns for each assets
+                # First drop the columns previously calculated
+                datpc = dattotal[dattotal['Price_Code'] == pc].drop(columns=cum_col_name_list)
+                       
+                
+                ##################################
+                datpc['cumulative P&L from trades'] = np.cumsum(datpc['scaled returns from trades']) 
+                
+                for num_contracts in number_contracts_list:
+                    cum_col_name = 'cumulative P&L from trades for contracts (x {})'.format(num_contracts)
+                    PNL_col_name = 'scaled returns from trades (x {})'.format(num_contracts)
+                    
+                    datpc[cum_col_name] = np.cumsum(datpc[PNL_col_name])     
+                                
+                if len(datpc) > 0:
+                    
+                    datpc.to_excel(excel_writer=excel_writer, sheet_name=pc)
+                    
+    return datpc            
+
 #%% Construction Area
 def extract_lag_data_to_list(signal_data, history_data_daily,lag_size=5):
     # make a list of lag data with a nested data structure.
     
     return None
     #extract_lag_data(signal_data, history_data_daily, "2024-01-10")
-
-
-
-
-def render_PNL_xlsx(filename):
-    """
-    LEGACY function from Abbe.
-    """
-    #WIPis sql query fast
-    
-    # the function read in the backtest result to generate an xlsx file with PNL
-    
-    round_turn_fees = {
-    'CLc1': 24.0,
-    'CLc2': 24.0,
-    'HOc1': 25.2,
-    'HOc2': 25.2,
-    'RBc1': 25.2,
-    'RBc2': 25.2,
-    'QOc1': 24.0,
-    'QOc2': 24.0,
-    'QPc1': 24.0,
-    'QPc2': 24.0,
-    }
-
-    num_per_contract = {
-        'CLc1': 1000.0,
-        'CLc2': 1000.0,
-        'HOc1': 42000.0,
-        'HOc2': 42000.0,
-        'RBc1': 42000.0,
-        'RBc2': 42000.0,
-        'QOc1': 1000.0,
-        'QOc2': 1000.0,
-        'QPc1': 100.0,
-        'QPc2': 100.0,
-    }
-    
-    price_codes = ['CLc1', 'CLc2', 'HOc1', 'HOc2', 'RBc1', 'RBc2', 'QOc1', 'QOc2', 'QPc1', 'QPc2']
-    number_barrels_per_contract = [1000, 1000, 42000, 42000, 42000, 42000, 1000, 1000, 100, 100] # https://www.cmegroup.com/trading/energy/crude-and-refined-products.html (useful info)
-   
-    number_contracts = 50 
-    fees_per_contract = [24.0, 24.0, 25.2, 25.2, 25.2, 25.2, 24.0, 24.0, 24.0, 24.0]
-    
-    dat = pd.read_csv(filename)
-    
-    with pd.ExcelWriter(filename[:-4]+'_.xlsx') as excel_writer: 
-        
-        dattotal = dat
-        dattotal = dattotal.sort_values(by='date')
-        dattotal['number barrels/gallons'] = dattotal['Price Code'].apply(lambda x: num_per_contract[x])
-        dattotal['fees'] = dattotal['Price Code'].apply(lambda x: round_turn_fees[x])
-        dattotal['fees'] = np.where(np.isnan(dattotal['entry price']), 0.0, dattotal['fees'])
-        dattotal['scaled returns from trades'] =  dattotal['return from trades']*dattotal['number barrels/gallons'] - dattotal['fees']
-
-    return dattotal

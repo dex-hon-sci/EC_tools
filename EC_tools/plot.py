@@ -573,7 +573,7 @@ def plot_minute(filename_minute, signal_filename, price_approx = 'Open',
     PP.plot_price(x,y, even_spaced_prices, pdf, 
                        quant_list, quant_price_list, 
                        direction=direction,
-                       price_chart_title = "Date", 
+                       price_chart_title = date_interest, 
                        bppt_x1 = bppt_x1, bppt_y1 = bppt_y1, 
                        bppt_x2 = bppt_x2, bppt_y2 = bppt_y2, 
                        bppt_x3 = bppt_x3, bppt_y3 = bppt_y3)
@@ -581,12 +581,12 @@ def plot_minute(filename_minute, signal_filename, price_approx = 'Open',
     
 if __name__ == "__main__":
     
-    filename_daily = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Day/CL.day"
+    filename_daily = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Day/QP_d01.day"
     #################
     
-    filename_minute = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/CL.001"
+    filename_minute = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/QP_d01.001"
     
-    signal_filename = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_CLc1.csv"
+    signal_filename = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_QPc2.csv"
     
     
     #FILENAME_MINUTE = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/CL.001"
@@ -598,7 +598,7 @@ if __name__ == "__main__":
     #date_interest = "2024-01-18"
     #date_interest = "2023-12-29"
     #date_interest = "2023-11-01"
-    date_interest = "2024-06-14"
+    date_interest = "2022-01-18"
     
     plot_minute(filename_minute, signal_filename, 
-                date_interest = date_interest, direction="Buy")
+                date_interest = date_interest, direction="Sell")

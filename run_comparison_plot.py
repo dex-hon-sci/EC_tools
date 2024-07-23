@@ -163,7 +163,7 @@ def plot_difference(dt_diff, match_date_col = 'Entry_Date',
         
         ax.scatter(x_dt, y, marker = marker, c = col, label = sym)
 
-    print(min(x_dt), max(x_dt), type(x_dt[0]))
+    #print(min(x_dt), max(x_dt), type(x_dt[0]))
     ax.set_xlabel(match_date_col)
     ax.set_ylabel(ylabel)
     ax.set_title(price_chart_title)
@@ -216,10 +216,14 @@ def plot_all(entry_dt_diff, exit_dt_diff,entry_price_diff,exit_price_diff):
     
 if __name__ == "__main__":
     
-    B, B1 = entry_dt_diff[entry_dt_diff['Same']<60], entry_dt_diff[entry_dt_diff['Same']>60] 
-    C, C1 = exit_dt_diff[entry_dt_diff['Same']<60], exit_dt_diff[entry_dt_diff['Same']>60]
+    B  = entry_dt_diff[(entry_dt_diff['Same']<70) & (entry_dt_diff['Same']>-70)], 
+    B1 =  entry_dt_diff[entry_dt_diff['Same']>70 & (entry_dt_diff['Same']<-70)] 
     
-    D, D1 = entry_price_diff[entry_price_diff['Same']<60], entry_dt_diff[entry_dt_diff['Same']>60] 
+    C = exit_dt_diff[(entry_dt_diff['Same']<70)&(entry_dt_diff['Same']>-70)]
+    C1 = exit_dt_diff[(entry_dt_diff['Same']>70)&(entry_dt_diff['Same']<-70)]
+    
+    D = entry_price_diff[(entry_price_diff['Same']<1.4) & (entry_price_diff['Same']>-1.4)]
+    D1 =  entry_dt_diff[(entry_dt_diff['Same']>1.4)&(entry_price_diff['Same']<-1.4)] 
     
     print(len(B), len(B1), len(C), len(C1))
     #plot_difference_time(B)
