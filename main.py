@@ -28,6 +28,10 @@ from run_gen_MR_dir import run_gen_MR_signals_list, run_gen_MR_signals_preloaded
 from run_backtest import run_backtest_portfolio_preloaded_list
 from run_PNL_plot import cumPNL_plot
 
+# CSV list -> Signal Gen - > Backtest ->PNL
+# Preloaded PKL input ->
+
+
 @util.time_it
 def load_source_data():
     #load the pkl 
@@ -53,6 +57,17 @@ def gen_signal(method = 'gen_signal_MR_list'):
                             SIGNAL_PKL, HISTORY_DAILY_PKL, OPENPRICE_PKL,
                             save_or_not = True, 
                             buy_range=(0.4,0.6,0.1), sell_range=(0.6,0.4,0.9))
+    
+        
+    run_gen_MR_signals_list(strategy,
+                            SAVE_FILENAME_LIST, CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, 
+                            start_date, end_date,
+                            SIGNAL_LIST, HISTORY_DAILY_LIST, HISTORY_MINUTE_LIST,
+                            OPEN_HR_DICT, CLOSE_HR_DICT, TIMEZONE_DICT,
+                            buy_range=([0.25,0.4],[0.7,0.8],0.1), 
+                            sell_range =([0.6,0.75],[0.2,0.3],0.9),
+                            save_or_not=True)
+
 
     merge_raw_data(SIGNAL_LIST, MASTER_SIGNAL_FILENAME, sort_by="Date")
     return 

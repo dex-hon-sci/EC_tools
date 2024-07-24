@@ -169,6 +169,44 @@ def run_gen_MR_signals(asset_pack, start_date, end_date,
                        open_hr='', close_hr='',
                        commodity_name = '', Timezone= "",
                        start_date_pushback = 20):
+    """
+    
+
+    Parameters
+    ----------
+    asset_pack : TYPE
+        DESCRIPTION.
+    start_date : TYPE
+        DESCRIPTION.
+    end_date : TYPE
+        DESCRIPTION.
+    signal_filename : TYPE
+        DESCRIPTION.
+    filename_daily : TYPE
+        DESCRIPTION.
+    filename_minute : TYPE
+        DESCRIPTION.
+    buy_range : TYPE, optional
+        DESCRIPTION. The default is ([0.25,0.4],[0.6,0.75],0.05).
+    sell_range : TYPE, optional
+        DESCRIPTION. The default is ([0.6,0.75],[0.25,0.4],0.95).
+    open_hr : TYPE, optional
+        DESCRIPTION. The default is ''.
+    close_hr : TYPE, optional
+        DESCRIPTION. The default is ''.
+    commodity_name : TYPE, optional
+        DESCRIPTION. The default is ''.
+    Timezone : TYPE, optional
+        DESCRIPTION. The default is "".
+    start_date_pushback : TYPE, optional
+        DESCRIPTION. The default is 20.
+
+    Returns
+    -------
+    dict_contracts_quant_signals : TYPE
+        DESCRIPTION.
+
+    """
     
     # run meanreversion signal generation on the basis of individual programme  
     # Loop the whole list in one go with all the contracts or Loop it one contract at a time?

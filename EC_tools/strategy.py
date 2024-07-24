@@ -89,6 +89,8 @@ class MRStrategyArgus(Strategy):
     Mean-Reversion Strategy based on Argus Possibility Curves. 
     This class allows us to ... 
     
+    
+    The Strategy condition is described in the run_cond method.
     """
     def __init__(self, curve_today, 
                  quant_list = np.arange(0.0025, 0.9975, 0.0025)):
@@ -107,6 +109,21 @@ class MRStrategyArgus(Strategy):
         self.strategy_name = 'argus_exact'
 
     def flatten_sub_cond_dict(self):
+        """
+        A method that turn a sub-condition-dictionary into a 
+        condition-dictionary and pass it to the Strategy parent class.
+        
+        This function assume the sub_cond_dict is only one layer deep, i.e.
+        a structure like this: {'Buy': [[...], [...], [...]], 'Sell':...}.
+        
+        Structure like this is not allowed:  
+            {'Buy': [[...], [[...],[...]], [...]], 'Sell':...}.
+
+        Returns
+        -------
+        None.
+
+        """
         # a method that turn a sub_cond_dict into a cond_dict assuming the 
         # subgroups are only one layer deep.
         
@@ -119,13 +136,43 @@ class MRStrategyArgus(Strategy):
     def gen_data(self, history_data_lag, apc_curve_lag, 
                             price_proxy = 'Settle', 
                             qunatile = [0.25,0.4,0.6,0.75]):
-                              
         """
         A method that generate all the data needed for the strategy. The ouput
         of this functions contain all the quantity that will be and can be used 
         in creating variation of this strategy.
         
+
+        Parameters
+        ----------
+        history_data_lag : list
+            The history data of the lag days.
+        apc_curve_lag : list
+            The APC curve of the lag days.
+        price_proxy : str, optional
+            The column name to call for price approximation. 
+            It can be either "Open", "High", "Low", or "Settle".
+            The default is 'Settle'.
+        qunatile : list, optional
+            1D list that contains the quantile desitred. 
+            This function pass it into the APC of the day and calculate the 
+            relevant price.
+            The default is [0.25,0.4,0.6,0.75].
+
+        Returns
+        -------
+        strategy_info : dict
+            A dictionary containing two key-value pairs.
+            'lag_list' is a list of quantiles of the lag days. The size of the 
+            list depends on the input size of history_data_lag and apc_curve_lag.
+            'rollingaverage' is the average of the quantiles in lag_list. It 
+            contain a singular float value.
+            
+        qunatile_info : list
+            A list of prices calculating using qunatile input into the APC
+            of the date of interest.
+
         """
+                              
         lag_price = history_data_lag[price_proxy]
         
         
@@ -153,8 +200,36 @@ class MRStrategyArgus(Strategy):
                                  apc_trade_Qrange=(0.4,0.6), 
                                  apc_trade_Qmargin = (0.1,0.9),
                                  apc_trade_Qlimit=(0.05,0.95)):
-    
+        """
+        A method that run the condition elvaluation of this strategy.
 
+        If the 
+        
+        Parameters
+        ----------
+        data : TYPE
+            DESCRIPTION.
+        open_price : TYPE
+            DESCRIPTION.
+        total_lag_days : TYPE, optional
+            DESCRIPTION. The default is 2.
+        apc_mid_Q : TYPE, optional
+            DESCRIPTION. The default is 0.5.
+        apc_trade_Qrange : TYPE, optional
+            DESCRIPTION. The default is (0.4,0.6).
+        apc_trade_Qmargin : TYPE, optional
+            DESCRIPTION. The default is (0.1,0.9).
+        apc_trade_Qlimit : TYPE, optional
+            DESCRIPTION. The default is (0.05,0.95).
+
+        Returns
+        -------
+        TYPE
+            DESCRIPTION.
+        cond_info : TYPE
+            DESCRIPTION.
+
+        """
         rollingaverage_q = data['rollingaverage']
 
         lag_close_q_list = [data['lag_list'][i] for i in range(total_lag_days)]
@@ -223,8 +298,47 @@ class MRStrategyArgus(Strategy):
         return self.direction, cond_info
 
 
-    def set_EES(self, cond, buy_range=([0.25,0.4],[0.6,0.75],0.05), 
+    def set_EES(self, buy_range=([0.25,0.4],[0.6,0.75],0.05), 
                             sell_range =([0.6,0.75],[0.25,0.4],0.95)):
+        """
+        A method the set the Entry, Exit, Stop loss prices.
+        This method read-in the direction attribute of the strategy and 
+        decide which set of EES value to be set.
+        
+        Parameters
+        ----------
+        buy_range : tuple, optional
+            A tuple that contain the desired quantile value range for buy action. 
+            The format should be the following:
+                ([lower_limit_entry, upper_limit_entry], 
+                 [lower_limit_exit, upper_exit], stop_loss)
+            The default is ([0.25,0.4],[0.6,0.75],0.05).
+        sell_range : tuple, optional
+            A tuple that contain the desired quantile value range for sell action. 
+            The format should be the following:
+                ([lower_limit_entry, upper_limit_entry], 
+                 [lower_limit_exit, upper_exit], stop_loss)
+            The default is ([0.6,0.75],[0.25,0.4],0.95).
+
+        Raises
+        ------
+        Exception
+            For invalid direction. It has to conform to the StrategyStatus
+            Attributes.
+
+        Returns
+        -------
+        entry_price : list
+            A list contain the price caculated by the APC given the buy_range
+            input.
+        exit_price : list
+            A list contain the price caculated by the APC given the sell_range
+            input.
+        stop_loss : float
+            A price caculated by the APC given the stop_loss
+            input.
+
+        """
 
         if self.direction == SignalStatus.BUY:
             # (A) Entry region at price < APC p=0.4 and 
@@ -258,29 +372,56 @@ class MRStrategyArgus(Strategy):
             
         return entry_price, exit_price, stop_loss
     
-    def apply_strategy(self, history_data_lag5, apc_curve_lag5, open_price, 
+    def apply_strategy(self, history_data_lag, apc_curve_lag, open_price, 
                        qunatile = [0.25,0.4,0.6,0.75],
                         total_lag_days = 2, 
                         apc_mid_Q = 0.5, 
-                        #apc_trade_Qrange=(0.4,0.6), 
-                        #apc_trade_Qmargin = (0.1,0.9),
-                        #apc_trade_Qlimit=(0.05,0.95)
                        buy_range=([0.25,0.4],[0.6,0.75],0.05), 
                        sell_range =([0.6,0.75],[0.25,0.4],0.95)):
+        """
+        A method to apply the strategy.
+
+        Parameters
+        ----------
+        history_data_lag : list
+            The history data of the lag days.
+        apc_curve_lag : list
+            The APC curve of the lag days.
+        open_price : float
+            The opening price of the day.
+        qunatile : list, optional
+            A list of prices calculating using qunatile input into the APC
+            of the date of interest. The default is [0.25,0.4,0.6,0.75].
+        total_lag_days : int, optional
+            The total number of lag days. The default is 2.
+        apc_mid_Q : TYPE, optional
+            The middle quantile value. The default is 0.5.                   
+        buy_range:
+            A tuple that contain the desired quantile value range for buy action. 
+            The default is ([0.25,0.4],[0.6,0.75],0.05).
+        sell_range : TYPE, optional
+            A tuple that contain the desired quantile value range for sell action. 
+            The default is ([0.6,0.75],[0.25,0.4],0.95).
+
+        Returns
+        -------
+        dict
+            A dictionary that contains the strategy data from the process.
+            'data' contains EES value, cond_info, lag_list, rollingaverage,
+            quantile_info, EES value (not range), and the strategy name
+
+            'direction' contains
+        """
         
-        strategy_info, quantile_info = self.gen_data(history_data_lag5, apc_curve_lag5,
+        strategy_info, quantile_info = self.gen_data(history_data_lag, apc_curve_lag,
                                                      qunatile = [0.25,0.4,0.6,0.75])
         
         direction, cond_info = self.run_cond(strategy_info, open_price,
                                              total_lag_days = total_lag_days, 
                                              apc_mid_Q = apc_mid_Q)
                                              
-                                             #apc_trade_Qrange=apc_trade_Qrange, 
-                                             #apc_trade_Qmargin = apc_trade_Qmargin,
-                                             #apc_trade_Qlimit=apc_trade_Qlimit)
         
-        entry_price, exit_price, stop_loss = self.set_EES(self.direction, 
-                                                          buy_range=buy_range, 
+        entry_price, exit_price, stop_loss = self.set_EES(buy_range=buy_range, 
                                                           sell_range=sell_range)
 
         if direction == SignalStatus.BUY:
@@ -309,4 +450,20 @@ class MRStrategyArgus(Strategy):
         
         return {'data': data, 'direction': direction.value}
     
-#class MRStrategyArgus(Strategy):
+class ArgusMRStrategyMode(Strategy):
+    
+    def __init__():
+        pass
+    
+    def gen_data():
+        return 
+    
+    def run_cond():
+        return
+    
+    def set_EES():
+        return
+    
+    def apply_strategy():
+        return
+    pass

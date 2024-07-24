@@ -949,6 +949,22 @@ def open_portfolio(filename):
     return portfo
 
 def concat_CSVtable(filename_list, sort_by='Date'):
+    """
+    
+
+    Parameters
+    ----------
+    filename_list : TYPE
+        DESCRIPTION.
+    sort_by : TYPE, optional
+        DESCRIPTION. The default is 'Date'.
+
+    Returns
+    -------
+    master_table : TYPE
+        DESCRIPTION.
+
+    """
     
     master_table = pd.DataFrame()
     
@@ -961,6 +977,24 @@ def concat_CSVtable(filename_list, sort_by='Date'):
 
 @util.time_it
 def merge_raw_data(filename_list, save_filename, sort_by = "Forecast Period"):
+    """
+    A functiob that merge a list of CSV files into one CSV file.
+
+    Parameters
+    ----------
+    filename_list : list
+        A list of filename if CSV to be Concatenated.
+    save_filename : str
+        The filename for saving.
+    sort_by : str, optional
+        The column name used in the sorting. The default is "Forecast Period".
+
+    Returns
+    -------
+    merged_data : dataframe
+         The merged data.
+
+    """
     merged_data = concat_CSVtable(filename_list, sort_by= sort_by)
     merged_data.to_csv(save_filename,index=False)
     return merged_data
