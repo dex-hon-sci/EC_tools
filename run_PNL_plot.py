@@ -56,7 +56,7 @@ def extract_PNLplot_input(filename, sheet_name='Total', date_col = 'Entry_Date',
     return date_all, cumPNL_all
 
 
-def cumPNL_plot(date, PNL, return_rate, line_color = 'w', label = 'All',  
+def cumPNL_plot(date, PNL, return_rate, line_color = 'w', label = 'All (x50)',  
                  sub_date_list=[], sub_data_list=[], sub_line_list = [],
                  sub_label_list = [], sub_col_list = []):
     
@@ -68,7 +68,7 @@ def cumPNL_plot(date, PNL, return_rate, line_color = 'w', label = 'All',
     fig.suptitle("Cumulative PNL")
     
     ax1 = fig.add_subplot(gs[0])
-    ax1.plot(date, PNL,'-', c='w', label='All (x50)')
+    ax1.plot(date, PNL,'-', c=line_color, label=label)
 
     
     ax2 = fig.add_subplot(gs[1], sharex=ax1)
@@ -129,11 +129,11 @@ if __name__=='__main__':
     #cumPNL_plot(date_all, cumPNL_all, label='All (x50)')
     
     # =============================================================================
-    # cumPNL_plot(date_all, cumPNL_all, return_all, label='All (x50)',
-    #              sub_date_list=date_list, sub_data_list=data_list,
-    #              sub_label_list = label_list,
-    #              sub_col_list = col_list, 
-    #              sub_line_list =line_list)
+    cumPNL_plot(date_all, cumPNL_all, return_all, label='All (x50)',
+                  sub_date_list=date_list, sub_data_list=data_list,
+                  sub_label_list = label_list,
+                  sub_col_list = col_list, 
+                  sub_line_list =line_list)
     # =============================================================================
     # =============================================================================
     # cumPNL_plot([], [], [], label='All (x50)',
@@ -158,3 +158,12 @@ if __name__=='__main__':
                   sub_label_list = strategy_label_list,
                   sub_col_list = strategy_col_list, 
                   sub_line_list =strategy_line_list)
+    
+    
+    
+    
+
+    # Plot individual asset returns    
+    for i in range(10):
+        cumPNL_plot(date_list[i], data_list[i], return_list[i], label=label_list[i],
+                line_color = col_list[i])

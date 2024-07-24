@@ -108,7 +108,7 @@ direction_diff = find_difference(df_result_signal, df_ref_signal,
 print('Total mislagined signals', len(direction_diff[direction_diff['Same']==False]))
 
 print('PNL')
-#df_date_difference = A[A[4] == False]
+#direction_diff = direction_diff[direction_diff['Same'] == False]
 
 entry_dt_diff = find_difference(df_result_PNL, df_ref_PNL, 
                        date_compare,
@@ -126,6 +126,7 @@ exit_price_diff = find_difference(df_result_PNL, df_ref_PNL,
                         (lambda x, y: x / y),
                         compare_col="Exit_Price", date_match_col = 'Exit_Date')
 
+direction_diff.to_csv("/home/dexter/Euler_Capital_codes/EC_tools/results/direction_diff.csv", index=False)
 
 entry_dt_diff.to_csv("/home/dexter/Euler_Capital_codes/EC_tools/results/entry_dt_diff.csv", index=False)
 entry_price_diff.to_csv("/home/dexter/Euler_Capital_codes/EC_tools/results/entry_price_diff.csv", index=False)
