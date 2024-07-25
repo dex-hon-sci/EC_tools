@@ -603,9 +603,9 @@ if __name__ == "__main__":
     #date_interest = "2023-12-29"
     #date_interest = "2023-11-01"
     
-    symbol = 'CLc2'
+    symbol = 'CLc1'
 
-    date_interest = "2022-06-14"
+    date_interest = "2021-08-04"
     
     plot_minute(HISTORY_MINTUE_FILE_LOC[symbol], APC_FILE_LOC[symbol], 
-                date_interest = date_interest, title=symbol, direction="Sell")
+                date_interest = date_interest, title=symbol, direction="Buy")

@@ -60,8 +60,7 @@ def prepare_signal_interest(filename_buysell_signals,
     # This may cut down the computing and memory cost when dealing with large 
     # table.
     if trim == True:
-        buysell_signals_data = buysell_signals_data[['Date', 
-                                                     'Direction']]
+        buysell_signals_data = buysell_signals_data[['Date', 'Direction']]
     elif trim == False:
         pass
     

@@ -203,31 +203,42 @@ class MRStrategyArgus(Strategy):
         """
         A method that run the condition elvaluation of this strategy.
 
-        If the 
+        If the settlement price of the past two days is less (or more) than the 
+        apc_mid_Q quantile in their respective days of APC, plus the rolling 
+        average for the past five days settlement price qunatile being lower 
+        (or higher) than the apc_mid_Q, we deem that day to be a "Buy" 
+        (or "Sell") day.
         
         Parameters
         ----------
-        data : TYPE
-            DESCRIPTION.
-        open_price : TYPE
-            DESCRIPTION.
-        total_lag_days : TYPE, optional
-            DESCRIPTION. The default is 2.
-        apc_mid_Q : TYPE, optional
-            DESCRIPTION. The default is 0.5.
-        apc_trade_Qrange : TYPE, optional
-            DESCRIPTION. The default is (0.4,0.6).
+        data : dict
+            strategy_info from gen_data.
+        open_price : float
+            The value of the open price.
+        total_lag_days : int, optional
+            The total number of lag days. The default is 2.
+        apc_mid_Q : float, optional
+            The middle quantile of an APC. The default is 0.5.
+        apc_trade_Qrange : tuple, optional
+            The trading quantile range. The default is (0.4,0.6).
         apc_trade_Qmargin : TYPE, optional
-            DESCRIPTION. The default is (0.1,0.9).
+            The trading margin quantile range. The default is (0.1,0.9).
         apc_trade_Qlimit : TYPE, optional
-            DESCRIPTION. The default is (0.05,0.95).
+            The limit range for trading. This is the stoploss quantile
+            The default is (0.05,0.95).
 
         Returns
         -------
-        TYPE
-            DESCRIPTION.
-        cond_info : TYPE
-            DESCRIPTION.
+        self.direction
+            The trading direction of the day.
+        cond_info : list
+            A list of condiions info for the user.
+            For this strategy, the format is the following:
+                [NCONS,	NROLL, Signal_NCONS, Signal_NROLL]
+            Where NCONS is the number of lag days, NROLL is the number of 
+            lag days used to calculate the rollingaverage, Signal_NCONS is 
+            the trading signal using solely NCONS, and Signal_NROLL is the 
+            trading signal using solely NROLL.
 
         """
         rollingaverage_q = data['rollingaverage']
@@ -410,7 +421,8 @@ class MRStrategyArgus(Strategy):
             'data' contains EES value, cond_info, lag_list, rollingaverage,
             quantile_info, EES value (not range), and the strategy name
 
-            'direction' contains
+            'direction' contains the string of the trading direction (strategy
+                        status).
         """
         
         strategy_info, quantile_info = self.gen_data(history_data_lag, apc_curve_lag,
@@ -452,8 +464,21 @@ class MRStrategyArgus(Strategy):
     
 class ArgusMRStrategyMode(Strategy):
     
-    def __init__():
-        pass
+    def __init__(self, curve_today, quant_list = np.arange(0.0025, 0.9975, 0.0025)):
+        
+        super().__init__()
+        
+        self._curve_today = curve_today
+        self._quant_list = quant_list
+        self._curve_today_spline = mfunc.generic_spline(self._quant_list, 
+                                                        self._curve_today)
+        self.even_spaced_prices, self.pdf = mfunc.cal_pdf(self._quant_list, self._curve_today[0][1:-1])
+
+        self._sub_buy_cond_dict = dict()
+        self._sub_sell_cond_dict = dict()
+        self.sub_cond_dict = {'Buy':[], 'Sell':[], 'Neutral': []}
+
+        self.strategy_name = 'argus_exact_mode'
     
     def gen_data():
         return 

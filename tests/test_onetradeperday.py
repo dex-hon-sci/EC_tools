@@ -17,7 +17,7 @@ import EC_tools.read as read
 
 
 FILENAME_MINUTE = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/CL.001"
-FILENSME_BUYSELL_SIGNALS = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_CLc1_full.csv"
+FILENSME_BUYSELL_SIGNALS = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_CLc1_full.csv"
 SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_CLc1.csv"   
 
 def setup_trade_test(date_interest, open_hr, close_hr, direction):
@@ -34,13 +34,13 @@ def setup_trade_test(date_interest, open_hr, close_hr, direction):
     
     day = extract_intraday_minute_data(histroy_intraday_data, date_interest, 
                                  open_hr=open_hr, close_hr=close_hr)
-    signal_table = signal_table[signal_table['APC forecast period'] == date_interest] 
+    signal_table = signal_table[signal_table['Date'] == date_interest] 
     
     #print(signal_table.iloc[0])
     
-    target_entry, target_exit, stop_exit = float(signal_table['target entry'].iloc[0]), \
-                                            float(signal_table['target exit'].iloc[0]), \
-                                            float(signal_table['stop exit'].iloc[0])
+    target_entry, target_exit, stop_exit = float(signal_table['Entry_Price'].iloc[0]), \
+                                            float(signal_table['Exit_Price'].iloc[0]), \
+                                            float(signal_table['StopLoss_Price'].iloc[0])
     
     print(day['Date'].iloc[0], direction, target_entry, target_exit, stop_exit)
     
@@ -67,14 +67,26 @@ def onetradeperday(date_interest, direction):
     give_obj_name = "USD"
     get_obj_name = "CLc1"
     open_hr, close_hr = '0330', '2000'
+    
 
     # set up the test
     P1, day, target_entry, target_exit, \
         stop_exit, open_hr_dt, close_hr_dt = setup_trade_test(date_interest, \
                                                               open_hr, close_hr,\
                                                                   direction)
+            
+    open_hr_dt, open_price = read.find_closest_price(day,
+                                                       target_hr= open_hr,
+                                                       direction='forward')
+    
+    
+    close_hr_dt, close_price = read.find_closest_price(day,
+                                                       target_hr= close_hr,
+                                                       direction='backward')
 
     print('1')
+    #print('day', day, read.find_crossover(day['Open'].to_numpy(), stop_exit))
+    #print(target_entry, target_exit, stop_exit)
     # this is the main function to be tested
     EES_dict, trade_open, trade_close, pos_list, exec_pos_list = OneTradePerDay(
                             P1).run_trade(day, give_obj_name, get_obj_name, 
@@ -82,6 +94,8 @@ def onetradeperday(date_interest, direction):
                                         target_exit, stop_exit, 
                                         open_hr=open_hr_dt, close_hr=close_hr_dt,
                                         direction = direction)
+                                          
+    #print(EES_dict, trade_open, trade_close)
     print('2')
 
     
@@ -99,8 +113,8 @@ def onetradeperday(date_interest, direction):
 # test Sell case, 1) no trade, normal exit, stop loss, close case
 
 date_interest_no_entry_buy = "2023-12-29" # no entry test case (Buy) Done
-date_interest_stop_loss_buy = "2023-12-06" # stop loss test case (Buy) Done
 date_interest_close_exit_buy = "2024-04-30" #  sell at close case (Buy) Done
+date_interest_stop_loss_buy = "2021-08-04" # stop loss test case (Buy) Done
 date_interest_normal_exit_buy = "2021-04-01" #  normal exit case (Buy) Done
 
     
@@ -169,8 +183,11 @@ def test_onetradeperday_buy_stoploss() -> None:
             trade_close, pos_list, exec_pos_list = onetradeperday(
                                                 date_interest_stop_loss_buy,
                                                         'Buy')
+    print(pos_list[0].status, pos_list[1].status, 
+          pos_list[2].status, pos_list[3].status)
 
-
+    print(exec_pos_list[0].status, exec_pos_list[1].status)
+    
     assert pos_list[0].status == PositionStatus.FILLED
     assert pos_list[1].status == PositionStatus.VOID
     assert pos_list[2].status == PositionStatus.FILLED
@@ -187,7 +204,6 @@ def test_onetradeperday_buy_stoploss() -> None:
     assert CL_amount < 1
     assert len(P1.pool) == 6
     
-    
 def test_onetradeperday_buy_closeexit() -> None:   
     give_obj_name = "USD"
     get_obj_name = "CLc1"
@@ -198,8 +214,6 @@ def test_onetradeperday_buy_closeexit() -> None:
                                                 date_interest_close_exit_buy,
                                                         'Buy')
             
-    print(pos_list[0].status, pos_list[1].status, pos_list[2].status, pos_list[3].status)
-    print(pos_list)
     assert pos_list[0].status == PositionStatus.FILLED
     #assert pos_list[1].status == PositionStatus.VOID
     assert pos_list[2].status == PositionStatus.VOID
@@ -212,13 +226,13 @@ def test_onetradeperday_buy_closeexit() -> None:
         
     assert CL_amount < 1
     assert len(P1.pool) == 6
-test_onetradeperday_buy_closeexit()
+
 ############################################################################
 #Sell side test
 
 date_interest_no_entry_sell = "2023-04-13" # no entry test case (Buy) Done
 date_interest_normal_exit_sell = "2023-05-24" #  normal exit case (Buy) 
-date_interest_stop_loss_sell = "2022-10-07" # stop loss test case (Buy) Done
+date_interest_stop_loss_sell = "2021-04-14" # stop loss test case (Buy) Done
 date_interest_close_exit_sell = "2022-10-27" #  sell at close case (Buy) Done
 
 def test_onetradeperday_sell_noentry() -> None:   

@@ -758,17 +758,16 @@ def find_crossover(input_array, threshold):
     # Positive values mean the input is higher than threshold
     # Negative values mean the input is lower than threshold
     delta = input_array - threshold
-    
     # This is an array 1 unit in the past
     #delta_lag = np.concatenate([delta, np.array([np.nan])])[1:]
     delta_lag = np.concatenate([np.array([np.nan]), delta])[:-1]
-    
+
     # IF delta[i] > delta_lag[i], then the price rise above threshold
     # Because all elements are either +1, -1 or 0, the larger value has to be +1.
     # np.sign(delta) = +1, while np.sign(delta_lag) = -1 means yesterday the value 
     # is lower than threshold and today's value is higher than the threshold-> rise above
     indices_rise_above  = np.where(np.sign(delta) > np.sign(delta_lag))
-    
+
     # IF delta[i] < delta_lag[i], then the price drop below threshold
     indices_drop_below = np.where(np.sign(delta) < np.sign(delta_lag))
 
@@ -852,8 +851,12 @@ def find_minute_EES(histroy_data_intraday,
         time_proxy_list = datetime_list
 
     # Find the crossover indices
+    #print('==entry==')
+
     entry_pt_dict = find_crossover(price_list, target_entry)
+    #print('==exit==')
     exit_pt_dict = find_crossover(price_list, target_exit)
+    #print('==Stop loss==')
     stop_pt_dict = find_crossover(price_list, stop_exit)
     
     if direction == "Neitral":

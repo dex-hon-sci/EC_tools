@@ -67,7 +67,7 @@ round_turn_fees = {
 def trade_choice_simple(EES_dict): 
     """
     LEGACY code before the development of trade and portfolio modules
-    a function that control which price to buy and sell
+    a function that control which price to buy and sell.
 
     Parameters
     ----------
