@@ -144,5 +144,5 @@ if __name__ == "__main__":
     
     
     download_latest_APC_list(AUTH_PACK, SAVE_FILENAME_LIST, CAT_LIST, 
-                             KEYWORDS_LIST, SYMBOL_LIST,fast_dl=False)    
+                             KEYWORDS_LIST, SYMBOL_LIST,fast_dl=True)    
     #download_latest_APC(auth_pack, asset_pack)

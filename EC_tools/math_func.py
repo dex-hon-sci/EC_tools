@@ -15,7 +15,7 @@ import findiff as fd
 __all__ = ['generic_spline','find_quant','cal_pdf']
 __author__="Dexter S.-H. Hon"
 
-def generic_spline(x,y, method="cubic", **kwargs):
+def generic_spline(x,y, method="cubic", s = 0):
     """
     A generic method to interpolate data.
 
@@ -35,15 +35,19 @@ def generic_spline(x,y, method="cubic", **kwargs):
 
     """
     # generic interpolate method Cubic spline and what not
+    method_dict = {'cubic': CubicSpline,
+                   'univariate': UnivariateSpline}
     
-    if method == "cubic":
-        func = CubicSpline(x, y) 
-    elif method =="univariate":
-        func = UnivariateSpline(x, y, s=0) 
-
+    func = method_dict[method]
+# =============================================================================
+#     if method == "cubic":
+#         func = CubicSpline(x, y) 
+#     elif method =="univariate":
+#         func = UnivariateSpline(x, y, s=s) 
+# =============================================================================
     return func
 
-def find_quant(curve, quant_list, price):
+def find_quant(cdf, quant_list, val):
     """
     This is an inverse Spline interpolation treating the cdf as the x-axis.
     This is meant to find the corresponding quantile with a given price.
@@ -53,10 +57,10 @@ def find_quant(curve, quant_list, price):
 
     Parameters
     ----------
-    curve : 1D pandas dataframe
+    cdf : 1D pandas dataframe
         A 1D array that contains a discrete number of cdf points.
-    price : float
-        The given price.
+    val : float
+        The given value (e.g. price).
 
     Returns
     -------
@@ -64,8 +68,8 @@ def find_quant(curve, quant_list, price):
         The corresponding quantile.
 
     """
-    spline_apc = CubicSpline(curve, quant_list)
-    quant = spline_apc(price)
+    spline = CubicSpline(cdf, quant_list)
+    quant = spline(val)
     return float(quant)
     
 
@@ -110,3 +114,48 @@ def cal_pdf(quant, cdf):
     
     #print(len(pdf))
     return spaced_events, pdf
+
+def find_cent_val(pdf_val, pdf, func= max):
+    """
+    A generic method to extract the price of a particular centile given
+    a function operation over the pdf. For example, func can be max(),
+    median(), average(), lambda functions, etc.
+    
+    Parameters
+    ----------
+    pdf_val : 
+        
+    pdf :
+    
+    func
+    
+    Returns
+    ------_
+    Price for that centile        
+    """
+    centile_index = list(pdf).index(func(pdf))
+
+    return float(pdf_val[centile_index])
+
+    
+def find_cent_quant(pdf_val, pdf, func= max):
+    """
+    A generic method to extract the price of a particular centile given
+    a function operation over the pdf. For example, func can be max(),
+    median(), average(), lambda functions, etc.
+    
+    Parameters
+    ----------
+    pdf_val : 
+        
+    pdf :
+    
+    func
+    
+    Returns
+    ------_
+    Price for that centile        
+    """
+    centile_index = list(pdf).index(func(pdf))
+
+    return float(pdf[centile_index])

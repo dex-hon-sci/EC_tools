@@ -60,6 +60,7 @@ class Bookkeep(object):
                         'Q0.25', 'Q0.4', 'Q0.6', 'Q0.75', 
                         'Entry_Price', 'Exit_Price', 'StopLoss_Price',
                         'strategy_name']
+    
     argus_exact_amb_format = ['Date', 'Price_Code', 'Direction', 'Commodity_name',
                         'Contract_Month','Timezone', 
                         'Valid_From_localtz_timestr', 'Valid_To_localtz_timestr', 
@@ -73,6 +74,20 @@ class Bookkeep(object):
                         'Q0.25', 'Q0.4', 'Q0.6', 'Q0.75', 
                         'Entry_Price', 'Exit_Price', 'StopLoss_Price',
                         'strategy_name']
+    
+    argus_exact_mode_format = ['Date', 'Price_Code', 'Direction', 'Commodity_name',
+                        'Contract_Month','Timezone', 
+                        'Valid_From_localtz_timestr', 'Valid_To_localtz_timestr', 
+                        'Target_Lower_Entry_Price', 'Target_Upper_Entry_Price',
+                        'Target_Lower_Exit_Price', 'Target_Upper_Exit_Price',
+                        'Stop_Exit_Price',
+                        'NCONS',	'NROLL', 'Signal_NCONS', 'Signal_NROLL',	
+                        'Quant_Close_Price_Lag_1', 'Quant_Close_Price_Lag_2',	
+                        'Quant_Close_Price_Lag_3', 'Quant_Close_Price_Lag_4',	
+                        'Quant_Close_Price_Lag_5', 'Quant_Close_Price_Lag_1_rm_5',	
+                        'Q0.25', 'Q_mode-0.1', 'Q_mode+0.1', 'Q0.75', 
+                        'Entry_Price', 'Exit_Price', 'StopLoss_Price',
+                        'strategy_name']
 
     argus_PNL = ['Trade_Id', 'Direction', 'Commodity', 'Price_Code', 
                  'Contract_Month',
@@ -84,14 +99,16 @@ class Bookkeep(object):
             "benchmark": signal_columns + A + D + F + H + End, 
             "mode": signal_columns + B + D + F + H + End, 
             "argus_exact": argus_exact_format,
-            "argus_exact_amb": argus_exact_amb_format
+            "argus_exact_amb": argus_exact_amb_format,
+            "argus_exact_mode": argus_exact_mode_format
                    }
     
     BACKTEST_PNL_COL_DICT = {
             "benchmark": benchmark_PNL,
             "mode": benchmark_PNL,
             "argus_exact": argus_PNL,
-            "argus_exact_amb": argus_PNL
+            "argus_exact_amb": argus_PNL,
+            "argus_exact_mode": argus_PNL
 
                     }
     
