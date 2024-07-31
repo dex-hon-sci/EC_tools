@@ -188,8 +188,9 @@ def loop_date_full():
     return 
 
 def loop_date(trade_choice: trade_choice_simple_3, 
-              signal_table, histroy_intraday_data, open_hr='0330', 
-              close_hr='1930',
+              signal_table, histroy_intraday_data, 
+              strategy_name = 'argus_exact',
+              open_hr='0330', close_hr='1930',
               plot_or_not = False, sort_by = 'Entry_Date'):
     """
     Fast looping method that generate simple CSV output file.
@@ -208,8 +209,13 @@ def loop_date(trade_choice: trade_choice_simple_3,
     
     upper_exit_list = signal_table['Target_Upper_Exit_Price']
     lower_exit_list = signal_table['Target_Lower_Exit_Price'] 
-        
+
     stop_exit_list = signal_table['Stop_Exit_Price'] 
+    
+    entry_price_list = signal_table['Entry_Price']
+    exit_price_list = signal_table['Exit_Price']
+    stoploss_price_list = signal_table['StopLoss_Price']
+
     
     date_interest_list = signal_table['Date']
     full_contract_symbol_list = signal_table['Contract_Month']
@@ -220,32 +226,33 @@ def loop_date(trade_choice: trade_choice_simple_3,
         
     # make bucket 
     book = Bookkeep(bucket_type='backtest')
-    dict_trade_PNL = book.make_bucket(keyword='argus_exact')
+    dict_trade_PNL = book.make_bucket(keyword=strategy_name)
     
     trade_id = 0
     for date_interest, direction, commodity_name, \
         upper_target_entry, lower_target_entry,\
-            upper_target_exit, lower_target_exit, \
-                stop_exit, price_code, full_contract_symbol, \
+            upper_target_exit, lower_target_exit, stop_exit, \
+                entry_price, exit_price, stoploss_price, \
+                price_code, full_contract_symbol, \
                     strategy_name in zip(date_interest_list,  \
-                                            direction_list, commodity_list,
-                                            upper_entry_list, lower_entry_list,
-                                            upper_exit_list,  lower_exit_list,
-                                            stop_exit_list, symbol_list,
-                                            full_contract_symbol_list,
-                                            strategy_name_list):
-                                
+                            direction_list, commodity_list,
+                            upper_entry_list, lower_entry_list,
+                            upper_exit_list,  lower_exit_list, stop_exit_list,
+                            entry_price_list, exit_price_list, stoploss_price_list,
+                            symbol_list,
+                            full_contract_symbol_list,
+                            strategy_name_list):
                                 
         if direction == 'Buy':
-            target_entry = upper_target_entry
-            target_exit = lower_target_exit
+            target_entry = entry_price
+            target_exit = exit_price
     
         elif direction == 'Sell':
-            target_entry = lower_target_entry
-            target_exit = upper_target_exit
+            target_entry = entry_price
+            target_exit = exit_price
     
         else:
-            target_entry_list, target_exit_list = 'NA', 'NA'
+            target_entry, target_exit = 'NA', 'NA'
         
         # Define the date of interest by reading TimeStamp. 
         # We may want to remake all this and make Timestamp the universal 
@@ -327,6 +334,7 @@ def loop_date(trade_choice: trade_choice_simple_3,
     
 def loop_date_portfolio(portfo, TradeMethod, 
                         signal_table, histroy_intraday_data, 
+                        strategy_name = 'argus_exact',
                         give_obj_name = "USD", get_obj_name = "CLc1", 
                         get_obj_quantity = 50,
                         open_hr='0330', close_hr='1930',
@@ -416,21 +424,21 @@ def loop_list_portfolio_preloaded_list(portfo, TradeMethod,
         direction = item['Direction'] 
         
         if direction == 'Buy':
-            target_entry = item['Target_Upper_Entry_Price']
-            target_exit = item['Target_Lower_Exit_Price'] 
+            target_entry = item['Entry_Price']
+            target_exit = item['Exit_Price'] 
 
         elif direction == 'Sell':
-            target_entry = item['Target_Lower_Entry_Price']
-            target_exit = item['Target_Upper_Exit_Price'] 
+            target_entry = item['Entry_Price']
+            target_exit = item['Exit_Price'] 
 
         else:
             target_entry, target_exit = 'NA', 'NA'
             
-        stop_exit = item['Stop_Exit_Price'] 
+        stop_exit = item['StopLoss_Price'] 
         
         date_interest = item['Date']
         get_obj_name = item['Price_Code']
-        
+
         open_hr = OPEN_HR_DICT[symbol]
         close_hr = CLOSE_HR_DICT[symbol]
                 

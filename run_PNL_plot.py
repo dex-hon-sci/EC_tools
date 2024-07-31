@@ -18,6 +18,9 @@ import datetime as datetime
 ARGUS_EXACT_PNL_FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_PNL_full_.xlsx'
 ARGUS_EXACT_PNL_AMB_FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_PNL_amb_full_.xlsx'
 ARGUS_EXACT_PNL_AMB2_FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_PNL_amb2_full_.xlsx'
+ARGUS_EXACT_MODE_PNL_FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_mode_PNL_full_.xlsx'
+
+OLD_MODE_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/profits_and_losses_data_pdfmax_17_.xlsx"
 
 symbol_list = ['CLc1', 'HOc1', 'RBc1', 'QOc1', 'QPc1', 'CLc2', 'HOc2', 'RBc2', 'QOc2', 'QPc2']
 label_list = ['CLc1 (x50)', 'HOc1 (x50)', 'RBc1 (x50)', 'QOc1 (x50)', 'QPc1 (x50)', 'CLc2 (x50)', 'HOc2 (x50)', 'RBc2 (x50)', 'QOc2 (x50)', 'QPc2 (x50)']
@@ -101,24 +104,24 @@ if __name__=='__main__':
     
     
     # Extract the cumulative PNL of the strategy
-    date_all, cumPNL_all = extract_PNLplot_input(ARGUS_EXACT_PNL_FILENAME)
+    date_all, cumPNL_all = extract_PNLplot_input(ARGUS_EXACT_MODE_PNL_FILENAME)
     
     # Extract the trade_return of the strategy
-    date_all2, return_all = extract_PNLplot_input(ARGUS_EXACT_PNL_FILENAME,
+    date_all2, return_all = extract_PNLplot_input(ARGUS_EXACT_MODE_PNL_FILENAME,
                                                   val_col='scaled returns from trades', 
                                                   fill_or_not=False)
     
     
     # Extract the individual asset PNL and dates
-    date_list = [extract_PNLplot_input(ARGUS_EXACT_PNL_FILENAME, 
+    date_list = [extract_PNLplot_input(ARGUS_EXACT_MODE_PNL_FILENAME, 
                                        sheet_name=symbol_list[i], \
                                            date_col = 'Entry_Date')[0] \
                                                     for i in range(len(symbol_list))]
-    data_list = [extract_PNLplot_input(ARGUS_EXACT_PNL_FILENAME, 
+    data_list = [extract_PNLplot_input(ARGUS_EXACT_MODE_PNL_FILENAME, 
                                        sheet_name=symbol_list[i], 
                                        date_col = 'Entry_Date')[1] \
                                                      for i in range(len(symbol_list))]
-    return_list = [extract_PNLplot_input(ARGUS_EXACT_PNL_FILENAME, 
+    return_list = [extract_PNLplot_input(ARGUS_EXACT_MODE_PNL_FILENAME, 
                                          sheet_name=symbol_list[i], 
                                          val_col='scaled returns from trades', 
                                          fill_or_not=False)[1] \
@@ -142,16 +145,24 @@ if __name__=='__main__':
     #               sub_col_list = col_list, 
     #               sub_line_list =line_list)
     # =============================================================================
+    
     strategy_date_list = [extract_PNLplot_input(ARGUS_EXACT_PNL_FILENAME)[0],
                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB_FILENAME)[0], 
-                          extract_PNLplot_input(ARGUS_EXACT_PNL_AMB2_FILENAME)[0]]
+                          extract_PNLplot_input(ARGUS_EXACT_PNL_AMB2_FILENAME)[0],
+                          extract_PNLplot_input(ARGUS_EXACT_MODE_PNL_FILENAME)[0],
+                          extract_PNLplot_input(OLD_MODE_FILENAME,date_col='date')[0]
+                          ]
     strategy_data_list = [extract_PNLplot_input(ARGUS_EXACT_PNL_FILENAME)[1],
                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB_FILENAME)[1], 
-                          extract_PNLplot_input(ARGUS_EXACT_PNL_AMB2_FILENAME)[1]]
-    strategy_label_list = ['Argus_Exact', 'Ambituous', 'Ambituous2']
-    strategy_col_list = ['w','w','w']
-    strategy_line_list = ['solid','dotted', 'dashed']
+                          extract_PNLplot_input(ARGUS_EXACT_PNL_AMB2_FILENAME)[1],
+                          extract_PNLplot_input(ARGUS_EXACT_MODE_PNL_FILENAME)[1],
+                          extract_PNLplot_input(OLD_MODE_FILENAME, date_col='date')[1]
+                          ]
+    strategy_label_list = ['Argus_Exact', 'Ambituous', 'Ambituous2', 'Argus_Exact_Mode', 'old_mode']
+    strategy_col_list = ['b','w','w', 'r', 'g']
+    strategy_line_list = ['solid','dotted', 'dashed', 'dashdot', 'dashdot']
     
+    # Plot different strategies cumulative PNL
     cumPNL_plot([], [], [], label='',
                   sub_date_list=strategy_date_list,
                   sub_data_list=strategy_data_list,
@@ -162,8 +173,10 @@ if __name__=='__main__':
     
     
     
-
-    # Plot individual asset returns    
-    for i in range(10):
-        cumPNL_plot(date_list[i], data_list[i], return_list[i], label=label_list[i],
-                line_color = col_list[i])
+# =============================================================================
+# 
+#     # Plot individual asset cumulative PNL and returns    
+#     for i in range(10):
+#         cumPNL_plot(date_list[i], data_list[i], return_list[i], label=label_list[i],
+#                 line_color = col_list[i])
+# =============================================================================

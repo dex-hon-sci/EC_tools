@@ -45,7 +45,7 @@ def generic_spline(x,y, method="cubic", s = 0):
 #     elif method =="univariate":
 #         func = UnivariateSpline(x, y, s=s) 
 # =============================================================================
-    return func
+    return func(x,y)
 
 def find_quant(cdf, quant_list, val):
     """
@@ -115,7 +115,7 @@ def cal_pdf(quant, cdf):
     #print(len(pdf))
     return spaced_events, pdf
 
-def find_cent_val(pdf_val, pdf, func= max):
+def find_pdf_val(pdf_val, pdf, func= max):
     """
     A generic method to extract the price of a particular centile given
     a function operation over the pdf. For example, func can be max(),
@@ -138,7 +138,7 @@ def find_cent_val(pdf_val, pdf, func= max):
     return float(pdf_val[centile_index])
 
     
-def find_cent_quant(pdf_val, pdf, func= max):
+def find_pdf_quant(pdf_val, pdf, func= max):
     """
     A generic method to extract the price of a particular centile given
     a function operation over the pdf. For example, func can be max(),

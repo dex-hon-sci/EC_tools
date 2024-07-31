@@ -78,14 +78,14 @@ class Bookkeep(object):
     argus_exact_mode_format = ['Date', 'Price_Code', 'Direction', 'Commodity_name',
                         'Contract_Month','Timezone', 
                         'Valid_From_localtz_timestr', 'Valid_To_localtz_timestr', 
-                        'Target_Lower_Entry_Price', 'Target_Upper_Entry_Price',
-                        'Target_Lower_Exit_Price', 'Target_Upper_Exit_Price',
+                        'Target_Entry_Price', 'Target_Entry_Price',
+                        'Target_Exit_Price', 'Target_Exit_Price',
                         'Stop_Exit_Price',
                         'NCONS',	'NROLL', 'Signal_NCONS', 'Signal_NROLL',	
                         'Quant_Close_Price_Lag_1', 'Quant_Close_Price_Lag_2',	
                         'Quant_Close_Price_Lag_3', 'Quant_Close_Price_Lag_4',	
                         'Quant_Close_Price_Lag_5', 'Quant_Close_Price_Lag_1_rm_5',	
-                        'Q0.25', 'Q_mode-0.1', 'Q_mode+0.1', 'Q0.75', 
+                         'Q_mode-0.1', 'Q_mode','Q_mode+0.1',  
                         'Entry_Price', 'Exit_Price', 'StopLoss_Price',
                         'strategy_name']
 

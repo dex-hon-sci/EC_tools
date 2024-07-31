@@ -473,9 +473,11 @@ class ArgusMRStrategyMode(Strategy):
         self._curve_today = curve_today
         self._quant_list = quant_list
         self._curve_today_spline = mfunc.generic_spline(self._quant_list, 
-                                                        self._curve_today)
+                                                        self._curve_today,
+                                                        method='cubic')
         self._curve_today_reverse_spline = mfunc.generic_spline(self._curve_today, 
-                                                                self._quant_list)
+                                                                self._quant_list, 
+                                                                method='cubic')
 
         self._pdf_price, self._pdf = mfunc.cal_pdf(self._quant_list, 
                                                    self._curve_today)
@@ -486,25 +488,39 @@ class ArgusMRStrategyMode(Strategy):
         self.sub_cond_dict = {'Buy':[], 'Sell':[], 'Neutral': []}
 
         self.strategy_name = 'argus_exact_mode'
-            
-    def cent_price(self, func):
-
-        centile_index = list(self._pdf).index(func(self._pdf))
-
-        return float(self._pdf_price[centile_index])
     
+    @property
     def mode_price(self):
-        #mode_index = list(self._pdf).index(max(self._pdf))
-        #print(mode_index)
-        #mode_prob = max(self._pdf)
-        #print(mode_prob, mode_prob+0.1, mode_prob-0.1)
 
-        return float(mfunc.find_cent_val(self._pdf_price, self._pdf, func=max))
+        return float(mfunc.find_pdf_val(self._pdf_price, self._pdf, func=max))
+    
+    def flatten_sub_cond_dict(self):
+        """
+        A method that turn a sub-condition-dictionary into a 
+        condition-dictionary and pass it to the Strategy parent class.
+        
+        This function assume the sub_cond_dict is only one layer deep, i.e.
+        a structure like this: {'Buy': [[...], [...], [...]], 'Sell':...}.
+        
+        Structure like this is not allowed:  
+            {'Buy': [[...], [[...],[...]], [...]], 'Sell':...}.
 
+        Returns
+        -------
+        None.
+
+        """
+        # a method that turn a sub_cond_dict into a cond_dict assuming the 
+        # subgroups are only one layer deep.
+        
+        for key in self.sub_cond_dict:
+            lis = self.sub_cond_dict[key]
+            flatList = sum(lis, [])
+            self.cond_dict[key] = flatList
     
     def gen_data(self, history_data_lag, apc_curve_lag, 
                             price_proxy = 'Settle', 
-                            qunatile = [-0.1, 0.0, +0.1]):
+                            quantile_delta = [-0.1, 0.0, +0.1]):
         
         lag_price = history_data_lag[price_proxy]
         lag_list = [mfunc.find_quant(apc_curve_lag.iloc[i].to_numpy()[1:-1], 
@@ -520,7 +536,7 @@ class ArgusMRStrategyMode(Strategy):
                                       apc_curve_lag.iloc[i].to_numpy()[1:-1]) 
                                             for i in range(len(apc_curve_lag))]
         # Calculate the price of the mode in these apc
-        mode_Q_list = [mfunc.find_cent_quant(lag_pdf_list[i][0], lag_pdf_list[i][1])
+        mode_Q_list = [mfunc.find_pdf_quant(lag_pdf_list[i][0], lag_pdf_list[i][1])
                                         for i in range(len(apc_curve_lag))]
         mode_Q_list.reverse()
         
@@ -533,15 +549,13 @@ class ArgusMRStrategyMode(Strategy):
                          'mode_Q_list': mode_Q_list,
                          'rollingaverage_mode': rollingaverage_mode_q
                          }
-        print('mode_price', self.mode_price())
-        print('mode', self._curve_today_reverse_spline(self.mode_price()))
-        quantile = [ quant + self._curve_today_reverse_spline(self.mode_price()) 
-                                                for quant in qunatile]
-        
-        print('quantile', quantile)
-        
-        qunatile_info = list(self._curve_today_spline(qunatile))
-        
+
+        # Find the quantile in the CDF (NOT THE PDF! important) from the mode_price
+        quantile = [quant + self._curve_today_reverse_spline(self.mode_price) 
+                                                for quant in quantile_delta]
+
+        qunatile_info = list(self._curve_today_spline(quantile))
+ 
         return strategy_info, qunatile_info 
     
     def run_cond(self, data, open_price, total_lag_days = 2):
@@ -618,19 +632,15 @@ class ArgusMRStrategyMode(Strategy):
     def set_EES(self, buy_range=(-0.1, 0.1, -0.45), 
                         sell_range =(0.1, -0.1, +0.45)):
         
-        mode_quant = self._curve_today_reverse_spline(self.mode_price())
+        mode_quant = self._curve_today_reverse_spline(self.mode_price)
         
         if self.direction == SignalStatus.BUY:
             # (A) Entry region at price < APC p=0.4 and 
-            entry_price = [float(self._curve_today_spline(mode_quant+ 
-                                                          buy_range[0])), 
-                           float(self._curve_today_spline(mode_quant+
-                                                          buy_range[1]))]
+            entry_price = float(self._curve_today_spline(mode_quant+ 
+                                                          buy_range[0]))
             # (B) Exit price
-            exit_price = [float(self._curve_today_spline(mode_quant+
-                                                         buy_range[0])), 
-                          float(self._curve_today_spline(mode_quant+
-                                                         buy_range[1]))] 
+            exit_price = float(self._curve_today_spline(mode_quant+
+                                                         buy_range[1]))
             # (C) Stop loss at APC p=0.1
             stop_loss = float(self._curve_today_spline(mode_quant+
                                                        buy_range[2]))
@@ -638,22 +648,18 @@ class ArgusMRStrategyMode(Strategy):
             
         elif self.direction == SignalStatus.SELL:
             # (A) Entry region at price > APC p=0.6 and 
-            entry_price = [float(self._curve_today_spline(mode_quant+
-                                                          sell_range[0])), 
-                           float(self._curve_today_spline(mode_quant+
-                                                          sell_range[1]))]
+            entry_price = float(self._curve_today_spline(mode_quant+
+                                                          sell_range[0]))
             # (B) Exit price
-            exit_price = [float(self._curve_today_spline(mode_quant+
-                                                         sell_range[0])), 
-                          float(self._curve_today_spline(mode_quant+
-                                                         sell_range[1]))]
+            exit_price = float(self._curve_today_spline(mode_quant+
+                                                         sell_range[1]))
             # (C) Stop loss at APC p=0.9
             stop_loss = float(self._curve_today_spline(mode_quant+
                                                        sell_range[2]))
             
         elif self.direction == SignalStatus.NEUTRAL:
-            entry_price = ["NA", "NA"]
-            exit_price = ["NA", "NA"]
+            entry_price = "NA"
+            exit_price = "NA"
             stop_loss = "NA"
         else:
             raise Exception(
@@ -663,14 +669,13 @@ class ArgusMRStrategyMode(Strategy):
         return entry_price, exit_price, stop_loss
     
     def apply_strategy(self, history_data_lag, apc_curve_lag, open_price, 
-                       qunatile = [-0.1, 0.0, +0.1],
+                       quantile = [-0.1, 0.0, +0.1],
                         total_lag_days = 2, 
                       buy_range=(-0.1, 0.1, -0.45), 
                       sell_range =(0.1, -0.1, +0.45)):
-        
-        
+
         strategy_info, quantile_info = self.gen_data(history_data_lag, apc_curve_lag,
-                                                     qunatile = qunatile)
+                                                     quantile_delta=quantile)
         
         direction, cond_info = self.run_cond(strategy_info, open_price,
                                              total_lag_days = total_lag_days)
@@ -680,15 +685,15 @@ class ArgusMRStrategyMode(Strategy):
                                                           sell_range=sell_range)
 
         if direction == SignalStatus.BUY:
-            entry_price_val, exit_price_val = entry_price[1], exit_price[0]
+            entry_price_val, exit_price_val = entry_price, exit_price
         elif direction == SignalStatus.SELL:
-            entry_price_val, exit_price_val = entry_price[0], exit_price[1]
+            entry_price_val, exit_price_val = entry_price, exit_price
         elif direction == SignalStatus.NEUTRAL:
-            entry_price_val, exit_price_val = entry_price[0], exit_price[0]
+            entry_price_val, exit_price_val = entry_price, exit_price
             
         # Bookkeeping area
-        EES = [entry_price[0], entry_price[1], 
-               exit_price[0], exit_price[1], 
+        EES = [entry_price, entry_price, 
+               exit_price, exit_price, 
                stop_loss]
         EES_val = [entry_price_val, exit_price_val, stop_loss]
         

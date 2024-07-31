@@ -16,12 +16,11 @@ import pandas as pd
 import numpy as np
 
 # EC_tools imports
-#from EC_tools.strategy import MRStrategy
-from EC_tools.strategy import MRStrategyArgus
+from EC_tools.strategy import MRStrategyArgus, ArgusMRStrategyMode
 import EC_tools.read as read
 import EC_tools.utility as util
 from EC_tools.bookkeep import Bookkeep
-#import EC_tools.math_func as mfunc
+
 from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, \
                                 APC_FILE_LOC, HISTORY_DAILY_FILE_LOC,\
                                     HISTORY_MINTUE_FILE_LOC, TIMEZONE_DICT,\
@@ -29,7 +28,8 @@ from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, \
                                         ARGUS_EXACT_SIGNAL_FILE_SHORT_LOC,\
                                             ARGUS_EXACT_SIGNAL_FILE_LOC,\
                                             ARGUS_EXACT_SIGNAL_AMB_FILE_LOC,\
-                                            ARGUS_EXACT_SIGNAL_AMB2_FILE_LOC
+                                            ARGUS_EXACT_SIGNAL_AMB2_FILE_LOC, \
+                                                ARGUS_EXACT_SIGNAL_MODE_FILE_LOC
 
 
 __all__ = ['loop_signal','gen_signal_vector','run_gen_MR_signals', 
@@ -38,11 +38,12 @@ __all__ = ['loop_signal','gen_signal_vector','run_gen_MR_signals',
 __author__="Dexter S.-H. Hon"
 
 
-MR_STRATEGIES_0 = {"argus_exact": MRStrategyArgus}
+MR_STRATEGIES_0 = {"argus_exact": MRStrategyArgus,
+                   "argus_exact_mode":ArgusMRStrategyMode}
 
 
-def loop_signal(book, signal_data, history_data, open_price_data,  
-                   Strategy: MRStrategyArgus, start_date, end_date,
+def loop_signal(Strategy, book, signal_data, history_data, open_price_data,  
+                    start_date, end_date,
                    strategy_name='benchmark', 
                    buy_range=([0.25,0.4],[0.6,0.75],0.05), sell_range =([0.6,0.75],[0.25,0.4],0.95), 
                    open_hr='', close_hr='',
@@ -162,8 +163,10 @@ def gen_signal_vector(signal_data, history_data, loop_start_date = ""): # WIP
     return dict_contracts_quant_signals
 
 
-def run_gen_MR_signals(asset_pack, start_date, end_date,
+def run_gen_MR_signals(Strategy, asset_pack,
                        signal_filename, filename_daily, filename_minute, 
+                       start_date, end_date,
+                       strategy_name= '',
                        buy_range=([0.25,0.4],[0.6,0.75],0.05), 
                        sell_range =([0.6,0.75],[0.25,0.4],0.95), 
                        open_hr='', close_hr='',
@@ -252,11 +255,10 @@ def run_gen_MR_signals(asset_pack, start_date, end_date,
     #print(APCs_dat, portara_dat, open_price_data)
     
     # The strategy will be ran in loop_signal decorator
-    dict_contracts_quant_signals = loop_signal(book, 
+    dict_contracts_quant_signals = loop_signal(Strategy, book, 
                                                APCs_dat, portara_dat, open_price_data,
-                                               MRStrategyArgus,
                                                start_date, end_date,
-                                               strategy_name= 'argus_exact',
+                                               strategy_name= strategy_name,
                                                buy_range=buy_range, 
                                                sell_range=sell_range,
                                                open_hr=open_hr, close_hr=close_hr,
@@ -277,11 +279,10 @@ def run_gen_MR_signals(asset_pack, start_date, end_date,
 @util.time_it
 def run_gen_MR_signals_list(Strategy, 
                             filename_list, categories_list, keywords_list, symbol_list, 
+                            signal_list, history_daily_list, history_minute_list,
                             start_date, end_date,
-                            signal_list, history_daily_list, 
-                            history_minute_list,
                             open_hr_dict, close_hr_dict, 
-                            timezone_dict,
+                            timezone_dict, strategy_name='argus_exact',
                             buy_range=([0.25,0.4],[0.6,0.75],0.05), 
                             sell_range =([0.6,0.75],[0.25,0.4],0.95),
                             save_or_not=False):
@@ -299,10 +300,11 @@ def run_gen_MR_signals_list(Strategy,
             close_hr = close_hr_dict[sym]
             Timezone= timezone_dict[sym]
             
-            signal_data = run_gen_MR_signals(asset_pack, 
+            print("files",signal, history_daily, history_minute)            
+            signal_data = run_gen_MR_signals(Strategy, asset_pack, 
+                                             signal, history_daily, history_minute,
                                              start_date, end_date,
-                                             signal, history_daily, 
-                                             history_minute,
+                                             strategy_name = strategy_name,
                                              buy_range=buy_range, 
                                              sell_range=sell_range,
                                              open_hr=open_hr, close_hr=close_hr,
@@ -318,13 +320,24 @@ def run_gen_MR_signals_list(Strategy,
         print("All asset signal generated!")
     return output_dict
 
-
+# =============================================================================
+# Strategy, asset_pack,
+#                        signal_filename, filename_daily, filename_minute, 
+#                        start_date, end_date,
+#                        strategy_name= '',
+#                        buy_range=([0.25,0.4],[0.6,0.75],0.05), 
+#                        sell_range =([0.6,0.75],[0.25,0.4],0.95), 
+#                        open_hr='', close_hr='',
+#                        commodity_name = '', Timezone= "",
+#                        start_date_pushback = 20
+# =============================================================================
 
 @util.time_it
-def run_gen_MR_signals_preloaded_list(filename_list, start_date, end_date,
+def run_gen_MR_signals_preloaded_list(Strategy, filename_list, 
                        signal_pkl, history_daily_pkl, openprice_pkl, 
+                       start_date, end_date,
                        open_hr_dict, close_hr_dict, timezone_dict,
-                       save_or_not = True,
+                       save_or_not = True, strategy_name= 'argus_exact',
                        buy_range=(0.4,0.6,0.1),sell_range =(0.6,0.4,0.9)):
     
     # run meanreversion signal generation on the basis of individual programme  
@@ -357,12 +370,12 @@ def run_gen_MR_signals_preloaded_list(filename_list, start_date, end_date,
             Timezone= timezone_dict[symbol]
             
             # The strategy will be ran in loop_signal decorator
-            dict_contracts_quant_signals = loop_signal(book, signal_file, 
+            dict_contracts_quant_signals = loop_signal(Strategy, book, 
+                                                       signal_file, 
                                                        history_daily_file, 
                                                        open_price,
-                                                       MRStrategyArgus,
                                                        start_date, end_date,
-                                                       strategy_name= 'argus_exact',
+                                                       strategy_name= strategy_name,
                                                        buy_range=buy_range,
                                                        sell_range=sell_range,
                                                        open_hr=open_hr, close_hr=close_hr,
@@ -376,6 +389,7 @@ def run_gen_MR_signals_preloaded_list(filename_list, start_date, end_date,
     # there are better ways than looping. here is a vectoralised method    
     return master_dict
 
+
 if __name__ == "__main__":
 
     
@@ -383,25 +397,36 @@ if __name__ == "__main__":
     start_date = "2021-01-11"
     end_date = "2024-06-17"
     
-    SAVE_FILENAME_LIST = list(ARGUS_EXACT_SIGNAL_AMB2_FILE_LOC.values())
+    SAVE_FILENAME_LIST = list(ARGUS_EXACT_SIGNAL_MODE_FILE_LOC.values())
 
     #maybe I need an unpacking function here to handle payload from json files
     SIGNAL_LIST = list(APC_FILE_LOC.values())
     HISTORY_DAILY_LIST = list(HISTORY_DAILY_FILE_LOC.values())
     HISTORY_MINUTE_LIST = list(HISTORY_MINTUE_FILE_LOC.values())
     
-    
-    strategy = MR_STRATEGIES_0['argus_exact']
-    
+    strategy_name = 'argus_exact_mode'
+    strategy = MR_STRATEGIES_0[strategy_name]
+   
     run_gen_MR_signals_list(strategy,
                             SAVE_FILENAME_LIST, CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, 
-                            start_date, end_date,
                             SIGNAL_LIST, HISTORY_DAILY_LIST, HISTORY_MINUTE_LIST,
+                            start_date, end_date,
                             OPEN_HR_DICT, CLOSE_HR_DICT, TIMEZONE_DICT,
-                            buy_range=([0.25,0.4],[0.7,0.8],0.1), 
-                            sell_range =([0.6,0.75],[0.2,0.3],0.9),
+                            strategy_name = strategy_name, 
+                            buy_range=(-0.1,0.1,-0.45), 
+                            sell_range =(0.1,-0.1,0.45),
                             save_or_not=True)
 
+# =============================================================================
+#     run_gen_MR_signals_list(strategy,
+#                             SAVE_FILENAME_LIST, CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, 
+#                             start_date, end_date,
+#                             SIGNAL_LIST, HISTORY_DAILY_LIST, HISTORY_MINUTE_LIST,
+#                             OPEN_HR_DICT, CLOSE_HR_DICT, TIMEZONE_DICT,
+#                             buy_range=([0.25,0.4],[0.7,0.8],0.1), 
+#                             sell_range =([0.6,0.75],[0.2,0.3],0.9),
+#                             save_or_not=True)
+# =============================================================================
 
 # =============================================================================
 #     asset_pack = {"categories" : 'Argus Nymex Heating oil month 1 Daily',

@@ -19,7 +19,8 @@ from crudeoil_future_const import OPEN_HR_DICT, CLOSE_HR_DICT, \
                                     ARGUS_EXACT_PNL_SHORT_LOC, HISTORY_MINTUE_FILE_LOC,\
                                     ARGUS_EXACT_PNL_LOC, \
                                     ARGUS_EXACT_SIGNAL_AMB_FILE_LOC, ARGUS_EXACT_PNL_AMB_LOC,\
-                                     ARGUS_EXACT_SIGNAL_AMB2_FILE_LOC, ARGUS_EXACT_PNL_AMB2_LOC
+                                     ARGUS_EXACT_SIGNAL_AMB2_FILE_LOC, ARGUS_EXACT_PNL_AMB2_LOC,\
+                                         ARGUS_EXACT_SIGNAL_MODE_FILE_LOC, ARGUS_EXACT_PNL_MODE_LOC
 
 
 __author__="Dexter S.-H. Hon"
@@ -176,9 +177,9 @@ if __name__ == "__main__":
     MASTER_SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_full.csv"
     HISTORY_MINUTE_PKL_FILENAME ="/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_full.pkl"
 
-    SAVE_FILENAME_LIST = list(ARGUS_EXACT_PNL_AMB2_LOC.values())
-    SIGNAL_FILENAME_LIST = list(ARGUS_EXACT_SIGNAL_AMB2_FILE_LOC.values())
-    SYMBOL_LIST = list(ARGUS_EXACT_PNL_AMB2_LOC.keys())
+    SAVE_FILENAME_LIST = list(ARGUS_EXACT_PNL_MODE_LOC.values())
+    SIGNAL_FILENAME_LIST = list(ARGUS_EXACT_SIGNAL_MODE_FILE_LOC.values())
+    SYMBOL_LIST = list(ARGUS_EXACT_PNL_MODE_LOC.keys())
     HISTORY_MINUTE_FILENAME_LIST = list(HISTORY_MINTUE_FILE_LOC.values())
         
     #start_date = "2022-01-03"
