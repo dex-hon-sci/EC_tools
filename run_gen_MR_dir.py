@@ -497,13 +497,12 @@ def run_gen_signal(strategy, save_filename_list,
                    merge_or_not=True, save_or_not = False):
     
     if runtype == "list":
+        # Fixed input filename from constant variables
         SIGNAL_LIST = list(APC_FILE_LOC.values())
         HISTORY_DAILY_LIST = list(HISTORY_DAILY_FILE_LOC.values())
         HISTORY_MINUTE_LIST = list(HISTORY_MINTUE_FILE_LOC.values())
-    
-    
 
-
+        # Run signal generation in a list format
         run_gen_MR_signals_list(strategy, save_filename_list, 
                                 CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST,
                                 SIGNAL_LIST, HISTORY_DAILY_LIST, HISTORY_MINUTE_LIST,
@@ -517,15 +516,16 @@ def run_gen_signal(strategy, save_filename_list,
             merge_filename = getpass.getpass(prompt="please enter the name for the merged file :") 
             MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + merge_filename
             
-            read.merge_raw_data(SAVE_FILENAME_LIST, 
+            read.merge_raw_data(save_filename_list, 
                                 MASTER_SIGNAL_FILENAME, sort_by="Date")
             
     elif runtype=='preload':
-        
+        # Fixed input filename from constant variables
         SIGNAL_PKL = util.load_pkl(DATA_FILEPATH+"pkl_vault/crudeoil_future_APC_full.pkl")
         HISTORY_DAILY_PKL = util.load_pkl(DATA_FILEPATH+"pkl_vault/crudeoil_future_daily_full.pkl")
         OPENPRICE_PKL = util.load_pkl(DATA_FILEPATH+"pkl_vault/crudeoil_future_openprice_full.pkl")
 
+        # Run signal generation in a preloaded format
         run_gen_MR_signals_preloaded(strategy, save_filename_list, 
                                     SIGNAL_PKL, HISTORY_DAILY_PKL, OPENPRICE_PKL,
                                     start_date, end_date,
@@ -555,7 +555,16 @@ if __name__ == "__main__":
     strategy = MR_STRATEGIES_0[strategy_name]
     buy_range = ([0.2,0.25],[0.75,0.8],0.1) # (-0.1,0.1,-0.45)
     sell_range = ([0.75,0.8],[0.2,0.25],0.9) # (0.1,-0.1,0.45)
-   
+    
+    # master function in running everything
+    run_gen_signal(strategy, TEST_FILE_LOC,
+                    start_date, end_date,
+                    buy_range = buy_range, 
+                    sell_range = sell_range,
+                    runtype = 'list',
+                    merge_or_not= True,
+                    save_or_not=True)
+    
 # =============================================================================
 # # Test the individual list method
 #     run_gen_MR_signals_list(strategy,
@@ -580,12 +589,6 @@ if __name__ == "__main__":
 # =============================================================================
 
 
-    run_gen_signal(strategy, TEST_FILE_LOC,
-                    start_date, end_date,
-                    buy_range = buy_range, 
-                    sell_range = sell_range,
-                    runtype = 'preload',
-                    save_or_not=True)
     
 
 

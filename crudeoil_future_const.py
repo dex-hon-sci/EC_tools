@@ -368,6 +368,19 @@ TEST_FILE_LOC = {
     'QPc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/test_results/test_QPc2_full.csv'
 }
 
+TEST_FILE_PNL_LOC = {
+    'CLc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/test_results/test_PNL_CLc1_full.csv',
+    'CLc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/test_results/test_PNL_CLc2_full.csv',
+    'HOc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/test_results/test_PNL_HOc1_full.csv',
+    'HOc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/test_results/test_PNL_HOc2_full.csv',
+    'RBc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/test_results/test_PNL_RBc1_full.csv',
+    'RBc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/test_results/test_PNL_RBc2_full.csv',
+    'QOc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/test_results/test_PNL_QOc1_full.csv',
+    'QOc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/test_results/test_PNL_QOc2_full.csv',
+    'QPc1':'/home/dexter/Euler_Capital_codes/EC_tools/results/test_results/test_PNL_QPc1_full.csv',
+    'QPc2':'/home/dexter/Euler_Capital_codes/EC_tools/results/test_results/test_PNL_QPc2_full.csv'
+}
+
 ARGUS_BENCHMARK_PNL_Portfolio_LOC = {}
 ARGUS_BENCHMARK_PNL_MASTER_FILE_LOC = None
 ARGUS_BENCHMARK_PNL_MASTER_Portfolio_LOC = None

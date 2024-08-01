@@ -8,6 +8,7 @@ Created on Tue May  7 23:46:42 2024
 import datetime as datetime
 import time
 from enum import Enum
+import getpass
 import EC_tools.read as read
 import EC_tools.backtest as backtest
 import EC_tools.utility as util
@@ -15,6 +16,7 @@ from EC_tools.trade import OneTradePerDay, trade_choice_simple, \
                             trade_choice_simple_2, trade_choice_simple_3
 from EC_tools.portfolio import Asset, Portfolio
 from crudeoil_future_const import OPEN_HR_DICT, CLOSE_HR_DICT, \
+                                TEST_FILE_LOC, TEST_FILE_PNL_LOC, RESULT_FILEPATH,\
                                  ARGUS_EXACT_SIGNAL_FILE_LOC, \
                                     ARGUS_EXACT_PNL_SHORT_LOC, HISTORY_MINTUE_FILE_LOC,\
                                     ARGUS_EXACT_PNL_LOC, \
@@ -70,7 +72,7 @@ def run_backtest_list(trade_choice,
                       save_filename_list, symbol_list,
                       signal_filename_list, history_minute_filename_list,
                         start_date, end_date,
-                        open_hr_dict, close_hr_dict, 
+                        open_hr_dict = OPEN_HR_DICT, close_hr_dict=CLOSE_HR_DICT, 
                         save_or_not=False):
 
     
@@ -179,25 +181,31 @@ def run_backtest_portfolio_preloaded(TradeMethod,
     return P1
 
     
-def run_backtest(signal_file_loc, save_file_loc, start_date, end_date, 
-                 method = "list", master_pnl_filename = '',
-                 save_or_not=True, merge_or_not=True):
-    
+def run_backtest_bulk(TradeMethod, signal_file_loc, save_file_loc, 
+                        start_date, end_date, 
+                         method = "list", master_pnl_filename='',
+                         open_hr_dict = OPEN_HR_DICT, close_hr_dict=CLOSE_HR_DICT,
+                         save_or_not=True, merge_or_not=True):
+            
     if method == "list":
-        SAVE_FILENAME_LIST = list(ARGUS_EXACT_PNL_AMB3_LOC.values())
-        SIGNAL_FILENAME_LIST = list(ARGUS_EXACT_SIGNAL_AMB3_FILE_LOC.values())
-        SYMBOL_LIST = list(ARGUS_EXACT_PNL_AMB3_LOC.keys())
+        SAVE_FILENAME_LIST = list(save_file_loc.values())
+        SIGNAL_FILENAME_LIST = list(signal_file_loc.values())
+        SYMBOL_LIST = list(signal_file_loc.keys())
         HISTORY_MINUTE_FILENAME_LIST = list(HISTORY_MINTUE_FILE_LOC.values())
     
         
-        backtest_result = run_backtest_list(trade_choice_simple_3, 
-                      SAVE_FILENAME_LIST, SYMBOL_LIST,
+        backtest_result = run_backtest_list(TradeMethod, 
+                        SAVE_FILENAME_LIST, SYMBOL_LIST,
                           SIGNAL_FILENAME_LIST, HISTORY_MINUTE_FILENAME_LIST,
                                     start_date, end_date,
-                                    OPEN_HR_DICT, CLOSE_HR_DICT, 
+                                    open_hr_dict = open_hr_dict, 
+                                    close_hr_dict=close_hr_dict, 
                                     save_or_not=save_or_not)
                       
         if merge_or_not:
+            merge_filename = getpass.getpass(prompt="please enter the name for the merged file :") 
+            MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + merge_filename
+
             read.merge_raw_data(SAVE_FILENAME_LIST, 
                                 master_pnl_filename, sort_by="Entry_Date")
         
@@ -210,6 +218,11 @@ def run_backtest(signal_file_loc, save_file_loc, start_date, end_date,
     elif method == "portfolio_preloaded":
         
         backtest_result = None
+        PP = run_backtest_portfolio_preloaded(OneTradePerDay,
+                                                MASTER_SIGNAL_FILENAME, 
+                                              HISTORY_MINUTE_PKL_FILENAME,
+                                              start_date, end_date)
+        
     
     return backtest_result
 
@@ -234,31 +247,41 @@ if __name__ == "__main__":
     SYMBOL_LIST = list(ARGUS_EXACT_PNL_AMB3_LOC.keys())
     HISTORY_MINUTE_FILENAME_LIST = list(HISTORY_MINTUE_FILE_LOC.values())
 
-    FILEPATH = "/home/dexter/Euler_Capital_codes/EC_tools/results/"
-    MASTER_PNL_FILENAME = FILEPATH+'argus_exact_PNL_amb3_full.csv'
+# =============================================================================
+#     FILEPATH = "/home/dexter/Euler_Capital_codes/EC_tools/results/"
+#     MASTER_PNL_FILENAME = FILEPATH+'argus_exact_PNL_amb3_full.csv'
+# =============================================================================
 
-    #start_date = "2022-01-03"
-    start_date = "2021-01-11"
+    start_date = "2024-03-04"
+    #start_date = "2021-01-11"
     end_date = "2024-06-17"
+    
+    run_backtest_bulk(trade_choice_simple_3, TEST_FILE_LOC, TEST_FILE_PNL_LOC, 
+                            start_date, end_date, 
+                     method = "list", master_pnl_filename='',
+                     open_hr_dict = OPEN_HR_DICT, close_hr_dict=CLOSE_HR_DICT,
+                     save_or_not=True, merge_or_not=True)
     
     #run_backtest(trade_choice_simple_2,FILENAME_MINUTE, FILENAME_BUYSELL_SIGNALS, 
     #             "2022-01-03", "2024-06-17")
 
-    backtest_result = run_backtest_list(trade_choice_simple_3, 
-                      SAVE_FILENAME_LIST, SYMBOL_LIST,
-                          SIGNAL_FILENAME_LIST, HISTORY_MINUTE_FILENAME_LIST,
-                                    start_date, end_date,
-                                    OPEN_HR_DICT, CLOSE_HR_DICT, 
-                                    save_or_not=True)
-                       
-    read.merge_raw_data(SAVE_FILENAME_LIST, MASTER_PNL_FILENAME, sort_by="Entry_Date")
-
-    #run_backtest_portfolio(FILENAME_MINUTE, FILENAME_BUYSELL_SIGNALS, 
-    #                       '2023-06-01', '2023-12-30')
-    
-    #PP = run_backtest_portfolio_preloaded_list(OneTradePerDay,
-    #                                        MASTER_SIGNAL_FILENAME, 
-    #                                      HISTORY_MINUTE_PKL_FILENAME,
-    #                                      '2022-06-30', '2024-06-30')
-    
+# =============================================================================
+#     backtest_result = run_backtest_list(trade_choice_simple_3, 
+#                       SAVE_FILENAME_LIST, SYMBOL_LIST,
+#                           SIGNAL_FILENAME_LIST, HISTORY_MINUTE_FILENAME_LIST,
+#                                     start_date, end_date,
+#                                     OPEN_HR_DICT, CLOSE_HR_DICT, 
+#                                     save_or_not=True)
+#                        
+#     read.merge_raw_data(SAVE_FILENAME_LIST, MASTER_PNL_FILENAME, sort_by="Entry_Date")
+# 
+#     #run_backtest_portfolio(FILENAME_MINUTE, FILENAME_BUYSELL_SIGNALS, 
+#     #                       '2023-06-01', '2023-12-30')
+#     
+#     #PP = run_backtest_portfolio_preloaded_list(OneTradePerDay,
+#     #                                        MASTER_SIGNAL_FILENAME, 
+#     #                                      HISTORY_MINUTE_PKL_FILENAME,
+#     #                                      '2022-06-30', '2024-06-30')
+#     
+# =============================================================================
 

@@ -22,6 +22,7 @@ ARGUS_EXACT_PNL_AMB3_FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/resul
 ARGUS_EXACT_MODE_PNL_FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_mode_PNL_full_.xlsx'
 
 OLD_MODE_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/profits_and_losses_data_pdfmax_17_.xlsx"
+test_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/test_PNL_.xlsx"
 
 symbol_list = ['CLc1', 'HOc1', 'RBc1', 'QOc1', 'QPc1', 'CLc2', 'HOc2', 'RBc2', 'QOc2', 'QPc2']
 label_list = ['CLc1 (x50)', 'HOc1 (x50)', 'RBc1 (x50)', 'QOc1 (x50)', 'QPc1 (x50)', 'CLc2 (x50)', 'HOc2 (x50)', 'RBc2 (x50)', 'QOc2 (x50)', 'QPc2 (x50)']
@@ -103,7 +104,7 @@ def cumPNL_plot(date, PNL, return_rate, line_color = 'w', label = 'All (x50)',
 
 if __name__=='__main__':
     
-    FILENAME = ARGUS_EXACT_PNL_AMB3_FILENAME
+    FILENAME = test_FILENAME
     # Extract the cumulative PNL of the strategy
     date_all, cumPNL_all = extract_PNLplot_input(FILENAME)
     
@@ -152,18 +153,21 @@ if __name__=='__main__':
                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB2_FILENAME)[0],
                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB3_FILENAME)[0],
                           extract_PNLplot_input(ARGUS_EXACT_MODE_PNL_FILENAME)[0],
-                          extract_PNLplot_input(OLD_MODE_FILENAME,date_col='date')[0]
+                          extract_PNLplot_input(OLD_MODE_FILENAME,date_col='date')[0],
+                          extract_PNLplot_input(test_FILENAME)[0]
+                          
                           ]
     strategy_data_list = [extract_PNLplot_input(ARGUS_EXACT_PNL_FILENAME)[1],
                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB_FILENAME)[1], 
                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB2_FILENAME)[1],
                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB3_FILENAME)[1],
                           extract_PNLplot_input(ARGUS_EXACT_MODE_PNL_FILENAME)[1],
-                          extract_PNLplot_input(OLD_MODE_FILENAME, date_col='date')[1]
+                          extract_PNLplot_input(OLD_MODE_FILENAME, date_col='date')[1],
+                          extract_PNLplot_input(test_FILENAME)[1]
                           ]
-    strategy_label_list = ['Argus_Exact', 'Ambituous', 'Ambituous2', 'Ambituous3', 'Argus_Exact_Mode', 'old_mode']
-    strategy_col_list = ['b','w','w', 'y', 'r', 'g']
-    strategy_line_list = ['solid','dotted', 'dashed', 'dashdot', 'dashdot', 'dashdot']
+    strategy_label_list = ['Argus_Exact', 'Ambituous', 'Ambituous2', 'Ambituous3', 'Argus_Exact_Mode', 'old_mode','test']
+    strategy_col_list = ['b','w','w', 'y', 'r', 'g', 'w']
+    strategy_line_list = ['solid','dotted', 'dashed', 'dashdot', 'dashdot', 'dashdot', 'solid']
     
     # Plot different strategies cumulative PNL
     cumPNL_plot([], [], [], label='',

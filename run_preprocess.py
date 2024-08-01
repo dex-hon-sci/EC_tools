@@ -60,22 +60,24 @@ def create_open_price_list(history_daily_file_loc, history_minute_file_loc):
     print("Open price data created.")
     
 
-@util.time_it    
-def load_pkl(filename): # test function
-    output = open(filename, 'rb')
-    mydict = pickle.load(output)
-    
-    date_list = ['2021-03-04', '2021-03-05', '2021-03-06', '2021-03-07', '2021-03-08']
-    @util.time_it
-    def call_individual(date):
-        df = mydict['CLc1']
-        data = extract_intraday_minute_data(df, date)
-        return data
-    
-    for date in date_list:    
-        call_individual(date)
-    
-    output.close()
+# =============================================================================
+# @util.time_it    
+# def load_pkl(filename): # test function
+#     output = open(filename, 'rb')
+#     mydict = pickle.load(output)
+#     
+#     date_list = ['2021-03-04', '2021-03-05', '2021-03-06', '2021-03-07', '2021-03-08']
+#     @util.time_it
+#     def call_individual(date):
+#         df = mydict['CLc1']
+#         data = extract_intraday_minute_data(df, date)
+#         return data
+#     
+#     for date in date_list:    
+#         call_individual(date)
+#     
+#     output.close()
+# =============================================================================
     
 def run_preprocess():
     """
