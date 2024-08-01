@@ -92,7 +92,7 @@ class ArgusMRStrategy(Strategy):
     
     The Strategy condition is described in the run_cond method.
     """
-    def __init__(self, curve_today, 
+    def __init__(self, curve_today= np.arange(0.0025, 0.9975, 0.0025), 
                  quant_list = np.arange(0.0025, 0.9975, 0.0025)):
         
         super().__init__()

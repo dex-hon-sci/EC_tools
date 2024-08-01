@@ -27,13 +27,13 @@ from EC_tools.read import merge_raw_data, render_PNL_xlsx
 import EC_tools.utility as util
 
 from run_preprocess import run_preprocess
-from run_gen_MR_dir import run_gen_MR_signals_list, run_gen_MR_signals_preloaded_list
+from run_gen_MR_dir import MR_STRATEGIES_0, run_gen_signal
 from run_backtest import run_backtest_portfolio_preloaded_list
 from run_PNL_plot import cumPNL_plot
 
 # CSV list -> Signal Gen - > Backtest ->PNL
 # Preloaded PKL input ->
-
+RunType = {"list", 'preloaded'}
 
 @util.time_it
 def load_source_data():
@@ -92,41 +92,62 @@ def backtest(master_buysell_signals_data, histroy_intraday_data_pkl,
 
 
 
-def run_main(prefix, suffix):
-    run_preprocess()
-
-    SIGNAL_PKL, HISTORY_DAILY_PKL, HISTORY_MINUTE_PKL, OPENPRICE_PKL,\
-                                SAVE_SIGNAL_FILENAME_LIST = load_source_data()
-
-    start_date = "2022-01-01"
-    end_date = "2024-06-15"
-
-    run_gen_MR_signals_preloaded_list(SAVE_SIGNAL_FILENAME_LIST, 
-                                      start_date, end_date,
-                            SIGNAL_PKL, HISTORY_DAILY_PKL, OPENPRICE_PKL,
-                            save_or_not = True, 
-                            buy_range=(0.4,0.6,0.1), sell_range=(0.6,0.4,0.9))
-
-    merge_raw_data(SIGNAL_LIST, MASTER_SIGNAL_FILENAME, sort_by="Date")
-
-    #PP = quick_backtest_time()
-
-
-    return
-
-def run_main(preprocess = False, 
-             signal_gen_method = "list", backtest_method="list"):
+def run_main(start_date, end_date,         
+             buy_range = ([0.2,0.25],[0.75,0.8],0.1),
+             sell_range = ([0.75,0.8],[0.2,0.25],0.9), 
+             preprocess = False, 
+             runtype = "list"):
     
-    if preprocess:
-        run_preprocess()
-    else:
-        pass
+
+    if runtype == "list":
+        
+        print("============Loading Source Files===========")
+        
+        print("=========Generating Buy/Sell Signals=======")
+        
+        start_date = "2024-03-03"
+        #start_date = "2021-01-11"
+        end_date = "2024-06-17"
+        SAVE_FILENAME_LIST = list(TEST_FILE_LOC.values())
+
+        #maybe I need an unpacking function here to handle payload from json files
+        SIGNAL_LIST = list(APC_FILE_LOC.values())
+        HISTORY_DAILY_LIST = list(HISTORY_DAILY_FILE_LOC.values())
+
+        strategy_name = 'argus_exact'
+        strategy = MR_STRATEGIES_0[strategy_name]
+
+        
+        run_gen_signal(strategy, SAVE_FILENAME_LIST,
+                        SIGNAL_LIST, HISTORY_DAILY_LIST, 
+                        start_date, end_date,
+                        buy_range = buy_range, 
+                        sell_range = sell_range,
+                        runtype = 'list',
+                        save_or_not=True,
+                        merge_or_not=True)
+
+        print("=========Running Back-Testing =============")
     
-    if signal_gen_method=='list':
-    print("============Loading Source PKL Files===========")
-    SIGNAL_PKL, HISTORY_DAILY_PKL, HISTORY_MINUTE_PKL, OPENPRICE_PKL,\
+    
+        print("=========Running PNL EXCEL File =============")
+        render_PNL_xlsx()
+    
+    elif runtype=='preload':
+        
+        if preprocess:
+            print("===============Data Preprocessing=============")
+            # preprocess merge raw CSV data into pkl format 
+            run_preprocess()
+            
+        print("============Loading Source PKL Files===========")
+        SIGNAL_PKL, HISTORY_DAILY_PKL, HISTORY_MINUTE_PKL, OPENPRICE_PKL,\
                                  SAVE_SIGNAL_FILENAME_LIST = load_source_data()
-    
+                                 
+                                 
+        print("=========Generating Buy/Sell Signals=======")
+
+        print("=========Running Back-Testing =============")
 
     
     return 
@@ -140,7 +161,7 @@ if __name__ == "__main__":
     
     # run preprocessing (calculate earliest entry and update all database )
     
-    #run_preprocess()
+    run_preprocess()
     
     print("============Loading Source Files===========")
 # =============================================================================
@@ -187,33 +208,35 @@ if __name__ == "__main__":
 #                            buy_range=(0.4,0.6,0.1), sell_range=(0.6,0.4,0.9))
 # =============================================================================
     
-    print("---------merge signals tables--------------")
-    
-    #SIGNAL_LIST = list(SAVE_SIGNAL_FILENAME_LIST.values())   
-    #SIGNAL_LIST = list(TEST_FILE_LOC.values())   
-    SIGNAL_LIST = list(ARGUS_EXACT_SIGNAL_AMB3_FILE_LOC.values())
-    MASTER_SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_amb3.csv"
-    merge_raw_data(SIGNAL_LIST, MASTER_SIGNAL_FILENAME, sort_by="Date")
-
-    print("=========Running Back-Testing =============")
-    start_date = "2024-03-15"
-    end_date = "2024-06-15"
-    
-    #MASTER_SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signal_full.csv"
-    #HISTORY_MINUTE_PKL_FILENAME ="/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_full.pkl"
-
 # =============================================================================
+#     print("---------merge signals tables--------------")
+#     
+#     #SIGNAL_LIST = list(SAVE_SIGNAL_FILENAME_LIST.values())   
+#     #SIGNAL_LIST = list(TEST_FILE_LOC.values())   
+#     SIGNAL_LIST = list(ARGUS_EXACT_SIGNAL_AMB3_FILE_LOC.values())
+#     MASTER_SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_amb3.csv"
+#     merge_raw_data(SIGNAL_LIST, MASTER_SIGNAL_FILENAME, sort_by="Date")
 # 
-#     @util.time_it
-#     def quick_backtest_time():
-#         PP =  quick_backtest(MASTER_SIGNAL_FILENAME, HISTORY_MINUTE_PKL_FILENAME,start_date, end_date)
-#         return PP
+#     print("=========Running Back-Testing =============")
+#     start_date = "2024-03-15"
+#     end_date = "2024-06-15"
+#     
+#     #MASTER_SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signal_full.csv"
+#     #HISTORY_MINUTE_PKL_FILENAME ="/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_full.pkl"
+# 
+# # =============================================================================
+# # 
+# #     @util.time_it
+# #     def quick_backtest_time():
+# #         PP =  quick_backtest(MASTER_SIGNAL_FILENAME, HISTORY_MINUTE_PKL_FILENAME,start_date, end_date)
+# #         return PP
+# # =============================================================================
+#     
+#     #PP = quick_backtest_time()
+#     PNL_LIST = list(ARGUS_EXACT_PNL_AMB3_LOC.values())
+#     MASTER_PNL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_PNL_amb3_full.csv"
+#     merge_raw_data(PNL_LIST, MASTER_PNL_FILENAME, sort_by="Entry_Date")
 # =============================================================================
-    
-    #PP = quick_backtest_time()
-    PNL_LIST = list(ARGUS_EXACT_PNL_AMB3_LOC.values())
-    MASTER_PNL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_PNL_amb3_full.csv"
-    merge_raw_data(PNL_LIST, MASTER_PNL_FILENAME, sort_by="Entry_Date")
     
     ## Visualise PNL plot and metrics.
     ##run_PNL

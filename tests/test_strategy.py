@@ -6,21 +6,13 @@ Created on Fri May 31 03:27:22 2024
 @author: dexter
 """
 import datetime as datetime
-import numpy as np
-import pytest
-
-from EC_tools.strategy import ArgusMRStrategy, SignalStatus
 import EC_tools.read as read
-import EC_tools.math_func as mfunc
-import EC_tools.utility as util
+
 
 SIGNAL = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_CLc1.csv"
 HISTORY_DAILY = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Day/CL.day"
 HISTORY_MINUTE = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/CL.001"
 
-BUY_DATE_STR = "2021-03-02" #Buy date
-SELL_DATE_STR = "2022-02-22" #Sell date
-NEUTRAL_DATE_STR = "2021-01-27" #Neutral date
 
 class SingleRun():
     """

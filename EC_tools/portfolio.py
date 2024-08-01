@@ -7,16 +7,13 @@ Created on Mon May  6 08:55:17 2024
 """
 # python import
 from dataclasses import dataclass, field
-from typing import Protocol
 from functools import cached_property
 import datetime as datetime
-import time as time
 # package import 
 import pandas as pd
 
 # EC_tools import
 import EC_tools.utility as util
-import EC_tools.read as read
 from crudeoil_future_const import SIZE_DICT, HISTORY_DAILY_FILE_LOC
 
 #PRICE_DICT = HISTORY_DAILY_FILE_LOC 

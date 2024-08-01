@@ -5,6 +5,8 @@ Created on Sun Jun 23 09:00:12 2024
 
 @author: dexter
 """
+RESULT_FILEPATH = "/home/dexter/Euler_Capital_codes/EC_tools/results/"
+DATA_FILEPATH = "/home/dexter/Euler_Capital_codes/EC_tools/data/"
 
 # Define the contracts of interest
 

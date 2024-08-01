@@ -7,7 +7,7 @@ Created on Tue May  7 23:46:42 2024
 """
 import datetime as datetime
 import time
-
+from enum import Enum
 import EC_tools.read as read
 import EC_tools.backtest as backtest
 import EC_tools.utility as util
@@ -24,10 +24,16 @@ from crudeoil_future_const import OPEN_HR_DICT, CLOSE_HR_DICT, \
                                          ARGUS_EXACT_SIGNAL_MODE_FILE_LOC, ARGUS_EXACT_PNL_MODE_LOC
 
 __all__ = ['run_backtest','run_backtest_list', 
-           'run_backtest_portfolio', 'run_backtest_portfolio_preloaded_list']
+           'run_backtest_portfolio', 'run_backtest_portfolio_preloaded']
 
 __author__="Dexter S.-H. Hon"
 
+
+class BacktestType(Enum):
+    BACKTEST_SINGLE = "backtest_single"
+    BACKTEST_LIST = "backtest_list"
+    BACKTEST_PORTFOLIO = "backtest_portfolio"
+    BACKTEST_PORTFOLIO_LIST = "backtest_portfolio"
 
 
 @util.time_it
@@ -137,7 +143,7 @@ def run_backtest_portfolio(TradeMethod,
     return P1
 
 #@util.pickle_save("/home/dexter/Euler_Capital_codes/EC_tools/results/test3_portfolio_nonconcurrent_1contracts_full.pkl")
-def run_backtest_portfolio_preloaded_list(TradeMethod,
+def run_backtest_portfolio_preloaded(TradeMethod,
                                           master_buysell_signals_filename, 
                                           histroy_intraday_data_pkl_filename,
                                           start_date, end_date,
@@ -163,7 +169,7 @@ def run_backtest_portfolio_preloaded_list(TradeMethod,
     P1.add(USD_initial,datetime=datetime.datetime(2020,12,31))
     
     # a list of input files
-    P1 = backtest.loop_list_portfolio_preloaded_list(P1, TradeMethod,
+    P1 = backtest.loop_portfolio_preloaded_list(P1, TradeMethod,
                                                      trade_date_table, 
                                            histroy_intraday_data_pkl)
     
@@ -172,12 +178,47 @@ def run_backtest_portfolio_preloaded_list(TradeMethod,
 
     return P1
 
+    
+def run_backtest(signal_file_loc, save_file_loc, start_date, end_date, 
+                 method = "list", master_pnl_filename = '',
+                 save_or_not=True, merge_or_not=True):
+    
+    if method == "list":
+        SAVE_FILENAME_LIST = list(ARGUS_EXACT_PNL_AMB3_LOC.values())
+        SIGNAL_FILENAME_LIST = list(ARGUS_EXACT_SIGNAL_AMB3_FILE_LOC.values())
+        SYMBOL_LIST = list(ARGUS_EXACT_PNL_AMB3_LOC.keys())
+        HISTORY_MINUTE_FILENAME_LIST = list(HISTORY_MINTUE_FILE_LOC.values())
+    
+        
+        backtest_result = run_backtest_list(trade_choice_simple_3, 
+                      SAVE_FILENAME_LIST, SYMBOL_LIST,
+                          SIGNAL_FILENAME_LIST, HISTORY_MINUTE_FILENAME_LIST,
+                                    start_date, end_date,
+                                    OPEN_HR_DICT, CLOSE_HR_DICT, 
+                                    save_or_not=save_or_not)
+                      
+        if merge_or_not:
+            read.merge_raw_data(SAVE_FILENAME_LIST, 
+                                master_pnl_filename, sort_by="Entry_Date")
+        
+    elif method == "portfolio":
+        
+        backtest_result =  run_backtest_portfolio(FILENAME_MINUTE, 
+                                                  FILENAME_BUYSELL_SIGNALS, 
+                                   start_date, end_date)
+        
+    elif method == "portfolio_preloaded":
+        
+        backtest_result = None
+    
+    return backtest_result
+
 if __name__ == "__main__":
     
     Backtest_Lib = {"run_backtest": run_backtest,
                 "run_backtest_list": run_backtest_list,
                 "run_backtest_portfolio": run_backtest_portfolio,
-                "run_backtest_portfolio_preloaded_list": run_backtest_portfolio_preloaded_list}
+                "run_backtest_portfolio_preloaded": run_backtest_portfolio_preloaded}
     
     # master function that runs the backtest itself.
     FILENAME_MINUTE = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/CL.001"
@@ -221,28 +262,3 @@ if __name__ == "__main__":
     #                                      '2022-06-30', '2024-06-30')
     
 
-    
-    def run_backtest(method = "list", save_or_not=True):
-        
-        if method == "list":
-            SAVE_FILENAME_LIST = list(ARGUS_EXACT_PNL_AMB3_LOC.values())
-            SIGNAL_FILENAME_LIST = list(ARGUS_EXACT_SIGNAL_AMB3_FILE_LOC.values())
-            SYMBOL_LIST = list(ARGUS_EXACT_PNL_AMB3_LOC.keys())
-            HISTORY_MINUTE_FILENAME_LIST = list(HISTORY_MINTUE_FILE_LOC.values())
-        
-            start_date = "2021-01-11"
-            end_date = "2024-06-17"
-            
-            backtest_result = run_backtest_list(trade_choice_simple_3, 
-                          SAVE_FILENAME_LIST, SYMBOL_LIST,
-                              SIGNAL_FILENAME_LIST, HISTORY_MINUTE_FILENAME_LIST,
-                                        start_date, end_date,
-                                        OPEN_HR_DICT, CLOSE_HR_DICT, 
-                                        save_or_not=save_or_not)
-                             
-            MASTER_PNL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_PNL_amb3_full.csv"
-            read.merge_raw_data(SAVE_FILENAME_LIST, MASTER_PNL_FILENAME, sort_by="Entry_Date")
-            
-        elif method == "portfolio":
-            pass
-        return backtest_result

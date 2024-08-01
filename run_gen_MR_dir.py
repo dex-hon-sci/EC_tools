@@ -11,7 +11,7 @@ A modified script based on the Mean-Reversion Method developed by Abbe Whitford.
 # python import
 import datetime as datetime
 from enum import Enum
-
+import getpass
 # package imports
 import pandas as pd 
 import numpy as np
@@ -31,17 +31,21 @@ from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, \
                                             ARGUS_EXACT_SIGNAL_AMB_FILE_LOC,\
                                             ARGUS_EXACT_SIGNAL_AMB2_FILE_LOC, \
                                                 ARGUS_EXACT_SIGNAL_AMB3_FILE_LOC,\
-                                                ARGUS_EXACT_SIGNAL_MODE_FILE_LOC
+                                                ARGUS_EXACT_SIGNAL_MODE_FILE_LOC,\
+                                                RESULT_FILEPATH, DATA_FILEPATH, \
+                                                TEST_FILE_LOC
 
 
 __all__ = ['loop_signal','run_gen_MR_signals', 
-           'run_gen_MR_signals_list', 'run_gen_MR_signals_preloaded_list']
+           'run_gen_MR_signals_list', 'run_gen_MR_signals_preloaded']
 
 __author__="Dexter S.-H. Hon"
 
 
 MR_STRATEGIES_0 = {"argus_exact": ArgusMRStrategy,
                    "argus_exact_mode": ArgusMRStrategyMode}
+
+
 
 class SignalGenMethod(Enum):
     SIGNAL_GEN = "signal_gen"
@@ -50,12 +54,13 @@ class SignalGenMethod(Enum):
 
 def loop_signal(Strategy, book, signal_data, history_data, open_price_data,  
                     start_date, end_date,
-                   buy_range=([0.25,0.4],[0.6,0.75],0.05), sell_range =([0.6,0.75],[0.25,0.4],0.95), 
+                   buy_range=([0.25,0.4],[0.6,0.75],0.05), 
+                   sell_range =([0.6,0.75],[0.25,0.4],0.95), 
                    open_hr='', close_hr='',
-                   commodity_name = '', Timezone= "",
+                   asset_name = '', Timezone= "",
                   contract_symbol_condse = False, loop_symbol = None): 
     """
-    
+    The main loop used to generate Buy/Sell signals.
 
     Parameters
     ----------
@@ -63,11 +68,11 @@ def loop_signal(Strategy, book, signal_data, history_data, open_price_data,
         The function of signal generation from the strategy module.
     book : bookkeep object
         The bookkeeping object from the bookkeep module.
-    signal_data : TYPE
-        DESCRIPTION.
-    history_data : TYPE
-        DESCRIPTION.
-    open_price_data : TYPE
+    signal_data : dataframe
+        The dataframe of the signal data, e.g.the APCs.
+    history_data : dataframe
+        The dataframe of the history daily pricing data.
+    open_price_data : dataframe
         DESCRIPTION.
     start_date : TYPE
         DESCRIPTION.
@@ -78,13 +83,15 @@ def loop_signal(Strategy, book, signal_data, history_data, open_price_data,
     sell_range : tuple, optional
         DESCRIPTION. The default is ([0.6,0.75],[0.25,0.4],0.95).
     open_hr : str, optional
-        DESCRIPTION. The default is ''.
+        A string for the opening hour for the loop in military format. 
+        The default is ''.
     close_hr : str, optional
-        DESCRIPTION. The default is ''.
+        A string for the closing hour for the loop in military format. 
+        The default is ''.
     commodity_name : str, optional
-        DESCRIPTION. The default is ''.
+        The name of the asset in our test. The default is ''.
     Timezone : str, optional
-        DESCRIPTION. The default is "".
+        The name of the Timezone for a particular asset. The default is "".
     contract_symbol_condse : bool, optional
         DESCRIPTION. The default is False.
     loop_symbol : bool, optional
@@ -95,12 +102,10 @@ def loop_signal(Strategy, book, signal_data, history_data, open_price_data,
     None.
 
     """
-
-
     #make bucket
-    bucket = book.make_bucket(keyword=Strategy.strategy_name)
+    bucket = book.make_bucket(keyword=Strategy().strategy_name)
     print('Start looping signal: {}...'.format(loop_symbol))
-    
+    print(history_data[history_data['Date'] == start_date])
     # Find the index of the start_date and end_date here.
     start_index = history_data.index[history_data['Date'] == start_date].item()    
     end_index = history_data.index[history_data['Date'] == end_date].item()
@@ -163,7 +168,7 @@ def loop_signal(Strategy, book, signal_data, history_data, open_price_data,
         
 
             # make a list of data to be written into bookkeep
-            static_info = [commodity_name, full_contract_symbol, \
+            static_info = [asset_name, full_contract_symbol, \
                            Timezone, open_hr, close_hr]
                 
             # put all the data in a singular list
@@ -187,10 +192,12 @@ def run_gen_MR_signals(Strategy, asset_pack,
                        buy_range=([0.25,0.4],[0.6,0.75],0.05), 
                        sell_range =([0.6,0.75],[0.25,0.4],0.95), 
                        open_hr='', close_hr='',
-                       commodity_name = '', Timezone= "",
+                       asset_name = '', Timezone= "",
                        start_date_pushback = 20):
     """
-    
+    The main function that generate MeanRversion signals.
+    This particular method uses the bookkeep module to generate CSV file as 
+    outputs.
 
     Parameters
     ----------
@@ -232,7 +239,7 @@ def run_gen_MR_signals(Strategy, asset_pack,
     # Loop the whole list in one go with all the contracts or Loop it one contract at a time?
     
     symbol = asset_pack['symbol']
-    commodity_name = asset_pack['keywords']
+    asset_name = asset_pack['keywords']
 
     # The reading part takes the longest time: 13 seconds. The loop itself takes 
     # input 1, APC. Load the master table in memory and test multple strategies   
@@ -275,15 +282,13 @@ def run_gen_MR_signals(Strategy, asset_pack,
     dict_contracts_quant_signals = loop_signal(Strategy, book, 
                                                APCs_dat, portara_dat, open_price_data,
                                                start_date, end_date,
-                                               strategy_name= strategy_name,
                                                buy_range=buy_range, 
                                                sell_range=sell_range,
                                                open_hr=open_hr, close_hr=close_hr,
-                                               commodity_name = commodity_name, 
+                                               asset_name = asset_name, 
                                                Timezone= Timezone,
                                                loop_symbol = symbol)
-    
-
+                  
     dict_contracts_quant_signals = pd.DataFrame(dict_contracts_quant_signals)
     
     #sort by date
@@ -293,8 +298,8 @@ def run_gen_MR_signals(Strategy, asset_pack,
 
 # tested
 @util.time_it
-def run_gen_MR_signals_list(Strategy, 
-                            filename_list, categories_list, keywords_list, symbol_list, 
+def run_gen_MR_signals_list(Strategy, filename_list, 
+                            categories_list, keywords_list, symbol_list,
                             signal_list, history_daily_list, history_minute_list,
                             start_date, end_date,
                             open_hr_dict, close_hr_dict, 
@@ -302,11 +307,57 @@ def run_gen_MR_signals_list(Strategy,
                             buy_range=([0.25,0.4],[0.6,0.75],0.05), 
                             sell_range =([0.6,0.75],[0.25,0.4],0.95),
                             save_or_not=False):
+    """
+    A method that run Mean Reversion signal generation for a list of inputs.
+    
+    This method depends upon the function run_gen_MR_signals to iterate over
+    the input lists and calculate the signal for each assets independently.
+
+    Parameters
+    ----------
+    Strategy : TYPE
+        DESCRIPTION.
+    filename_list : TYPE
+        DESCRIPTION.
+    categories_list : TYPE
+        DESCRIPTION.
+    keywords_list : TYPE
+        DESCRIPTION.
+    signal_list : TYPE
+        DESCRIPTION.
+    history_daily_list : TYPE
+        DESCRIPTION.
+    history_minute_list : TYPE
+        DESCRIPTION.
+    start_date : TYPE
+        DESCRIPTION.
+    end_date : TYPE
+        DESCRIPTION.
+    open_hr_dict : TYPE
+        DESCRIPTION.
+    close_hr_dict : TYPE
+        DESCRIPTION.
+    timezone_dict : TYPE
+        DESCRIPTION.
+    buy_range : TYPE, optional
+        DESCRIPTION. The default is ([0.25,0.4],[0.6,0.75],0.05).
+    sell_range : TYPE, optional
+        DESCRIPTION. The default is ([0.6,0.75],[0.25,0.4],0.95).
+    save_or_not : TYPE, optional
+        DESCRIPTION. The default is False.
+
+    Returns
+    -------
+    TYPE
+        DESCRIPTION.
+
+    """
     
     output_dict = dict()
     for filename, cat, key, sym, signal, history_daily, history_minute in zip(\
         filename_list, categories_list, keywords_list, symbol_list, signal_list, \
                                         history_daily_list, history_minute_list):
+
         @util.time_it
         @util.save_csv("{}".format(filename), save_or_not=save_or_not)
         def run_gen_MR_signals_indi(cat, key, sym):
@@ -323,7 +374,7 @@ def run_gen_MR_signals_list(Strategy,
                                              buy_range=buy_range, 
                                              sell_range=sell_range,
                                              open_hr=open_hr, close_hr=close_hr,
-                                             commodity_name = key, 
+                                             asset_name = key, 
                                              Timezone= Timezone
                                              ) #WIP
             print("name {}".format(filename))
@@ -336,12 +387,50 @@ def run_gen_MR_signals_list(Strategy,
     return output_dict
 
 @util.time_it
-def run_gen_MR_signals_preloaded_list(Strategy, filename_list, 
+def run_gen_MR_signals_preloaded(Strategy, filename_list, 
                        signal_pkl, history_daily_pkl, openprice_pkl, 
                        start_date, end_date,
                        open_hr_dict, close_hr_dict, timezone_dict,
-                       save_or_not = True, 
-                       buy_range=(0.4,0.6,0.1),sell_range =(0.6,0.4,0.9)):
+                       buy_range=(0.4,0.6,0.1),sell_range =(0.6,0.4,0.9),
+                       save_or_not = True):
+    """
+    
+
+    Parameters
+    ----------
+    Strategy : TYPE
+        DESCRIPTION.
+    filename_list : TYPE
+        DESCRIPTION.
+    signal_pkl : TYPE
+        DESCRIPTION.
+    history_daily_pkl : TYPE
+        DESCRIPTION.
+    openprice_pkl : TYPE
+        DESCRIPTION.
+    start_date : TYPE
+        DESCRIPTION.
+    end_date : TYPE
+        DESCRIPTION.
+    open_hr_dict : TYPE
+        DESCRIPTION.
+    close_hr_dict : TYPE
+        DESCRIPTION.
+    timezone_dict : TYPE
+        DESCRIPTION.
+    buy_range : TYPE, optional
+        DESCRIPTION. The default is (0.4,0.6,0.1).
+    sell_range : TYPE, optional
+        DESCRIPTION. The default is (0.6,0.4,0.9).
+    save_or_not : TYPE, optional
+        DESCRIPTION. The default is True.
+
+    Returns
+    -------
+    TYPE
+        DESCRIPTION.
+
+    """
     
     # run meanreversion signal generation on the basis of individual programme  
     # Loop the whole list in one go with all the contracts or Loop it one contract at a time?
@@ -381,7 +470,7 @@ def run_gen_MR_signals_preloaded_list(Strategy, filename_list,
                                                        buy_range=buy_range,
                                                        sell_range=sell_range,
                                                        open_hr=open_hr, close_hr=close_hr,
-                                                       commodity_name = symbol, 
+                                                       asset_name = symbol, 
                                                        Timezone= Timezone,
                                                        loop_symbol=symbol)
             return dict_contracts_quant_signals
@@ -391,27 +480,73 @@ def run_gen_MR_signals_preloaded_list(Strategy, filename_list,
 
     return master_dict
 
+SignalGen_RunType = {"signal_gen": run_gen_MR_signals,
+                     "signal_gen_list": run_gen_MR_signals_list, 
+                     "signal_gen_preload": run_gen_MR_signals_preloaded
+                                    }
+
+def run_gen_signal(strategy, save_filename_list,  
+                   signal_filename, history_filename, 
+                   start_date, end_date,
+                   open_hr_dict = OPEN_HR_DICT, 
+                   close_hr_dict = CLOSE_HR_DICT, 
+                   timezone_dict = TIMEZONE_DICT,
+                   buy_range= (0.4,0.6,0.1), sell_range = (0.6,0.4,0.9),
+                   runtype = 'list', 
+                   merge_or_not=True, save_or_not = False):
+    
+    if runtype == "list":
+        merge_filename = getpass.getpass(prompt="please enter the name for the merged file :") 
+
+        MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + merge_filename
+        HISTORY_MINUTE_LIST = list(HISTORY_MINTUE_FILE_LOC.values())
+
+        run_gen_MR_signals_list(strategy, save_filename_list, 
+                                CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST,
+                                signal_filename, history_filename, HISTORY_MINUTE_LIST,
+                                start_date, end_date,
+                                open_hr_dict, close_hr_dict, timezone_dict,
+                                buy_range = buy_range, 
+                                sell_range = sell_range,
+                                save_or_not=save_or_not)
+        
+        if merge_or_not:
+            read.merge_raw_data(SAVE_FILENAME_LIST, 
+                                MASTER_SIGNAL_FILENAME, sort_by="Date")
+            
+    elif runtype=='preload':
+        OPENPRICE_PKL = util.load_pkl(DATA_FILEPATH+"pkl_vault/crudeoil_future_openprice_full.pkl")
+
+        run_gen_MR_signals_preloaded(strategy, save_filename_list, 
+                                    signal_filename, history_filename, OPENPRICE_PKL,
+                                    start_date, end_date,
+                                    open_hr_dict, close_hr_dict, timezone_dict,
+                                    buy_range = buy_range, 
+                                    sell_range = sell_range,
+                                    save_or_not = save_or_not)
+
+
 
 if __name__ == "__main__":
 
     
-    #start_date = "2022-01-03"
-    start_date = "2021-01-11"
+    start_date = "2024-03-03"
+    #start_date = "2021-01-11"
     end_date = "2024-06-17"
-    
-    SAVE_FILENAME_LIST = list(ARGUS_EXACT_SIGNAL_AMB3_FILE_LOC.values())
+    SAVE_FILENAME_LIST = list(TEST_FILE_LOC.values())
 
     #maybe I need an unpacking function here to handle payload from json files
     SIGNAL_LIST = list(APC_FILE_LOC.values())
     HISTORY_DAILY_LIST = list(HISTORY_DAILY_FILE_LOC.values())
     HISTORY_MINUTE_LIST = list(HISTORY_MINTUE_FILE_LOC.values())
-    
+
     strategy_name = 'argus_exact'
     strategy = MR_STRATEGIES_0[strategy_name]
     buy_range = ([0.2,0.25],[0.75,0.8],0.1) # (-0.1,0.1,-0.45)
     sell_range = ([0.75,0.8],[0.2,0.25],0.9) # (0.1,-0.1,0.45)
    
 # =============================================================================
+# # Test the individual list method
 #     run_gen_MR_signals_list(strategy,
 #                             SAVE_FILENAME_LIST, CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, 
 #                             SIGNAL_LIST, HISTORY_DAILY_LIST, HISTORY_MINUTE_LIST,
@@ -422,18 +557,47 @@ if __name__ == "__main__":
 #                             save_or_not=True)
 # =============================================================================
 
-    run_gen_MR_signals_list(strategy,
-                            SAVE_FILENAME_LIST, CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, 
-                            SIGNAL_LIST, HISTORY_DAILY_LIST, HISTORY_MINUTE_LIST,
-                            start_date, end_date,
-                            OPEN_HR_DICT, CLOSE_HR_DICT, TIMEZONE_DICT,
-                            buy_range=buy_range, 
-                            sell_range =sell_range,
-                            save_or_not=True)
+# =============================================================================
+# # Test the aggegrate method 
+#     run_gen_signal(strategy, SAVE_FILENAME_LIST,
+#                     SIGNAL_LIST, HISTORY_DAILY_LIST, 
+#                     start_date, end_date,
+#                     buy_range = buy_range, 
+#                     sell_range = sell_range,
+#                     runtype = 'preload',
+#                     save_or_not=False)
+# =============================================================================
+
+    SIGNAL_PKL = util.load_pkl("/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_APC_full.pkl")
+    HISTORY_DAILY_PKL = util.load_pkl("/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_daily_full.pkl")
+    #HISTORY_MINUTE_PKL = util.load_pkl("/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_full.pkl")
+    OPENPRICE_PKL = util.load_pkl("/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_openprice_full.pkl")
 
 
-    MASTER_SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_amb3.csv"
-    read.merge_raw_data(SAVE_FILENAME_LIST, MASTER_SIGNAL_FILENAME, sort_by="Date")
+    run_gen_signal(strategy, TEST_FILE_LOC,
+                    SIGNAL_PKL, HISTORY_DAILY_PKL, 
+                    start_date, end_date,
+                    buy_range = buy_range, 
+                    sell_range = sell_range,
+                    runtype = 'preload',
+                    save_or_not=False)
+    
+
+
+# =============================================================================
+#     run_gen_MR_signals_list(strategy,
+#                             SAVE_FILENAME_LIST, CAT_LIST, KEYWORDS_LIST,  
+#                             SIGNAL_LIST, HISTORY_DAILY_LIST, HISTORY_MINUTE_LIST,
+#                             start_date, end_date,
+#                             OPEN_HR_DICT, CLOSE_HR_DICT, TIMEZONE_DICT,
+#                             buy_range=buy_range, 
+#                             sell_range =sell_range,
+#                             save_or_not=True)
+# 
+# 
+#     MASTER_SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_amb3.csv"
+#     read.merge_raw_data(SAVE_FILENAME_LIST, MASTER_SIGNAL_FILENAME, sort_by="Date")
+# =============================================================================
 
 # =============================================================================
 #     asset_pack = {"categories" : 'Argus Nymex Heating oil month 1 Daily',

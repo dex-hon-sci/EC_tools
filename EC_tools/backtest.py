@@ -29,9 +29,6 @@ APC_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_la
 
 __author__="Dexter S.-H. Hon"
 
-class BacktestType(Enum):
-    BACKTEST_LIST = "backtest_list"
-    BACKTEST_PORTFOLIO = "backtest_portfolio"
     
 
 # tested
@@ -173,16 +170,18 @@ def plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=False):
     elif plot_or_not == False:
         pass
 
-class Loop(Protocol):
+class BacktestLoop(Protocol):
     pass
-class LoopCrossPoints(Loop):
+class LoopCrossPoints(BacktestLoop):
     pass
 
-class LoopLib(object):
-    # A class that contains all Loop mechanism
-    def __init__(self):
-        return 
-    
+class LoopRange(BacktestLoop):
+    pass
+
+class LoopFull(BacktestLoop):
+    pass 
+
+
 def loop_date_full():
     """
     A method that loop through every single data points.
@@ -399,7 +398,7 @@ def loop_date_portfolio(portfo, TradeMethod,
     return portfo
     
 
-def loop_list_portfolio_preloaded_list(portfo, TradeMethod,
+def loop_portfolio_preloaded_list(portfo, TradeMethod,
                                        signal_table, 
                                        histroy_intraday_data_pkl, 
                                         give_obj_name = "USD", 

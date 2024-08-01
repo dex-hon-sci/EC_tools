@@ -20,7 +20,8 @@ __all__ = ['get_apc_from_server','read_apc_data','read_portara_daily_data',
            'read_portara_minute_data','merge_portara_data',
            'portara_data_handling', 'extract_lag_data', 
            'read_reformat_Portara_minute_data', 'find_closest_price', 
-           'find_crossover', 'find_minute_EES','open_portfolio']
+           'find_crossover', 'find_minute_EES','open_portfolio',
+           'render_PNL_xlsx']
 
 __author__="Dexter S.-H. Hon"
 
@@ -381,6 +382,7 @@ def read_reformat_Portara_daily_data(filename, add_col_data = {}):
 
     """
     history_data =  pd.read_csv(filename)
+    
     history_data.columns = ['Date', 'Open', 'High', 'Low', 
                             'Settle', 'Volume', 'OpenInterest', 'Contract Code']
     
