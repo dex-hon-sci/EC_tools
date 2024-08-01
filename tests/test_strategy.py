@@ -9,7 +9,7 @@ import datetime as datetime
 import numpy as np
 import pytest
 
-from EC_tools.strategy import MRStrategyArgus, SignalStatus
+from EC_tools.strategy import ArgusMRStrategy, SignalStatus
 import EC_tools.read as read
 import EC_tools.math_func as mfunc
 import EC_tools.utility as util

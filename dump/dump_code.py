@@ -1125,3 +1125,29 @@ def loop_signal(book, signal_data, history_data, open_price_data,
                                     dict_contracts_quant_signals.columns.values[0])
     
     return dict_contracts_quant_signals
+def gen_signal_vector(signal_data, history_data, loop_start_date = ""): # WIP
+    # make a vectoralised way to perform signal generation
+
+    # a method to generate signal assuming the input are vectors
+    
+    start_date = loop_start_date
+    
+    APCs_dat = signal_data[signal_data['Forecast Period'] > start_date]
+    portara_dat = history_data[history_data["Date only"] > start_date]
+    
+    # generate a list of 5 days lag data
+    
+    # make a list of lag1q
+    # make a list of lag2q
+    # make a list of median APC
+    
+    #make a list of rolling5days
+    #make a list of median APC for 5 days
+    
+    # make a list of 0.1, 0.9 quantiles
+    
+    # Turn the list into numpy array, then run condition 1-4 through it, get a list of true or false.
+    
+    dict_contracts_quant_signals = []
+    
+    return dict_contracts_quant_signals

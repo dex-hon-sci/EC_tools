@@ -6,13 +6,13 @@ Created on Thu Jul  4 04:59:37 2024
 @author: dexter
 """
 import numpy as np
-from scipy.interpolate import CubicSpline
 from typing import Protocol
 from enum import Enum, auto
 
 import EC_tools.math_func as mfunc
 
 __author__="Dexter S.-H. Hon"
+
 
 class SignalStatus(Enum):
     BUY = "Buy" # When the position is added but not filled
@@ -84,7 +84,7 @@ class Strategy(Protocol):
         return self._direction
         
     
-class MRStrategyArgus(Strategy):
+class ArgusMRStrategy(Strategy):
     """
     Mean-Reversion Strategy based on Argus Possibility Curves. 
     This class allows us to ... 

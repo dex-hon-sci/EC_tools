@@ -10,10 +10,10 @@ import pandas as pd
 import numpy as np
 import datetime as datetime
 from typing import Protocol
+from enum import Enum
 
 # import from EC_tools
 import EC_tools.read as read
-import EC_tools.utility as util
 from EC_tools.bookkeep import Bookkeep
 from EC_tools.trade import  trade_choice_simple, OneTradePerDay, trade_choice_simple_3
 import EC_tools.plot as plot
@@ -27,8 +27,12 @@ SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/benchmark_sign
 APC_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_HOc1.csv"  
 
 
-
 __author__="Dexter S.-H. Hon"
+
+class BacktestType(Enum):
+    BACKTEST_LIST = "backtest_list"
+    BACKTEST_PORTFOLIO = "backtest_portfolio"
+    
 
 # tested
 def prepare_signal_interest(filename_buysell_signals, 

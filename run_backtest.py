@@ -20,10 +20,15 @@ from crudeoil_future_const import OPEN_HR_DICT, CLOSE_HR_DICT, \
                                     ARGUS_EXACT_PNL_LOC, \
                                     ARGUS_EXACT_SIGNAL_AMB_FILE_LOC, ARGUS_EXACT_PNL_AMB_LOC,\
                                      ARGUS_EXACT_SIGNAL_AMB2_FILE_LOC, ARGUS_EXACT_PNL_AMB2_LOC,\
+                                     ARGUS_EXACT_SIGNAL_AMB3_FILE_LOC, ARGUS_EXACT_PNL_AMB3_LOC,\
                                          ARGUS_EXACT_SIGNAL_MODE_FILE_LOC, ARGUS_EXACT_PNL_MODE_LOC
 
+__all__ = ['run_backtest','run_backtest_list', 
+           'run_backtest_portfolio', 'run_backtest_portfolio_preloaded_list']
 
 __author__="Dexter S.-H. Hon"
+
+
 
 @util.time_it
 def run_backtest(trade_choice, filename_minute,filename_buysell_signals, 
@@ -168,6 +173,12 @@ def run_backtest_portfolio_preloaded_list(TradeMethod,
     return P1
 
 if __name__ == "__main__":
+    
+    Backtest_Lib = {"run_backtest": run_backtest,
+                "run_backtest_list": run_backtest_list,
+                "run_backtest_portfolio": run_backtest_portfolio,
+                "run_backtest_portfolio_preloaded_list": run_backtest_portfolio_preloaded_list}
+    
     # master function that runs the backtest itself.
     FILENAME_MINUTE = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/CL.001"
     FILENAME_BUYSELL_SIGNALS = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_short/argus_exact_signal_CLc1_short.csv"
@@ -177,11 +188,14 @@ if __name__ == "__main__":
     MASTER_SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_full.csv"
     HISTORY_MINUTE_PKL_FILENAME ="/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_full.pkl"
 
-    SAVE_FILENAME_LIST = list(ARGUS_EXACT_PNL_MODE_LOC.values())
-    SIGNAL_FILENAME_LIST = list(ARGUS_EXACT_SIGNAL_MODE_FILE_LOC.values())
-    SYMBOL_LIST = list(ARGUS_EXACT_PNL_MODE_LOC.keys())
+    SAVE_FILENAME_LIST = list(ARGUS_EXACT_PNL_AMB3_LOC.values())
+    SIGNAL_FILENAME_LIST = list(ARGUS_EXACT_SIGNAL_AMB3_FILE_LOC.values())
+    SYMBOL_LIST = list(ARGUS_EXACT_PNL_AMB3_LOC.keys())
     HISTORY_MINUTE_FILENAME_LIST = list(HISTORY_MINTUE_FILE_LOC.values())
-        
+
+    FILEPATH = "/home/dexter/Euler_Capital_codes/EC_tools/results/"
+    MASTER_PNL_FILENAME = FILEPATH+'argus_exact_PNL_amb3_full.csv'
+
     #start_date = "2022-01-03"
     start_date = "2021-01-11"
     end_date = "2024-06-17"
@@ -195,7 +209,9 @@ if __name__ == "__main__":
                                     start_date, end_date,
                                     OPEN_HR_DICT, CLOSE_HR_DICT, 
                                     save_or_not=True)
-                         
+                       
+    read.merge_raw_data(SAVE_FILENAME_LIST, MASTER_PNL_FILENAME, sort_by="Entry_Date")
+
     #run_backtest_portfolio(FILENAME_MINUTE, FILENAME_BUYSELL_SIGNALS, 
     #                       '2023-06-01', '2023-12-30')
     
@@ -204,4 +220,29 @@ if __name__ == "__main__":
     #                                      HISTORY_MINUTE_PKL_FILENAME,
     #                                      '2022-06-30', '2024-06-30')
     
+
     
+    def run_backtest(method = "list", save_or_not=True):
+        
+        if method == "list":
+            SAVE_FILENAME_LIST = list(ARGUS_EXACT_PNL_AMB3_LOC.values())
+            SIGNAL_FILENAME_LIST = list(ARGUS_EXACT_SIGNAL_AMB3_FILE_LOC.values())
+            SYMBOL_LIST = list(ARGUS_EXACT_PNL_AMB3_LOC.keys())
+            HISTORY_MINUTE_FILENAME_LIST = list(HISTORY_MINTUE_FILE_LOC.values())
+        
+            start_date = "2021-01-11"
+            end_date = "2024-06-17"
+            
+            backtest_result = run_backtest_list(trade_choice_simple_3, 
+                          SAVE_FILENAME_LIST, SYMBOL_LIST,
+                              SIGNAL_FILENAME_LIST, HISTORY_MINUTE_FILENAME_LIST,
+                                        start_date, end_date,
+                                        OPEN_HR_DICT, CLOSE_HR_DICT, 
+                                        save_or_not=save_or_not)
+                             
+            MASTER_PNL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_PNL_amb3_full.csv"
+            read.merge_raw_data(SAVE_FILENAME_LIST, MASTER_PNL_FILENAME, sort_by="Entry_Date")
+            
+        elif method == "portfolio":
+            pass
+        return backtest_result

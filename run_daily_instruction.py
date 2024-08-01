@@ -42,7 +42,8 @@ def make_new_symbol(date_interest,old_symbol, forward_unit=1):
     return new_symbol
 
 @util.time_it
-def run_MR_list(start_date, end_date):
+def run_MR_list(start_date, end_date, 
+                MR_method=run_gen_MR_signals_preloaded_list):
     """
     Run MR stratgy in a list.
 
@@ -62,8 +63,7 @@ def run_MR_list(start_date, end_date):
 
     """
     SAVE_SIGNAL_FILENAME_LIST = TEST_FILE_LOC
-    result = run_gen_MR_signals_preloaded_list(SAVE_SIGNAL_FILENAME_LIST, 
-                                               start_date, end_date,
+    result = MR_method(SAVE_SIGNAL_FILENAME_LIST, start_date, end_date,
                                                SIGNAL_PKL, HISTORY_DAILY_PKL, 
                                                OPENPRICE_PKL,
                                                save_or_not = False)

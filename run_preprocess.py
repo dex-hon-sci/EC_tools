@@ -94,7 +94,7 @@ def run_preprocess():
                          save_filename="/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_full.pkl")
     
     # calculate and load the open price data into a pkl file
-    #create_open_price_list(HISTORY_DAILY_FILE_LOC, HISTORY_MINTUE_FILE_LOC)
+    create_open_price_list(HISTORY_DAILY_FILE_LOC, HISTORY_MINTUE_FILE_LOC)
     create_aggegrate_pkl(OPEN_PRICE_FILE_LOC, read.read_reformat_openprice_data,
                          save_filename="/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_openprice_full.pkl")
     
