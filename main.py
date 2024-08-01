@@ -28,7 +28,7 @@ import EC_tools.utility as util
 
 from run_preprocess import run_preprocess
 from run_gen_MR_dir import MR_STRATEGIES_0, run_gen_signal
-from run_backtest import run_backtest_portfolio_preloaded_list
+from run_backtest import run_backtest_portfolio_preloaded
 from run_PNL_plot import cumPNL_plot
 
 # CSV list -> Signal Gen - > Backtest ->PNL

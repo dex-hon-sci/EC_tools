@@ -105,6 +105,7 @@ def loop_signal(Strategy, book, signal_data, history_data, open_price_data,
     #make bucket
     bucket = book.make_bucket(keyword=Strategy().strategy_name)
     print('Start looping signal: {}...'.format(loop_symbol))
+    print(history_data)
     print(history_data[history_data['Date'] == start_date])
     # Find the index of the start_date and end_date here.
     start_index = history_data.index[history_data['Date'] == start_date].item()    
@@ -445,7 +446,8 @@ def run_gen_MR_signals_preloaded(Strategy, filename_list,
         def run_gen_MR_indi():
             
             book = Bookkeep(bucket_type = 'mr_signals')
-
+            
+            print("symbol",symbol)
             #signal file input
             signal_file = signal_pkl[symbol]
            
@@ -486,7 +488,6 @@ SignalGen_RunType = {"signal_gen": run_gen_MR_signals,
                                     }
 
 def run_gen_signal(strategy, save_filename_list,  
-                   signal_filename, history_filename, 
                    start_date, end_date,
                    open_hr_dict = OPEN_HR_DICT, 
                    close_hr_dict = CLOSE_HR_DICT, 
@@ -496,14 +497,16 @@ def run_gen_signal(strategy, save_filename_list,
                    merge_or_not=True, save_or_not = False):
     
     if runtype == "list":
-        merge_filename = getpass.getpass(prompt="please enter the name for the merged file :") 
-
-        MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + merge_filename
+        SIGNAL_LIST = list(APC_FILE_LOC.values())
+        HISTORY_DAILY_LIST = list(HISTORY_DAILY_FILE_LOC.values())
         HISTORY_MINUTE_LIST = list(HISTORY_MINTUE_FILE_LOC.values())
+    
+    
+
 
         run_gen_MR_signals_list(strategy, save_filename_list, 
                                 CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST,
-                                signal_filename, history_filename, HISTORY_MINUTE_LIST,
+                                SIGNAL_LIST, HISTORY_DAILY_LIST, HISTORY_MINUTE_LIST,
                                 start_date, end_date,
                                 open_hr_dict, close_hr_dict, timezone_dict,
                                 buy_range = buy_range, 
@@ -511,14 +514,20 @@ def run_gen_signal(strategy, save_filename_list,
                                 save_or_not=save_or_not)
         
         if merge_or_not:
+            merge_filename = getpass.getpass(prompt="please enter the name for the merged file :") 
+            MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + merge_filename
+            
             read.merge_raw_data(SAVE_FILENAME_LIST, 
                                 MASTER_SIGNAL_FILENAME, sort_by="Date")
             
     elif runtype=='preload':
+        
+        SIGNAL_PKL = util.load_pkl(DATA_FILEPATH+"pkl_vault/crudeoil_future_APC_full.pkl")
+        HISTORY_DAILY_PKL = util.load_pkl(DATA_FILEPATH+"pkl_vault/crudeoil_future_daily_full.pkl")
         OPENPRICE_PKL = util.load_pkl(DATA_FILEPATH+"pkl_vault/crudeoil_future_openprice_full.pkl")
 
         run_gen_MR_signals_preloaded(strategy, save_filename_list, 
-                                    signal_filename, history_filename, OPENPRICE_PKL,
+                                    SIGNAL_PKL, HISTORY_DAILY_PKL, OPENPRICE_PKL,
                                     start_date, end_date,
                                     open_hr_dict, close_hr_dict, timezone_dict,
                                     buy_range = buy_range, 
@@ -530,15 +539,17 @@ def run_gen_signal(strategy, save_filename_list,
 if __name__ == "__main__":
 
     
-    start_date = "2024-03-03"
+    start_date = "2024-03-04"
     #start_date = "2021-01-11"
     end_date = "2024-06-17"
     SAVE_FILENAME_LIST = list(TEST_FILE_LOC.values())
 
     #maybe I need an unpacking function here to handle payload from json files
-    SIGNAL_LIST = list(APC_FILE_LOC.values())
-    HISTORY_DAILY_LIST = list(HISTORY_DAILY_FILE_LOC.values())
-    HISTORY_MINUTE_LIST = list(HISTORY_MINTUE_FILE_LOC.values())
+# =============================================================================
+#     SIGNAL_LIST = list(APC_FILE_LOC.values())
+#     HISTORY_DAILY_LIST = list(HISTORY_DAILY_FILE_LOC.values())
+#     HISTORY_MINUTE_LIST = list(HISTORY_MINTUE_FILE_LOC.values())
+# =============================================================================
 
     strategy_name = 'argus_exact'
     strategy = MR_STRATEGIES_0[strategy_name]
@@ -568,19 +579,13 @@ if __name__ == "__main__":
 #                     save_or_not=False)
 # =============================================================================
 
-    SIGNAL_PKL = util.load_pkl("/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_APC_full.pkl")
-    HISTORY_DAILY_PKL = util.load_pkl("/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_daily_full.pkl")
-    #HISTORY_MINUTE_PKL = util.load_pkl("/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_full.pkl")
-    OPENPRICE_PKL = util.load_pkl("/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_openprice_full.pkl")
-
 
     run_gen_signal(strategy, TEST_FILE_LOC,
-                    SIGNAL_PKL, HISTORY_DAILY_PKL, 
                     start_date, end_date,
                     buy_range = buy_range, 
                     sell_range = sell_range,
                     runtype = 'preload',
-                    save_or_not=False)
+                    save_or_not=True)
     
 
 
