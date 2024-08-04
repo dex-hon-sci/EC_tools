@@ -43,10 +43,10 @@ from run_PNL_plot import cumPNL_plot
 @util.time_it
 def load_source_data():
     #load the pkl 
-    SIGNAL_PKL = util.load_pkl(DATA_FILEPATH+"pkl_vault/crudeoil_future_APC_full.pkl")
-    HISTORY_DAILY_PKL = util.load_pkl(DATA_FILEPATH+"pkl_vault/crudeoil_future_daily_full.pkl")
-    HISTORY_MINUTE_PKL = util.load_pkl(DATA_FILEPATH+"pkl_vault/crudeoil_future_minute_full.pkl")
-    OPENPRICE_PKL = util.load_pkl(DATA_FILEPATH+"pkl_vault/crudeoil_future_openprice_full.pkl")
+    SIGNAL_PKL = util.load_pkl(DATA_FILEPATH+"/pkl_vault/crudeoil_future_APC_full.pkl")
+    HISTORY_DAILY_PKL = util.load_pkl(DATA_FILEPATH+"/pkl_vault/crudeoil_future_daily_full.pkl")
+    HISTORY_MINUTE_PKL = util.load_pkl(DATA_FILEPATH+"/pkl_vault/crudeoil_future_minute_full.pkl")
+    OPENPRICE_PKL = util.load_pkl(DATA_FILEPATH+"/pkl_vault/crudeoil_future_openprice_full.pkl")
 
     SAVE_FILENAME_LOC = TEST_FILE_LOC #ARGUS_BENCHMARK_SIGNAL_FILE_LOC #TEST_FILE_LOC
     
@@ -86,7 +86,7 @@ def run_main(start_date, end_date,
 
         print("=========Running Back-Testing =============")
         
-        MASTER_PNL_FILENAME = RESULT_FILEPATH + 'test_PNL.csv'
+        MASTER_PNL_FILENAME = RESULT_FILEPATH + '/test_PNL.csv'
         #SAVE_PNL_FILENAME_LIST = FILE_PNL_LOC
 
         run_backtest_bulk(trade_choice_simple_3, 
@@ -120,6 +120,9 @@ def run_main(start_date, end_date,
 
         print("=========Generating Buy/Sell Signals=======")
         
+        strategy_name = 'argus_exact'
+        strategy = MR_STRATEGIES_0[strategy_name]
+        
         run_gen_signal_bulk(strategy, SAVE_FILENAME_LOC,
                         start_date, end_date,
                         buy_range = buy_range, 
@@ -129,11 +132,14 @@ def run_main(start_date, end_date,
                         merge_or_not=True)
 
         print("=========Running Back-Testing =============")
-
+        MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/test_signal.csv'
+        MASTER_PNL_FILENAME = RESULT_FILEPATH + '/test_PNL.pkl'
+        
         run_backtest_bulk(OneTradePerDay, 
                           FILE_LOC, FILE_PNL_LOC, 
                             start_date, end_date, 
                             method = "preload", 
+                            master_signal_filename = MASTER_SIGNAL_FILENAME,
                             master_pnl_filename=MASTER_PNL_FILENAME,
                             open_hr_dict = OPEN_HR_DICT, 
                             close_hr_dict=CLOSE_HR_DICT,
@@ -227,15 +233,15 @@ if __name__ == "__main__":
 #     MASTER_PNL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_PNL_amb3_full.csv"
 #     merge_raw_data(PNL_LIST, MASTER_PNL_FILENAME, sort_by="Entry_Date")
 # =============================================================================
-    #start_date = "2024-03-04"
-    start_date = "2021-01-11"
+    start_date = "2024-03-04"
+    #start_date = "2021-01-11"
     end_date = "2024-06-17"
     
     run_main(start_date, end_date,         
                  buy_range = ([0.3,0.4],[0.8,0.9],0.1),
                  sell_range = ([0.6,0.7],[0.1,0.2],0.9), 
                  preprocess = False, 
-                 runtype = "list")
+                 runtype = "preload")
     
     ## Visualise PNL plot and metrics.
     ##run_PNL

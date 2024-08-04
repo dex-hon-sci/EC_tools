@@ -7,6 +7,8 @@ Created on Tue May  7 23:46:42 2024
 """
 import datetime as datetime
 import time
+import pickle
+
 from enum import Enum
 import getpass
 import EC_tools.read as read
@@ -16,7 +18,8 @@ from EC_tools.trade import OneTradePerDay, trade_choice_simple, \
                             trade_choice_simple_2, trade_choice_simple_3
 from EC_tools.portfolio import Asset, Portfolio
 from crudeoil_future_const import OPEN_HR_DICT, CLOSE_HR_DICT, \
-                                TEST_FILE_LOC, TEST_FILE_PNL_LOC, RESULT_FILEPATH,\
+                                TEST_FILE_LOC, TEST_FILE_PNL_LOC, \
+                                DATA_FILEPATH, RESULT_FILEPATH,\
                                  ARGUS_EXACT_SIGNAL_FILE_LOC, \
                                     ARGUS_EXACT_PNL_SHORT_LOC, HISTORY_MINTUE_FILE_LOC,\
                                     ARGUS_EXACT_PNL_LOC, \
@@ -147,7 +150,7 @@ def run_backtest_portfolio(TradeMethod,
 #@util.pickle_save("/home/dexter/Euler_Capital_codes/EC_tools/results/test3_portfolio_nonconcurrent_1contracts_full.pkl")
 def run_backtest_portfolio_preloaded(TradeMethod,
                                           master_buysell_signals_filename, 
-                                          histroy_intraday_data_pkl_filename,
+                                          histroy_intraday_data_pkl,
                                           start_date, end_date,
                                           give_obj_name = "USD", 
                                           get_obj_quantity = 1): 
@@ -155,7 +158,7 @@ def run_backtest_portfolio_preloaded(TradeMethod,
     start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
     end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
 
-    histroy_intraday_data_pkl = util.load_pkl(histroy_intraday_data_pkl_filename)
+    #histroy_intraday_data_pkl = util.load_pkl(histroy_intraday_data_pkl_filename)
     # Find the date for trading, only "Buy" or "Sell" date are taken.
     trade_date_table = backtest.prepare_signal_interest(master_buysell_signals_filename, 
                                                trim = False)
@@ -183,7 +186,8 @@ def run_backtest_portfolio_preloaded(TradeMethod,
     
 def run_backtest_bulk(TradeMethod, signal_file_loc, save_file_loc, 
                         start_date, end_date, 
-                         method = "list", master_pnl_filename='',
+                         method = "list", 
+                         master_signal_filename="", master_pnl_filename='',
                          open_hr_dict = OPEN_HR_DICT, close_hr_dict=CLOSE_HR_DICT,
                          save_or_not=True, merge_or_not=True):
             
@@ -215,14 +219,18 @@ def run_backtest_bulk(TradeMethod, signal_file_loc, save_file_loc,
                                                   FILENAME_BUYSELL_SIGNALS, 
                                    start_date, end_date)
         
-    elif method == "portfolio_preloaded":
-        
+    elif method == "preload":
+        #MASTER_SIGNAL_FILENAME
+        HISTORY_MINUTE_PKL = util.load_pkl(DATA_FILEPATH+"/pkl_vault/crudeoil_future_minute_full.pkl")
+
         PP = run_backtest_portfolio_preloaded(OneTradePerDay,
-                                                MASTER_SIGNAL_FILENAME, 
-                                              HISTORY_MINUTE_PKL_FILENAME,
+                                                master_signal_filename, 
+                                              HISTORY_MINUTE_PKL,
                                               start_date, end_date)
-        
-        util.load_pkl()
+        backtest_result =PP
+        if save_or_not:
+            file = open(master_pnl_filename, 'wb')
+            pickle.dump(PP, file)
         
     
     return backtest_result

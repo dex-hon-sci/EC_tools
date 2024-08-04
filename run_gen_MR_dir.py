@@ -501,7 +501,7 @@ def run_gen_signal_bulk(strategy, save_filename_loc,
         HISTORY_DAILY_LIST = list(HISTORY_DAILY_FILE_LOC.values())
         HISTORY_MINUTE_LIST = list(HISTORY_MINTUE_FILE_LOC.values())
 
-        SAVE_FILENAME_LIST = list(save_filename_loc.values)
+        SAVE_FILENAME_LIST = list(save_filename_loc.values())
         # Run signal generation in a list format
         run_gen_MR_signals_list(strategy, SAVE_FILENAME_LIST, 
                                 CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST,
@@ -521,9 +521,11 @@ def run_gen_signal_bulk(strategy, save_filename_loc,
             
     elif runtype=='preload':
         # Fixed input filename from constant variables
-        SIGNAL_PKL = util.load_pkl(DATA_FILEPATH+"pkl_vault/crudeoil_future_APC_full.pkl")
-        HISTORY_DAILY_PKL = util.load_pkl(DATA_FILEPATH+"pkl_vault/crudeoil_future_daily_full.pkl")
-        OPENPRICE_PKL = util.load_pkl(DATA_FILEPATH+"pkl_vault/crudeoil_future_openprice_full.pkl")
+        SIGNAL_PKL = util.load_pkl(DATA_FILEPATH+"/pkl_vault/crudeoil_future_APC_full.pkl")
+        HISTORY_DAILY_PKL = util.load_pkl(DATA_FILEPATH+"/pkl_vault/crudeoil_future_daily_full.pkl")
+        OPENPRICE_PKL = util.load_pkl(DATA_FILEPATH+"/pkl_vault/crudeoil_future_openprice_full.pkl")
+
+        SAVE_FILENAME_LIST = list(save_filename_loc.values())
 
         # Run signal generation in a preloaded format
         run_gen_MR_signals_preloaded(strategy, save_filename_loc, 
@@ -533,6 +535,12 @@ def run_gen_signal_bulk(strategy, save_filename_loc,
                                     buy_range = buy_range, 
                                     sell_range = sell_range,
                                     save_or_not = save_or_not)
+        if merge_or_not:
+            merge_filename = getpass.getpass(prompt="please enter the name for the merged file :") 
+            MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + merge_filename
+            
+            read.merge_raw_data(SAVE_FILENAME_LIST, 
+                                MASTER_SIGNAL_FILENAME, sort_by="Date")
 
 
 
