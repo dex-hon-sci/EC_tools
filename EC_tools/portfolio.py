@@ -31,6 +31,7 @@ __author__="Dexter S.-H. Hon"
 class Asset:
     """
     A class that solely define the attribute of a Asset object.
+    # We can abnadon this and just use a dict for asset
     
     """
     name: str  # note that future countract should be written in the CLM24 format
@@ -486,7 +487,7 @@ class Portfolio(object):
         total_value = sum(self.value(datetime).values())
         return total_value
 
-    def _make_log(self, simple_log = False):
+    def _make_log(self, simple_log = False): #Decrepated time complexity too large
         """
         An internal method to construct logs for the portfolio.
         """
@@ -575,6 +576,9 @@ class Portfolio(object):
         
         return self.master_table
 
+class PortfolioLog(Portfolio):
+    def __init__():
+        return
 
     
 class PortfolioMetrics(Portfolio):
