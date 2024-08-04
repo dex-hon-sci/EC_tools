@@ -203,8 +203,8 @@ def run_backtest_bulk(TradeMethod, signal_file_loc, save_file_loc,
                                     save_or_not=save_or_not)
                       
         if merge_or_not:
-            merge_filename = getpass.getpass(prompt="please enter the name for the merged file :") 
-            MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + merge_filename
+            #merge_filename = getpass.getpass(prompt="please enter the name for the merged file :") 
+            #MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + merge_filename
 
             read.merge_raw_data(SAVE_FILENAME_LIST, 
                                 master_pnl_filename, sort_by="Entry_Date")
@@ -217,11 +217,12 @@ def run_backtest_bulk(TradeMethod, signal_file_loc, save_file_loc,
         
     elif method == "portfolio_preloaded":
         
-        backtest_result = None
         PP = run_backtest_portfolio_preloaded(OneTradePerDay,
                                                 MASTER_SIGNAL_FILENAME, 
                                               HISTORY_MINUTE_PKL_FILENAME,
                                               start_date, end_date)
+        
+        util.load_pkl()
         
     
     return backtest_result
@@ -258,7 +259,7 @@ if __name__ == "__main__":
     
     run_backtest_bulk(trade_choice_simple_3, TEST_FILE_LOC, TEST_FILE_PNL_LOC, 
                             start_date, end_date, 
-                     method = "list", master_pnl_filename='',
+                     method = "preload", master_pnl_filename='',
                      open_hr_dict = OPEN_HR_DICT, close_hr_dict=CLOSE_HR_DICT,
                      save_or_not=True, merge_or_not=True)
     

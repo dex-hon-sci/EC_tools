@@ -105,8 +105,7 @@ def loop_signal(Strategy, book, signal_data, history_data, open_price_data,
     #make bucket
     bucket = book.make_bucket(keyword=Strategy().strategy_name)
     print('Start looping signal: {}...'.format(loop_symbol))
-    print(history_data)
-    print(history_data[history_data['Date'] == start_date])
+
     # Find the index of the start_date and end_date here.
     start_index = history_data.index[history_data['Date'] == start_date].item()    
     end_index = history_data.index[history_data['Date'] == end_date].item()
@@ -358,7 +357,7 @@ def run_gen_MR_signals_list(Strategy, filename_list,
     for filename, cat, key, sym, signal, history_daily, history_minute in zip(\
         filename_list, categories_list, keywords_list, symbol_list, signal_list, \
                                         history_daily_list, history_minute_list):
-
+        print("filename", filename)
         @util.time_it
         @util.save_csv("{}".format(filename), save_or_not=save_or_not)
         def run_gen_MR_signals_indi(cat, key, sym):
@@ -437,7 +436,7 @@ def run_gen_MR_signals_preloaded(Strategy, filename_list,
     # Loop the whole list in one go with all the contracts or Loop it one contract at a time?
     master_dict = dict()
     symbol_list = list(signal_pkl.keys())
-    
+    print(symbol_list, filename_list)
     for symbol in symbol_list:
         filename = filename_list[symbol]
         # The reading part takes the longest time: 13 seconds. The loop itself takes 
@@ -487,7 +486,7 @@ SignalGen_RunType = {"signal_gen": run_gen_MR_signals,
                      "signal_gen_preload": run_gen_MR_signals_preloaded
                                     }
 
-def run_gen_signal(strategy, save_filename_list,  
+def run_gen_signal_bulk(strategy, save_filename_loc,  
                    start_date, end_date,
                    open_hr_dict = OPEN_HR_DICT, 
                    close_hr_dict = CLOSE_HR_DICT, 
@@ -502,8 +501,9 @@ def run_gen_signal(strategy, save_filename_list,
         HISTORY_DAILY_LIST = list(HISTORY_DAILY_FILE_LOC.values())
         HISTORY_MINUTE_LIST = list(HISTORY_MINTUE_FILE_LOC.values())
 
+        SAVE_FILENAME_LIST = list(save_filename_loc.values)
         # Run signal generation in a list format
-        run_gen_MR_signals_list(strategy, save_filename_list, 
+        run_gen_MR_signals_list(strategy, SAVE_FILENAME_LIST, 
                                 CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST,
                                 SIGNAL_LIST, HISTORY_DAILY_LIST, HISTORY_MINUTE_LIST,
                                 start_date, end_date,
@@ -516,7 +516,7 @@ def run_gen_signal(strategy, save_filename_list,
             merge_filename = getpass.getpass(prompt="please enter the name for the merged file :") 
             MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + merge_filename
             
-            read.merge_raw_data(save_filename_list, 
+            read.merge_raw_data(SAVE_FILENAME_LIST, 
                                 MASTER_SIGNAL_FILENAME, sort_by="Date")
             
     elif runtype=='preload':
@@ -526,7 +526,7 @@ def run_gen_signal(strategy, save_filename_list,
         OPENPRICE_PKL = util.load_pkl(DATA_FILEPATH+"pkl_vault/crudeoil_future_openprice_full.pkl")
 
         # Run signal generation in a preloaded format
-        run_gen_MR_signals_preloaded(strategy, save_filename_list, 
+        run_gen_MR_signals_preloaded(strategy, save_filename_loc, 
                                     SIGNAL_PKL, HISTORY_DAILY_PKL, OPENPRICE_PKL,
                                     start_date, end_date,
                                     open_hr_dict, close_hr_dict, timezone_dict,
@@ -557,7 +557,7 @@ if __name__ == "__main__":
     sell_range = ([0.75,0.8],[0.2,0.25],0.9) # (0.1,-0.1,0.45)
     
     # master function in running everything
-    run_gen_signal(strategy, TEST_FILE_LOC,
+    run_gen_signal_bulk(strategy, TEST_FILE_LOC,
                     start_date, end_date,
                     buy_range = buy_range, 
                     sell_range = sell_range,
