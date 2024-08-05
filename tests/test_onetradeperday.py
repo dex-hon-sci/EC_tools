@@ -13,12 +13,14 @@ from EC_tools.position import Position, ExecutePosition, PositionStatus
 from EC_tools.trade import Trade, trade_choice_simple, OneTradePerDay
 from EC_tools.backtest import extract_intraday_minute_data, \
                             prepare_signal_interest, plot_in_backtest
+from crudeoil_future_const import DATA_FILEPATH, RESULT_FILEPATH
 import EC_tools.read as read
 
 
-FILENAME_MINUTE = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/CL.001"
-FILENSME_BUYSELL_SIGNALS = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_CLc1_full.csv"
-SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_CLc1.csv"   
+
+FILENAME_MINUTE = DATA_FILEPATH +"/history_data/Minute/CL.001"
+FILENSME_BUYSELL_SIGNALS = RESULT_FILEPATH + "/argus_exact_signal/argus_exact_signal_CLc1_full.csv"
+SIGNAL_FILENAME = DATA_FILEPATH + "/APC_latest/APC_latest_CLc1.csv"   
 
 def setup_trade_test(date_interest, open_hr, close_hr, direction):
         

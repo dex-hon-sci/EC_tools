@@ -7,12 +7,16 @@ Created on Fri May 31 03:27:22 2024
 """
 import datetime as datetime
 import EC_tools.read as read
+from EC_tools.strategy import SignalStatus
+from crudeoil_future_const import DATA_FILEPATH
 
 
-SIGNAL = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_CLc1.csv"
-HISTORY_DAILY = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Day/CL.day"
-HISTORY_MINUTE = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/CL.001"
-
+#SIGNAL = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_CLc1.csv"
+#HISTORY_DAILY = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Day/CL.day"
+#HISTORY_MINUTE = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/CL.001"
+SIGNAL = DATA_FILEPATH + "/APC_latest/APC_latest_CLc1.csv"
+HISTORY_DAILY = DATA_FILEPATH + "/history_data/Day/CL.day"
+HISTORY_MINUTE = DATA_FILEPATH + "/history_data/Minute/CL.001"
 
 class SingleRun():
     """

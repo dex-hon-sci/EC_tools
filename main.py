@@ -151,88 +151,6 @@ def run_main(start_date, end_date,
 
 if __name__ == "__main__":
 
-    # data management
-    
-    #run_data_management
-    print("===============Data Management=============")
-    
-    # run preprocessing (calculate earliest entry and update all database )
-    
-    #run_preprocess()
-    
-# =============================================================================
-#     
-#     SIGNAL_PKL = util.load_pkl(
-#         "/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_APC_full.pkl")
-#     HISTORY_DAILY_PKL = util.load_pkl(
-#         "/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_daily_full.pkl")
-#     #HISTORY_MINUTE_PKL = util.load_pkl("crudeoil_future_minute_full.pkl")
-#     OPENPRICE_PKL = util.load_pkl(
-#         "/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_openprice_full.pkl")
-# 
-# =============================================================================
-#     SAVE_SIGNAL_FILENAME_LIST = [
-#      "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_CLc1_full.csv", 
-#      "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_CLc2_full.csv", 
-#      "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_HOc1_full.csv", 
-#      "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_HOc2_full.csv", 
-#      "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_RBc1_full.csv", 
-#      "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_RBc2_full.csv", 
-#      "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_QOc1_full.csv",
-#      "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_QOc2_full.csv",
-#      "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_QPc1_full.csv",
-#      "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal/argus_exact_signal_QPc2_full.csv" 
-#      ]
-# =============================================================================
-     #= #TEST_FILE_LOC #ARGUS_BENCHMARK_SIGNAL_AMB_FILE_LOC
-#     #ARGUS_BENCHMARK_SIGNAL_FILE_LOC #TEST_FILE_LOC
-#     
-#     #SIGNAL_PKL, HISTORY_DAILY_PKL, HISTORY_MINUTE_PKL, OPENPRICE_PKL,\
-#     #                            SAVE_SIGNAL_FILENAME_LIST = load_source_data()
-#     
-#     start_date = "2022-01-01"
-#     end_date = "2024-06-15"
-#     
-#     print("=========Generating Buy/Sell Signals=======")
-#     
-#     # run strategy, let the user to choose strategy here (add strategy id)
-#     run_gen_MR_signals_preloaded_list
-#     run_gen_MR_signals_preloaded_list(SAVE_SIGNAL_FILENAME_LIST, 
-#                                       start_date, end_date,
-#                            SIGNAL_PKL, HISTORY_DAILY_PKL, OPENPRICE_PKL,
-#                            save_or_not = True, 
-#                            buy_range=(0.4,0.6,0.1), sell_range=(0.6,0.4,0.9))
-# =============================================================================
-    
-# =============================================================================
-#     print("---------merge signals tables--------------")
-#     
-#     #SIGNAL_LIST = list(SAVE_SIGNAL_FILENAME_LIST.values())   
-#     #SIGNAL_LIST = list(TEST_FILE_LOC.values())   
-#     SIGNAL_LIST = list(ARGUS_EXACT_SIGNAL_AMB3_FILE_LOC.values())
-#     MASTER_SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_amb3.csv"
-#     merge_raw_data(SIGNAL_LIST, MASTER_SIGNAL_FILENAME, sort_by="Date")
-# 
-#     print("=========Running Back-Testing =============")
-#     start_date = "2024-03-15"
-#     end_date = "2024-06-15"
-#     
-#     #MASTER_SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signal_full.csv"
-#     #HISTORY_MINUTE_PKL_FILENAME ="/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_full.pkl"
-# 
-# # =============================================================================
-# # 
-# #     @util.time_it
-# #     def quick_backtest_time():
-# #         PP =  quick_backtest(MASTER_SIGNAL_FILENAME, HISTORY_MINUTE_PKL_FILENAME,start_date, end_date)
-# #         return PP
-# # =============================================================================
-#     
-#     #PP = quick_backtest_time()
-#     PNL_LIST = list(ARGUS_EXACT_PNL_AMB3_LOC.values())
-#     MASTER_PNL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_PNL_amb3_full.csv"
-#     merge_raw_data(PNL_LIST, MASTER_PNL_FILENAME, sort_by="Entry_Date")
-# =============================================================================
     start_date = "2024-03-04"
     #start_date = "2021-01-11"
     end_date = "2024-06-17"
@@ -241,7 +159,7 @@ if __name__ == "__main__":
                  buy_range = ([0.3,0.4],[0.8,0.9],0.1),
                  sell_range = ([0.6,0.7],[0.1,0.2],0.9), 
                  preprocess = False, 
-                 runtype = "preload")
+                 runtype = "list")
     
     ## Visualise PNL plot and metrics.
     ##run_PNL

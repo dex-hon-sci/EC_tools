@@ -5,55 +5,27 @@ Created on Tue May 28 02:08:35 2024
 
 @author: dexter
 """
-
-PRICE_TABLE = {"CLc1": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL.day",
-               "CLc2": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/CL_d01.day",
-               "HOc1": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/HO.day",
-               "HOc2": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/HO_d01.day",
-               "RBc1": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/RB.day",
-               "RBc2": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/RB_d01.day",
-               "QOc1": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QO.day",
-               "QOc2": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QO_d01.day",
-               "QPc1": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QP.day",
-               "QPc2": "/home/dexter/Euler_Capital_codes/test_MS/data_zeroadjust_intradayportara_attempt1/Daily/QP_d01.day"
-               }
-
-num_per_contract = {
-    'CLc1': 1000.0,
-    'CLc2': 1000.0,
-    'HOc1': 42000.0,
-    'HOc2': 42000.0,
-    'RBc1': 42000.0,
-    'RBc2': 42000.0,
-    'QOc1': 1000.0,
-    'QOc2': 1000.0,
-    'QPc1': 100.0,
-    'QPc2': 100.0,
-}
-
-round_turn_fees = {
-'CLc1': 24.0,
-'CLc2': 24.0,
-'HOc1': 25.2,
-'HOc2': 25.2,
-'RBc1': 25.2,
-'RBc2': 25.2,
-'QOc1': 24.0,
-'QOc2': 24.0,
-'QPc1': 24.0,
-'QPc2': 24.0,
-}
-
-
-
-import unittest
-from werkzeug import exceptions
+from crudeoil_future_const import DATA_FILEPATH, RESULT_FILEPATH
+#import unittest
+#from werkzeug import exceptions
 import datetime
 import pandas as pd
 import pytest
 
 from EC_tools.portfolio import Asset, Portfolio
-import EC_tools.utility as util
+#import EC_tools.utility as util
+
+PRICE_TABLE = {"CLc1": DATA_FILEPATH + "/history_data/Day/CL.day",
+               "CLc2": DATA_FILEPATH + "/history_data/Day/CL_d01.day",
+               "HOc1": DATA_FILEPATH + "/history_data/Day/HO.day",
+               "HOc2": DATA_FILEPATH + "/history_data/Day/HO_d01.day",
+               "RBc1": DATA_FILEPATH + "/history_data/Day/RB.day",
+               "RBc2": DATA_FILEPATH + "/history_data/Day/RB_d01.day",
+               "QOc1": DATA_FILEPATH + "/history_data/Day/QO.day",
+               "QOc2": DATA_FILEPATH + "/history_data/Day/QO_d01.day",
+               "QPc1": DATA_FILEPATH + "/history_data/Day/QP.day",
+               "QPc2": DATA_FILEPATH + "/history_data/Day/QP_d01.day"
+               }
 
 # Define the test inputs for assets
 USD = {'name': 'USD', 'quantity': 1e7, 'unit':'dollars', 'asset_type':'Cash', 'misc':{}}
@@ -247,7 +219,7 @@ def test_log_asset_log() -> None:
     assert len(PP.log) == 4
     assert isinstance(PP.asset_log('CLc1'), pd.Series)
     assert len(PP.asset_log('CLc1')) == 4
-test_log_asset_log()
+#test_log_asset_log()
 ###################
 # Error test
 def test_table_invlaid()-> None:

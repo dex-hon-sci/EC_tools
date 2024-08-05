@@ -7,7 +7,7 @@ Created on Wed May 29 23:49:08 2024
 """
 # python import
 from dataclasses import dataclass, field, replace
-from typing import Protocol
+from typing import Protocol, Union
 from enum import Enum, auto
 import datetime as datetime
 
@@ -15,7 +15,7 @@ import datetime as datetime
 from EC_tools.portfolio import Asset, Portfolio
 from EC_tools.utility import random_string
     
-__all__=['PositionStatus', 'Position', 'ExecutePosition']
+__all__=['PositionStatus', 'PositionType', 'Position', 'ExecutePosition']
 
 class PositionStatus(Enum):
     """
@@ -29,6 +29,7 @@ class PositionStatus(Enum):
     
 class PositionType(Enum):
     """
+    A set of possible types of positions
     """
     LONG_BUY = 'Long-Buy'
     LONG_SELL = 'Long-Sell'
@@ -61,8 +62,9 @@ class Position(object):
     auto_adjust: bool = True
     pos_id: str = random_string()  
     
-    def __post_init__(self, void_time = datetime.datetime.now(), 
-                      epi = 1e-8):
+    def __post_init__(self, 
+                      void_time: datetime = datetime.datetime.now(), 
+                      epi: float = 1e-8):
         """
         The post init function that checks if the input price is correct.
         If it is not. the position is voided.
@@ -114,7 +116,7 @@ class Position(object):
         return self._fix_quantity
     
     @fix_quantity.setter
-    def fix_quantity(self, value):
+    def fix_quantity(self, value: Union[int, float]):
         """
         Setter method to change the value of fix_quantity.
 
@@ -146,7 +148,7 @@ class Position(object):
         return self._price
     
     @price.setter
-    def price(self, value):
+    def price(self, value: Union[int, float]):
         """
         Setter method for calling position's price.
 
@@ -182,7 +184,7 @@ class ExecutePosition(object):
     
     """
     
-    def __init__(self,  Position):
+    def __init__(self,  Position: Position):
         self.position = Position
         
         #check if there is a Portfolio attached to the position.
@@ -190,7 +192,9 @@ class ExecutePosition(object):
             raise Exception("The position does not belong to a valid \
                             Portfolio.")
 
-    def fill_pos(self, fill_time = datetime.datetime.now(), pos_type='Long-Buy'):
+    def fill_pos(self, 
+                 fill_time: datetime = datetime.datetime.now(), 
+                 pos_type: str ='Long-Buy'):
         """
         Fill position method.
 
@@ -307,7 +311,8 @@ class ExecutePosition(object):
         return self.position
     
     
-    def cancel_pos(self, void_time = datetime.datetime.now()):
+    def cancel_pos(self, 
+                   void_time: datetime = datetime.datetime.now()):
         """
         Cancel position method.
 

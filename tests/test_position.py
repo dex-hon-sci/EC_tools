@@ -9,7 +9,7 @@ import datetime as datetime
 import pytest
 
 from EC_tools.position import PositionStatus, Position, ExecutePosition
-from EC_tools.portfolio import Asset, Portfolio
+from EC_tools.portfolio import Portfolio
 
 def test_PositionStatus()->None:
     Pos = PositionStatus

@@ -575,13 +575,222 @@ class Portfolio(object):
     def wipe_debt(self):
         
         return self.master_table
-
-class PortfolioLog(Portfolio):
-    def __init__():
-        return
-
     
-class PortfolioMetrics(Portfolio):
+@dataclass
+class PortfolioLog(Portfolio):
+    
+    portfolio: Portfolio = None
+    
+    def value(self, date_time, price_dict = PRICE_DICT,   
+              size_dict = SIZE_DICT, dntr='USD'): #WIP
+        """
+        A function that return a dict with the price for each assets on 
+        a particular date and time.
+        
+        Parameters
+        ----------
+        datetime: datetime object
+            The datetime for query.
+        price_dict: dict
+            A dictionary that contains the pricing data filename for each 
+            assets. The default is PRICE_DICT.
+            
+        size_dict: dict
+            A dictionary that contains the size (for example, number of barrels)
+            contained in each assets. The default is SIZE_DICT.
+        dntr: str
+            The denomanator currency for calculating the value of each asset.
+            The default is USD'.
+            
+        Returns
+        ------_
+        value_dict: dict
+            A dictionary for the value of each assets for that time.
+        """
+        # price_table is a dict containing the pricing data files
+        # read the value of the portfolio of a particular date
+        
+        value_dict = dict()
+        
+        #print(self.pool, date_time)
+        self.set_pool_window(self.__pool_datetime[0], date_time)
+
+        for i, asset_name in enumerate(self.table['name']):
+            # specia handling the denomator asset (usually a currency)
+            if asset_name == dntr:
+                dntr_value = float(self.table['quantity'].iloc[0])
+                value_dict[asset_name] = float(self.table['quantity'].iloc[0])
+                #print('Cashhh')
+            else:
+            
+                # manage the size of the asset
+                if size_dict == None:
+                    size = 1
+                else:
+                    # Get the size of each asset
+                    size = size_dict[asset_name]
+                   
+                #asset_price_filename = price_dict[asset_name]
+                sub_price_table = price_dict[asset_name]
+                #sub_price_table = read.read_reformat_Portara_daily_data(
+                #                                        asset_price_filename)
+                # The current version of this method only gets the price data iff 
+                # it exist in the table, i.e. it does not get anything outside of the trading days
+                target_time = date_time.strftime("%Y-%m-%d")
+                print(sub_price_table['Settle'], target_time)
+                #print('TT',target_time, sub_price_table[(sub_price_table['Date'] > datetime.datetime(2024,2,28)) 
+                #                                        & (sub_price_table['Date'] < datetime.datetime(2024,3,6))])
+                
+                value = sub_price_table['Settle'][sub_price_table['Date'] == target_time].item()
+                #value = sub_price_table.loc[target_time]['Open']
+               # _ , value = read.find_closest_price_date(sub_price_table, 
+               #                                          target_time=target_time)
+                #print('value',value)
+                #value = float(sub_price_table[sub_price_table['Date'] == date_time]['Settle'].iloc[0])
+                quantity = int(self.table['quantity'].iloc[i])
+                
+                #new way to do things  
+                #print('------------')
+                #print(_, asset_name, quantity, float(value.iloc[0]), size)
+                #print(asset_name, float(value.iloc[0])*quantity*size)
+                # storage
+                value_dict[asset_name] = float(value)*quantity*size
+
+        return value_dict
+
+    def asset_value(self, asset_name, datetime, price_dict = PRICE_DICT,   
+              size_dict = SIZE_DICT, dntr='USD'):
+        """
+        A function that return a dict with of a particular asset on 
+        a particular date and time.
+        
+        Parameters
+        ----------
+        asset_name : str
+            The name of the asset.
+        datetime : datetime object
+            The date and time of interest.
+
+        Returns
+        -------
+        asset_value : float
+            the asset value.
+
+        """
+        asset_value = self.value(datetime, price_dict = price_dict,   
+                  size_dict = size_dict, dntr=dntr)[asset_name]
+        return asset_value
+            
+    def total_value(self, datetime):
+        """
+        A function that return the total value of the entire portfolio on 
+        a particular date and time.
+
+        Parameters
+        ----------
+        datetime : datetime object
+            The date and time of interest.
+
+        Returns
+        -------
+        total_value : float
+            the total value.
+
+        """
+        total_value = sum(self.value(datetime).values())
+        return total_value
+
+    def _make_log(self, simple_log = False): #Decrepated time complexity too large
+        """
+        An internal method to construct logs for the portfolio.
+        """
+        log = list()
+        print("Generating Portfolio Log...")
+        
+        if simple_log:
+        # simple_log make a log with only the inforamtion at the start of the day
+            temp = [datetime.datetime.combine(dt.date(), datetime.time(0,0)) 
+                                            for dt in self.pool_datetime]
+            # reorganised the time_list because set() function scramble the order
+            # Use the set function to output a unique datetime list
+            time_list = sorted(list(set(temp)))
+            # Add an extra day to see what is the earning for the last day
+            #time_list = time_list + \
+            #                [time_list[-1]+datetime.timedelta(days=1)]
+
+        else:
+            time_list = self.pool_datetime
+        # Add an entry at the end of the day to see what is the earning for the last day
+        last_dt = datetime.datetime.combine(time_list[-1].date(), datetime.time(23,59))
+        time_list = time_list + [last_dt]
+        
+            
+        #then loop through the pool history and store them in log list 
+        for item in time_list:
+            print(item)
+            value_entry = self.value(item)
+            value_entry["Total"] = sum(list(value_entry.values()))
+            value_entry['Datetime'] = item
+
+            #print('VE', item, value_entry)
+            log.append(value_entry)
+            
+        # return a log of the values of each asset by time
+        self._log = pd.DataFrame(log)
+        
+        #reorganise columns order
+        asset_name_list = list(self.value(self.pool_datetime[-1]).keys())
+        self._log = self._log[['Datetime', 'Total']+asset_name_list]
+        
+        print("Log is avalibale.")     
+        
+        self._log.sort_values(by="Datetime", inplace = True, ignore_index= True)
+        return self._log
+    
+    @cached_property
+    def log(self):
+        """
+        A simple log that only shows the Portfolio's value at 00:00:00 of the 
+        day.
+
+        Returns
+        -------
+        TYPE
+            DESCRIPTION.
+
+        """
+        return self._make_log(simple_log=True)
+    
+    @cached_property
+    def full_log(self):
+        """
+        A full log that only shows every entry in the changes in the 
+        Portfolio's value.
+
+        Returns
+        -------
+        TYPE
+            DESCRIPTION.
+
+        """
+        return self._make_log(simple_log=False)
+    
+
+    def asset_log(self, asset_name): #tested
+        """
+        The log of the changes in values for a particular assets across 
+        all time.
+        
+        """
+        asset_log = self.full_log[asset_name]
+        return asset_log
+
+    def wipe_debt(self):
+        
+        return self.master_table
+    
+    
+class PortfolioMetrics(PortfolioLog):
     def __init__():
         return
     def sharpe_ratio(self):

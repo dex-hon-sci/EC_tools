@@ -15,7 +15,7 @@ import datetime as datetime
 import numpy as np
 
 from EC_tools.position import Position, ExecutePosition
-from EC_tools.portfolio import Asset
+#from EC_tools.portfolio import Asset
 import EC_tools.read as read
 
 ASSET_DICT = {"USD": {"unit":'dollars', "asset_type":'Cash'},
