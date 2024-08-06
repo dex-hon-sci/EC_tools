@@ -52,7 +52,7 @@ class SignalGenMethod(Enum):
     SIGNAL_GEN_LIST = "signal_gen_list"
     SIGNAL_GEN_PRELOAD = "signal_gen_preload"
 
-def loop_signal(Strategy, book, 
+def loop_signal(Strategy, book: Bookkeep, 
                 signal_data: pd.DataFrame, 
                 history_data: pd.DataFrame, 
                 open_price_data: pd.DataFrame,  
@@ -78,7 +78,7 @@ def loop_signal(Strategy, book,
     history_data : dataframe
         The dataframe of the history daily pricing data.
     open_price_data : dataframe
-        DESCRIPTION.
+        The dataframe of the history opening pricing data.
     start_date : TYPE
         DESCRIPTION.
     end_date : TYPE
@@ -191,14 +191,16 @@ def loop_signal(Strategy, book,
     
     return dict_contracts_quant_signals
 
-def run_gen_MR_signals(Strategy, asset_pack,
-                       signal_filename, filename_daily, filename_minute, 
-                       start_date, end_date,
-                       buy_range=([0.25,0.4],[0.6,0.75],0.05), 
-                       sell_range =([0.6,0.75],[0.25,0.4],0.95), 
-                       open_hr='', close_hr='',
-                       asset_name = '', Timezone= "",
-                       start_date_pushback = 20):
+def run_gen_MR_signals(Strategy, 
+                       asset_pack: dict,
+                       signal_filename: str, 
+                       filename_daily: str, filename_minute: str, 
+                       start_date: str, end_date: str,
+                       buy_range: tuple = ([0.25,0.4],[0.6,0.75],0.05), 
+                       sell_range: tuple = ([0.6,0.75],[0.25,0.4],0.95), 
+                       open_hr: str = '', close_hr: str = '',
+                       asset_name: str = '', Timezone: str = "",
+                       start_date_pushback: int = 20) -> pd.DataFrame:
     """
     The main function that generate MeanRversion signals.
     This particular method uses the bookkeep module to generate CSV file as 
@@ -218,9 +220,9 @@ def run_gen_MR_signals(Strategy, asset_pack,
         DESCRIPTION.
     filename_minute : TYPE
         DESCRIPTION.
-    buy_range : TYPE, optional
+    buy_range : tuple, optional
         DESCRIPTION. The default is ([0.25,0.4],[0.6,0.75],0.05).
-    sell_range : TYPE, optional
+    sell_range : tuple, optional
         DESCRIPTION. The default is ([0.6,0.75],[0.25,0.4],0.95).
     open_hr : TYPE, optional
         DESCRIPTION. The default is ''.
@@ -303,15 +305,20 @@ def run_gen_MR_signals(Strategy, asset_pack,
 
 # tested
 @util.time_it
-def run_gen_MR_signals_list(Strategy, filename_list, 
-                            categories_list, keywords_list, symbol_list,
-                            signal_list, history_daily_list, history_minute_list,
-                            start_date, end_date,
-                            open_hr_dict, close_hr_dict, 
-                            timezone_dict, 
-                            buy_range=([0.25,0.4],[0.6,0.75],0.05), 
-                            sell_range =([0.6,0.75],[0.25,0.4],0.95),
-                            save_or_not=False):
+def run_gen_MR_signals_list(Strategy, 
+                            filename_list: list[str], 
+                            categories_list: list[str], 
+                            keywords_list: list[str], 
+                            symbol_list: list[str],
+                            signal_list: list, 
+                            history_daily_list: list, 
+                            history_minute_list: list,
+                            start_date: str, end_date: str,
+                            open_hr_dict: dict, close_hr_dict: dict, 
+                            timezone_dict: dict, 
+                            buy_range: tuple = ([0.25,0.4],[0.6,0.75],0.05), 
+                            sell_range: tuple =([0.6,0.75],[0.25,0.4],0.95),
+                            save_or_not: bool = False) -> dict:
     """
     A method that run Mean Reversion signal generation for a list of inputs.
     
@@ -320,11 +327,11 @@ def run_gen_MR_signals_list(Strategy, filename_list,
 
     Parameters
     ----------
-    Strategy : TYPE
-        DESCRIPTION.
-    filename_list : TYPE
-        DESCRIPTION.
-    categories_list : TYPE
+    Strategy : strategy object
+        The strategy function that is used to generate the trade signals.
+    filename_list : list
+        The saved filename list.
+    categories_list : list
         DESCRIPTION.
     keywords_list : TYPE
         DESCRIPTION.
@@ -365,7 +372,7 @@ def run_gen_MR_signals_list(Strategy, filename_list,
         print("filename", filename)
         @util.time_it
         @util.save_csv("{}".format(filename), save_or_not=save_or_not)
-        def run_gen_MR_signals_indi(cat, key, sym):
+        def run_gen_MR_signals_indi(cat: str, key: str, sym: str):
             asset_pack = {'categories': cat, 'keywords': key, 'symbol': sym}
             
             open_hr = open_hr_dict[sym]
@@ -392,12 +399,14 @@ def run_gen_MR_signals_list(Strategy, filename_list,
     return output_dict
 
 @util.time_it
-def run_gen_MR_signals_preloaded(Strategy, filename_list, 
+def run_gen_MR_signals_preloaded(Strategy, filename_list: list[str], 
                        signal_pkl, history_daily_pkl, openprice_pkl, 
-                       start_date, end_date,
-                       open_hr_dict, close_hr_dict, timezone_dict,
-                       buy_range=(0.4,0.6,0.1),sell_range =(0.6,0.4,0.9),
-                       save_or_not = True):
+                       start_date: str, end_date: str,
+                       open_hr_dict: dict, close_hr_dict: dict, 
+                       timezone_dict: dict,
+                       buy_range: tuple = (0.4,0.6,0.1),
+                       sell_range: tuple = (0.6,0.4,0.9),
+                       save_or_not: bool = True) -> pd.DataFrame:
     """
     
 
@@ -491,14 +500,16 @@ SignalGen_RunType = {"signal_gen": run_gen_MR_signals,
                      "signal_gen_preload": run_gen_MR_signals_preloaded
                                     }
 
-def run_gen_signal_bulk(strategy, save_filename_loc,  
-                   start_date, end_date,
-                   open_hr_dict = OPEN_HR_DICT, 
-                   close_hr_dict = CLOSE_HR_DICT, 
-                   timezone_dict = TIMEZONE_DICT,
-                   buy_range= (0.4,0.6,0.1), sell_range = (0.6,0.4,0.9),
-                   runtype = 'list', 
-                   merge_or_not=True, save_or_not = False):
+def run_gen_signal_bulk(strategy, save_filename_loc: dict,  
+                        start_date: str, end_date: str,
+                        open_hr_dict: dict = OPEN_HR_DICT, 
+                        close_hr_dict: dict = CLOSE_HR_DICT, 
+                        timezone_dict: dict = TIMEZONE_DICT,
+                        buy_range: tuple = (0.4,0.6,0.1), 
+                        sell_range: tuple = (0.6,0.4,0.9),
+                        runtype: str = 'list', 
+                        merge_or_not: bool = True, 
+                        save_or_not: bool = False):
     
     if runtype == "list":
         # Fixed input filename from constant variables

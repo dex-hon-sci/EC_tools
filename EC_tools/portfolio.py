@@ -52,6 +52,9 @@ class Portfolio(object):
     """
     This class manage everything related to the Portfolio.
     
+    It contains the pool list which contain every transaction operating on this
+    Portfolio.
+    
     """
     
     def __init__(self):
@@ -129,8 +132,9 @@ class Portfolio(object):
         return self._pool_window
     
     @util.time_it
-    def set_pool_window(self, start_time=datetime.datetime(1900,1,1), 
-                                end_time=datetime.datetime(2200,12,31)):
+    def set_pool_window(self, 
+                        start_time: datetime.datetime = datetime.datetime(1900,1,1), 
+                        end_time: datetime.datetime = datetime.datetime(2200,12,31)):
         """
         Setter method for the pool_window object.
 
@@ -161,7 +165,7 @@ class Portfolio(object):
         return self._pool_window
     
     @staticmethod
-    def _make_table(pool_type):
+    def _make_table(pool_type) -> pd.DataFrame:
         """
         A staticmethod that create a datafreame table using either pool_window
         or pool. This is an internal method to construct the table and master 
@@ -238,7 +242,7 @@ class Portfolio(object):
         return table
     
     @property
-    def table(self): # tested
+    def table(self) -> pd.DataFrame: # tested
         """
         An attribute that show a table of all the assets in the portfolio.
         
@@ -255,7 +259,7 @@ class Portfolio(object):
         return self._table
     
     @property
-    def master_table(self): #tested
+    def master_table(self) -> pd.DataFrame: #tested
         """
         An attribute that show a table of all the assets in the portfolio.
         
@@ -266,7 +270,7 @@ class Portfolio(object):
         self._master_table  = self._make_table(self.pool)
         return self._master_table
     
-    def check_remainder(self, asset_name, quantity):
+    def check_remainder(self, asset_name: str, quantity: int | float) -> bool:
         """
         A function that check the remainder if there are enough asset of a 
         particular name in the portfolio
@@ -279,8 +283,8 @@ class Portfolio(object):
          
     
     def add(self, asset,  datetime= datetime.datetime.now(), 
-            quantity = 0, unit='contract', 
-            asset_type='future'): #tested
+            quantity: int | float = 0, unit: str ='contract', 
+            asset_type: str ='future') -> None: #tested
         """
         A function that add a new asset to the pool.
     
@@ -319,7 +323,7 @@ class Portfolio(object):
     
     def sub(self, asset,  datetime= datetime.datetime.today(),  
             asset_name="", quantity = 0, unit='contract', 
-            asset_type='future'): #tested
+            asset_type='future') -> None: #tested
         """
         A function that subtract an existing asset from the pool.
     
@@ -352,6 +356,7 @@ class Portfolio(object):
                 unit = asset['unit']
                 asset_type = asset['asset_type']
                 pass
+            
             new_asset = {'name': asset_name, 'quantity': quantity*-1, 
                          'unit': unit, 'asset_type':asset_type, 'misc':{}}
 
@@ -445,8 +450,9 @@ class Portfolio(object):
 
         return value_dict
         
-    def asset_value(self, asset_name, datetime, price_dict = PRICE_DICT,   
-              size_dict = SIZE_DICT, dntr='USD'):
+    def asset_value(self, asset_name: str, datetime: datetime.datetime, 
+                    price_dict: dict = PRICE_DICT,   
+                    size_dict: dict = SIZE_DICT, dntr: str = 'USD') -> float:
         """
         A function that return a dict with of a particular asset on 
         a particular date and time.
@@ -468,7 +474,7 @@ class Portfolio(object):
                   size_dict = size_dict, dntr=dntr)[asset_name]
         return asset_value
             
-    def total_value(self, datetime):
+    def total_value(self, datetime: datetime.datetime):
         """
         A function that return the total value of the entire portfolio on 
         a particular date and time.
@@ -487,7 +493,7 @@ class Portfolio(object):
         total_value = sum(self.value(datetime).values())
         return total_value
 
-    def _make_log(self, simple_log = False): #Decrepated time complexity too large
+    def _make_log(self, simple_log: bool = False): #Decrepated time complexity too large
         """
         An internal method to construct logs for the portfolio.
         """

@@ -18,6 +18,7 @@ import pandas as pd
 from EC_tools.position import Position, ExecutePosition
 #from EC_tools.portfolio import Asset
 import EC_tools.read as read
+import EC_tools.utility as util
 
 ASSET_DICT = {"USD": {"unit":'dollars', "asset_type":'Cash'},
               "AUD": {"unit":'dollars',"asset_type":'Cash'},
@@ -468,6 +469,7 @@ class OneTradePerDay(Trade):
 
         return entry_pt, exit_pt, stop_pt, close_pt
     
+    @util.time_it
     def open_positions(self, give_obj_name: str, get_obj_name, 
                        get_obj_quantity, EES_target_list, pos_type,
                        size = 1, fee = None, 
@@ -533,6 +535,7 @@ class OneTradePerDay(Trade):
 
         return pos_list
     
+    @util.time_it
     def execute_position(self, EES_dict: dict, pos_list: list, 
                          pos_type: str = "Long"):
         """
@@ -655,6 +658,7 @@ class OneTradePerDay(Trade):
         
         return trade_open, trade_close, pos_list, exec_pos_list
     
+    @util.time_it
     def run_trade(self, day: pd.DataFrame, 
                   give_obj_name: str, get_obj_name: str, 
                   get_obj_quantity,

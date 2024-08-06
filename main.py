@@ -41,7 +41,7 @@ from run_PNL_plot import cumPNL_plot
 # Preloaded PKL input ->
 
 @util.time_it
-def load_source_data():
+def load_source_data() -> tuple:
     #load the pkl 
     SIGNAL_PKL = util.load_pkl(DATA_FILEPATH+"/pkl_vault/crudeoil_future_APC_full.pkl")
     HISTORY_DAILY_PKL = util.load_pkl(DATA_FILEPATH+"/pkl_vault/crudeoil_future_daily_full.pkl")
@@ -55,11 +55,12 @@ def load_source_data():
                 OPENPRICE_PKL, SAVE_FILENAME_LOC
 
 @util.time_it
-def run_main(start_date, end_date,         
-             buy_range = ([0.2,0.25],[0.75,0.8],0.1),
-             sell_range = ([0.75,0.8],[0.2,0.25],0.9), 
-             preprocess = False, 
-             runtype = "list"):
+def run_main(start_date: str, end_date: str,         
+             buy_range: tuple = ([0.2,0.25],[0.75,0.8],0.1),
+             sell_range: tuple = ([0.75,0.8],[0.2,0.25],0.9), 
+             preprocess: bool = False, 
+             runtype: str = "list"):
+    
     signal_gen_runtype = None
     backtest_runtype = None
     

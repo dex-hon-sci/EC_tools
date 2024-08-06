@@ -71,8 +71,9 @@ def run_MR_list(start_date, end_date,
     return result
 
 @util.time_it
-def enter_new_value(workbook,date_interest, cell_loc_dict, signal_result_dict, 
-                    contract_num_dict, output_filename):
+def enter_new_value(workbook, date_interest: datetime.datetime, 
+                    cell_loc_dict: dict, signal_result_dict: dict, 
+                    contract_num_dict: dict, output_filename: str):
     """
     Enter new values to the excel workbook.
 
@@ -131,7 +132,7 @@ def gen_new_xlfile(xl_template_filename: str, output_filename: str,
                    date_interest: datetime.datetime, 
                    signal_result_dict: dict,
                    cell_loc_dict: dict = CELL_LOC_DICT, 
-                   contract_num_dict: dicr = CONTRACT_NUM_DICT):
+                   contract_num_dict: dict = CONTRACT_NUM_DICT):
     """
     Generate a new excel file.
 

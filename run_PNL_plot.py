@@ -29,7 +29,7 @@ label_list = ['CLc1 (x50)', 'HOc1 (x50)', 'RBc1 (x50)', 'QOc1 (x50)', 'QPc1 (x50
 col_list = ['#62A0E1','#EB634E','#E99938','#5CDE93','#6ABBC6', '#62A0E1','#EB634E','#E99938','#5CDE93','#6ABBC6']
 line_list = ['-','-', '-','-','-', '--','--', '--','--','--']
 
-def fill_holes(cumPNL: list):
+def fill_holes(cumPNL: list) -> list:
     if np.isnan(cumPNL[0]):
         cumPNL[0] = 0.0
     
@@ -40,9 +40,10 @@ def fill_holes(cumPNL: list):
             
     return cumPNL
     
-def extract_PNLplot_input(filename, sheet_name='Total', date_col = 'Entry_Date', 
-                          val_col = 'cumulative P&L from trades for contracts (x 50)',
-                          fill_or_not = True):
+def extract_PNLplot_input(filename: str, 
+                          sheet_name: str ='Total', date_col: str = 'Entry_Date', 
+                          val_col: str = 'cumulative P&L from trades for contracts (x 50)',
+                          fill_or_not: bool = True) -> tuple[list, list]:
           
     dataframe = pd.read_excel(filename,sheet_name=sheet_name)
 
@@ -61,9 +62,12 @@ def extract_PNLplot_input(filename, sheet_name='Total', date_col = 'Entry_Date',
     return date_all, cumPNL_all
 
 
-def cumPNL_plot(date, PNL, return_rate, line_color = 'w', label = 'All (x50)',  
-                 sub_date_list=[], sub_data_list=[], sub_line_list = [],
-                 sub_label_list = [], sub_col_list = []):
+def cumPNL_plot(date: list, PNL: list, return_rate: list, 
+                line_color: str = 'w', label: str = 'All (x50)',  
+                sub_date_list: list = [], 
+                sub_data_list: list = [], 
+                sub_line_list: list = [],
+                sub_label_list: list = [], sub_col_list: list = []) -> None:
     
     plt.style.use('dark_background')
     fig = plt.figure(figsize=(14,6))

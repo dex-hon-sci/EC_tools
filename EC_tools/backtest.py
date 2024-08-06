@@ -9,7 +9,7 @@ Created on Thu Apr 18 18:22:17 2024
 import pandas as pd
 import numpy as np
 import datetime as datetime
-from typing import Protocol
+from typing import Protocol, Type
 from enum import Enum
 
 # import from EC_tools
@@ -343,7 +343,7 @@ def loop_date(trade_choice: trade_choice_simple_3,
          
     return dict_trade_PNL
     
-def loop_date_portfolio(portfo, 
+def loop_date_portfolio(portfo: Portfolio, 
                         TradeMethod, 
                         signal_table: pd.DataFrame, 
                         histroy_intraday_data: pd.DataFrame, 
@@ -408,7 +408,7 @@ def loop_date_portfolio(portfo,
     return portfo
     
 
-def loop_portfolio_preloaded_list(portfo, 
+def loop_portfolio_preloaded_list(portfo: Portfolio, 
                                   TradeMethod,
                                   signal_table: pd.DataFrame, 
                                   histroy_intraday_data_pkl, 
@@ -488,20 +488,22 @@ def loop_portfolio_preloaded_list(portfo,
         
     return portfo
 
-def loop_date_portfolio_preloaded_list(portfo, 
-                                       signal_table: pd.DataFrame, 
-                                       histroy_intraday_data_pkl, 
-                                       give_obj_name: str = "USD", 
-                                       get_obj_quantity: int = 3, 
-                                       time_proxy: str='APC forecast period'): #WIP
-    
-    date_list = list(signal_table[time_proxy])
-    date_list = list(set(date_list))
-    
-    print(date_list)
-    
-    #signal_table[signal_table['Date'] = ]
-
+# =============================================================================
+# def loop_date_portfolio_preloaded_list(portfo, 
+#                                        signal_table: pd.DataFrame, 
+#                                        histroy_intraday_data_pkl, 
+#                                        give_obj_name: str = "USD", 
+#                                        get_obj_quantity: int = 3, 
+#                                        time_proxy: str='APC forecast period'): #WIP
+#     
+#     date_list = list(signal_table[time_proxy])
+#     date_list = list(set(date_list))
+#     
+#     print(date_list)
+#     
+#     #signal_table[signal_table['Date'] = ]
+# 
+# =============================================================================
 
 if __name__ == "__main__":
     MASTER_SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signal_full.csv"

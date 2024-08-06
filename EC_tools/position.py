@@ -13,9 +13,11 @@ import datetime as datetime
 
 # EC_tools import
 from EC_tools.portfolio import Asset, Portfolio
-from EC_tools.utility import random_string
+import EC_tools.utility as util  
     
+
 __all__=['PositionStatus', 'PositionType', 'Position', 'ExecutePosition']
+__author__="Dexter S.-H. Hon"
 
 class PositionStatus(Enum):
     """
@@ -60,7 +62,7 @@ class Position(object):
     fill_time: datetime = None
     void_time: datetime = None
     auto_adjust: bool = True
-    pos_id: str = random_string()  
+    pos_id: str = util.random_string()  
     
     def __post_init__(self, 
                       void_time: datetime = datetime.datetime.now(), 
@@ -191,10 +193,10 @@ class ExecutePosition(object):
         if not isinstance(self.position.portfolio, Portfolio):
             raise Exception("The position does not belong to a valid \
                             Portfolio.")
-
+    @util.time_it
     def fill_pos(self, 
                  fill_time: datetime = datetime.datetime.now(), 
-                 pos_type: str ='Long-Buy'):
+                 pos_type: str ='Long-Buy') -> None:
         """
         Fill position method.
 
@@ -308,11 +310,10 @@ class ExecutePosition(object):
         self.position.status = PositionStatus.FILLED
         self.position.fill_time = fill_time
         
-        return self.position
+        #return self.position
     
-    
-    def cancel_pos(self, 
-                   void_time: datetime = datetime.datetime.now()):
+    @util.time_it
+    def cancel_pos(self, void_time: datetime = datetime.datetime.now()):
         """
         Cancel position method.
 
@@ -340,5 +341,5 @@ class ExecutePosition(object):
             
         self.position.status = PositionStatus.VOID
         self.position.void_time = void_time
-        return self.position
+        #return self.position
     

@@ -512,9 +512,11 @@ class SubComponents(object):
         return None
         
         
-def plot_minute(filename_minute, signal_filename, price_approx = 'Open',
-                date_interest = "2022-05-19", direction = "Buy", 
-                APC_time_str = 'Forecast Period', title="",
+def plot_minute(filename_minute: str, signal_filename: str, 
+                price_approx: str = 'Open',
+                date_interest: str = "2022-05-19", 
+                direction: str = "Buy", 
+                APC_time_str: str = 'Forecast Period', title: str ="",
                 bppt_x1 =[], bppt_y1 = [], 
                 bppt_x2 =[], bppt_y2 = [], 
                 bppt_x3 =[], bppt_y3 = []):
