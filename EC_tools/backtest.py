@@ -15,9 +15,9 @@ from enum import Enum
 # import from EC_tools
 import EC_tools.read as read
 from EC_tools.bookkeep import Bookkeep
-from EC_tools.trade import  trade_choice_simple, OneTradePerDay, trade_choice_simple_3
+from EC_tools.trade import  OneTradePerDay, trade_choice_simple_3
 import EC_tools.plot as plot
-from EC_tools.portfolio import Asset, Portfolio
+from EC_tools.portfolio import Portfolio
 from crudeoil_future_const import OPEN_HR_DICT, CLOSE_HR_DICT
 
 FILENAME_MINUTE =  "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/HO.001"
@@ -32,8 +32,9 @@ __author__="Dexter S.-H. Hon"
     
 
 # tested
-def prepare_signal_interest(filename_buysell_signals, 
-                            direction=["Buy", "Sell"], trim = False):
+def prepare_signal_interest(filename_buysell_signals: str, 
+                            direction: list[str] = ["Buy", "Sell"], 
+                            trim: bool = False) -> pd.DataFrame:
     """
     A function that extract data from a signal table based on some directional 
     instruction.
@@ -86,8 +87,10 @@ def prepare_signal_interest(filename_buysell_signals,
     return signal_interest
 
 #tested
-def extract_intraday_minute_data(histrot_intraday_data, date_interest, 
-                                 open_hr='0330', close_hr='1900'):
+def extract_intraday_minute_data(histrot_intraday_data: pd.DataFrame, 
+                                 date_interest: str, 
+                                 open_hr: str = '0330', 
+                                 close_hr: str = '1900') -> pd.DataFrame:
     """
     A function that extract only the minute pricing data from a master file 
     given a single date of interest.
@@ -137,7 +140,10 @@ def extract_intraday_minute_data(histrot_intraday_data, date_interest,
     return histrot_intraday_data
 
 # tested
-def plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=False):
+def plot_in_backtest(date_interest: str | datetime.datetime, 
+                     EES_dict:dict, 
+                     direction: str, 
+                     plot_or_not: bool = False) -> None:
     if plot_or_not == True:
         
         if isinstance(date_interest, datetime.datetime):
@@ -191,10 +197,12 @@ def loop_date_full():
     return 
 
 def loop_date(trade_choice: trade_choice_simple_3, 
-              signal_table, histroy_intraday_data, 
-              strategy_name = 'argus_exact',
-              open_hr='0330', close_hr='1930',
-              plot_or_not = False, sort_by = 'Entry_Date'):
+              signal_table: pd.DataFrame, 
+              histroy_intraday_data: pd.DataFrame, 
+              strategy_name: str = 'argus_exact',
+              open_hr: str ='0330', close_hr: str='1930',
+              plot_or_not: bool = False, 
+              sort_by: str = 'Entry_Date') -> pd.DataFrame:
     """
     Fast looping method that generate simple CSV output file.
     This method isolate out the crossover points to find optimal EES 
@@ -335,13 +343,15 @@ def loop_date(trade_choice: trade_choice_simple_3,
          
     return dict_trade_PNL
     
-def loop_date_portfolio(portfo, TradeMethod, 
-                        signal_table, histroy_intraday_data, 
-                        strategy_name = 'argus_exact',
-                        give_obj_name = "USD", get_obj_name = "CLc1", 
-                        get_obj_quantity = 50,
-                        open_hr='0330', close_hr='1930',
-                        plot_or_not = False):
+def loop_date_portfolio(portfo, 
+                        TradeMethod, 
+                        signal_table: pd.DataFrame, 
+                        histroy_intraday_data: pd.DataFrame, 
+                        strategy_name: str = 'argus_exact',
+                        give_obj_name: str = "USD", get_obj_name: str = "CLc1", 
+                        get_obj_quantity: int = 50,
+                        open_hr: str = '0330', close_hr: str ='1930',
+                        plot_or_not: bool = False):
     """
     Portfolio module method.
     
@@ -398,12 +408,13 @@ def loop_date_portfolio(portfo, TradeMethod,
     return portfo
     
 
-def loop_portfolio_preloaded_list(portfo, TradeMethod,
-                                       signal_table, 
-                                       histroy_intraday_data_pkl, 
-                                        give_obj_name = "USD", 
-                                        get_obj_quantity = 1,
-                                        plot_or_not = False):
+def loop_portfolio_preloaded_list(portfo, 
+                                  TradeMethod,
+                                  signal_table: pd.DataFrame, 
+                                  histroy_intraday_data_pkl, 
+                                  give_obj_name: str = "USD", 
+                                  get_obj_quantity: int = 1,
+                                  plot_or_not: bool = False):
     """
     A method that utilise one portfolio to run multi-strategy
     
@@ -477,11 +488,12 @@ def loop_portfolio_preloaded_list(portfo, TradeMethod,
         
     return portfo
 
-def loop_date_portfolio_preloaded_list(portfo, signal_table, 
+def loop_date_portfolio_preloaded_list(portfo, 
+                                       signal_table: pd.DataFrame, 
                                        histroy_intraday_data_pkl, 
-                                        give_obj_name = "USD", 
-                                        get_obj_quantity = 3, 
-                                        time_proxy='APC forecast period'): #WIP
+                                       give_obj_name: str = "USD", 
+                                       get_obj_quantity: int = 3, 
+                                       time_proxy: str='APC forecast period'): #WIP
     
     date_list = list(signal_table[time_proxy])
     date_list = list(set(date_list))

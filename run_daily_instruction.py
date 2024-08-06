@@ -29,7 +29,8 @@ HISTORY_DAILY_PKL = util.load_pkl("crudeoil_future_daily_full.pkl")
 #HISTORY_MINUTE_PKL = util.load_pkl("crudeoil_future_minute_full.pkl")
 OPENPRICE_PKL = util.load_pkl("crudeoil_future_openprice_full.pkl")
 
-def make_new_symbol(date_interest,old_symbol, forward_unit=1):
+def make_new_symbol(date_interest: datetime.datetime, 
+                    old_symbol: str, forward_unit: int = 1) -> str:
     """
     A function that generate a new price symbol based on the month and year of 
     today.
@@ -126,10 +127,11 @@ def enter_new_value(workbook,date_interest, cell_loc_dict, signal_result_dict,
     return workbook
 
 @util.time_it
-def gen_new_xlfile(xl_template_filename, output_filename, 
-                   date_interest, signal_result_dict,
-                   cell_loc_dict = CELL_LOC_DICT, 
-                    contract_num_dict=CONTRACT_NUM_DICT):
+def gen_new_xlfile(xl_template_filename: str, output_filename: str, 
+                   date_interest: datetime.datetime, 
+                   signal_result_dict: dict,
+                   cell_loc_dict: dict = CELL_LOC_DICT, 
+                   contract_num_dict: dicr = CONTRACT_NUM_DICT):
     """
     Generate a new excel file.
 

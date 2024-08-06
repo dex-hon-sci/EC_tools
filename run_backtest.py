@@ -8,7 +8,7 @@ Created on Tue May  7 23:46:42 2024
 import datetime as datetime
 import time
 import pickle
-
+import pandas as pd
 from enum import Enum
 import getpass
 import EC_tools.read as read
@@ -42,8 +42,11 @@ class BacktestType(Enum):
 
 
 @util.time_it
-def run_backtest(trade_choice, filename_minute,filename_buysell_signals, 
-                 start_date, end_date, open_hr='0800', close_hr='1630'):
+def run_backtest(trade_choice, 
+                 filename_minute: str,
+                 filename_buysell_signals: str, 
+                 start_date: datetime.datetime, end_date: datetime.datetime, 
+                 open_hr: str = '0800', close_hr: str = '1630') -> pd.DataFrame:
     # The current method only allows one singular direction signal perday. and a set of constant EES
 
     # read the reformatted minute history data
@@ -72,11 +75,13 @@ def run_backtest(trade_choice, filename_minute,filename_buysell_signals,
     return dict_trade_PNL
 
 def run_backtest_list(trade_choice, 
-                      save_filename_list, symbol_list,
-                      signal_filename_list, history_minute_filename_list,
-                        start_date, end_date,
-                        open_hr_dict = OPEN_HR_DICT, close_hr_dict=CLOSE_HR_DICT, 
-                        save_or_not=False):
+                      save_filename_list: list[str], 
+                      symbol_list: list[str],
+                      signal_filename_list: list[str], 
+                      history_minute_filename_list: list[str],
+                      start_date, end_date,
+                      open_hr_dict = OPEN_HR_DICT, close_hr_dict=CLOSE_HR_DICT, 
+                      save_or_not: bool = False):
 
     
     output_dict = dict()
@@ -110,8 +115,9 @@ def run_backtest_list(trade_choice,
     return output_dict
 
 def run_backtest_portfolio(TradeMethod,
-                            filename_minute, filename_buysell_signals, 
-                           start_date, end_date):
+                           filename_minute: str, 
+                           filename_buysell_signals: str, 
+                           start_date: str, end_date: str):
     # master function that runs the backtest itself.
     # The current method only allows one singular direction signal perday. and a set of constant EES
 
@@ -149,11 +155,11 @@ def run_backtest_portfolio(TradeMethod,
 
 #@util.pickle_save("/home/dexter/Euler_Capital_codes/EC_tools/results/test3_portfolio_nonconcurrent_1contracts_full.pkl")
 def run_backtest_portfolio_preloaded(TradeMethod,
-                                          master_buysell_signals_filename, 
-                                          histroy_intraday_data_pkl,
-                                          start_date, end_date,
-                                          give_obj_name = "USD", 
-                                          get_obj_quantity = 1): 
+                                     master_buysell_signals_filename: str, 
+                                     histroy_intraday_data_pkl,
+                                     start_date: str, end_date: str,
+                                     give_obj_name: str = "USD", 
+                                     get_obj_quantity: int = 1): 
     t1 = time.time()
     start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
     end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
@@ -184,12 +190,15 @@ def run_backtest_portfolio_preloaded(TradeMethod,
     return P1
 
     
-def run_backtest_bulk(TradeMethod, signal_file_loc, save_file_loc, 
-                        start_date, end_date, 
-                         method = "list", 
-                         master_signal_filename="", master_pnl_filename='',
-                         open_hr_dict = OPEN_HR_DICT, close_hr_dict=CLOSE_HR_DICT,
-                         save_or_not=True, merge_or_not=True):
+def run_backtest_bulk(TradeMethod, 
+                      signal_file_loc: dict, save_file_loc: dict, 
+                      start_date: str, end_date: str, 
+                      method: str = "list", 
+                      master_signal_filename: str = "", 
+                      master_pnl_filename: str = '',
+                      open_hr_dict = OPEN_HR_DICT, 
+                      close_hr_dict=CLOSE_HR_DICT,
+                      save_or_not: bool = True, merge_or_not: bool = True):
             
     if method == "list":
         SAVE_FILENAME_LIST = list(save_file_loc.values())

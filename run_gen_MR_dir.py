@@ -52,13 +52,18 @@ class SignalGenMethod(Enum):
     SIGNAL_GEN_LIST = "signal_gen_list"
     SIGNAL_GEN_PRELOAD = "signal_gen_preload"
 
-def loop_signal(Strategy, book, signal_data, history_data, open_price_data,  
-                    start_date, end_date,
-                   buy_range=([0.25,0.4],[0.6,0.75],0.05), 
-                   sell_range =([0.6,0.75],[0.25,0.4],0.95), 
-                   open_hr='', close_hr='',
-                   asset_name = '', Timezone= "",
-                  contract_symbol_condse = False, loop_symbol = None): 
+def loop_signal(Strategy, book, 
+                signal_data: pd.DataFrame, 
+                history_data: pd.DataFrame, 
+                open_price_data: pd.DataFrame,  
+                start_date: datetime.datetime, 
+                end_date: datetime.datetime,
+                buy_range: tuple = ([0.25,0.4],[0.6,0.75],0.05), 
+                sell_range: tuple = ([0.6,0.75],[0.25,0.4],0.95), 
+                open_hr: str = '', close_hr: str = '',
+                asset_name: str = '', Timezone: str = "",
+                contract_symbol_condse: bool = False, 
+                loop_symbol: bool = None) -> pd.DataFrame: 
     """
     The main loop used to generate Buy/Sell signals.
 

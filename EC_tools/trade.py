@@ -13,6 +13,7 @@ from typing import Protocol # use protocol for trade class
 import datetime as datetime
 
 import numpy as np
+import pandas as pd
 
 from EC_tools.position import Position, ExecutePosition
 #from EC_tools.portfolio import Asset
@@ -64,7 +65,7 @@ round_turn_fees = {
 # (2) is collapsing the intraday data into a smaller set of data, search for 
 #the point of interest and execute the trade
 
-def trade_choice_simple(EES_dict): 
+def trade_choice_simple(EES_dict: dict) -> tuple[tuple, tuple]: 
     """
     LEGACY code before the development of trade and portfolio modules
     a function that control which price to buy and sell.
@@ -107,7 +108,7 @@ def trade_choice_simple(EES_dict):
     return trade_open, trade_close 
     
 
-def trade_choice_simple_2(EES_dict): 
+def trade_choice_simple_2(EES_dict: dict) -> tuple[tuple, tuple]: 
     
     entry_pt, exit_pt = (np.nan,np.nan), (np.nan,np.nan)
     stop_pt, close_pt = (np.nan,np.nan), (np.nan,np.nan)
@@ -182,7 +183,7 @@ def trade_choice_simple_2(EES_dict):
 
 
 
-def trade_choice_simple_3(EES_dict): 
+def trade_choice_simple_3(EES_dict: dict) -> tuple[tuple, tuple]: 
     
     entry_pt, exit_pt = (np.nan,np.nan), (np.nan,np.nan)
     stop_pt, close_pt = (np.nan,np.nan), (np.nan,np.nan)
@@ -265,9 +266,12 @@ class Trade(Protocol):
         self._portfolio = portfolio
         self.position_book = []
         
-    def add_position(self, give_obj_name, get_obj_name, get_obj_quantity, 
-                     target_price, size = 1, fee = None, pos_type = 'Long',
-                     open_time = datetime.datetime.now()):
+    def add_position(self, give_obj_name: str, get_obj_name: str, 
+                     get_obj_quantity: str, 
+                     target_price: float, 
+                     size: int = 1, fee: int | float = None, 
+                     pos_type: str = 'Long',
+                     open_time: datetime.datetime = datetime.datetime.now()):
         """
         A simple function that make the process of creating a position easier.
         It takes the name of the give_obj and get_obj, as well as the desired 
@@ -400,7 +404,7 @@ class OneTradePerDay(Trade):
         super().__init__(portfolio)
         
     @staticmethod
-    def find_EES_values(EES_dict):
+    def find_EES_values(EES_dict: dict) -> tuple[tuple, tuple, tuple, tuple]:
         """
         A method to find the appropiate EES values of the day. 
         In the case of one trade per day, we only search for the earliest exit
@@ -464,10 +468,10 @@ class OneTradePerDay(Trade):
 
         return entry_pt, exit_pt, stop_pt, close_pt
     
-    def open_positions(self, give_obj_name, get_obj_name, 
-                              get_obj_quantity, EES_target_list, pos_type,
-                              size = 1, fee = None, 
-                              open_time = datetime.datetime.now()):
+    def open_positions(self, give_obj_name: str, get_obj_name, 
+                       get_obj_quantity, EES_target_list, pos_type,
+                       size = 1, fee = None, 
+                       open_time = datetime.datetime.now()):
         """
         A method to open the entry, exit, stop, and close positions
 
@@ -529,7 +533,8 @@ class OneTradePerDay(Trade):
 
         return pos_list
     
-    def execute_position(self, EES_dict, pos_list, pos_type="Long"):
+    def execute_position(self, EES_dict: dict, pos_list: list, 
+                         pos_type: str = "Long"):
         """
         A method that execute the a list posiiton given a EES_dict.
         It search the EES_dict the find the appropiate entry, exit, stop loss,
@@ -650,14 +655,15 @@ class OneTradePerDay(Trade):
         
         return trade_open, trade_close, pos_list, exec_pos_list
     
-    def run_trade(self, day, give_obj_name, get_obj_name, 
-                                      get_obj_quantity,
-                                      target_entry, target_exit, stop_exit,
-                                      open_hr="0300", close_hr="2000", 
-                                      direction = "Buy",
-                                      fee =  {'name':'USD', 'quantity':24.0, 
-                                              'unit':'dollats', 'asset_type': 
-                                                  'Cash'}): 
+    def run_trade(self, day: pd.DataFrame, 
+                  give_obj_name: str, get_obj_name: str, 
+                  get_obj_quantity,
+                  target_entry, target_exit, stop_exit,
+                  open_hr: str = "0300", close_hr: str = "2000", 
+                  direction = "Buy",
+                  fee =  {'name':'USD', 'quantity':24.0, 
+                        'unit':'dollats', 'asset_type': 
+                            'Cash'}): 
         """
         This method only look into the data points that crosses the threashold.
         Thus it is fast but it only perform simple testing. 
@@ -723,7 +729,7 @@ class OneTradePerDay(Trade):
         return EES_dict, trade_open, trade_close, pos_list, exec_pos_list            
 
     
-class MultiTradePerDay(Trade):
+class MultiTradePerDay(Trade): # WIP
     """
     A class that perform multiple trade per day, the simplest form of trading.
     
@@ -741,13 +747,13 @@ class MultiTradePerDay(Trade):
         super().__init__(portfolio)
         
     @staticmethod
-    def find_EES_values(self, EES_dict):
+    def find_EES_values(self, EES_dict: dict):
         return OneTradePerDay(self.portfolio).find_EES_values(EES_dict)
     
     def open_positions(self, give_obj_name, get_obj_name, 
-                              get_obj_quantity, EES_target_list, pos_type,
-                              size = 1, fee = None, 
-                              open_time = datetime.datetime.now()):
+                       get_obj_quantity, EES_target_list, pos_type,
+                       size = 1, fee = None, 
+                       open_time = datetime.datetime.now()):
         
         if pos_type == 'Long':
             pos_type1 = 'Long-Buy'

@@ -10,6 +10,9 @@ import pandas as pd
 import datetime
 import pickle
 
+from typing import Union
+
+
 import EC_tools.utility as util
 from crudeoil_future_const import round_turn_fees, SIZE_DICT
 
@@ -26,8 +29,11 @@ __all__ = ['get_apc_from_server','read_apc_data','read_portara_daily_data',
 __author__="Dexter S.-H. Hon"
 
 
-def get_apc_from_server(username, password, start_date, end_date, categories,
-                        keywords=None, symbol=None):
+def get_apc_from_server(username: str, password: str, 
+                        start_date: str, end_date: str, 
+                        categories: Union[str, list],
+                        keywords: Union[str, list] = None, 
+                        symbol: Union[str, list] = None) -> pd.DataFrame:
     """
     Use the ArgusPossibilityCurve.py script to extract the APCin the wide format from the server.
     Note that the latest version is 1.1.0 (21 March 2024).
@@ -123,9 +129,11 @@ def read_apc_data(filename):
     return data    
 
 # tested.
-def read_portara_daily_data(filename, symbol, start_date, end_date, 
-                      column_select = ['Settle', 'Price Code', 
-                                       'Contract Symbol', 'Date only']):
+def read_portara_daily_data(filename:str, symbol:str, 
+                            start_date:str, end_date:str, 
+                            column_select: list[str] = 
+                                        ['Settle', 'Price Code', 
+                                         'Contract Symbol', 'Date only']) -> pd.DataFrame:
     """
     A generic function that read the Portara Data in a suitable form. 
     The function itself only read a single csv file at a time.
@@ -268,7 +276,8 @@ def read_portara_minute_data(filename, symbol, start_date, end_date,
 
 
 #@time_it
-def merge_portara_data(table1, table2):
+def merge_portara_data(table1: pd.DataFrame, 
+                       table2: pd.DataFrame)-> pd.DataFrame:
     """
     Merging the Portara Daily and Minute table. The merger is operated on the 
     two columns: 'Date only' and 'Price Code'.
@@ -277,9 +286,9 @@ def merge_portara_data(table1, table2):
 
     Parameters
     ----------
-    table1 : pandas dataframe
+    table1 : dataframe
         The pandas dataframe Daily pricing data.
-    table2 : TYPE
+    table2 : dataframe
         The Portara Minute pricing data.
 
     Returns
@@ -308,7 +317,7 @@ def merge_portara_data(table1, table2):
     return new_table
 
 #@time_it
-def portara_data_handling(portara_dat):
+def portara_data_handling(portara_dat: pd.DataFrame) -> pd.DataFrame:
     """
     A function that handle Portara's data.
     
@@ -366,7 +375,8 @@ def portara_data_handling(portara_dat):
     return portara_dat
 
 #tested
-def read_reformat_Portara_daily_data(filename, add_col_data = {}):
+def read_reformat_Portara_daily_data(filename: str, 
+                                     add_col_data: dict = {}) -> pd.DataFrame:
     """
     Reformat the Portara minute data in a format readable by the scripts.
 
@@ -421,7 +431,8 @@ def read_reformat_Portara_daily_data(filename, add_col_data = {}):
 
 
 #tested
-def read_reformat_Portara_minute_data(filename,  add_col_data = {}):
+def read_reformat_Portara_minute_data(filename: str,  
+                                      add_col_data: dict = {}) -> pd.DataFrame:
     """
     Reformat the Portara minute data in a format readable by the scripts.
 
@@ -471,7 +482,7 @@ def read_reformat_Portara_minute_data(filename,  add_col_data = {}):
                 
     return history_data#history_data_reindex
 
-def read_reformat_openprice_data(filename):
+def read_reformat_openprice_data(filename: str) ->  pd.DataFrame:
     openprice_data = pd.read_csv(filename)
     
     openprice_data["Date"] = [datetime.datetime(year = int(str(x)[0:4]), 
@@ -491,7 +502,7 @@ def read_reformat_openprice_data(filename):
     return openprice_data #openprice_data_reindex
 
 
-def read_reformat_APC_data(filename):
+def read_reformat_APC_data(filename:str) -> pd.DataFrame:
     signal_data =  pd.read_csv(filename)
     
     #signal_data['Forecast Period'] = [datetime.datetime(year = int(str(x)[0:4]), 
@@ -505,7 +516,10 @@ def read_reformat_APC_data(filename):
     return signal_data #signal_data_reindex
 
 #tested
-def extract_lag_data(signal_data, history_data, date, lag_size=5):
+def extract_lag_data(signal_data: pd.DataFrame, 
+                     history_data: pd.DataFrame, 
+                     date:str, lag_size:int = 5) -> \
+    tuple[pd.DataFrame, pd.DataFrame]:
     """
     Extract the Lag data based on a given date.
 
@@ -562,8 +576,12 @@ def extract_lag_data(signal_data, history_data, date, lag_size=5):
     return signal_data_lag, history_data_lag
 
 # tested
-def find_closest_price(day_minute_data, target_hr='0330', direction='forward', 
-                       step = 1, search_time = 1000):
+def find_closest_price(day_minute_data: pd.DataFrame, 
+                       target_hr: str ='0330', 
+                       direction: str ='forward', 
+                       step: int = 1, 
+                       search_time: int = 1000) -> \
+    tuple[datetime.datetime, float]:    
     """
     A method to find the closest price next to a traget hour
 
@@ -611,10 +629,14 @@ def find_closest_price(day_minute_data, target_hr='0330', direction='forward',
             
     return target_hr_dt, target_price[0]
 
-def find_closest_price_date(data, target_time='2024-01-03', 
-                               time_proxy = 'Date', price_proxy ='Open',
-                                direction='forward', step = 1, 
-                                search_time = 30): # WIP
+def find_closest_price_date(data: pd.DataFrame, 
+                            target_time: str ='2024-01-03', 
+                            time_proxy: str = 'Date', 
+                            price_proxy: str ='Open',
+                            direction: str = 'forward', 
+                            step: int = 1, 
+                            search_time: int = 30) -> \
+    tuple[datetime.datetime, float]: # WIP
     
     # If the input is forward, the loop search forward a unit of minute (step)
     if direction == 'forward':
@@ -642,10 +664,14 @@ def find_closest_price_date(data, target_time='2024-01-03',
     return target_time_dt, target_price
 
 
-def find_closest_price_generic(data, target_time='0330', 
-                               time_proxy = 'Time', price_proxy ='Open',
-                                direction='forward', step = 1, 
-                                search_time = 1000): # WIP
+def find_closest_price_generic(data: pd.DataFrame, 
+                               target_time: str ='0330', 
+                               time_proxy: str = 'Time', 
+                               price_proxy: str ='Open',
+                                direction: str ='forward', 
+                                step: int = 1, 
+                                search_time: int = 1000) -> \
+    tuple[datetime.datetime, float]: # WIP
     
     # If the input is forward, the loop search forward a unit of minute (step)
     if direction == 'forward':
@@ -676,7 +702,9 @@ def find_closest_price_generic(data, target_time='0330',
             
     return target_time_dt, target_price
 
-def find_open_price(history_data_daily, history_data_minute, open_hr='0330'): #tested
+def find_open_price(history_data_daily: pd.DataFrame, 
+                    history_data_minute: pd.DataFrame, 
+                    open_hr: str ='0330') -> pd.DataFrame: #tested
     """
     A function to search for the opening price of the day.
     If at the opening hour, there are no bid or price information, the script 
@@ -723,7 +751,8 @@ def find_open_price(history_data_daily, history_data_minute, open_hr='0330'): #t
     return open_price_data
 
 # tested
-def find_crossover(input_array, threshold):
+def find_crossover(input_array: np.ndarray, 
+                   threshold: float | list[float|int] | np.ndarray) -> dict:
     """
     A function that find the crossover points' indicies. It finds the points right
     after either rise above, or drop below the threshold value.
@@ -777,12 +806,14 @@ def find_crossover(input_array, threshold):
     return {'rise': indices_rise_above, 
             'drop': indices_drop_below}
 #tested
-def find_minute_EES(histroy_data_intraday, 
-                      target_entry, target_exit, stop_exit,
-                      open_hr="0330", close_hr="1930", 
-                      price_approx = 'Open', time_proxy= 'Time',
-                      direction = 'Neutral',
-                      close_trade_hr='1925', dt_scale = 'datetime'):
+def find_minute_EES(histroy_data_intraday: pd.DataFrame, 
+                      target_entry: float, target_exit: float, stop_exit: float,
+                      open_hr: str = "0330", close_hr: str = "1930", 
+                      price_approx: str = 'Open', 
+                      time_proxy: str= 'Time',
+                      direction: str = 'Neutral',
+                      close_trade_hr: str = '1925', 
+                      dt_scale: str = 'datetime') -> dict:
     """
     Set the EES value given a minute intraday data.
 
@@ -931,7 +962,7 @@ def find_minute_EES(histroy_data_intraday,
     #print('EES_dict', EES_dict['close'])
     return EES_dict
 
-def open_portfolio(filename):
+def open_portfolio(filename: str):
     """
     A handy function to open a portfolio. Nothing special but easy to remember.
 
@@ -953,21 +984,23 @@ def open_portfolio(filename):
     file.close()
     return portfo
 
-def concat_CSVtable(filename_list, sort_by='Date'):
+def concat_CSVtable(filename_list: list[str], 
+                    sort_by: str = 'Date') -> pd.DataFrame:
     """
     
 
     Parameters
     ----------
-    filename_list : TYPE
-        DESCRIPTION.
-    sort_by : TYPE, optional
-        DESCRIPTION. The default is 'Date'.
+    filename_list : list
+        A list of filename.
+    sort_by : str, optional
+        The column name in which the dataframe is sorted. 
+        The default is 'Date'.
 
     Returns
     -------
-    master_table : TYPE
-        DESCRIPTION.
+    master_table : dataframe
+        The resulting table.
 
     """
     
@@ -981,7 +1014,9 @@ def concat_CSVtable(filename_list, sort_by='Date'):
     return master_table
 
 @util.time_it
-def merge_raw_data(filename_list, save_filename, sort_by = "Forecast Period"):
+def merge_raw_data(filename_list: list[str], 
+                   save_filename: str, 
+                   sort_by: str = "Forecast Period") -> pd.DataFrame:
     """
     A functiob that merge a list of CSV files into one CSV file.
 
@@ -1005,7 +1040,9 @@ def merge_raw_data(filename_list, save_filename, sort_by = "Forecast Period"):
     return merged_data
         
 
-def render_PNL_xlsx(listfiles, number_contracts_list = [5,10,15,20,25,50], suffix='_.xlsx'):
+def render_PNL_xlsx(listfiles: list[str], 
+                    number_contracts_list: list[int | float] = [5,10,15,20,25,50], 
+                    suffix: str = '_.xlsx') -> pd.DataFrame:
     """
     LEGACY function from Abbe.
     A function that read in the back-test result to generate an xlsx PNL file 
@@ -1074,9 +1111,12 @@ def render_PNL_xlsx(listfiles, number_contracts_list = [5,10,15,20,25,50], suffi
                     
     return datpc            
 
-#%% Construction Area
-def extract_lag_data_to_list(signal_data, history_data_daily,lag_size=5):
-    # make a list of lag data with a nested data structure.
-    
-    return None
-    #extract_lag_data(signal_data, history_data_daily, "2024-01-10")
+# =============================================================================
+# #%% Construction Area
+# def extract_lag_data_to_list(signal_data, history_data_daily,lag_size=5):
+#     # make a list of lag data with a nested data structure.
+#     
+#     return None
+#     #extract_lag_data(signal_data, history_data_daily, "2024-01-10")
+# 
+# =============================================================================

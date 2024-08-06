@@ -3,18 +3,29 @@
 """
 Created on Thu Jul  4 04:59:37 2024
 
-@author: dexter
+@author: Dexter S.-H. Hon
+
+The Strategy module contains the parent class for all strategy to be applied in 
+signal generation. 
+
 """
 import numpy as np
 from typing import Protocol
+from numpy.typing import NDArray
+
 from enum import Enum, auto
 
 import EC_tools.math_func as mfunc
 
+__all__ = ["SignalStatus", "Strategy"]
 __author__="Dexter S.-H. Hon"
 
 
 class SignalStatus(Enum):
+    """
+    A simple class that contains the avaliable status for signals.
+    
+    """
     BUY = "Buy" # When the position is added but not filled
     SELL = "Sell" # When the position is executed
     NEUTRAL = "Neutral" # When the position is cancelled
@@ -466,7 +477,8 @@ class ArgusMRStrategy(Strategy):
 
 class ArgusMRStrategyMode(Strategy):
     
-    def __init__(self, curve_today, quant_list = np.arange(0.0025, 0.9975, 0.0025)):
+    def __init__(self, curve_today: NDArray, 
+                         quant_list: NDArray = np.arange(0.0025, 0.9975, 0.0025)):
         
         super().__init__()
         

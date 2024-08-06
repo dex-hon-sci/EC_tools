@@ -24,7 +24,9 @@ from EC_tools.backtest import extract_intraday_minute_data
 
 
 @util.time_it
-def create_aggegrate_pkl(file_loc_list, read_func, save_filename="myfile.pkl"):
+def create_aggegrate_pkl(file_loc_list: list[str], 
+                         read_func, 
+                         save_filename: str ="myfile.pkl") -> None:
     master_dict = dict()
     for symbol in SYMBOL_LIST:
         print(symbol)
@@ -41,7 +43,8 @@ def create_aggegrate_pkl(file_loc_list, read_func, save_filename="myfile.pkl"):
     output.close()  
 
 @util.time_it
-def create_open_price_list(history_daily_file_loc, history_minute_file_loc):
+def create_open_price_list(history_daily_file_loc: dict, 
+                           history_minute_file_loc: dict) -> None:
     
     for symbol in SYMBOL_LIST:
         history_daily_file = read.read_reformat_Portara_daily_data(

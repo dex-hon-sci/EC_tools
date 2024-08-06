@@ -29,7 +29,7 @@ label_list = ['CLc1 (x50)', 'HOc1 (x50)', 'RBc1 (x50)', 'QOc1 (x50)', 'QPc1 (x50
 col_list = ['#62A0E1','#EB634E','#E99938','#5CDE93','#6ABBC6', '#62A0E1','#EB634E','#E99938','#5CDE93','#6ABBC6']
 line_list = ['-','-', '-','-','-', '--','--', '--','--','--']
 
-def fill_holes(cumPNL):
+def fill_holes(cumPNL: list):
     if np.isnan(cumPNL[0]):
         cumPNL[0] = 0.0
     
