@@ -67,7 +67,7 @@ class Portfolio(object):
         self._value = None
         self._log = None
         self._zeropoint = 0.0
-        self._remainder_limiter = False
+        self._remainder_limiter = True
         self._remainder_dict = dict()
  
     @property
@@ -132,6 +132,41 @@ class Portfolio(object):
         self._pool_window = self.pool
         return self._pool_window
     
+# =============================================================================
+#     @util.time_it
+#     def set_pool_window(self, 
+#                         start_time: datetime.datetime = datetime.datetime(1900,1,1), 
+#                         end_time: datetime.datetime = datetime.datetime(2200,12,31)):
+#         """
+#         Setter method for the pool_window object.
+# 
+#         Parameters
+#         ----------
+#         start_time : datetime object, optional
+#             The start time . The default is datetime.datetime(1900,1,1).
+#         end_time : datetime object, optional
+#             The end time. The default is datetime.datetime(2200,12,31).
+# 
+#         Returns
+#         -------
+#         list
+#             pool_window list object.
+# 
+#         """
+#         # define a window of interest amount the pool object
+#         #pool_df_interest = self.pool_df[(self.pool_df['datetime'] >= start_time) & 
+#         #                        (self.pool_df['datetime'] <= end_time)]
+#         pool_df_interest = self.pool_df.loc[(self.pool_df['datetime'] >= start_time) & 
+#                                 (self.pool_df['datetime'] <= end_time)]
+# 
+#         #print(pool_df_interest)
+#         ind = pool_df_interest.index.to_list()
+#         #print(ind)
+#         self._pool_window = self._pool[ind[0]:ind[-1]+1]
+#         
+#         return self._pool_window
+# =============================================================================
+    
     @util.time_it
     def set_pool_window(self, 
                         start_time: datetime.datetime = datetime.datetime(1900,1,1), 
@@ -153,17 +188,13 @@ class Portfolio(object):
 
         """
         # define a window of interest amount the pool object
-        #pool_df_interest = self.pool_df[(self.pool_df['datetime'] >= start_time) & 
-        #                        (self.pool_df['datetime'] <= end_time)]
-        pool_df_interest = self.pool_df.loc[(self.pool_df['datetime'] >= start_time) & 
-                                (self.pool_df['datetime'] <= end_time)]
+        start_time_index = self.__pool_datetime.index(start_time)
+        end_time_index = self.__pool_datetime.index(end_time)
 
-        #print(pool_df_interest)
-        ind = pool_df_interest.index.to_list()
-        #print(ind)
-        self._pool_window = self._pool[ind[0]:ind[-1]+1]
+        self._pool_window = self._pool[start_time_index:end_time_index+1]
         
         return self._pool_window
+    
     
     @staticmethod
     def _make_table(pool_type) -> pd.DataFrame:
@@ -271,16 +302,56 @@ class Portfolio(object):
         self._master_table  = self._make_table(self.pool)
         return self._master_table
     
+    def _add_to_remainder_dict(self, asset_name: str, 
+                               asset_quantity: int | float):
+        """
+        An internal method to add to the reaminder_dict every time there is 
+        a 'add' or 'sub' action operating on the pool attribute
+
+        Parameters
+        ----------
+        asset_name : TYPE
+            DESCRIPTION.
+        asset_quantity : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        """
+        # Add a new entry in the remainder_dict if the asset does not exist in
+        # the Portfolio
+        if asset_name not in self._remainder_dict:
+            self._remainder_dict[asset_name] = asset_quantity
+        # If it is already there, add the quantity
+        else: 
+            self._remainder_dict[asset_name] = self._remainder_dict[asset_name] +\
+                                                asset_quantity
+         
+            
     def check_remainder(self, asset_name: str, quantity: int | float) -> bool:
         """
         A function that check the remainder if there are enough asset of a 
         particular name in the portfolio
         
         """
-        baseline = self.master_table[self.master_table['name']==\
-                                  asset_name]['quantity'].iloc[0] - self._zeropoint
+        baseline = self._remainder_dict[asset_name] - self._zeropoint
             
         return baseline < quantity
+    
+# =============================================================================
+#     def check_remainder(self, asset_name: str, quantity: int | float) -> bool:
+#         """
+#         A function that check the remainder if there are enough asset of a 
+#         particular name in the portfolio
+#         
+#         """
+#         baseline = self.master_table[self.master_table['name']==\
+#                                   asset_name]['quantity'].iloc[0] - self._zeropoint
+#             
+#         return baseline < quantity
+# =============================================================================
          
     
     def add(self, asset,  datetime= datetime.datetime.now(), 
@@ -325,16 +396,8 @@ class Portfolio(object):
         self.__pool_asset.append(asset)   # save new asset
         self.__pool_datetime.append(datetime) #record datetime
         
-        # Add a new entry in the remainder_dict if the asset does not exist in
-        # the Portfolio
-        if asset_name not in self.remainder_dict:
-            self.remainder_dict[asset_name] = asset_quantity
-        # If it is already there, add the quantity
-        else: 
-            self.remainder_dict[asset_name] = self.remainder_dict[asset_name] +\
-                                                asset_quantity
-
-        #print("Add action activated", asset)
+        # Add the latest quantity to the remainder_dict for remainder check
+        self._add_to_remainder_dict(asset_name, asset_quantity)
     
     def sub(self, asset,  datetime= datetime.datetime.today(),  
             asset_name="", quantity = 0, unit='contract', 
@@ -374,6 +437,7 @@ class Portfolio(object):
             
             new_asset = {'name': asset_name, 'quantity': quantity*-1, 
                          'unit': unit, 'asset_type':asset_type, 'misc':{}}
+            asset_quantity = new_asset['quantity']
 
         if type(asset) == str: 
             # # search the dictionary to see what kind of asset is this
@@ -388,14 +452,9 @@ class Portfolio(object):
         self.__pool_asset.append(new_asset)   # save new asset
         self.__pool_datetime.append(datetime) #record datetime
         
-        # Add a new entry in the remainder_dict if the asset does not exist in
-        # the Portfolio
-        if asset_name not in self.remainder_dict:
-            self.remainder_dict[asset_name] = asset_quantity
-        # If it is already there, add the quantity
-        else: 
-            self.remainder_dict[asset_name] = self.remainder_dict[asset_name] +\
-                                                asset_quantity
+        # Add the latest quantity to the remainder_dict for remainder check
+        self._add_to_remainder_dict(asset_name, asset_quantity)
+
     @util.time_it
     def value(self, date_time, price_dict = PRICE_DICT,   
               size_dict = SIZE_DICT, dntr='USD'): #WIP
