@@ -152,15 +152,15 @@ def run_main(start_date: str, end_date: str,
 
 if __name__ == "__main__":
 
-    start_date = "2024-03-04"
-    #start_date = "2021-01-11"
+    #start_date = "2024-03-04"
+    start_date = "2021-01-11"
     end_date = "2024-06-17"
     
     run_main(start_date, end_date,         
                  buy_range = ([0.3,0.4],[0.8,0.9],0.1),
                  sell_range = ([0.6,0.7],[0.1,0.2],0.9), 
                  preprocess = False, 
-                 runtype = "list")
+                 runtype = "preload")
     
     ## Visualise PNL plot and metrics.
     ##run_PNL

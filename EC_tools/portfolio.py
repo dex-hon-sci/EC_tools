@@ -68,6 +68,7 @@ class Portfolio(object):
         self._log = None
         self._zeropoint = 0.0
         self._remainder_limiter = False
+        self._remainder_dict = dict()
  
     @property
     def pool_asset(self):
@@ -305,7 +306,7 @@ class Portfolio(object):
         #asset cannot be a list
         # check if it asset is an asset format
         if type(asset) == Asset:
-            pass
+            asset_name = asset.name
         elif type(asset) == str: 
             # # search the dictionary to see what kind of asset is this 
             # (potential improvement)
@@ -313,11 +314,25 @@ class Portfolio(object):
             #asset = Asset(asset, quantity, unit, asset_type)
             asset = {'name': asset, 'quantity': quantity, 
                          'unit': unit, 'asset_type':asset_type, 'misc':{}}
+            asset_name = asset['name']
+            asset_quantity = asset['quantity']
+            
         elif type(asset) == dict:
-            pass
-        
+            asset_name = asset['name']
+            asset_quantity = asset['quantity']
+
+        # Add the asset into the pool
         self.__pool_asset.append(asset)   # save new asset
         self.__pool_datetime.append(datetime) #record datetime
+        
+        # Add a new entry in the remainder_dict if the asset does not exist in
+        # the Portfolio
+        if asset_name not in self.remainder_dict:
+            self.remainder_dict[asset_name] = asset_quantity
+        # If it is already there, add the quantity
+        else: 
+            self.remainder_dict[asset_name] = self.remainder_dict[asset_name] +\
+                                                asset_quantity
 
         #print("Add action activated", asset)
     
@@ -368,10 +383,19 @@ class Portfolio(object):
             # make a new asset with a minus value for quantity
             new_asset = {'name': asset_name, 'quantity': quantity*-1, 
                          'unit': unit, 'asset_type':asset_type, 'misc':{}}
+            asset_quantity = new_asset['quantity']
         
         self.__pool_asset.append(new_asset)   # save new asset
         self.__pool_datetime.append(datetime) #record datetime
         
+        # Add a new entry in the remainder_dict if the asset does not exist in
+        # the Portfolio
+        if asset_name not in self.remainder_dict:
+            self.remainder_dict[asset_name] = asset_quantity
+        # If it is already there, add the quantity
+        else: 
+            self.remainder_dict[asset_name] = self.remainder_dict[asset_name] +\
+                                                asset_quantity
     @util.time_it
     def value(self, date_time, price_dict = PRICE_DICT,   
               size_dict = SIZE_DICT, dntr='USD'): #WIP

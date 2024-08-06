@@ -193,7 +193,6 @@ class ExecutePosition(object):
         if not isinstance(self.position.portfolio, Portfolio):
             raise Exception("The position does not belong to a valid \
                             Portfolio.")
-    @util.time_it
     def fill_pos(self, 
                  fill_time: datetime = datetime.datetime.now(), 
                  pos_type: str ='Long-Buy') -> None:
@@ -227,15 +226,17 @@ class ExecutePosition(object):
         # simultaneous entry results in fault calculation in the Portfolio method 
         delay_time = datetime.timedelta(seconds=0.1) 
 
-        # check if you have the avaliable fund in the portfolio
-        if port.master_table[port.master_table['name']==
-                             self.position.give_obj['name']]['quantity'].iloc[0] <\
-                                                self.position.give_obj['quantity']:
-                                                
-            raise Exception('{} action failed. You do not have enough {} in \
-                            your portfolio'.format(pos_type, 
-                                                self.position.give_obj['name']))
-        else: pass
+# =============================================================================
+#         # check if you have the avaliable fund in the portfolio
+#         if port.master_table[port.master_table['name']==
+#                              self.position.give_obj['name']]['quantity'].iloc[0] <\
+#                                                 self.position.give_obj['quantity']:
+#                                                 
+#             raise Exception('{} action failed. You do not have enough {} in \
+#                             your portfolio'.format(pos_type, 
+#                                                 self.position.give_obj['name']))
+#         else: pass
+# =============================================================================
     
 
         if pos_type == 'Long-Buy':
@@ -312,7 +313,6 @@ class ExecutePosition(object):
         
         #return self.position
     
-    @util.time_it
     def cancel_pos(self, void_time: datetime = datetime.datetime.now()):
         """
         Cancel position method.
