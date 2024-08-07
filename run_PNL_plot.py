@@ -12,7 +12,8 @@ import matplotlib.dates as mdates
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import datetime as datetime
-
+from crudeoil_future_const import APC_FILE_LOC, DATA_FILEPATH
+import EC_tools.utility as util
 #FILENAME = './data/profits_and_losses_data_benchmark_11_.xlsx'
 #FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_PNL_xlsx/benchmark_PNL_full_.xlsx'
 ARGUS_EXACT_PNL_FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_PNL_full_.xlsx'
@@ -28,6 +29,8 @@ symbol_list = ['CLc1', 'HOc1', 'RBc1', 'QOc1', 'QPc1', 'CLc2', 'HOc2', 'RBc2', '
 label_list = ['CLc1 (x50)', 'HOc1 (x50)', 'RBc1 (x50)', 'QOc1 (x50)', 'QPc1 (x50)', 'CLc2 (x50)', 'HOc2 (x50)', 'RBc2 (x50)', 'QOc2 (x50)', 'QPc2 (x50)']
 col_list = ['#62A0E1','#EB634E','#E99938','#5CDE93','#6ABBC6', '#62A0E1','#EB634E','#E99938','#5CDE93','#6ABBC6']
 line_list = ['-','-', '-','-','-', '--','--', '--','--','--']
+
+
 
 def fill_holes(cumPNL: list) -> list:
     if np.isnan(cumPNL[0]):
@@ -77,7 +80,6 @@ def cumPNL_plot(date: list, PNL: list, return_rate: list,
     fig.suptitle("Cumulative PNL")
     
     ax1 = fig.add_subplot(gs[0])
-    ax1.plot(date, PNL,'-', c=line_color, label=label)
 
     
     ax2 = fig.add_subplot(gs[1], sharex=ax1)
@@ -89,9 +91,11 @@ def cumPNL_plot(date: list, PNL: list, return_rate: list,
     ax1.set_ylabel('Cumulative return (USD)')
 
     
-    for i, (date, data) in enumerate(zip(sub_date_list, sub_data_list)):
-        ax1.plot(date, data,ls=sub_line_list[i], 
+    for i, (date_element, data_element) in enumerate(zip(sub_date_list, sub_data_list)):
+        ax1.plot(date_element, data_element,ls=sub_line_list[i], 
                  label=sub_label_list[i], color=sub_col_list[i])
+        
+    ax1.plot(date, PNL,'-', c=line_color, label=label)
     
     fmt = mdates.DateFormatter('%y-%m-%d')
     ax1.legend(loc='center left', bbox_to_anchor=(1, 0.5))
@@ -138,11 +142,11 @@ if __name__=='__main__':
     #cumPNL_plot(date_all, cumPNL_all, label='All (x50)')
     
     # =============================================================================
-    cumPNL_plot(date_all, cumPNL_all, return_all, label='All (x50)',
-                  sub_date_list=date_list, sub_data_list=data_list,
-                  sub_label_list = label_list,
-                  sub_col_list = col_list, 
-                  sub_line_list =line_list)
+    #cumPNL_plot(date_all, cumPNL_all, return_all, label='All (x50)',
+    #              sub_date_list=date_list, sub_data_list=data_list,
+    #              sub_label_list = label_list,
+    #              sub_col_list = col_list, 
+    #              sub_line_list =line_list)
     # =============================================================================
     # =============================================================================
     # cumPNL_plot([], [], [], label='All (x50)',
@@ -151,6 +155,14 @@ if __name__=='__main__':
     #               sub_col_list = col_list, 
     #               sub_line_list =line_list)
     # =============================================================================
+    
+    APC_CLc1_data_list = []
+    
+    cumPNL_plot([], [], [], label='CLc1',
+                   sub_date_list=date_list, sub_data_list=data_list,
+                   sub_label_list = label_list,
+                   sub_col_list = col_list, 
+                   sub_line_list =line_list)
     
     strategy_date_list = [extract_PNLplot_input(ARGUS_EXACT_PNL_FILENAME)[0],
                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB_FILENAME)[0], 

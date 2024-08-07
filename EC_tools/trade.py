@@ -656,7 +656,6 @@ class OneTradePerDay(Trade):
         
         return trade_open, trade_close, pos_list, exec_pos_list
     
-    @util.time_it
     def run_trade(self, day: pd.DataFrame, 
                   give_obj_name: str, get_obj_name: str, 
                   get_obj_quantity,
@@ -674,20 +673,21 @@ class OneTradePerDay(Trade):
         Parameters
         ----------
         EES_dict : dict
-            A dictionary for all possible EES values.
-        give_obj_name :
-            
-        get_obj_name :
-            
-        get_obj_quantity :
-            
-        target_entry :
-            
-        target_exit :
-            
-        stop_exit :
-            
-        open_hr :
+            A dictionary for all possible EES values. This assume you are 
+            running a crossover loop.
+        give_obj_name : str
+            The name of the give_obj, e.g. 'USD'.
+        get_obj_name : str
+            The name of the get_obj, e.g. 'CLc1'.
+        get_obj_quantity : int or float
+            The quanity of get_obj you wish to order.
+        target_entry : tuple
+            The target entry time and price.
+        target_exit : tuple
+            The exit entry time and price.
+        stop_exit : tuple
+            The stop loss time and price.
+        open_hr : 
         
         close_hr : 
         
@@ -717,9 +717,9 @@ class OneTradePerDay(Trade):
         # run the trade via position module
         pos_list = self.open_positions(give_obj_name, get_obj_name, \
                                        get_obj_quantity, EES_target_list, \
-                                           pos_type=pos_type, 
-                                           size=num_per_contract[get_obj_name],
-                                           fee=fee)
+                                       pos_type=pos_type, 
+                                       size=num_per_contract[get_obj_name],
+                                       fee=fee)
 
 
         trade_open, trade_close, pos_list, exec_pos_list = \

@@ -236,7 +236,7 @@ def run_backtest_bulk(TradeMethod,
                                                 master_signal_filename, 
                                               HISTORY_MINUTE_PKL,
                                               start_date, end_date)
-        backtest_result =PP
+        backtest_result = PP
         if save_or_not:
             file = open(master_pnl_filename, 'wb')
             pickle.dump(PP, file)

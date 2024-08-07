@@ -67,7 +67,7 @@ class Portfolio(object):
         self._value = None
         self._log = None
         self._zeropoint = 0.0
-        self._remainder_limiter = True
+        self._remainder_limiter = False
         self._remainder_dict = dict()
  
     @property
@@ -79,7 +79,7 @@ class Portfolio(object):
         return self.__pool_asset
     
     @property
-    def pool_datetime(self):
+    def pool_datetime(self) -> list[datetime.datetime]:
         """
         A list that contains the corresponding datetime where asset is added
 
@@ -87,7 +87,7 @@ class Portfolio(object):
         return self.__pool_datetime
     
     @property
-    def pool(self): 
+    def pool(self) -> list[tuple]: 
         """
         A pool that contains all the Asset objects. This is the unstructured 
         data containers. Refined method should be operating on the attribute 
@@ -129,7 +129,7 @@ class Portfolio(object):
 
 
         """
-        self._pool_window = self.pool
+        #self._pool_window = self.pool
         return self._pool_window
     
 # =============================================================================
@@ -170,7 +170,7 @@ class Portfolio(object):
     @util.time_it
     def set_pool_window(self, 
                         start_time: datetime.datetime = datetime.datetime(1900,1,1), 
-                        end_time: datetime.datetime = datetime.datetime(2200,12,31)):
+                        end_time: datetime.datetime = datetime.datetime(2200,12,31)) -> None:
         """
         Setter method for the pool_window object.
 
@@ -187,11 +187,28 @@ class Portfolio(object):
             pool_window list object.
 
         """
+        # make a list of start_time and end_time
+        #start_time_list = [start_time for i, _ in enumerate(self.__pool_datetime)]
+        #end_time_list = [end_time for i, _ in enumerate(self.__pool_datetime)]
+        
+        # subtract the original datetime with them
+        start_time_delta_list = [abs(pool_dt - start_time) for i, pool_dt in 
+                                 enumerate(self.__pool_datetime)]
+        end_time_delta_list = [abs(pool_dt - end_time) for i, pool_dt in 
+                               enumerate(self.__pool_datetime)]
+        # Find the index of the min() time delta
+        ##print(min(start_time_delta_list), min(end_time_delta_list))
+        
+        #print(start_time_delta_list, end_time_delta_list)
         # define a window of interest amount the pool object
-        start_time_index = self.__pool_datetime.index(start_time)
-        end_time_index = self.__pool_datetime.index(end_time)
-
-        self._pool_window = self._pool[start_time_index:end_time_index+1]
+        start_time_index = start_time_delta_list.index(min(start_time_delta_list))
+        end_time_index = end_time_delta_list.index(min(end_time_delta_list))
+        
+        ##print(start_time_index, end_time_index)
+        
+        self._pool_window = self.pool[start_time_index:end_time_index+1]
+        
+        ##print(len(self._pool_window), len(self.pool[start_time_index:end_time_index+1]))
         
         return self._pool_window
     
@@ -324,10 +341,11 @@ class Portfolio(object):
         # the Portfolio
         if asset_name not in self._remainder_dict:
             self._remainder_dict[asset_name] = asset_quantity
-        # If it is already there, add the quantity
+        # If it is already there, add the quantity.
         else: 
+            new_quantity = asset_quantity 
             self._remainder_dict[asset_name] = self._remainder_dict[asset_name] +\
-                                                asset_quantity
+                                                new_quantity
          
             
     def check_remainder(self, asset_name: str, quantity: int | float) -> bool:
@@ -354,7 +372,8 @@ class Portfolio(object):
 # =============================================================================
          
     
-    def add(self, asset,  datetime= datetime.datetime.now(), 
+    def add(self, asset: Asset | str | dict,  
+            datetime= datetime.datetime.now(), 
             quantity: int | float = 0, unit: str ='contract', 
             asset_type: str ='future') -> None: #tested
         """
@@ -399,9 +418,10 @@ class Portfolio(object):
         # Add the latest quantity to the remainder_dict for remainder check
         self._add_to_remainder_dict(asset_name, asset_quantity)
     
-    def sub(self, asset,  datetime= datetime.datetime.today(),  
-            asset_name="", quantity = 0, unit='contract', 
-            asset_type='future') -> None: #tested
+    def sub(self, asset,  
+            datetime: datetime.datetime = datetime.datetime.today(),  
+            asset_name: str = "", quantity: int | float = 0, 
+            unit: str = 'contract', asset_type: str = 'future') -> None: #tested
         """
         A function that subtract an existing asset from the pool.
     
@@ -512,7 +532,7 @@ class Portfolio(object):
                 # The current version of this method only gets the price data iff 
                 # it exist in the table, i.e. it does not get anything outside of the trading days
                 target_time = date_time.strftime("%Y-%m-%d")
-                print(sub_price_table['Settle'], target_time)
+                ####print(sub_price_table['Settle'], target_time)
                 #print('TT',target_time, sub_price_table[(sub_price_table['Date'] > datetime.datetime(2024,2,28)) 
                 #                                        & (sub_price_table['Date'] < datetime.datetime(2024,3,6))])
                 
@@ -726,7 +746,7 @@ class PortfolioLog(Portfolio):
                 # The current version of this method only gets the price data iff 
                 # it exist in the table, i.e. it does not get anything outside of the trading days
                 target_time = date_time.strftime("%Y-%m-%d")
-                print(sub_price_table['Settle'], target_time)
+                ##print(sub_price_table['Settle'], target_time)
                 #print('TT',target_time, sub_price_table[(sub_price_table['Date'] > datetime.datetime(2024,2,28)) 
                 #                                        & (sub_price_table['Date'] < datetime.datetime(2024,3,6))])
                 
@@ -882,5 +902,51 @@ class PortfolioLog(Portfolio):
 class PortfolioMetrics(PortfolioLog):
     def __init__():
         return
+    
+    def total_trade():
+        return
+    
     def sharpe_ratio(self):
         return
+    
+    def calmar_ratio(self):
+        return
+    
+    def omega_ratio(self):
+        return
+    
+    def sortino_ratio(self):
+        return
+    
+    
+    def make_full_report(self):
+        return 
+    # Period (Days)
+    # Start_cash
+    # End_cash
+    # Total Return [%]
+    # Max Gross Exposure
+# =============================================================================
+#Benchmark Return [%]                        92987.961948
+# Max Gross Exposure [%]                             100.0
+# Total Fees Paid                             10991.676981
+# Max Drawdown [%]                               70.734951
+# Max Drawdown Duration                  760 days 00:00:00
+# Total Trades                                          54
+# Total Closed Trades                                   53
+# Total Open Trades                                      1
+# Open Trade PnL                              67287.940601
+# Win Rate [%]                                   52.830189
+# Best Trade [%]                               1075.803607
+# Worst Trade [%]                               -29.593414
+# Avg Winning Trade [%]                          95.695343
+# Avg Losing Trade [%]                          -11.890246
+# Avg Winning Trade Duration    35 days 23:08:34.285714286
+# Avg Losing Trade Duration                8 days 00:00:00
+# Profit Factor                                   2.651143
+# Expectancy                                   10434.24247
+# Sharpe Ratio                                    2.041211
+# Calmar Ratio                                      4.6747
+# Omega Ratio                                     1.547013
+# Sortino Ratio                                   3.519894
+# =============================================================================

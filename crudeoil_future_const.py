@@ -9,8 +9,12 @@ Created on Sun Jun 23 09:00:12 2024
 # DATA_FILEPATH = "/home/dexter/Euler_Capital_codes/EC_tools/data"
 # RESULT_FILEPATH = "/home/dexter/Euler_Capital_codes/EC_tools/results"
 # =============================================================================
-from dotenv import load_dotenv
+
+from dotenv import load_dotenv 
 import os
+from pathlib import Path
+
+# loading local global environment file
 load_dotenv()
 DATA_FILEPATH = os.environ.get("DATA_FILEPATH")
 RESULT_FILEPATH = os.environ.get("RESULT_FILEPATH")

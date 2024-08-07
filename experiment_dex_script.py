@@ -20,7 +20,7 @@ import pandas as pd
 from scipy.interpolate import CubicSpline, UnivariateSpline
 import matplotlib.pyplot as plt
 import time as time
-
+import random
 
 import EC_tools.read as read
 import EC_tools.utility as util
@@ -164,9 +164,30 @@ def simple_func(A):
 # 
 # =============================================================================
 
-import sqlite3
+# =============================================================================
+# import sqlite3
+# 
+# con = sqlite3.connect("tutorial.db")
+# cur = con.cursor()
+# 
+# print(con,cur)
+# =============================================================================
+some_list = []
 
-con = sqlite3.connect("tutorial.db")
-cur = con.cursor()
+@util.time_it
+def run_indi():
+    some_list.append(random.randrange(0,1000000))
+    
+    if len(some_list) >  random.randrange(0,1000000):
+        some_list.append(random.randrange(0,1000000))
+        some_list.append(random.randrange(0,1000000))
+        some_list.append(random.randrange(0,1000000))
+        some_list.append(random.randrange(0,1000000))
 
-print(con,cur)
+    
+def speed_run():
+    for i in range(2000):
+        run_indi()
+    return some_list
+
+speed_run()

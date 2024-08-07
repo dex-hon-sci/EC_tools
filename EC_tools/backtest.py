@@ -472,7 +472,7 @@ def loop_portfolio_preloaded_list(portfo: Portfolio,
     
         #print('==================================')
         
-        #print(i, date_interest, direction, symbol)
+        print(i, date_interest, direction, symbol)
         
         EES_dict, trade_open, trade_close, \
             pos_list, exec_pos_list = TradeMethod(portfo).run_trade(\

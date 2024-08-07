@@ -79,14 +79,14 @@ def loop_signal(Strategy, book: Bookkeep,
         The dataframe of the history daily pricing data.
     open_price_data : dataframe
         The dataframe of the history opening pricing data.
-    start_date : TYPE
-        DESCRIPTION.
-    end_date : TYPE
-        DESCRIPTION.
+    start_date : datetime
+        The starting datetime.
+    end_date : datetime
+        The ending datetime.
     buy_range : tuple, optional
-        DESCRIPTION. The default is ([0.25,0.4],[0.6,0.75],0.05).
+        The range for buy action. The default is ([0.25,0.4],[0.6,0.75],0.05).
     sell_range : tuple, optional
-        DESCRIPTION. The default is ([0.6,0.75],[0.25,0.4],0.95).
+        The range for sell action. The default is ([0.6,0.75],[0.25,0.4],0.95).
     open_hr : str, optional
         A string for the opening hour for the loop in military format. 
         The default is ''.

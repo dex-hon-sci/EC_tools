@@ -48,7 +48,8 @@ categories_monthly_list = [  'Argus Nymex WTI front month average, Monthly',
 # checking function to see if the table is up to date
 
 
-def download_latest_APC(auth_pack, asset_pack, start_date = "2021-01-01"):
+def download_latest_APC(auth_pack: dict, asset_pack: dict, 
+                        start_date: str = "2021-01-01") -> pd.DataFrame:
     # input is a dictionary or json file
     username = auth_pack['username']
     password = auth_pack['password']

@@ -37,8 +37,6 @@ from run_gen_MR_dir import MR_STRATEGIES_0, run_gen_signal_bulk
 from run_backtest import run_backtest_bulk
 from run_PNL_plot import cumPNL_plot
 
-# CSV list -> Signal Gen - > Backtest ->PNL
-# Preloaded PKL input ->
 
 @util.time_it
 def load_source_data() -> tuple:
@@ -55,97 +53,108 @@ def load_source_data() -> tuple:
                 OPENPRICE_PKL, SAVE_FILENAME_LOC
 
 @util.time_it
-def run_main(start_date: str, end_date: str,         
+def run_main(strategy_name, 
+             trade_method,
+             start_date: str, end_date: str,         
              buy_range: tuple = ([0.2,0.25],[0.75,0.8],0.1),
              sell_range: tuple = ([0.75,0.8],[0.2,0.25],0.9), 
              preprocess: bool = False, 
-             runtype: str = "list"):
+             runtype: str = "list",
+             signal_gen_runtype: str = "preload",
+             backtest_runtype: str = "preload") -> None:
     
-    signal_gen_runtype = None
-    backtest_runtype = None
     
     FILE_LOC = TEST_FILE_LOC
     FILE_PNL_LOC = TEST_FILE_PNL_LOC
 
-    if runtype == "list":
+    #if runtype == "list":
         
-        print("=========Generating Buy/Sell Signals=======")
-        
-        strategy_name = 'argus_exact'
-        strategy = MR_STRATEGIES_0[strategy_name]
-        #SAVE_SIGNAL_FILENAME_LIST = list(FILE_LOC.values())
-        
-        run_gen_signal_bulk(strategy, TEST_FILE_LOC,
-                        start_date, end_date,
-                        buy_range = buy_range, 
-                        sell_range = sell_range,
-                        runtype = 'preload',
-                        open_hr_dict = OPEN_HR_DICT, 
-                        close_hr_dict = CLOSE_HR_DICT, 
-                        save_or_not=True,
-                        merge_or_not=True)
-
-        print("=========Running Back-Testing =============")
-        
-        MASTER_PNL_FILENAME = RESULT_FILEPATH + '/test_PNL.csv'
-        #SAVE_PNL_FILENAME_LIST = FILE_PNL_LOC
-
-        run_backtest_bulk(trade_choice_simple_3, 
-                          FILE_LOC, FILE_PNL_LOC, 
-                            start_date, end_date, 
-                            method = "list", 
-                            master_pnl_filename=MASTER_PNL_FILENAME,
-                            open_hr_dict = OPEN_HR_DICT, 
-                            close_hr_dict=CLOSE_HR_DICT,
-                            save_or_not=True, 
-                            merge_or_not=True)
-        
-        print("=========Running PNL EXCEL File =============")
-        
-        render_PNL_xlsx([MASTER_PNL_FILENAME], 
-                        number_contracts_list = [5,10,15,20,25,50], 
-                        suffix='_.xlsx')
+    if preprocess:
+        print("===============Data Preprocessing=============")
+        # preprocess merge raw CSV data into pkl format 
+        run_preprocess()
     
-    elif runtype=='preload':
-        
-        if preprocess:
-            print("===============Data Preprocessing=============")
-            # preprocess merge raw CSV data into pkl format 
-            run_preprocess()
-            
-        print("============Loading Source PKL Files===========")
-        #SIGNAL_PKL, HISTORY_DAILY_PKL, HISTORY_MINUTE_PKL, OPENPRICE_PKL,\
-        #                         SAVE_FILENAME_LOC = load_source_data()
-                                 
-        SAVE_FILENAME_LOC = TEST_FILE_LOC #ARGUS_BENCHMARK_SIGNAL_FILE_LOC #TEST_FILE_LOC
+    print("=========Generating Buy/Sell Signals=======")
+    
+    strategy_name = 'argus_exact'
+    strategy = MR_STRATEGIES_0[strategy_name]
+    #SAVE_SIGNAL_FILENAME_LIST = list(FILE_LOC.values())
+    
+    run_gen_signal_bulk(strategy, TEST_FILE_LOC,
+                    start_date, end_date,
+                    buy_range = buy_range, 
+                    sell_range = sell_range,
+                    runtype = signal_gen_runtype,
+                    open_hr_dict = OPEN_HR_DICT, 
+                    close_hr_dict = CLOSE_HR_DICT, 
+                    save_or_not=True,
+                    merge_or_not=True)
+    
 
-        print("=========Generating Buy/Sell Signals=======")
-        
-        strategy_name = 'argus_exact'
-        strategy = MR_STRATEGIES_0[strategy_name]
-        
-        run_gen_signal_bulk(strategy, SAVE_FILENAME_LOC,
-                        start_date, end_date,
-                        buy_range = buy_range, 
-                        sell_range = sell_range,
-                        runtype = 'preload',
-                        save_or_not=True,
+    print("=========Running Back-Testing =============")
+    
+    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/test_PNL.pkl'
+    #SAVE_PNL_FILENAME_LIST = FILE_PNL_LOC
+
+    run_backtest_bulk(trade_choice_simple_3, 
+                      FILE_LOC, FILE_PNL_LOC, 
+                        start_date, end_date, 
+                        method = backtest_runtype, 
+                        master_pnl_filename=MASTER_PNL_FILENAME,
+                        open_hr_dict = OPEN_HR_DICT, 
+                        close_hr_dict=CLOSE_HR_DICT,
+                        save_or_not=True, 
                         merge_or_not=True)
-
-        print("=========Running Back-Testing =============")
-        MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/test_signal.csv'
-        MASTER_PNL_FILENAME = RESULT_FILEPATH + '/test_PNL.pkl'
-        
-        run_backtest_bulk(OneTradePerDay, 
-                          FILE_LOC, FILE_PNL_LOC, 
-                            start_date, end_date, 
-                            method = "preload", 
-                            master_signal_filename = MASTER_SIGNAL_FILENAME,
-                            master_pnl_filename=MASTER_PNL_FILENAME,
-                            open_hr_dict = OPEN_HR_DICT, 
-                            close_hr_dict=CLOSE_HR_DICT,
-                            save_or_not=True, 
-                            merge_or_not=True)
+    
+    
+    print("=========Running PNL EXCEL File =============")
+    if backtest_runtype == 'list':
+        render_PNL_xlsx([MASTER_PNL_FILENAME], 
+                    number_contracts_list = [5,10,15,20,25,50], 
+                    suffix='_.xlsx')
+# =============================================================================
+#     
+#     elif runtype=='preload':
+#         
+#         if preprocess:
+#             print("===============Data Preprocessing=============")
+#             # preprocess merge raw CSV data into pkl format 
+#             run_preprocess()
+#             
+#         print("============Loading Source PKL Files===========")
+#         #SIGNAL_PKL, HISTORY_DAILY_PKL, HISTORY_MINUTE_PKL, OPENPRICE_PKL,\
+#         #                         SAVE_FILENAME_LOC = load_source_data()
+#                                  
+#         SAVE_FILENAME_LOC = TEST_FILE_LOC #ARGUS_BENCHMARK_SIGNAL_FILE_LOC #TEST_FILE_LOC
+# 
+#         print("=========Generating Buy/Sell Signals=======")
+#         
+#         strategy_name = 'argus_exact'
+#         strategy = MR_STRATEGIES_0[strategy_name]
+#         
+#         run_gen_signal_bulk(strategy, SAVE_FILENAME_LOC,
+#                         start_date, end_date,
+#                         buy_range = buy_range, 
+#                         sell_range = sell_range,
+#                         runtype = 'preload',
+#                         save_or_not=True,
+#                         merge_or_not=True)
+# 
+#         print("=========Running Back-Testing =============")
+#         MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/test_signal.csv'
+#         MASTER_PNL_FILENAME = RESULT_FILEPATH + '/test_PNL.pkl'
+#         
+#         run_backtest_bulk(OneTradePerDay, 
+#                           FILE_LOC, FILE_PNL_LOC, 
+#                             start_date, end_date, 
+#                             method = "preload", 
+#                             master_signal_filename = MASTER_SIGNAL_FILENAME,
+#                             master_pnl_filename=MASTER_PNL_FILENAME,
+#                             open_hr_dict = OPEN_HR_DICT, 
+#                             close_hr_dict=CLOSE_HR_DICT,
+#                             save_or_not=True, 
+#                             merge_or_not=True)
+# =============================================================================
         
     
      
