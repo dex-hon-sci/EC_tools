@@ -65,50 +65,74 @@ def extract_PNLplot_input(filename: str,
     return date_all, cumPNL_all
 
 
-def cumPNL_plot(date: list, PNL: list, return_rate: list, 
-                line_color: str = 'w', label: str = 'All (x50)',  
-                sub_date_list: list = [], 
-                sub_data_list: list = [], 
+def twopanel_plot(x_data: list, y1_data: list, y2_data: list, 
+                upper_plot_ylabel: str = 'Cumulative return (USD)', 
+                lower_plot_ylabel: str = 'Scaled returns (USD)',
+                xlabel: str = 'Date', plot_title: str = "Cumulative PNL",
+                line_color: str = 'w', 
+                label: str = 'All (x50)',  
+                sub_x_list: list = [], 
+                sub_y1_list: list = [], 
                 sub_line_list: list = [],
-                sub_label_list: list = [], sub_col_list: list = []) -> None:
+                sub_label_list: list = [], 
+                sub_col_list: list = [], alpha = 1.0) -> None:
     
     plt.style.use('dark_background')
     fig = plt.figure(figsize=(14,6))
     fig.set_tight_layout(True)
     # make a way to change the number of subplot based on nrows and ncols
     gs = fig.add_gridspec(nrows=2, ncols = 1, height_ratios=[6, 2.5])
-    fig.suptitle("Cumulative PNL")
+    fig.suptitle(plot_title)
     
     ax1 = fig.add_subplot(gs[0])
 
     
     ax2 = fig.add_subplot(gs[1], sharex=ax1)
 
-    ax2.bar(date, return_rate, label='All (x50)')
+    ax2.bar(x_data, y2_data)
     ax2.hlines(0, datetime.datetime(2020,12,10), datetime.datetime(2024,7,1), 
                color='#B67C62', ls='--',lw=4)
     
-    ax1.set_ylabel('Cumulative return (USD)')
+    ax1.set_ylabel(upper_plot_ylabel)
 
     
-    for i, (date_element, data_element) in enumerate(zip(sub_date_list, sub_data_list)):
-        ax1.plot(date_element, data_element,ls=sub_line_list[i], 
+    for i, (x_element, y1_element) in enumerate(zip(sub_x_list, sub_y1_list)):
+        ax1.plot(x_element, y1_element, ls=sub_line_list[i], 
                  label=sub_label_list[i], color=sub_col_list[i])
         
-    ax1.plot(date, PNL,'-', c=line_color, label=label)
+    ax1.plot(x_data, y1_data,'-', c=line_color, label=label, alpha = alpha)
     
     fmt = mdates.DateFormatter('%y-%m-%d')
     ax1.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     ax1.xaxis.set_major_formatter(fmt)
     ax2.xaxis.set_major_formatter(fmt)
     
-    ax2.set_ylabel('Scaled returns (USD)')
-    ax2.set_xlabel('Date')
+    ax2.set_ylabel(lower_plot_ylabel)
+    ax2.set_xlabel(xlabel)
 
     ax1.grid()
     ax2.grid()
     
     plt.show()
+# =============================================================================
+# 
+# def cumPNL_plot(date: list, PNL: list, return_rate: list,                  
+#                sub_date_list: list = [], sub_data_list: list = [], 
+#                sub_line_list: list = [], sub_label_list: list = [], 
+#                sub_col_list: list = []):
+#     
+#     twopanel_plot(date, PNL, return_rate, 
+#                     upper_plot_ylabel = 'Cumulative return (USD)', 
+#                     lower_plot_ylabel = 'Scaled returns (USD)',
+#                     xlabel = 'Date',
+#                     line_color = 'w', 
+#                     label = 'All (x50)',
+#                     sub_date_list = sub_date_list, 
+#                     sub_data_list = sub_data_list, 
+#                     sub_line_list = sub_line_list,
+#                     sub_label_list = sub_label_list, 
+#                     sub_col_list = sub_col_list)
+# =============================================================================
 
 if __name__=='__main__':
     
@@ -142,23 +166,22 @@ if __name__=='__main__':
     #cumPNL_plot(date_all, cumPNL_all, label='All (x50)')
     
     # =============================================================================
-    #cumPNL_plot(date_all, cumPNL_all, return_all, label='All (x50)',
+    #twopanel_plot(date_all, cumPNL_all, return_all, label='All (x50)',
     #              sub_date_list=date_list, sub_data_list=data_list,
     #              sub_label_list = label_list,
     #              sub_col_list = col_list, 
     #              sub_line_list =line_list)
     # =============================================================================
     # =============================================================================
-    # cumPNL_plot([], [], [], label='All (x50)',
+    # twopanel_plot([], [], [], label='All (x50)',
     #               sub_date_list=date_list, sub_data_list=data_list,
     #               sub_label_list = label_list,
     #               sub_col_list = col_list, 
     #               sub_line_list =line_list)
     # =============================================================================
     
-    APC_CLc1_data_list = []
     
-    cumPNL_plot([], [], [], label='CLc1',
+    twopanel_plot([], [], [], label='CLc1',
                    sub_date_list=date_list, sub_data_list=data_list,
                    sub_label_list = label_list,
                    sub_col_list = col_list, 
@@ -186,7 +209,7 @@ if __name__=='__main__':
     strategy_line_list = ['solid','dotted', 'dashed', 'dashdot', 'dashdot', 'dashdot', 'solid']
     
     # Plot different strategies cumulative PNL
-    cumPNL_plot([], [], [], label='',
+    twopanel_plot([], [], [], label='',
                   sub_date_list=strategy_date_list,
                   sub_data_list=strategy_data_list,
                   sub_label_list = strategy_label_list,

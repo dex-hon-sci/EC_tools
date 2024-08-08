@@ -159,3 +159,10 @@ def find_pdf_quant(pdf_val, pdf, func= max):
     centile_index = list(pdf).index(func(pdf))
 
     return float(pdf[centile_index])
+
+
+def get_2nd_moment(pdf: np.ndarray):
+    mean = np.average(pdf)
+    x = np.arange(start = None, stop = None, step = None)
+    
+    return

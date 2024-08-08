@@ -900,6 +900,7 @@ class PortfolioLog(Portfolio):
     
     
 class PortfolioMetrics(PortfolioLog):
+    
     def __init__():
         return
     
@@ -917,7 +918,6 @@ class PortfolioMetrics(PortfolioLog):
     
     def sortino_ratio(self):
         return
-    
     
     def make_full_report(self):
         return 
