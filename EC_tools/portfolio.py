@@ -71,7 +71,7 @@ class Portfolio(object):
         self._remainder_dict = dict()
  
     @property
-    def pool_asset(self):
+    def pool_asset(self) -> list[dict]:
         """
         A list that contains the the added assets.
 
@@ -357,19 +357,6 @@ class Portfolio(object):
         baseline = self._remainder_dict[asset_name] - self._zeropoint
             
         return baseline < quantity
-    
-# =============================================================================
-#     def check_remainder(self, asset_name: str, quantity: int | float) -> bool:
-#         """
-#         A function that check the remainder if there are enough asset of a 
-#         particular name in the portfolio
-#         
-#         """
-#         baseline = self.master_table[self.master_table['name']==\
-#                                   asset_name]['quantity'].iloc[0] - self._zeropoint
-#             
-#         return baseline < quantity
-# =============================================================================
          
     
     def add(self, asset: Asset | str | dict,  

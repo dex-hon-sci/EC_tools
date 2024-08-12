@@ -47,9 +47,9 @@ class Strategy(Protocol):
         self._buy_cond = False
         self._sell_cond = False
         self._neutral_cond = True
-        
         self.cond_dict = {"Buy": [False], 
                           "Sell": [False]}
+        
         # make the default value of a strategy 'Neutral'
         self._direction = SignalStatus.NEUTRAL 
         
@@ -93,7 +93,14 @@ class Strategy(Protocol):
             self._direction = SignalStatus.NEUTRAL
 
         return self._direction
-        
+    
+# =============================================================================
+#     def subcond_to_cond():
+#         for key in self.sub_cond_dict:
+#             lis = self.sub_cond_dict[key]
+#             flatList = sum(lis, [])
+#             self.cond_dict[key] = flatList        
+# =============================================================================
     
 class ArgusMRStrategy(Strategy):
     """

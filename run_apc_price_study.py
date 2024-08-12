@@ -168,7 +168,7 @@ if __name__=='__main__':
                 '#E99938', '#E99938','#5CDE93', '#5CDE93', 
                 '#6ABBC6', '#6ABBC6']
         
-    #plot_all_apc_price(SYMBOL_LIST, COL_LIST)    
+    plot_all_apc_price(SYMBOL_LIST, COL_LIST)    
     
     
-    plot_all_apc_price_OHLC(SYMBOL_LIST, COL_LIST)
+    #plot_all_apc_price_OHLC(SYMBOL_LIST, COL_LIST)
