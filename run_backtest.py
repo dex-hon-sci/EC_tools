@@ -18,15 +18,16 @@ from EC_tools.trade import OneTradePerDay, trade_choice_simple, \
                             trade_choice_simple_2, trade_choice_simple_3
 from EC_tools.portfolio import Asset, Portfolio
 from crudeoil_future_const import OPEN_HR_DICT, CLOSE_HR_DICT, \
-                                TEST_FILE_LOC, TEST_FILE_PNL_LOC, \
-                                DATA_FILEPATH, RESULT_FILEPATH,\
-                                 ARGUS_EXACT_SIGNAL_FILE_LOC, \
-                                    ARGUS_EXACT_PNL_SHORT_LOC, HISTORY_MINTUE_FILE_LOC,\
-                                    ARGUS_EXACT_PNL_LOC, \
-                                    ARGUS_EXACT_SIGNAL_AMB_FILE_LOC, ARGUS_EXACT_PNL_AMB_LOC,\
-                                     ARGUS_EXACT_SIGNAL_AMB2_FILE_LOC, ARGUS_EXACT_PNL_AMB2_LOC,\
-                                     ARGUS_EXACT_SIGNAL_AMB3_FILE_LOC, ARGUS_EXACT_PNL_AMB3_LOC,\
-                                         ARGUS_EXACT_SIGNAL_MODE_FILE_LOC, ARGUS_EXACT_PNL_MODE_LOC
+                                  DATA_FILEPATH, RESULT_FILEPATH,\
+                                  ARGUS_EXACT_SIGNAL_FILE_LOC, \
+                                  ARGUS_EXACT_PNL_SHORT_LOC, HISTORY_MINTUE_FILE_LOC,\
+                                  ARGUS_EXACT_PNL_LOC, \
+                                  ARGUS_EXACT_SIGNAL_AMB_FILE_LOC, ARGUS_EXACT_PNL_AMB_LOC,\
+                                  ARGUS_EXACT_SIGNAL_AMB2_FILE_LOC, ARGUS_EXACT_PNL_AMB2_LOC,\
+                                  ARGUS_EXACT_SIGNAL_AMB3_FILE_LOC, ARGUS_EXACT_PNL_AMB3_LOC,\
+                                  ARGUS_EXACT_SIGNAL_MODE_FILE_LOC, ARGUS_EXACT_PNL_MODE_LOC,\
+                                  TEST_FILE_LOC, TEST_FILE_PNL_LOC\
+
 
 __all__ = ['run_backtest','run_backtest_list', 
            'run_backtest_portfolio', 'run_backtest_portfolio_preloaded']
@@ -47,13 +48,44 @@ def run_backtest(trade_choice,
                  filename_buysell_signals: str, 
                  start_date: datetime.datetime, end_date: datetime.datetime, 
                  open_hr: str = '0800', close_hr: str = '1630') -> pd.DataFrame:
-    # The current method only allows one singular direction signal perday. and a set of constant EES
+    """
+    
+    The simplest backtest method. It uses the basic 'loop_date' to iterate 
+    the data. At the moment it uses cross-over loop.
+    
+    The current method only allows one singular direction signal per day 
+    and a set of constant EES
+    
+    Parameters
+    ----------
+    trade_choice : TYPE
+        DESCRIPTION.
+    filename_minute : str
+        The filename of the historical minute data.
+    filename_buysell_signals : str
+        The filename of the trading signals data.
+    start_date : datetime.datetime
+        The start date.
+    end_date : datetime.datetime
+        The end date.
+    open_hr : str, optional
+        The opening hour. The default is '0800'.
+    close_hr : str, optional
+        The closing hour. The default is '1630'.
+
+    Returns
+    -------
+    dict_trade_PNL : ataFrame
+        The resulting PNL file.
+
+    """
 
     # read the reformatted minute history data
     history_data = read.read_reformat_Portara_minute_data(filename_minute)
     
     # Find the date for trading
-    trade_date_table = backtest.prepare_signal_interest(filename_buysell_signals, trim = False)
+    trade_date_table = backtest.prepare_signal_interest(filename_buysell_signals, 
+                                                        trim = False)
 
     start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")# datetime.datetime(2023,1,1)
     end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")##datetime.datetime(2023,12,30)
@@ -118,8 +150,33 @@ def run_backtest_portfolio(TradeMethod,
                            filename_minute: str, 
                            filename_buysell_signals: str, 
                            start_date: str, end_date: str):
+    """
+    The basic backtest method utilising the Portfolio module.
+    
+    The current method only allows one singular direction signal per day 
+    and a set of constant EES
+
+
+    Parameters
+    ----------
+    TradeMethod : TYPE
+        DESCRIPTION.
+    filename_minute : str
+        The filename of the historical minute data.
+    filename_buysell_signals : str
+        The filename of the trading signals data.
+    start_date : str
+        The start date.
+    end_date : str
+        The end date.
+
+    Returns
+    -------
+    P1 : TYPE
+        DESCRIPTION.
+
+    """
     # master function that runs the backtest itself.
-    # The current method only allows one singular direction signal perday. and a set of constant EES
 
     # read the reformatted minute history data
     history_data = read.read_reformat_Portara_minute_data(filename_minute)
@@ -127,6 +184,7 @@ def run_backtest_portfolio(TradeMethod,
     # Find the date for trading, only "Buy" or "Sell" date are taken.
     trade_date_table = backtest.prepare_signal_interest(filename_buysell_signals, trim = False)
     
+    # Turn the start and end date from str to datetime.datetime
     start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")# datetime.datetime(2023,1,1)
     end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")##datetime.datetime(2023,12,30)
     
@@ -156,10 +214,36 @@ def run_backtest_portfolio(TradeMethod,
 #@util.pickle_save("/home/dexter/Euler_Capital_codes/EC_tools/results/test3_portfolio_nonconcurrent_1contracts_full.pkl")
 def run_backtest_portfolio_preloaded(TradeMethod,
                                      master_buysell_signals_filename: str, 
-                                     histroy_intraday_data_pkl,
+                                     histroy_intraday_data_pkl: dict,
                                      start_date: str, end_date: str,
                                      give_obj_name: str = "USD", 
                                      get_obj_quantity: int = 1): 
+    """
+    
+
+    Parameters
+    ----------
+    TradeMethod : TYPE
+        DESCRIPTION.
+    master_buysell_signals_filename : str
+        DESCRIPTION.
+    histroy_intraday_data_pkl : TYPE
+        The dictionary of the preloaded historical minute data.
+    start_date : str
+        The start date.
+    end_date : str
+        The end date.
+    give_obj_name : str, optional
+        The name of the give object. The default is "USD".
+    get_obj_quantity : int, optional
+        The name of the get object. The default is 1.
+
+    Returns
+    -------
+    P1 : TYPE
+        DESCRIPTION.
+
+    """
     t1 = time.time()
     start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
     end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
@@ -180,9 +264,10 @@ def run_backtest_portfolio_preloaded(TradeMethod,
     P1.add(USD_initial,datetime=datetime.datetime(2020,12,31))
     
     # a list of input files
-    P1 = backtest.loop_portfolio_preloaded_list(P1, TradeMethod,
-                                                     trade_date_table, 
-                                           histroy_intraday_data_pkl)
+    P1 = backtest.loop_portfolio_preloaded_list(P1, 
+                                                TradeMethod,
+                                                trade_date_table, 
+                                                histroy_intraday_data_pkl)
     
     t2 = time.time()-t1
     print("It takes {} seconds to run the backtest".format(t2))

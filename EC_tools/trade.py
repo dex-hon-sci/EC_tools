@@ -267,10 +267,13 @@ class Trade(Protocol):
         self._portfolio = portfolio
         self.position_book = []
         
-    def add_position(self, give_obj_name: str, get_obj_name: str, 
+    def add_position(self, 
+                     give_obj_name: str, 
+                     get_obj_name: str, 
                      get_obj_quantity: str, 
                      target_price: float, 
-                     size: int = 1, fee: int | float = None, 
+                     size: int = 1, 
+                     fee: int | float = None, 
                      pos_type: str = 'Long',
                      open_time: datetime.datetime = datetime.datetime.now()):
         """
@@ -469,9 +472,14 @@ class OneTradePerDay(Trade):
 
         return entry_pt, exit_pt, stop_pt, close_pt
     
-    def open_positions(self, give_obj_name: str, get_obj_name, 
-                       get_obj_quantity, EES_target_list, pos_type,
-                       size = 1, fee = None, 
+    def open_positions(self, 
+                       give_obj_name: str, 
+                       get_obj_name, 
+                       get_obj_quantity, 
+                       EES_target_list, 
+                       pos_type,
+                       size = 1, 
+                       fee = None, 
                        open_time = datetime.datetime.now()):
         """
         A method to open the entry, exit, stop, and close positions
@@ -656,15 +664,21 @@ class OneTradePerDay(Trade):
         
         return trade_open, trade_close, pos_list, exec_pos_list
     
-    def run_trade(self, day: pd.DataFrame, 
-                  give_obj_name: str, get_obj_name: str, 
-                  get_obj_quantity,
-                  target_entry, target_exit, stop_exit,
-                  open_hr: str = "0300", close_hr: str = "2000", 
-                  direction = "Buy",
-                  fee =  {'name':'USD', 'quantity':24.0, 
-                        'unit':'dollats', 'asset_type': 
-                            'Cash'}): 
+    def run_trade(self, 
+                  day: pd.DataFrame, 
+                  give_obj_name: str, 
+                  get_obj_name: str, 
+                  get_obj_quantity: float | int,
+                  target_entry: float, 
+                  target_exit: float, 
+                  stop_exit: float,
+                  open_hr: str = "0300", 
+                  close_hr: str = "2000", 
+                  direction: str = "Buy",
+                  fee: dict =  {'name':'USD', 'quantity':24.0, 
+                                'unit':'dollats', 'asset_type': 
+                                'Cash'}) -> tuple[dict, tuple, tuple, list, list]: 
+        #EES_dict, trade_open, trade_close, pos_list, exec_pos_list 
         """
         This method only look into the data points that crosses the threashold.
         Thus it is fast but it only perform simple testing. 

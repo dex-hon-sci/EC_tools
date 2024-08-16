@@ -30,12 +30,28 @@ HISTORY_DAILY_PKL = util.load_pkl("crudeoil_future_daily_full.pkl")
 OPENPRICE_PKL = util.load_pkl("crudeoil_future_openprice_full.pkl")
 
 def make_new_symbol(date_interest: datetime.datetime, 
-                    old_symbol: str, forward_unit: int = 1) -> str:
+                    old_symbol: str, 
+                    forward_unit: int = 1) -> str:
     """
     A function that generate a new price symbol based on the month and year of 
     today.
-    
+
+    Parameters
+    ----------
+    date_interest : datetime.datetime
+        DESCRIPTION.
+    old_symbol : str
+        DESCRIPTION.
+    forward_unit : int, optional
+        DESCRIPTION. The default is 1.
+
+    Returns
+    -------
+    str
+        DESCRIPTION.
+
     """
+
     month_str = str(date_interest.month+forward_unit)
     year_str = str(date_interest.year)
     new_symbol = old_symbol[0:2] + MONTHS_TO_SYMBOLS[month_str] + year_str[-2:]

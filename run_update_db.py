@@ -15,24 +15,22 @@ import pandas as pd
 import EC_tools.read as read
 import EC_tools.utility as util
 from crudeoil_future_const import APC_FILE_LOC, CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST
-__author__="Dexter S.-H. Hon"
 
-# =============================================================================
-# auth_pack = {'username': "dexter@eulercapital.com.au",
-#             'password':"76tileArg56!"}
-# =============================================================================
+__author__ = "Dexter S.-H. Hon"
+__all__ = ['download_latest_APC', 'download_latest_APC_fast', 
+           'download_latest_APC_list']
 
-AUTH_PACK = {'username': "leigh@eulercapital.com.au",
-            'password':"Li.96558356"}
+
+AUTH_PACK = {'username': "dexter@eulercapital.com.au",
+             'password':"76tileArg56!"}
 
 DATE_PACK = {"start_date": "2021-01-01",
         "end_date": "2024-06-18"}
 
-# =============================================================================
 ASSET_PACK = {'categories': 'Argus Nymex WTI month 1, Daily',
                'keywords': "WTI",
                'symbol': "CL"}
-# =============================================================================
+
 categories_monthly_30avg_list = [ 'Argus Nymex WTI front month average 30-day interval, Weekly',
                            'Nymex Heating oil front month average 30-day interval, Weekly',
                            'Nymex RBOB gasoline front month average 30-day interval, Weekly',
@@ -48,8 +46,32 @@ categories_monthly_list = [  'Argus Nymex WTI front month average, Monthly',
 # checking function to see if the table is up to date
 
 
-def download_latest_APC(auth_pack: dict, asset_pack: dict, 
+def download_latest_APC(auth_pack: dict, 
+                        asset_pack: dict, 
                         start_date: str = "2021-01-01") -> pd.DataFrame:
+    """
+    A method to download the latest APC from in its entirety. 
+    This method is considered the 'slow' method due to the time in downloading 
+    all the record directly from Argus.
+
+    Parameters
+    ----------
+    auth_pack : dict
+        A authethication package containing the username and the password 
+        in access of Argus Data Studio.
+    asset_pack : dict
+        An asset package containing the categories, keywords, and symbol of 
+        the asset itself.
+    start_date : str, optional
+        The start date. The default is "2021-01-01".
+
+    Returns
+    -------
+    signal_data : DataFrame
+        The APC data in a data frame.
+
+    """
+
     # input is a dictionary or json file
     username = auth_pack['username']
     password = auth_pack['password']
@@ -61,11 +83,37 @@ def download_latest_APC(auth_pack: dict, asset_pack: dict,
     
     # download the relevant APC data from the server
     signal_data = read.get_apc_from_server(username, password, start_date, 
-                                      end_date, categories,
-                            keywords=keywords, symbol=symbol)
+                                           end_date, categories,
+                                           keywords=keywords, symbol=symbol)
     return signal_data
 
-def download_latest_APC_fast(auth_pack, asset_pack, old_filename): #tested
+def download_latest_APC_fast(auth_pack: dict, 
+                             asset_pack: dict, 
+                             old_filename: str) -> pd.DataFrame: #tested
+    """
+    A method to download the latest APC based on the existing APC file in 
+    the data directory. 
+    
+    This method is considered the 'fast' method because it only downloads 
+    and update the latest APC that is not in the old file.
+
+    Parameters
+    ----------
+    auth_pack : dict
+        A authethication package containing the username and the password 
+        in access of Argus Data Studio.
+    asset_pack : dict
+        An asset package containing the categories, keywords, and symbol of 
+        the asset itself.
+    old_filename : str
+        The name of the old APC file.
+
+    Returns
+    -------
+    signal_data : TYPE
+        The APC data in a data frame.
+
+    """
     # Check the last entry in the old file and only download the data 
     # Read the old files
     old_data = pd.read_csv(old_filename)
@@ -83,15 +131,44 @@ def download_latest_APC_fast(auth_pack, asset_pack, old_filename): #tested
                                       strftime("%Y-%m-%d") for 
                                 i, _ in enumerate(temp['Forecast Period'])]
     
-    # concandenate the old file
+    # concandenate the old filedownload_latest_APC_list
     signal_data = pd.concat([old_data, temp], ignore_index = True)
     signal_data.sort_values(by='Forecast Period')
     
     return signal_data
 
 @util.time_it
-def download_latest_APC_list(auth_pack, save_filename_list, categories_list, 
-                         keywords_list, symbol_list, fast_dl=True):
+def download_latest_APC_list(auth_pack: dict, 
+                             save_filename_list: list, 
+                             categories_list: list, 
+                             keywords_list: list, 
+                             symbol_list: list, 
+                             fast_dl: bool = True) -> str:
+    """
+    The master method that allows you to download APC in bulk, as well as 
+    choosing whether to use the fast or slow download method.
+
+    Parameters
+    ----------
+    auth_pack : dict
+        DESCRIPTION.
+    save_filename_list : list
+        DESCRIPTION.
+    categories_list : list
+        DESCRIPTION.
+    keywords_list : list
+        DESCRIPTION.
+    symbol_list : list
+        DESCRIPTION.
+    fast_dl : bool, optional
+        DESCRIPTION. The default is True.
+
+    Returns
+    -------
+    str
+        DESCRIPTION.
+
+    """
     # a function to download the APC of a list of asset
     # input username and password.json
 
