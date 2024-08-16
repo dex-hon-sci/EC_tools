@@ -23,27 +23,25 @@ import EC_tools.utility as util
 from EC_tools.bookkeep import Bookkeep
 
 from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, \
-                                APC_FILE_LOC, HISTORY_DAILY_FILE_LOC,\
-                                    HISTORY_MINTUE_FILE_LOC, TIMEZONE_DICT,\
-                                        OPEN_HR_DICT, CLOSE_HR_DICT,\
-                                        ARGUS_EXACT_SIGNAL_FILE_SHORT_LOC,\
-                                            ARGUS_EXACT_SIGNAL_FILE_LOC,\
-                                            ARGUS_EXACT_SIGNAL_AMB_FILE_LOC,\
-                                            ARGUS_EXACT_SIGNAL_AMB2_FILE_LOC, \
-                                                ARGUS_EXACT_SIGNAL_AMB3_FILE_LOC,\
-                                                ARGUS_EXACT_SIGNAL_MODE_FILE_LOC,\
-                                                RESULT_FILEPATH, DATA_FILEPATH, \
-                                                TEST_FILE_LOC
+                                  APC_FILE_LOC, HISTORY_DAILY_FILE_LOC,\
+                                  HISTORY_MINTUE_FILE_LOC, TIMEZONE_DICT,\
+                                  OPEN_HR_DICT, CLOSE_HR_DICT,\
+                                  ARGUS_EXACT_SIGNAL_FILE_SHORT_LOC,\
+                                  ARGUS_EXACT_SIGNAL_FILE_LOC,\
+                                  ARGUS_EXACT_SIGNAL_AMB_FILE_LOC,\
+                                  ARGUS_EXACT_SIGNAL_AMB2_FILE_LOC, \
+                                  ARGUS_EXACT_SIGNAL_AMB3_FILE_LOC,\
+                                  ARGUS_EXACT_SIGNAL_MODE_FILE_LOC,\
+                                  RESULT_FILEPATH, DATA_FILEPATH, \
+                                  TEST_FILE_LOC
 
 
-__all__ = ['loop_signal','run_gen_MR_signals', 
-           'run_gen_MR_signals_list', 'run_gen_MR_signals_preloaded']
+__all__ = ['loop_signal',
+           'run_gen_MR_signals', 
+           'run_gen_MR_signals_list', 
+           'run_gen_MR_signals_preloaded']
 
 __author__="Dexter S.-H. Hon"
-
-
-MR_STRATEGIES_0 = {"argus_exact": ArgusMRStrategy,
-                   "argus_exact_mode": ArgusMRStrategyMode}
 
 
 
@@ -98,13 +96,17 @@ def loop_signal(Strategy, book: Bookkeep,
     Timezone : str, optional
         The name of the Timezone for a particular asset. The default is "".
     contract_symbol_condse : bool, optional
-        DESCRIPTION. The default is False.
-    loop_symbol : bool, optional
-        DESCRIPTION. The default is None.
+        Whether we condense the contract symbol. 
+        If False, it is going to
+        If True
+        The default is False.
+    loop_symbol : str, optional
+        The name of the loop to be printed. The default is None.
 
     Returns
     -------
-    None.
+    dataframe
+        The generated signals
 
     """
     #make bucket
@@ -208,37 +210,43 @@ def run_gen_MR_signals(Strategy,
 
     Parameters
     ----------
-    asset_pack : TYPE
-        DESCRIPTION.
-    start_date : TYPE
-        DESCRIPTION.
-    end_date : TYPE
-        DESCRIPTION.
-    signal_filename : TYPE
-        DESCRIPTION.
-    filename_daily : TYPE
-        DESCRIPTION.
-    filename_minute : TYPE
-        DESCRIPTION.
+    asset_pack : dict
+        A dict that contains the symbol and the asset name.
+    start_date : str
+        The starting date.
+    end_date : str
+        The ending date.
+    signal_filename : str
+        The filename for the forecasting signals.
+    filename_daily : str
+        The filename for the historical daily price data.
+    filename_minute : str
+        The filename for the historical minute price data.
     buy_range : tuple, optional
-        DESCRIPTION. The default is ([0.25,0.4],[0.6,0.75],0.05).
+        The buy range in the format of (entry, exit, stop loss). 
+        The default is ([0.25,0.4],[0.6,0.75],0.05).
     sell_range : tuple, optional
-        DESCRIPTION. The default is ([0.6,0.75],[0.25,0.4],0.95).
-    open_hr : TYPE, optional
-        DESCRIPTION. The default is ''.
-    close_hr : TYPE, optional
-        DESCRIPTION. The default is ''.
-    commodity_name : TYPE, optional
-        DESCRIPTION. The default is ''.
-    Timezone : TYPE, optional
-        DESCRIPTION. The default is "".
-    start_date_pushback : TYPE, optional
-        DESCRIPTION. The default is 20.
+        The sell range in the format of (entry, exit, stop loss). 
+        The default is ([0.6,0.75],[0.25,0.4],0.95).
+    open_hr : str, optional
+        The opening hour. The default is ''.
+    close_hr : str, optional
+        The closing hour. The default is ''.
+    asset_name : str, optional
+        The asset name to be recoreded in the bookkeep object. 
+        The default is ''.
+    Timezone : str, optional
+        The name of the Time Zone. The default is "".
+    start_date_pushback : int, optional
+        The number of days to push back before the given start date. 
+        This is necessary for strategies that use lag day data to produce 
+        trading signals
+        The default is 20 (days).
 
     Returns
     -------
-    dict_contracts_quant_signals : TYPE
-        DESCRIPTION.
+    dataframe
+        The result dataframe for bookkeep.
 
     """
     
@@ -320,7 +328,7 @@ def run_gen_MR_signals_list(Strategy,
                             sell_range: tuple =([0.6,0.75],[0.25,0.4],0.95),
                             save_or_not: bool = False) -> dict:
     """
-    A method that run Mean Reversion signal generation for a list of inputs.
+    A method that run Mean Reversion signal generation form a list of inputs.
     
     This method depends upon the function run_gen_MR_signals to iterate over
     the input lists and calculate the signal for each assets independently.
@@ -332,36 +340,39 @@ def run_gen_MR_signals_list(Strategy,
     filename_list : list
         The saved filename list.
     categories_list : list
-        DESCRIPTION.
-    keywords_list : TYPE
-        DESCRIPTION.
-    signal_list : TYPE
-        DESCRIPTION.
-    history_daily_list : TYPE
-        DESCRIPTION.
-    history_minute_list : TYPE
-        DESCRIPTION.
-    start_date : TYPE
-        DESCRIPTION.
-    end_date : TYPE
-        DESCRIPTION.
-    open_hr_dict : TYPE
-        DESCRIPTION.
-    close_hr_dict : TYPE
-        DESCRIPTION.
-    timezone_dict : TYPE
-        DESCRIPTION.
-    buy_range : TYPE, optional
-        DESCRIPTION. The default is ([0.25,0.4],[0.6,0.75],0.05).
-    sell_range : TYPE, optional
-        DESCRIPTION. The default is ([0.6,0.75],[0.25,0.4],0.95).
-    save_or_not : TYPE, optional
-        DESCRIPTION. The default is False.
+        A list containing categories keywords.
+    keywords_list : list
+        A list of keywords.
+    signal_list : list
+        A list of signal data filename.
+    history_daily_list : list
+        A list of history daily pricing data filename.
+    history_minute_list : list
+         history minute pricing data filename.
+    start_date : str
+        The starting date.
+    end_date : str
+        The ending date.
+    open_hr_dict : dict
+        A dictionary for the input opening hour strings.
+    close_hr_dict : dict
+        A dictionary for the input closing hour strings.
+    timezone_dict : dict
+        A dictionary for the Time Zone name strings.
+    buy_range : tuple, optional
+        The buy range in the format of (entry, exit, stop loss). 
+        The default is ([0.25,0.4],[0.6,0.75],0.05).
+    sell_range : tuple, optional
+        The sell range in the format of (entry, exit, stop loss). 
+        The default is ([0.6,0.75],[0.25,0.4],0.95).
+    save_or_not : bool, optional
+        A boolean value to indicate whether to save the result in a file or not. 
+        The default is False.
 
     Returns
     -------
-    TYPE
-        DESCRIPTION.
+    dict
+        The resuting dictionary for all the signals for different assets.
 
     """
     
@@ -399,50 +410,64 @@ def run_gen_MR_signals_list(Strategy,
     return output_dict
 
 @util.time_it
-def run_gen_MR_signals_preloaded(Strategy, filename_list: list[str], 
-                       signal_pkl, history_daily_pkl, openprice_pkl, 
-                       start_date: str, end_date: str,
-                       open_hr_dict: dict, close_hr_dict: dict, 
-                       timezone_dict: dict,
-                       buy_range: tuple = (0.4,0.6,0.1),
-                       sell_range: tuple = (0.6,0.4,0.9),
-                       save_or_not: bool = True) -> pd.DataFrame:
+def run_gen_MR_signals_preloaded(Strategy, 
+                                 filename_list: list[str], 
+                                 signal_pkl: dict, 
+                                 history_daily_pkl: dict, 
+                                 openprice_pkl: dict, 
+                                 start_date: str, end_date: str,
+                                 open_hr_dict: dict, close_hr_dict: dict, 
+                                 timezone_dict: dict,
+                                 buy_range: tuple[float] = (0.4,0.6,0.1),
+                                 sell_range: tuple[float] = (0.6,0.4,0.9),
+                                 save_or_not: bool = True) -> pd.DataFrame:
     """
+    A method that run Mean Reversion signal generation form a preloaded 
+    dictionary. The dictionary contains a key-value pairs with the asset name 
+    as keys and a dataframe as value. 
     
+    This method depends upon the function run_gen_MR_signals to iterate over
+    the input lists and calculate the signal for each assets independently.
 
     Parameters
     ----------
-    Strategy : TYPE
-        DESCRIPTION.
-    filename_list : TYPE
-        DESCRIPTION.
-    signal_pkl : TYPE
-        DESCRIPTION.
-    history_daily_pkl : TYPE
-        DESCRIPTION.
-    openprice_pkl : TYPE
-        DESCRIPTION.
-    start_date : TYPE
-        DESCRIPTION.
-    end_date : TYPE
-        DESCRIPTION.
-    open_hr_dict : TYPE
-        DESCRIPTION.
-    close_hr_dict : TYPE
-        DESCRIPTION.
-    timezone_dict : TYPE
-        DESCRIPTION.
-    buy_range : TYPE, optional
-        DESCRIPTION. The default is (0.4,0.6,0.1).
-    sell_range : TYPE, optional
-        DESCRIPTION. The default is (0.6,0.4,0.9).
-    save_or_not : TYPE, optional
-        DESCRIPTION. The default is True.
+    Strategy : strategy object
+        The strategy function in use in generating the signal.
+    filename_list : list
+        The saved filename list.
+    signal_pkl : dict
+        A dictionary read from a pkl file that contains the signal data in 
+        a dataframe as values and keywords as key.
+    history_daily_pkl : dict
+        A dictionary read from a pkl file that contains the daily historical 
+        data in a dataframe as values and keywords as key.
+    openprice_pkl : dict
+        A dictionary read from a pkl file that contains the daily openning price 
+        data in a dataframe as values and keywords as key..
+    start_date : str
+        The starting date.
+    end_date : str
+        The ending date.
+    open_hr_dict : dict
+        A dictionary for the input opening hour strings.
+    close_hr_dict : dict
+        A dictionary for the input closing hour strings.
+    timezone_dict : dict
+        A dictionary for the Time Zone name strings.
+    buy_range : tuple, optional
+        The buy range in the format of (entry, exit, stop loss). 
+        The default is ([0.25,0.4],[0.6,0.75],0.05).
+    sell_range : tuple, optional
+        The sell range in the format of (entry, exit, stop loss). 
+        The default is ([0.6,0.75],[0.25,0.4],0.95).
+    save_or_not : bool, optional
+        A boolean value to indicate whether to save the result in a file or not. 
+        The default is False.
 
     Returns
     -------
-    TYPE
-        DESCRIPTION.
+    dataframe
+        signal data.
 
     """
     
@@ -495,21 +520,65 @@ def run_gen_MR_signals_preloaded(Strategy, filename_list: list[str],
 
     return master_dict
 
-SignalGen_RunType = {"signal_gen": run_gen_MR_signals,
-                     "signal_gen_list": run_gen_MR_signals_list, 
-                     "signal_gen_preload": run_gen_MR_signals_preloaded
-                                    }
 
-def run_gen_signal_bulk(strategy, save_filename_loc: dict,  
+def run_gen_signal_bulk(strategy, 
+                        save_filename_loc: dict,  
                         start_date: str, end_date: str,
                         open_hr_dict: dict = OPEN_HR_DICT, 
                         close_hr_dict: dict = CLOSE_HR_DICT, 
                         timezone_dict: dict = TIMEZONE_DICT,
-                        buy_range: tuple = (0.4,0.6,0.1), 
-                        sell_range: tuple = (0.6,0.4,0.9),
+                        buy_range: tuple[float] = (0.4,0.6,0.1), 
+                        sell_range: tuple[float] = (0.6,0.4,0.9),
                         runtype: str = 'list', 
                         merge_or_not: bool = True, 
-                        save_or_not: bool = False):
+                        save_or_not: bool = False) -> None:
+    """
+    A method that runs signal generations in bulk. This functions allows you 
+    to choose from euther
+
+    Parameters
+    ----------
+    Strategy : strategy object
+        The strategy function in use in generating the signal.
+    save_filename_loc : dict
+        The saved filename dictionary corresponding to the name of the asset.
+    start_date : str
+        The starting date.
+    end_date : str
+        The ending date.
+    open_hr_dict : dict
+        A dictionary for the input opening hour strings. 
+        The default is = OPEN_HR_DICT 
+    close_hr_dict : dict
+        A dictionary for the input closing hour strings. 
+        The default is = CLOSE_HR_DICT
+    timezone_dict : dict, optional
+        dictionary for the Time Zone name strings. 
+        The default is TIMEZONE_DICT.
+    buy_range : tuple[float], optional
+        The buy range in the format of (entry, exit, stop loss). 
+        The default is (0.4,0.6,0.1).
+    sell_range : tuple[float], optional
+        The sell range in the format of (entry, exit, stop loss). 
+        The default is (0.6,0.4,0.9).
+    runtype : str, optional
+        The name of the run_type. It determines the method to conduct the 
+        signal generation. It can be either 'list' or 'preload'.
+        Each will run 'run_gen_MR_signals_list' or 
+        'run_gen_MR_signals_preloaded', respectively.
+        The default is 'list'.
+    merge_or_not : bool, optional
+        A boolean value to decide whether to merge the results into one 
+        file or not. The default is True.
+    save_or_not : bool, optional
+        A boolean value to indicate whether to save the result in a file 
+        or not. The default is False.
+
+    Returns
+    -------
+    None.
+
+    """
     
     if runtype == "list":
         # Fixed input filename from constant variables
@@ -561,7 +630,14 @@ def run_gen_signal_bulk(strategy, save_filename_loc: dict,
 
 
 if __name__ == "__main__":
+    
+    SignalGen_RunType = {"signal_gen": run_gen_MR_signals,
+                         "signal_gen_list": run_gen_MR_signals_list, 
+                         "signal_gen_preload": run_gen_MR_signals_preloaded
+                                        }
 
+    MR_STRATEGIES_0 = {"argus_exact": ArgusMRStrategy,
+                       "argus_exact_mode": ArgusMRStrategyMode}
     
     start_date = "2024-03-04"
     #start_date = "2021-01-11"
@@ -611,9 +687,6 @@ if __name__ == "__main__":
 #                     runtype = 'preload',
 #                     save_or_not=False)
 # =============================================================================
-
-
-    
 
 
 # =============================================================================
