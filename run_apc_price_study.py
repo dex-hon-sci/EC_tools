@@ -49,6 +49,24 @@ def make_apc_dict(symbol_list):
 import numpy as np
 
 def find_delta(apc_interest, history_interest, symbol):
+    """
+    Find the price difference in between two different list.
+
+    Parameters
+    ----------
+    apc_interest : TYPE
+        DESCRIPTION.
+    history_interest : TYPE
+        DESCRIPTION.
+    symbol : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    delta_list : TYPE
+        DESCRIPTION.
+
+    """
     # Daily settlement price list
     history_interest_close_list = history_interest['Settle'].to_list()
 
@@ -70,13 +88,13 @@ def find_delta(apc_interest, history_interest, symbol):
     print(symbol, 'Root mean square error:', rms)
     return delta_list
 
-start_date = datetime.datetime.strptime("2021-01-11", '%Y-%m-%d')
-end_date = datetime.datetime.strptime('2024-06-17', '%Y-%m-%d')
+
+
 
 apc_dict = make_apc_dict(SYMBOL_LIST)
 
 
-def plot_all_apc_price(symbol_list, col_list):
+def plot_all_apc_price(symbol_list, col_list, start_date, end_date):
 
 
     for i, symbol in enumerate(symbol_list):
@@ -117,7 +135,7 @@ def plot_all_apc_price(symbol_list, col_list):
                     sub_col_list = ['w', 'w', 'w', 'w', 'w'], 
                     sub_line_list = ['dashed', 'solid', 'dotted', 'solid', 'dashed'])
         
-def plot_all_apc_price_OHLC(symbol_list, col_list):
+def plot_all_apc_price_OHLC(symbol_list, col_list, start_date, end_date):
 
 
     for i, symbol in enumerate(symbol_list):
@@ -167,8 +185,12 @@ if __name__=='__main__':
     COL_LIST = ['#62A0E1', '#62A0E1', '#EB634E', '#EB634E', 
                 '#E99938', '#E99938','#5CDE93', '#5CDE93', 
                 '#6ABBC6', '#6ABBC6']
+    
+    start_date = datetime.datetime.strptime("2021-01-11", '%Y-%m-%d')
+    end_date = datetime.datetime.strptime('2024-06-17', '%Y-%m-%d')
+
         
-    plot_all_apc_price(SYMBOL_LIST, COL_LIST)    
+    #plot_all_apc_price(SYMBOL_LIST, COL_LIST, start_date, end_date)    
     
     
-    #plot_all_apc_price_OHLC(SYMBOL_LIST, COL_LIST)
+    plot_all_apc_price_OHLC(SYMBOL_LIST, COL_LIST, start_date, end_date)

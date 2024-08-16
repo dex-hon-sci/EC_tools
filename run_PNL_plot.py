@@ -100,7 +100,7 @@ def twopanel_plot(x_data: list, y1_data: list, y2_data: list,
         ax1.plot(x_element, y1_element, ls=sub_line_list[i], 
                  label=sub_label_list[i], color=sub_col_list[i])
         
-    ax1.plot(x_data, y1_data,'-', c=line_color, label=label, alpha = alpha)
+    ax1.plot(x_data, y1_data,'o-', c=line_color, label=label, alpha = alpha)
     
     fmt = mdates.DateFormatter('%y-%m-%d')
     ax1.legend(loc='center left', bbox_to_anchor=(1, 0.5))

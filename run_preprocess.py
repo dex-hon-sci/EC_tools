@@ -54,7 +54,8 @@ def create_open_price_list(history_daily_file_loc: dict,
         
         @util.save_csv(OPEN_PRICE_FILE_LOC[symbol],save_or_not=True)
         def cal_open_price_indi():
-            open_price = read.find_open_price(history_daily_file, history_minute_file)
+            open_price = read.find_price_by_time(history_daily_file, 
+                                                 history_minute_file)
             return open_price
         
         # execution
@@ -82,7 +83,7 @@ def create_open_price_list(history_daily_file_loc: dict,
 #     output.close()
 # =============================================================================
     
-def run_preprocess():
+def run_preprocess() -> None:
     """
     The main method for preprocessing. The aim of preprocessing is to create 
     aggegrate pickle files so that the runtime of signal generation and back-test
