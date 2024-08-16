@@ -110,7 +110,8 @@ class ArgusMRStrategy(Strategy):
     
     The Strategy condition is described in the run_cond method.
     """
-    def __init__(self, curve_today= np.arange(0.0025, 0.9975, 0.0025), 
+    def __init__(self, 
+                 curve_today= np.arange(0.0025, 0.9975, 0.0025), 
                  quant_list = np.arange(0.0025, 0.9975, 0.0025)):
         
         super().__init__()
@@ -126,7 +127,7 @@ class ArgusMRStrategy(Strategy):
 
         self.strategy_name = 'argus_exact'
 
-    def flatten_sub_cond_dict(self):
+    def flatten_sub_cond_dict(self) -> None:
         """
         A method that turn a sub-condition-dictionary into a 
         condition-dictionary and pass it to the Strategy parent class.
@@ -151,9 +152,11 @@ class ArgusMRStrategy(Strategy):
             self.cond_dict[key] = flatList
          
     
-    def gen_data(self, history_data_lag, apc_curve_lag, 
-                            price_proxy = 'Settle', 
-                            qunatile = [0.25,0.4,0.6,0.75]):
+    def gen_data(self, 
+                 history_data_lag: list, 
+                 apc_curve_lag: list, 
+                 price_proxy: str = 'Settle', 
+                 qunatile: list = [0.25,0.4,0.6,0.75]):
         """
         A method that generate all the data needed for the strategy. The ouput
         of this functions contain all the quantity that will be and can be used 
@@ -211,14 +214,10 @@ class ArgusMRStrategy(Strategy):
         return strategy_info, qunatile_info
         
     
-    def run_cond(self, data, open_price, 
-                                 total_lag_days = 2, 
-                                 apc_mid_Q = 0.5): 
-# =============================================================================
-#                                  apc_trade_Qrange=(0.4,0.6), 
-#                                  apc_trade_Qmargin = (0.1,0.9),
-#                                  apc_trade_Qlimit=(0.05,0.95)):
-# =============================================================================
+    def run_cond(self, data: dict, 
+                 open_price: float, 
+                 total_lag_days: int = 2, 
+                 apc_mid_Q: float = 0.5): 
         """
         A method that run the condition elvaluation of this strategy.
 
@@ -328,8 +327,9 @@ class ArgusMRStrategy(Strategy):
         return self.direction, cond_info
 
 
-    def set_EES(self, buy_range=([0.25,0.4],[0.6,0.75],0.05), 
-                            sell_range =([0.6,0.75],[0.25,0.4],0.95)):
+    def set_EES(self, 
+                buy_range: tuple = ([0.25,0.4],[0.6,0.75],0.05), 
+                sell_range: tuple = ([0.6,0.75],[0.25,0.4],0.95)):
         """
         A method the set the Entry, Exit, Stop loss prices.
         This method read-in the direction attribute of the strategy and 
@@ -402,12 +402,14 @@ class ArgusMRStrategy(Strategy):
             
         return entry_price, exit_price, stop_loss
     
-    def apply_strategy(self, history_data_lag, apc_curve_lag, open_price, 
-                       qunatile = [0.25,0.4,0.6,0.75],
-                        total_lag_days = 2, 
-                        apc_mid_Q = 0.5, 
-                       buy_range=([0.25,0.4],[0.6,0.75],0.05), 
-                       sell_range =([0.6,0.75],[0.25,0.4],0.95)):
+    def apply_strategy(self, history_data_lag: list, 
+                       apc_curve_lag: list, 
+                       open_price: float, 
+                       qunatile: list = [0.25,0.4,0.6,0.75],
+                       total_lag_days: int = 2, 
+                       apc_mid_Q: float = 0.5, 
+                       buy_range: tuple = ([0.25,0.4],[0.6,0.75],0.05), 
+                       sell_range: tuple = ([0.6,0.75],[0.25,0.4],0.95)):
         """
         A method to apply the strategy.
 
@@ -424,12 +426,12 @@ class ArgusMRStrategy(Strategy):
             of the date of interest. The default is [0.25,0.4,0.6,0.75].
         total_lag_days : int, optional
             The total number of lag days. The default is 2.
-        apc_mid_Q : TYPE, optional
+        apc_mid_Q : float, optional
             The middle quantile value. The default is 0.5.                   
-        buy_range:
+        buy_range: tuple, optional
             A tuple that contain the desired quantile value range for buy action. 
             The default is ([0.25,0.4],[0.6,0.75],0.05).
-        sell_range : TYPE, optional
+        sell_range : tuple, optional
             A tuple that contain the desired quantile value range for sell action. 
             The default is ([0.6,0.75],[0.25,0.4],0.95).
 
@@ -687,11 +689,13 @@ class ArgusMRStrategyMode(Strategy):
             
         return entry_price, exit_price, stop_loss
     
-    def apply_strategy(self, history_data_lag, apc_curve_lag, open_price, 
-                       quantile = [-0.1, 0.0, +0.1],
-                        total_lag_days = 2, 
-                      buy_range=(-0.1, 0.1, -0.45), 
-                      sell_range =(0.1, -0.1, +0.45)):
+    def apply_strategy(self, history_data_lag, 
+                       apc_curve_lag, 
+                       open_price, 
+                       quantile: list = [-0.1, 0.0, +0.1],
+                       total_lag_days: int = 2, 
+                       buy_range: tuple = (-0.1, 0.1, -0.45), 
+                       sell_range: tuple = (0.1, -0.1, +0.45)):
 
         strategy_info, quantile_info = self.gen_data(history_data_lag, apc_curve_lag,
                                                      quantile_delta=quantile)

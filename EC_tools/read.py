@@ -702,7 +702,7 @@ def find_closest_price_generic(data: pd.DataFrame,
             
     return target_time_dt, target_price
 
-def find_open_price(history_data_daily: pd.DataFrame, 
+def find_price_by_time(history_data_daily: pd.DataFrame, 
                     history_data_minute: pd.DataFrame, 
                     open_hr: str ='0330') -> pd.DataFrame: #tested
     """
