@@ -216,13 +216,13 @@ def loop_date(trade_choice: trade_choice_simple_3,
     direction_list = signal_table['Direction'] 
     commodity_list = signal_table['Commodity_name']
     
-    upper_entry_list= signal_table['Target_Upper_Entry_Price']
-    lower_entry_list = signal_table['Target_Lower_Entry_Price'] 
+    #upper_entry_list= signal_table['Target_Upper_Entry_Price']
+    #lower_entry_list = signal_table['Target_Lower_Entry_Price'] 
     
-    upper_exit_list = signal_table['Target_Upper_Exit_Price']
-    lower_exit_list = signal_table['Target_Lower_Exit_Price'] 
+    #upper_exit_list = signal_table['Target_Upper_Exit_Price']
+    #lower_exit_list = signal_table['Target_Lower_Exit_Price'] 
 
-    stop_exit_list = signal_table['Stop_Exit_Price'] 
+    #stop_exit_list = signal_table['Stop_Exit_Price'] 
     
     entry_price_list = signal_table['Entry_Price']
     exit_price_list = signal_table['Exit_Price']
@@ -242,14 +242,10 @@ def loop_date(trade_choice: trade_choice_simple_3,
     
     trade_id = 0
     for date_interest, direction, commodity_name, \
-        upper_target_entry, lower_target_entry,\
-        upper_target_exit, lower_target_exit, stop_exit, \
         entry_price, exit_price, stoploss_price, \
         price_code, full_contract_symbol, \
         strategy_name in zip(date_interest_list,  \
                              direction_list, commodity_list,
-                             upper_entry_list, lower_entry_list,
-                             upper_exit_list,  lower_exit_list, stop_exit_list,
                              entry_price_list, exit_price_list, stoploss_price_list,
                              symbol_list,
                              full_contract_symbol_list,
@@ -287,7 +283,7 @@ def loop_date(trade_choice: trade_choice_simple_3,
 
         
         # make a dictionary for all the possible EES time and values
-        EES_dict = read.find_minute_EES(day, target_entry, target_exit, stop_exit,
+        EES_dict = read.find_minute_EES(day, target_entry, target_exit, stoploss_price,
                           open_hr=open_hr_dt, close_hr=close_hr_dt, 
                           direction = direction)
 
@@ -298,7 +294,7 @@ def loop_date(trade_choice: trade_choice_simple_3,
             raise Exception('trade WTF {},{}'.format(trade_open, trade_close))
        # print('trade', trade_open, trade_close)
             
-        entry_price,  entry_datetime= trade_open[1], trade_open[0]
+        entry_price, entry_datetime = trade_open[1], trade_open[0]
         exit_price, exit_datetime = trade_close[1], trade_close[0]
         
         
@@ -309,7 +305,7 @@ def loop_date(trade_choice: trade_choice_simple_3,
             return_trades = entry_price - exit_price
 
         # The risk and reward ratio is based on Abbe's old script but it should be the sharpe ratio
-        risk_reward_ratio = abs(target_entry-stop_exit)/abs(target_entry-target_exit)
+        risk_reward_ratio = abs(target_entry-stoploss_price)/abs(target_entry-target_exit)
 
 
         # put all the data in a singular list

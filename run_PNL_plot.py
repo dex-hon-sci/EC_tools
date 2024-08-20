@@ -22,10 +22,11 @@ ARGUS_EXACT_PNL_AMB2_FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/resul
 ARGUS_EXACT_PNL_AMB3_FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_PNL_amb3_full_.xlsx'
 ARGUS_EXACT_MODE_PNL_FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_mode_PNL_full_.xlsx'
 ARGUS_EXACT_PNL_AMB4_ROLL3_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_PNL_amb4_roll3_.xlsx"
+ARGUS_EXACT_EARLY = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_early_PNL_test_.xlsx"
 
 OLD_MODE_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/profits_and_losses_data_pdfmax_17_.xlsx"
 ARGUS_EXACT_MODE_WRONGTIME_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_mode_wrongtime_PNL_.xlsx"
-#test_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/test_PNL_.xlsx"
+test_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_mode_op_PNL_test_.xlsx"
 
 symbol_list = ['CLc1', 'HOc1', 'RBc1', 'QOc1', 'QPc1', 'CLc2', 'HOc2', 'RBc2', 'QOc2', 'QPc2']
 label_list = ['CLc1 (x50)', 'HOc1 (x50)', 'RBc1 (x50)', 'QOc1 (x50)', 'QPc1 (x50)', 'CLc2 (x50)', 'HOc2 (x50)', 'RBc2 (x50)', 'QOc2 (x50)', 'QPc2 (x50)']
@@ -206,8 +207,9 @@ if __name__=='__main__':
                           extract_PNLplot_input(ARGUS_EXACT_MODE_PNL_FILENAME)[0],
                           extract_PNLplot_input(OLD_MODE_FILENAME,date_col='date')[0],
                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB4_ROLL3_FILENAME)[0],
-                          extract_PNLplot_input(ARGUS_EXACT_MODE_WRONGTIME_FILENAME)[0]
-                          
+                          extract_PNLplot_input(ARGUS_EXACT_MODE_WRONGTIME_FILENAME)[0],
+                          extract_PNLplot_input(test_FILENAME)[0],
+                          extract_PNLplot_input(ARGUS_EXACT_EARLY)[0]
                           ]
     strategy_data_list = [extract_PNLplot_input(ARGUS_EXACT_PNL_FILENAME)[1],
                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB_FILENAME)[1], 
@@ -216,14 +218,18 @@ if __name__=='__main__':
                           extract_PNLplot_input(ARGUS_EXACT_MODE_PNL_FILENAME)[1],
                           extract_PNLplot_input(OLD_MODE_FILENAME, date_col='date')[1],
                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB4_ROLL3_FILENAME)[1],
-                          extract_PNLplot_input(ARGUS_EXACT_MODE_WRONGTIME_FILENAME)[1]
+                          extract_PNLplot_input(ARGUS_EXACT_MODE_WRONGTIME_FILENAME)[1],
+                          extract_PNLplot_input(test_FILENAME)[1],
+                          extract_PNLplot_input(ARGUS_EXACT_EARLY)[1]
                           ]
     strategy_label_list = ['Argus_Exact', 'Ambituous', 'Ambituous2', 
                            'Ambituous3', 'Argus_Exact_Mode', 'old_mode',
-                           'amb4_roll3', 'argus_exact_wrongtime']
-    strategy_col_list = ['b','w','w', 'y', 'r', 'g', 'w', '#b3c27a']
+                           'amb4_roll3', 'argus_exact_wrongtime','test_op_mode', 
+                           'argus_exact_early']
+    strategy_col_list = ['b','w','w', 'y', 'r', 'g', 'w', '#b3c27a', 
+                         '#c32b2b', '#919191']
     strategy_line_list = ['solid','dotted', 'dashed', 'dashdot', 'dashdot', 
-                          'dashdot', 'solid', 'dashed']
+                          'dashdot', 'solid', 'dashed', 'solid', 'solid']
     
     # Plot different strategies cumulative PNL
     twopanel_plot([], [], [], label='',
@@ -232,8 +238,6 @@ if __name__=='__main__':
                   sub_label_list = strategy_label_list,
                   sub_col_list = strategy_col_list, 
                   sub_line_list =strategy_line_list)
-    
-    
     
     
 # =============================================================================

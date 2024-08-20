@@ -572,7 +572,7 @@ class ArgusMRStrategyMode(Strategy):
  
         return strategy_info, qunatile_info 
     
-    def run_cond(self, data, open_price, total_lag_days = 2):
+    def run_cond(self, data, open_price_quant, total_lag_days = 2):
         
         rollingaverage_q = data['rollingaverage']
         lag_close_q_list = [data['lag_list'][i] for i in range(total_lag_days)]
@@ -587,8 +587,7 @@ class ArgusMRStrategyMode(Strategy):
         # (2) rolling 5 days average lower than the median apc 
         cond_buy_list_2 = [(rollingaverage_q < average_mode_Q)]
         # (3) price at today's opening hour above the 0.1 quantile of today's apc
-        #cond_buy_list_3 = [(open_price >= self._curve_today_spline([
-        #                                            apc_trade_Qlimit[0]])[0])]
+        cond_buy_list_3 = [(open_price_quant >= 0.1)]
         
         # "SELL" condition
         # (1) Two consecutive days of closing price higher than the signal median
@@ -596,16 +595,15 @@ class ArgusMRStrategyMode(Strategy):
         # (2) rolling 5 days average higher than the median apc 
         cond_sell_list_2 = [(rollingaverage_q > average_mode_Q)]
         # (3) price at today's opening hour below the 0.9 quantile of today's apc
-        #cond_sell_list_3 = [(open_price <= self._curve_today_spline([
-        #                                            apc_trade_Qlimit[1]])[0])]
+        cond_sell_list_3 = [(open_price_quant <= 0.9)]
         
         # save the condtion boolean value to the sub-condition dictionary
         self._sub_buy_cond_dict = {'NCONS': [cond_buy_list_1],	
-                             'NROLL': [cond_buy_list_2]}
-                             #'OP_WITHIN': [cond_buy_list_3]}
+                             'NROLL': [cond_buy_list_2],
+                             'OP_WITHIN': [cond_buy_list_3]}
         self._sub_sell_cond_dict = {'NCONS': [cond_sell_list_1],	
-                             'NROLL': [cond_sell_list_2]}
-                             #'OP_WITHIN': [cond_sell_list_3]}
+                             'NROLL': [cond_sell_list_2],
+                             'OP_WITHIN': [cond_sell_list_3]}
                              
         # Store all sub-conditions into 
         self.sub_cond_dict = {'Buy':[sum(self._sub_buy_cond_dict[key],[]) 
@@ -694,7 +692,10 @@ class ArgusMRStrategyMode(Strategy):
         strategy_info, quantile_info = self.gen_data(history_data_lag, apc_curve_lag,
                                                      quantile_delta=quantile)
         
-        direction, cond_info = self.run_cond(strategy_info, open_price,
+        open_price_quant = mfunc.find_quant(self._curve_today,
+                                            self._quant_list, open_price)
+
+        direction, cond_info = self.run_cond(strategy_info, open_price_quant,
                                              total_lag_days = total_lag_days)
                                              
         
@@ -728,7 +729,7 @@ class ArgusMRStrategyMode(Strategy):
         return {'data': data, 'direction': direction.value}
 
 
-class ArgusMRStrategy(Strategy):
+class ArgusMRStrategy_22(Strategy):
     """
     Mean-Reversion Strategy based on Argus Possibility Curves. 
     This class allows us to ... 
@@ -858,7 +859,7 @@ class ArgusMRStrategy(Strategy):
         data : dict
             strategy_info from gen_data.
         open_price : float
-            The value of the open price.
+            The APC quantile value of the open price.
         total_lag_days : int, optional
             The total number of lag days. The default is 2.
         apc_mid_Q : float, optional
@@ -897,8 +898,7 @@ class ArgusMRStrategy(Strategy):
         # (2) rolling 5 days average lower than the median apc 
         cond_buy_list_2 = [(rollingaverage_q < apc_mid_Q)]
         # (3) price at today's opening hour above the 0.1 quantile of today's apc
-        #cond_buy_list_3 = [(open_price >= self._curve_today_spline([
-        #                                            apc_trade_Qlimit[0]])[0])]
+        cond_buy_list_3 = [(open_price >= apc_mid_Q)]
         
         # "SELL" condition
         # (1) Two consecutive days of closing price higher than the signal median
@@ -906,8 +906,7 @@ class ArgusMRStrategy(Strategy):
         # (2) rolling 5 days average higher than the median apc 
         cond_sell_list_2 = [(rollingaverage_q > apc_mid_Q)]
         # (3) price at today's opening hour below the 0.9 quantile of today's apc
-        #cond_sell_list_3 = [(open_price <= self._curve_today_spline([
-        #                                            apc_trade_Qlimit[1]])[0])]
+        cond_sell_list_3 = [(open_price <= apc_mid_Q)]
         
         # save the condtion boolean value to the sub-condition dictionary
         self._sub_buy_cond_dict = {'NCONS': [cond_buy_list_1],	
@@ -1075,7 +1074,10 @@ class ArgusMRStrategy(Strategy):
         strategy_info, quantile_info = self.gen_data(history_data_lag, apc_curve_lag,
                                                      qunatile = qunatile)
         
-        direction, cond_info = self.run_cond(strategy_info, open_price,
+        open_price_quant = mfunc.find_quant( self._curve_today,
+                                             self._quant_list, open_price)
+        
+        direction, cond_info = self.run_cond(strategy_info, open_price_quant,
                                              total_lag_days = total_lag_days, 
                                              apc_mid_Q = apc_mid_Q)
                                              

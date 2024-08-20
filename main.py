@@ -9,6 +9,7 @@ import getpass
 #from crudeoil_future_const import *
 from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, \
                                   OPEN_HR_DICT, CLOSE_HR_DICT, \
+                                  OPEN_HR_DICT_EARLY, CLOSE_HR_DICT_EARLY,\
                                   WRONG_OPEN_HR_DICT, WRONG_CLOSE_HR_DICT, \
                                   DATA_FILEPATH, RESULT_FILEPATH,\
                                   APC_FILE_LOC, HISTORY_DAILY_FILE_LOC, \
@@ -26,7 +27,9 @@ from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, \
                                   ARGUS_EXACT_SIGNAL_AMB4_3ROLL_FILE_LOC, \
                                   ARGUS_EXACT_PNL_AMB4_3ROLL_FILE_LOC, \
                                   ARGUS_EXACT_SIGNAL_MODE_WRONGTIME_FILE_LOC,\
-                                  ARGUS_EXACT_MODE_PNL_WRONGTIME_LOC
+                                  ARGUS_EXACT_MODE_PNL_WRONGTIME_LOC,\
+                                  ARGUS_EXACT_SIGNAL_EARLY_FILE_LOC, \
+                                  ARGUS_EXACT_PNL_EARLY_FILE_LOC
                                         
 from crudeoil_future_const import ARGUS_BENCHMARK_SIGNAL_AMB_FILE_LOC, \
                                   ARGUS_BENCHMARK_SIGNAL_AMB_BUY_FILE_LOC, \
@@ -68,10 +71,10 @@ def run_main(strategy_name,
              plot_PNL_or_not: bool = False) -> None:
     
     
-#    FILE_LOC = TEST_FILE_LOC
-#    FILE_PNL_LOC = TEST_FILE_PNL_LOC
-    FILE_LOC = ARGUS_EXACT_SIGNAL_MODE_WRONGTIME_FILE_LOC# ARGUS_EXACT_SIGNAL_AMB4_3ROLL_FILE_LOC
-    FILE_PNL_LOC = ARGUS_EXACT_MODE_PNL_WRONGTIME_LOC
+    #FILE_LOC = TEST_FILE_LOC
+    #FILE_PNL_LOC = TEST_FILE_PNL_LOC
+    FILE_LOC = ARGUS_EXACT_SIGNAL_EARLY_FILE_LOC# ARGUS_EXACT_SIGNAL_AMB4_3ROLL_FILE_LOC
+    FILE_PNL_LOC = ARGUS_EXACT_PNL_EARLY_FILE_LOC
         
     if preprocess:
         print("===============Data Preprocessing=============")
@@ -83,7 +86,8 @@ def run_main(strategy_name,
     #strategy_name = 'argus_exact_mode'
     strategy = MR_STRATEGIES_0[strategy_name]
     #SAVE_SIGNAL_FILENAME_LIST = list(FILE_LOC.values())
-    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/argus_exact_mode.csv'
+   
+    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/argus_exact_early_test.csv'
 
     
     run_gen_signal_bulk(strategy, FILE_LOC,
@@ -92,8 +96,8 @@ def run_main(strategy_name,
                         sell_range = sell_range,
                         runtype = signal_gen_runtype,
                         master_signal_filename = MASTER_SIGNAL_FILENAME,
-                        open_hr_dict = OPEN_HR_DICT, 
-                        close_hr_dict = CLOSE_HR_DICT, 
+                        open_hr_dict = OPEN_HR_DICT_EARLY, 
+                        close_hr_dict = CLOSE_HR_DICT_EARLY, 
                         save_or_not=True,
                         merge_or_not=True)
     
@@ -101,7 +105,7 @@ def run_main(strategy_name,
 
     print("=========Running Back-Testing =============")
     
-    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/argus_exact_mode_PNL.csv'
+    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/argus_exact_early_PNL_test.csv'
     #SAVE_PNL_FILENAME_LIST = FILE_PNL_LOC
 
     run_backtest_bulk(trade_method, 
@@ -109,8 +113,8 @@ def run_main(strategy_name,
                       start_date, end_date, 
                       method = backtest_runtype, 
                       master_pnl_filename=MASTER_PNL_FILENAME,
-                      open_hr_dict = OPEN_HR_DICT, 
-                      close_hr_dict= CLOSE_HR_DICT,
+                      open_hr_dict = OPEN_HR_DICT_EARLY, 
+                      close_hr_dict= CLOSE_HR_DICT_EARLY,
                       save_or_not=True, 
                       merge_or_not=True)
     
@@ -131,13 +135,13 @@ if __name__ == "__main__":
     start_date = "2021-01-11"
     end_date = "2024-08-15"
     
-    run_main('argus_exact_mode', 
+    run_main('argus_exact', 
              trade_choice_simple_3,
              start_date, end_date,         
-             buy_range = (-0.1, 0.1, -0.45), 
-             sell_range = (0.1, -0.1, +0.45),
-            # buy_range = ([0.3,0.4],[0.75,0.9],0.1),
-            # sell_range = ([0.6,0.7],[0.1,0.25],0.9), 
+             #buy_range = (-0.1, 0.1, -0.45), 
+             #sell_range = (0.1, -0.1, +0.45),
+             buy_range = ([0.25,0.4],[0.6,0.75],0.1),
+             sell_range = ([0.6,0.75],[0.35,0.4],0.9), 
              preprocess = False, 
              signal_gen_runtype='preload',
              backtest_runtype = "list")
