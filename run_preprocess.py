@@ -17,7 +17,7 @@ import pandas as pd
 from crudeoil_future_const import SYMBOL_LIST, HISTORY_DAILY_FILE_LOC,\
                                 HISTORY_MINTUE_FILE_LOC, APC_FILE_LOC,\
                                     ARGUS_BENCHMARK_SIGNAL_FILE_LOC,\
-                                    OPEN_PRICE_FILE_LOC
+                                    OPEN_PRICE_FILE_LOC, OPEN_HR_DICT
 import EC_tools.read as read
 import EC_tools.utility as util
 from EC_tools.backtest import extract_intraday_minute_data
@@ -55,7 +55,8 @@ def create_open_price_list(history_daily_file_loc: dict,
         @util.save_csv(OPEN_PRICE_FILE_LOC[symbol],save_or_not=True)
         def cal_open_price_indi():
             open_price = read.find_price_by_time(history_daily_file, 
-                                                 history_minute_file)
+                                                 history_minute_file,
+                                                 open_hr=OPEN_HR_DICT[symbol])
             return open_price
         
         # execution

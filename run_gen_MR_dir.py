@@ -11,13 +11,14 @@ A modified script based on the Mean-Reversion Method developed by Abbe Whitford.
 # python import
 import datetime as datetime
 from enum import Enum
+from typing import TypeVar
 import getpass
 # package imports
 import pandas as pd 
 import numpy as np
 
 # EC_tools imports
-from EC_tools.strategy import ArgusMRStrategy, ArgusMRStrategyMode
+from EC_tools.strategy import ArgusMRStrategy, ArgusMRStrategyMode, Strategy
 import EC_tools.read as read
 import EC_tools.utility as util
 from EC_tools.bookkeep import Bookkeep
@@ -110,14 +111,13 @@ def loop_signal(Strategy, book: Bookkeep,
 
     """
     #make bucket
-    bucket = book.make_bucket(keyword=Strategy().strategy_name)
+    bucket = book.make_bucket(keyword='argus_exact_mode')#Strategy().strategy_name)
     print('Start looping signal: {}...'.format(loop_symbol))
 
     # Find the index of the start_date and end_date here.
     start_index = history_data.index[history_data['Date'] == start_date].item()    
     end_index = history_data.index[history_data['Date'] == end_date].item()
         
-
     # loop through every forecast date and contract symbol 
     for i in np.arange(start_index,end_index): 
         
@@ -157,7 +157,8 @@ def loop_signal(Strategy, book: Bookkeep,
             # put into the Stragey function
             apc_curve_lag5, history_data_lag5 = read.extract_lag_data(signal_data, 
                                                                  history_data, 
-                                                                 forecast_date)
+                                                                 forecast_date,
+                                                                 lag_size=5)
             
 
             # Apply the strategy, The Strategy is variable
@@ -521,7 +522,7 @@ def run_gen_MR_signals_preloaded(Strategy,
     return master_dict
 
 
-def run_gen_signal_bulk(strategy, 
+def run_gen_signal_bulk(strategy: type[Strategy], 
                         save_filename_loc: dict,  
                         start_date: str, end_date: str,
                         open_hr_dict: dict = OPEN_HR_DICT, 
@@ -530,6 +531,7 @@ def run_gen_signal_bulk(strategy,
                         buy_range: tuple[float] = (0.4,0.6,0.1), 
                         sell_range: tuple[float] = (0.6,0.4,0.9),
                         runtype: str = 'list', 
+                        master_signal_filename: str = "master_signal.csv",
                         merge_or_not: bool = True, 
                         save_or_not: bool = False) -> None:
     """
@@ -621,11 +623,15 @@ def run_gen_signal_bulk(strategy,
                                     sell_range = sell_range,
                                     save_or_not = save_or_not)
         if merge_or_not:
-            merge_filename = getpass.getpass(prompt="please enter the name for the merged file :") 
-            MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + merge_filename
+            #merge_filename = getpass.getpass(prompt="please enter the name for the merged file :") 
+            #merge_filename = master_signal_filename
+            MASTER_SIGNAL_FILENAME = master_signal_filename
             
             read.merge_raw_data(SAVE_FILENAME_LIST, 
                                 MASTER_SIGNAL_FILENAME, sort_by="Date")
+
+MR_STRATEGIES_0 = {"argus_exact": ArgusMRStrategy,
+                   "argus_exact_mode": ArgusMRStrategyMode}
 
 
 
@@ -636,8 +642,6 @@ if __name__ == "__main__":
                          "signal_gen_preload": run_gen_MR_signals_preloaded
                                         }
 
-    MR_STRATEGIES_0 = {"argus_exact": ArgusMRStrategy,
-                       "argus_exact_mode": ArgusMRStrategyMode}
     
     start_date = "2024-03-04"
     #start_date = "2021-01-11"
@@ -657,13 +661,14 @@ if __name__ == "__main__":
     sell_range = ([0.75,0.8],[0.2,0.25],0.9) # (0.1,-0.1,0.45)
     
     # master function in running everything
-    run_gen_signal_bulk(strategy, TEST_FILE_LOC,
-                    start_date, end_date,
-                    buy_range = buy_range, 
-                    sell_range = sell_range,
-                    runtype = 'list',
-                    merge_or_not= True,
-                    save_or_not=True)
+    run_gen_signal_bulk(strategy, 
+                        TEST_FILE_LOC,
+                        start_date, end_date,
+                        buy_range = buy_range, 
+                        sell_range = sell_range,
+                        runtype = 'list',
+                        merge_or_not= True,
+                        save_or_not=True)
     
 # =============================================================================
 # # Test the individual list method

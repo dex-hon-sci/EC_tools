@@ -21,9 +21,11 @@ ARGUS_EXACT_PNL_AMB_FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/result
 ARGUS_EXACT_PNL_AMB2_FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_PNL_amb2_full_.xlsx'
 ARGUS_EXACT_PNL_AMB3_FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_PNL_amb3_full_.xlsx'
 ARGUS_EXACT_MODE_PNL_FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_mode_PNL_full_.xlsx'
+ARGUS_EXACT_PNL_AMB4_ROLL3_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_PNL_amb4_roll3_.xlsx"
 
 OLD_MODE_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/profits_and_losses_data_pdfmax_17_.xlsx"
-test_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/test_PNL_.xlsx"
+ARGUS_EXACT_MODE_WRONGTIME_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_mode_wrongtime_PNL_.xlsx"
+#test_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/test_PNL_.xlsx"
 
 symbol_list = ['CLc1', 'HOc1', 'RBc1', 'QOc1', 'QPc1', 'CLc2', 'HOc2', 'RBc2', 'QOc2', 'QPc2']
 label_list = ['CLc1 (x50)', 'HOc1 (x50)', 'RBc1 (x50)', 'QOc1 (x50)', 'QPc1 (x50)', 'CLc2 (x50)', 'HOc2 (x50)', 'RBc2 (x50)', 'QOc2 (x50)', 'QPc2 (x50)']
@@ -44,7 +46,8 @@ def fill_holes(cumPNL: list) -> list:
     return cumPNL
     
 def extract_PNLplot_input(filename: str, 
-                          sheet_name: str ='Total', date_col: str = 'Entry_Date', 
+                          sheet_name: str ='Total', 
+                          date_col: str = 'Entry_Date', 
                           val_col: str = 'cumulative P&L from trades for contracts (x 50)',
                           fill_or_not: bool = True) -> tuple[list, list]:
           
@@ -66,16 +69,16 @@ def extract_PNLplot_input(filename: str,
 
 
 def twopanel_plot(x_data: list, y1_data: list, y2_data: list, 
-                upper_plot_ylabel: str = 'Cumulative return (USD)', 
-                lower_plot_ylabel: str = 'Scaled returns (USD)',
-                xlabel: str = 'Date', plot_title: str = "Cumulative PNL",
-                line_color: str = 'w', 
-                label: str = 'All (x50)',  
-                sub_x_list: list = [], 
-                sub_y1_list: list = [], 
-                sub_line_list: list = [],
-                sub_label_list: list = [], 
-                sub_col_list: list = [], alpha = 1.0) -> None:
+                 upper_plot_ylabel: str = 'Cumulative return (USD)', 
+                 lower_plot_ylabel: str = 'Scaled returns (USD)',
+                 xlabel: str = 'Date', plot_title: str = "Cumulative PNL",
+                 line_color: str = 'w', 
+                 label: str = 'All (x50)',  
+                 sub_x_list: list = [], 
+                 sub_y1_list: list = [], 
+                 sub_line_list: list = [],
+                 sub_label_list: list = [], 
+                 sub_col_list: list = [], alpha = 1.0) -> None:
     
     plt.style.use('dark_background')
     fig = plt.figure(figsize=(14,6))
@@ -100,7 +103,7 @@ def twopanel_plot(x_data: list, y1_data: list, y2_data: list,
         ax1.plot(x_element, y1_element, ls=sub_line_list[i], 
                  label=sub_label_list[i], color=sub_col_list[i])
         
-    ax1.plot(x_data, y1_data,'o-', c=line_color, label=label, alpha = alpha)
+    ax1.plot(x_data, y1_data,'-', c=line_color, label=label, alpha = alpha)
     
     fmt = mdates.DateFormatter('%y-%m-%d')
     ax1.legend(loc='center left', bbox_to_anchor=(1, 0.5))
@@ -136,7 +139,9 @@ def twopanel_plot(x_data: list, y1_data: list, y2_data: list,
 
 if __name__=='__main__':
     
-    FILENAME = test_FILENAME
+    # PLot PNL for the cumulative return for a specific strategy as well as 
+    # the PNL for inidividual assets
+    FILENAME = ARGUS_EXACT_PNL_AMB4_ROLL3_FILENAME
     # Extract the cumulative PNL of the strategy
     date_all, cumPNL_all = extract_PNLplot_input(FILENAME)
     
@@ -166,11 +171,12 @@ if __name__=='__main__':
     #cumPNL_plot(date_all, cumPNL_all, label='All (x50)')
     
     # =============================================================================
-    #twopanel_plot(date_all, cumPNL_all, return_all, label='All (x50)',
-    #              sub_date_list=date_list, sub_data_list=data_list,
-    #              sub_label_list = label_list,
-    #              sub_col_list = col_list, 
-    #              sub_line_list =line_list)
+    twopanel_plot(date_all, cumPNL_all, return_all, label='All (x50)',
+                  sub_x_list=date_list, 
+                  sub_y1_list=data_list,
+                  sub_label_list = label_list,
+                  sub_col_list = col_list, 
+                  sub_line_list =line_list)
     # =============================================================================
     # =============================================================================
     # twopanel_plot([], [], [], label='All (x50)',
@@ -181,19 +187,26 @@ if __name__=='__main__':
     # =============================================================================
     
     
-    twopanel_plot([], [], [], label='CLc1',
-                   sub_date_list=date_list, sub_data_list=data_list,
-                   sub_label_list = label_list,
-                   sub_col_list = col_list, 
-                   sub_line_list =line_list)
+# =============================================================================
+#     twopanel_plot([], [], [], label='CLc1',
+#                    sub_x_list=date_list, 
+#                    sub_y1_list=data_list,
+#                    sub_label_list = label_list,
+#                    sub_col_list = col_list, 
+#                    sub_line_list =line_list)
+# =============================================================================
     
+    
+    # Plot comparison between multiple different strategies
+
     strategy_date_list = [extract_PNLplot_input(ARGUS_EXACT_PNL_FILENAME)[0],
                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB_FILENAME)[0], 
                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB2_FILENAME)[0],
                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB3_FILENAME)[0],
                           extract_PNLplot_input(ARGUS_EXACT_MODE_PNL_FILENAME)[0],
                           extract_PNLplot_input(OLD_MODE_FILENAME,date_col='date')[0],
-                          extract_PNLplot_input(test_FILENAME)[0]
+                          extract_PNLplot_input(ARGUS_EXACT_PNL_AMB4_ROLL3_FILENAME)[0],
+                          extract_PNLplot_input(ARGUS_EXACT_MODE_WRONGTIME_FILENAME)[0]
                           
                           ]
     strategy_data_list = [extract_PNLplot_input(ARGUS_EXACT_PNL_FILENAME)[1],
@@ -202,16 +215,20 @@ if __name__=='__main__':
                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB3_FILENAME)[1],
                           extract_PNLplot_input(ARGUS_EXACT_MODE_PNL_FILENAME)[1],
                           extract_PNLplot_input(OLD_MODE_FILENAME, date_col='date')[1],
-                          extract_PNLplot_input(test_FILENAME)[1]
+                          extract_PNLplot_input(ARGUS_EXACT_PNL_AMB4_ROLL3_FILENAME)[1],
+                          extract_PNLplot_input(ARGUS_EXACT_MODE_WRONGTIME_FILENAME)[1]
                           ]
-    strategy_label_list = ['Argus_Exact', 'Ambituous', 'Ambituous2', 'Ambituous3', 'Argus_Exact_Mode', 'old_mode','test']
-    strategy_col_list = ['b','w','w', 'y', 'r', 'g', 'w']
-    strategy_line_list = ['solid','dotted', 'dashed', 'dashdot', 'dashdot', 'dashdot', 'solid']
+    strategy_label_list = ['Argus_Exact', 'Ambituous', 'Ambituous2', 
+                           'Ambituous3', 'Argus_Exact_Mode', 'old_mode',
+                           'amb4_roll3', 'argus_exact_wrongtime']
+    strategy_col_list = ['b','w','w', 'y', 'r', 'g', 'w', '#b3c27a']
+    strategy_line_list = ['solid','dotted', 'dashed', 'dashdot', 'dashdot', 
+                          'dashdot', 'solid', 'dashed']
     
     # Plot different strategies cumulative PNL
     twopanel_plot([], [], [], label='',
-                  sub_date_list=strategy_date_list,
-                  sub_data_list=strategy_data_list,
+                  sub_x_list=strategy_date_list,
+                  sub_y1_list=strategy_data_list,
                   sub_label_list = strategy_label_list,
                   sub_col_list = strategy_col_list, 
                   sub_line_list =strategy_line_list)

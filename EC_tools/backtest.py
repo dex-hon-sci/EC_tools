@@ -243,17 +243,17 @@ def loop_date(trade_choice: trade_choice_simple_3,
     trade_id = 0
     for date_interest, direction, commodity_name, \
         upper_target_entry, lower_target_entry,\
-            upper_target_exit, lower_target_exit, stop_exit, \
-                entry_price, exit_price, stoploss_price, \
-                price_code, full_contract_symbol, \
-                    strategy_name in zip(date_interest_list,  \
-                            direction_list, commodity_list,
-                            upper_entry_list, lower_entry_list,
-                            upper_exit_list,  lower_exit_list, stop_exit_list,
-                            entry_price_list, exit_price_list, stoploss_price_list,
-                            symbol_list,
-                            full_contract_symbol_list,
-                            strategy_name_list):
+        upper_target_exit, lower_target_exit, stop_exit, \
+        entry_price, exit_price, stoploss_price, \
+        price_code, full_contract_symbol, \
+        strategy_name in zip(date_interest_list,  \
+                             direction_list, commodity_list,
+                             upper_entry_list, lower_entry_list,
+                             upper_exit_list,  lower_exit_list, stop_exit_list,
+                             entry_price_list, exit_price_list, stoploss_price_list,
+                             symbol_list,
+                             full_contract_symbol_list,
+                             strategy_name_list):
                                 
         if direction == 'Buy':
             target_entry = entry_price

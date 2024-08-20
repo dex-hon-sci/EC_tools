@@ -133,90 +133,6 @@ class ArgusMRStrategyCentile(Strategy):
         """
         self.sub_cond_dict[direction][cond_name] = cond_list
         
-        
-# =============================================================================
-#     def run_cond(self, data, open_price, 
-#                                  total_lag_days = 2, 
-#                                  apc_mid_Q = 0.5): 
-#         """
-#         A method that run the condition elvaluation of this strategy.
-# 
-#         If the settlement price of the past two days is less (or more) than the 
-#         apc_mid_Q quantile in their respective days of APC, plus the rolling 
-#         average for the past five days settlement price qunatile being lower 
-#         (or higher) than the apc_mid_Q, we deem that day to be a "Buy" 
-#         (or "Sell") day.
-#         
-#         Parameters
-#         ----------
-#         data : dict
-#             strategy_info from gen_data.
-#         open_price : float
-#             The value of the open price.
-#         total_lag_days : int, optional
-#             The total number of lag days. The default is 2.
-#         apc_mid_Q : float, optional
-#             The middle quantile of an APC. The default is 0.5.
-# 
-#         Returns
-#         -------
-#         self.direction
-#             The trading direction of the day.
-#         cond_info : list
-#             A list of condiions info for the user.
-#             For this strategy, the format is the following:
-#                 [NCONS,	NROLL, Signal_NCONS, Signal_NROLL]
-#             Where NCONS is the number of lag days, NROLL is the number of 
-#             lag days used to calculate the rollingaverage, Signal_NCONS is 
-#             the trading signal using solely NCONS, and Signal_NROLL is the 
-#             trading signal using solely NROLL.
-# 
-#         """
-#         # Input
-#         lag_close_q_list = [data['lag_list'][i] for i in range(total_lag_days)]
-#         
-#         # conditions variable
-#         mid_Q_list = [apc_mid_Q for i in range(total_lag_days)]
-#         
-# 
-#         # save the condtion boolean value to the sub-condition dictionary
-#         cond_buy_name = None
-#         cond_buy_list = None
-#         
-#         cond_sell_name = None
-#         cond_sell_list = None
-#         
-#         self.sub_cond_dict["Buy"][cond_buy_name] = cond_buy_list
-#         self.sub_cond_dict["Sell"][cond_sell_name] = cond_sell_list
-#         
-#         #self._sub_buy_cond_dict[cond_buy_name] = cond_buy_list 
-#         #self._sub_sell_cond_dict[cond_sell_name] = cond_sell_list 
-#         
-#         # save the condtion boolean value to the sub-condition dictionary
-#         self._sub_buy_cond_dict = {'NCONS': [cond_buy_list_1],	
-#                              'NROLL': [cond_buy_list_2]}
-#                              #'OP_WITHIN': [cond_buy_list_3]}
-#         self._sub_sell_cond_dict = {'NCONS': [cond_sell_list_1],	
-#                              'NROLL': [cond_sell_list_2]}
-#                              #'OP_WITHIN': [cond_sell_list_3]}
-#         
-#         # Store all sub-conditions into 
-#         self.sub_cond_dict = {'Buy':[sum(self._sub_buy_cond_dict[key],[]) 
-#                                 for key in self._sub_buy_cond_dict], 
-#                          'Sell':[sum(self._sub_sell_cond_dict[key],[]) 
-#                                  for key in self._sub_buy_cond_dict]}
-#         
-#         # flatten the sub-conditoion list and sotre them in the condition list
-#         self.flatten_sub_cond_dict()
-# 
-#         ##########
-#         # Create the condtion info for bookkeeping
-# 
-#         
-#         ############
-#         
-#         return self.direction 
-# =============================================================================
     
     def gen_cond_info(self, data): ## WIP
         """
@@ -239,7 +155,8 @@ class ArgusMRStrategyCentile(Strategy):
 
         
         for dirr in self._sub_buy_cond_dict:
-            cond_dict
+            pass
+            
         
         #########
 

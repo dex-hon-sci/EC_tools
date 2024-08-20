@@ -75,11 +75,25 @@ class Bookkeep(object):
                         'Entry_Price', 'Exit_Price', 'StopLoss_Price',
                         'strategy_name']
     
+    argus_exact_roll3_format = ['Date', 'Price_Code', 'Direction', 'Commodity_name',
+                        'Contract_Month','Timezone', 
+                        'Valid_From_localtz_timestr', 'Valid_To_localtz_timestr', 
+                        'Target_Lower_Entry_Price', 'Target_Upper_Entry_Price',
+                        'Target_Lower_Exit_Price', 'Target_Upper_Exit_Price',
+                        'Stop_Exit_Price',
+                        'NCONS',	'NROLL', 'Signal_NCONS', 'Signal_NROLL',	
+                        'Quant_Close_Price_Lag_1', 'Quant_Close_Price_Lag_2',	
+                        'Quant_Close_Price_Lag_3', 	
+                        'Quant_Close_Price_Lag_1_rm_5',	
+                        'Q0.25', 'Q0.4', 'Q0.6', 'Q0.75', 
+                        'Entry_Price', 'Exit_Price', 'StopLoss_Price',
+                        'strategy_name']
+    
     argus_exact_mode_format = ['Date', 'Price_Code', 'Direction', 'Commodity_name',
                         'Contract_Month','Timezone', 
                         'Valid_From_localtz_timestr', 'Valid_To_localtz_timestr', 
-                        'Target_Entry_Price', 'Target_Entry_Price',
-                        'Target_Exit_Price', 'Target_Exit_Price',
+                        'Target_Lower_Entry_Price', 'Target_Upper_Entry_Price',
+                        'Target_Lower_Exit_Price', 'Target_Upper_Exit_Price',
                         'Stop_Exit_Price',
                         'NCONS',	'NROLL', 'Signal_NCONS', 'Signal_NROLL',	
                         'Quant_Close_Price_Lag_1', 'Quant_Close_Price_Lag_2',	
@@ -100,7 +114,8 @@ class Bookkeep(object):
             "mode": signal_columns + B + D + F + H + End, 
             "argus_exact": argus_exact_format,
             "argus_exact_amb": argus_exact_amb_format,
-            "argus_exact_mode": argus_exact_mode_format
+            "argus_exact_mode": argus_exact_mode_format,
+            "argus_exact_roll3":argus_exact_roll3_format
                    }
     
     BACKTEST_PNL_COL_DICT = {
@@ -146,6 +161,7 @@ class Bookkeep(object):
 
         """
         # Storing the data for single entry. Please use this in a loop   
+        #print(len(data), data,len(self.bucket))
         for i, key in enumerate(self.bucket):
             self.bucket[key].append(data[i])   
 

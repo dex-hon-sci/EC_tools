@@ -293,12 +293,13 @@ def run_backtest_bulk(TradeMethod,
     
         
         backtest_result = run_backtest_list(TradeMethod, 
-                        SAVE_FILENAME_LIST, SYMBOL_LIST,
-                          SIGNAL_FILENAME_LIST, HISTORY_MINUTE_FILENAME_LIST,
-                                    start_date, end_date,
-                                    open_hr_dict = open_hr_dict, 
-                                    close_hr_dict=close_hr_dict, 
-                                    save_or_not=save_or_not)
+                                            SAVE_FILENAME_LIST, SYMBOL_LIST,
+                                            SIGNAL_FILENAME_LIST, 
+                                            HISTORY_MINUTE_FILENAME_LIST,
+                                            start_date, end_date,
+                                            open_hr_dict = open_hr_dict, 
+                                            close_hr_dict=close_hr_dict, 
+                                            save_or_not=save_or_not)
                       
         if merge_or_not:
             #merge_filename = getpass.getpass(prompt="please enter the name for the merged file :") 
@@ -311,14 +312,14 @@ def run_backtest_bulk(TradeMethod,
         
         backtest_result =  run_backtest_portfolio(FILENAME_MINUTE, 
                                                   FILENAME_BUYSELL_SIGNALS, 
-                                   start_date, end_date)
+                                                  start_date, end_date)
         
     elif method == "preload":
         #MASTER_SIGNAL_FILENAME
         HISTORY_MINUTE_PKL = util.load_pkl(DATA_FILEPATH+"/pkl_vault/crudeoil_future_minute_full.pkl")
 
         PP = run_backtest_portfolio_preloaded(OneTradePerDay,
-                                                master_signal_filename, 
+                                              master_signal_filename, 
                                               HISTORY_MINUTE_PKL,
                                               start_date, end_date)
         backtest_result = PP
@@ -360,10 +361,10 @@ if __name__ == "__main__":
     end_date = "2024-06-17"
     
     run_backtest_bulk(trade_choice_simple_3, TEST_FILE_LOC, TEST_FILE_PNL_LOC, 
-                            start_date, end_date, 
-                     method = "preload", master_pnl_filename='',
-                     open_hr_dict = OPEN_HR_DICT, close_hr_dict=CLOSE_HR_DICT,
-                     save_or_not=True, merge_or_not=True)
+                      start_date, end_date, 
+                      method = "preload", master_pnl_filename='',
+                      open_hr_dict = OPEN_HR_DICT, close_hr_dict=CLOSE_HR_DICT,
+                      save_or_not=True, merge_or_not=True)
     
     #run_backtest(trade_choice_simple_2,FILENAME_MINUTE, FILENAME_BUYSELL_SIGNALS, 
     #             "2022-01-03", "2024-06-17")

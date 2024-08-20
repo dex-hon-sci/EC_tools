@@ -132,41 +132,6 @@ class Portfolio(object):
         #self._pool_window = self.pool
         return self._pool_window
     
-# =============================================================================
-#     @util.time_it
-#     def set_pool_window(self, 
-#                         start_time: datetime.datetime = datetime.datetime(1900,1,1), 
-#                         end_time: datetime.datetime = datetime.datetime(2200,12,31)):
-#         """
-#         Setter method for the pool_window object.
-# 
-#         Parameters
-#         ----------
-#         start_time : datetime object, optional
-#             The start time . The default is datetime.datetime(1900,1,1).
-#         end_time : datetime object, optional
-#             The end time. The default is datetime.datetime(2200,12,31).
-# 
-#         Returns
-#         -------
-#         list
-#             pool_window list object.
-# 
-#         """
-#         # define a window of interest amount the pool object
-#         #pool_df_interest = self.pool_df[(self.pool_df['datetime'] >= start_time) & 
-#         #                        (self.pool_df['datetime'] <= end_time)]
-#         pool_df_interest = self.pool_df.loc[(self.pool_df['datetime'] >= start_time) & 
-#                                 (self.pool_df['datetime'] <= end_time)]
-# 
-#         #print(pool_df_interest)
-#         ind = pool_df_interest.index.to_list()
-#         #print(ind)
-#         self._pool_window = self._pool[ind[0]:ind[-1]+1]
-#         
-#         return self._pool_window
-# =============================================================================
-    
     @util.time_it
     def set_pool_window(self, 
                         start_time: datetime.datetime = datetime.datetime(1900,1,1), 
@@ -216,7 +181,7 @@ class Portfolio(object):
     @staticmethod
     def _make_table(pool_type) -> pd.DataFrame:
         """
-        A staticmethod that create a datafreame table using either pool_window
+        A static method that create a datafreame table using either pool_window
         or pool. This is an internal method to construct the table and master 
         table attributes for the portfolio class. 
         
@@ -237,14 +202,7 @@ class Portfolio(object):
 
         """
         # Find the keys and values for asset within a particular time window
-        # The function operate on the previously defiend poo_window
-# =============================================================================
-#         values = [list(pool_type[i][1].__dict__.values()) 
-#                                   for i in range(len(pool_type))]
-#         keys = [list(pool_type[i][1].__dict__.keys()) 
-#                                   for i in range(len(pool_type))][0]
-# =============================================================================
-        
+        # The function operate on the previously defiend poo_window\        
         values = [list(pool_type[i][1].values()) 
                                   for i in range(len(pool_type))]
         keys = [list(pool_type[i][1].keys()) 

@@ -73,13 +73,14 @@ def trade_choice_simple(EES_dict: dict) -> tuple[tuple, tuple]:
 
     Parameters
     ----------
-    EES_dict : TYPE
+    EES_dict : dict
         DESCRIPTION.
 
     Returns
     -------
-    TYPE
-        DESCRIPTION.
+    tuple
+        Two tuples containing rhe trade open and trade close in the format of 
+        (time. price).
 
     """
     # add the amount of exchange
@@ -185,7 +186,22 @@ def trade_choice_simple_2(EES_dict: dict) -> tuple[tuple, tuple]:
 
 
 def trade_choice_simple_3(EES_dict: dict) -> tuple[tuple, tuple]: 
+    """
+    A simmple trading method that returns a pair of trade open and close time
+    as long as the price. 
     
+    Parameters
+    ----------
+    EES_dict : dict
+        A dictionary containing .
+        This should be the output of 
+
+    Returns
+    -------
+    tuple
+        Two tuples containing rhe trade open and trade close in the format of 
+        (time. price).
+    """
     entry_pt, exit_pt = (np.nan,np.nan), (np.nan,np.nan)
     stop_pt, close_pt = (np.nan,np.nan), (np.nan,np.nan)
     

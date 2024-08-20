@@ -102,6 +102,30 @@ CLOSE_HR_DICT = {
     'QPc1':'1629', #1630 UTC
     'QPc2':'1629'} #1630 UTC
 
+WRONG_OPEN_HR_DICT = {
+    'CLc1':'0330', # UTC
+    'CLc2':'0330', # UTC
+    'HOc1':'0330', #0800 NY #1300 UTC
+    'HOc2':'0330', #0800 NY #1300 UTC
+    'RBc1':'0330', #0800 NY #1300 UTC
+    'RBc2':'0330', #0800 NY #1300 UTC
+    'QOc1':'0330', # UTC
+    'QOc2':'0330', # UTC
+    'QPc1':'0800', # UTC
+    'QPc2':'0800'} # UTC
+
+WRONG_CLOSE_HR_DICT = {
+    'CLc1':'1959', #2000 UTC
+    'CLc2':'1959', #2000 UTC
+    'HOc1':'1959', #1430 NY #1830 UTC
+    'HOc2':'1959', #1430 NY #1830 UTC
+    'RBc1':'1959', #1430 NY #1830 UTC
+    'RBc2':'1959', #1430 NY #1830 UTC
+    'QOc1':'1959', #2000 UTC
+    'QOc2':'1959', #2000 UTC
+    'QPc1':'1959', #1630 UTC
+    'QPc2':'1959'} #1630 UTC
+
 TIMEZONE_DICT = {
     'CLc1':'Europe/London',
     'CLc2':'Europe/London',
@@ -293,6 +317,31 @@ ARGUS_EXACT_SIGNAL_MODE_FILE_LOC = {
     'QPc1': RESULT_FILEPATH + "/argus_exact_mode_signal/argus_exact_signal_mode_QPc1_full.csv",
     'QPc2': RESULT_FILEPATH + "/argus_exact_mode_signal/argus_exact_signal_mode_QPc2_full.csv" 
     }
+ARGUS_EXACT_SIGNAL_MODE_WRONGTIME_FILE_LOC = {
+    'CLc1': RESULT_FILEPATH + "/argus_exact_mode_signal_wrongtime/argus_exact_signal_mode_wrongtime_CLc1_full.csv", 
+    'CLc2': RESULT_FILEPATH + "/argus_exact_mode_signal_wrongtime/argus_exact_signal_mode_wrongtime_CLc2_full.csv", 
+    'HOc1': RESULT_FILEPATH + "/argus_exact_mode_signal_wrongtime/argus_exact_signal_mode_wrongtime_HOc1_full.csv", 
+    'HOc2': RESULT_FILEPATH + "/argus_exact_mode_signal_wrongtime/argus_exact_signal_mode_wrongtime_HOc2_full.csv", 
+    'RBc1': RESULT_FILEPATH + "/argus_exact_mode_signal_wrongtime/argus_exact_signal_mode_wrongtime_RBc1_full.csv", 
+    'RBc2': RESULT_FILEPATH + "/argus_exact_mode_signal_wrongtime/argus_exact_signal_mode_wrongtime_RBc2_full.csv", 
+    'QOc1': RESULT_FILEPATH + "/argus_exact_mode_signal_wrongtime/argus_exact_signal_mode_wrongtime_QOc1_full.csv",
+    'QOc2': RESULT_FILEPATH + "/argus_exact_mode_signal_wrongtime/argus_exact_signal_mode_wrongtime_QOc2_full.csv",
+    'QPc1': RESULT_FILEPATH + "/argus_exact_mode_signal_wrongtime/argus_exact_signal_mode_wrongtime_QPc1_full.csv",
+    'QPc2': RESULT_FILEPATH + "/argus_exact_mode_signal_wrongtime/argus_exact_signal_mode_wrongtime_QPc2_full.csv" 
+    }
+
+ARGUS_EXACT_SIGNAL_AMB4_3ROLL_FILE_LOC = {
+    'CLc1': RESULT_FILEPATH + "/argus_exact_signal_amb4_3roll/argus_exact_signal_amb4_3roll_CLc1_full.csv", 
+    'CLc2': RESULT_FILEPATH + "/argus_exact_signal_amb4_3roll/argus_exact_signal_amb4_3roll_CLc2_full.csv", 
+    'HOc1': RESULT_FILEPATH + "/argus_exact_signal_amb4_3roll/argus_exact_signal_amb4_3roll_HOc1_full.csv", 
+    'HOc2': RESULT_FILEPATH + "/argus_exact_signal_amb4_3roll/argus_exact_signal_amb4_3roll_HOc2_full.csv", 
+    'RBc1': RESULT_FILEPATH + "/argus_exact_signal_amb4_3roll/argus_exact_signal_amb4_3roll_RBc1_full.csv", 
+    'RBc2': RESULT_FILEPATH + "/argus_exact_signal_amb4_3roll/argus_exact_signal_amb4_3roll_RBc2_full.csv", 
+    'QOc1': RESULT_FILEPATH + "/argus_exact_signal_amb4_3roll/argus_exact_signal_amb4_3roll_QOc1_full.csv",
+    'QOc2': RESULT_FILEPATH + "/argus_exact_signal_amb4_3roll/argus_exact_signal_amb4_3roll_QOc2_full.csv",
+    'QPc1': RESULT_FILEPATH + "/argus_exact_signal_amb4_3roll/argus_exact_signal_amb4_3roll_QPc1_full.csv",
+    'QPc2': RESULT_FILEPATH + "/argus_exact_signal_amb4_3roll/argus_exact_signal_amb4_3roll_QPc2_full.csv" 
+    }
 
 
 ARGUS_EXACT_SIGNAL_FILE_SHORT_LOC = {
@@ -370,6 +419,31 @@ ARGUS_EXACT_PNL_MODE_LOC = {
     'QPc2': RESULT_FILEPATH + "/argus_exact_mode_PNL/argus_exact_mode_PNL_QPc2_full.csv" 
     }
 
+ARGUS_EXACT_MODE_PNL_WRONGTIME_LOC = {
+    'CLc1': RESULT_FILEPATH + "/argus_exact_mode_PNL_wrongtime/argus_exact_mode_wrongtime_PNL_CLc1_full.csv", 
+    'CLc2': RESULT_FILEPATH + "/argus_exact_mode_PNL_wrongtime/argus_exact_mode_wrongtime_PNL_CLc2_full.csv", 
+    'HOc1': RESULT_FILEPATH + "/argus_exact_mode_PNL_wrongtime/argus_exact_mode_wrongtime_PNL_HOc1_full.csv", 
+    'HOc2': RESULT_FILEPATH + "/argus_exact_mode_PNL_wrongtime/argus_exact_mode_wrongtime_PNL_HOc2_full.csv", 
+    'RBc1': RESULT_FILEPATH + "/argus_exact_mode_PNL_wrongtime/argus_exact_mode_wrongtime_PNL_RBc1_full.csv", 
+    'RBc2': RESULT_FILEPATH + "/argus_exact_mode_PNL_wrongtime/argus_exact_mode_wrongtime_PNL_RBc2_full.csv", 
+    'QOc1': RESULT_FILEPATH + "/argus_exact_mode_PNL_wrongtime/argus_exact_mode_wrongtime_PNL_QOc1_full.csv",
+    'QOc2': RESULT_FILEPATH + "/argus_exact_mode_PNL_wrongtime/argus_exact_mode_wrongtime_PNL_QOc2_full.csv",
+    'QPc1': RESULT_FILEPATH + "/argus_exact_mode_PNL_wrongtime/argus_exact_mode_wrongtime_PNL_QPc1_full.csv",
+    'QPc2': RESULT_FILEPATH + "/argus_exact_mode_PNL_wrongtime/argus_exact_mode_wrongtime_PNL_QPc2_full.csv" 
+    }
+
+ARGUS_EXACT_PNL_AMB4_3ROLL_FILE_LOC = {
+    'CLc1': RESULT_FILEPATH + "/argus_exact_PNL_amb4_3roll/argus_exact_PNL_amb4_3roll_CLc1_full.csv", 
+    'CLc2': RESULT_FILEPATH + "/argus_exact_PNL_amb4_3roll/argus_exact_PNL_amb4_3roll_CLc2_full.csv", 
+    'HOc1': RESULT_FILEPATH + "/argus_exact_PNL_amb4_3roll/argus_exact_PNL_amb4_3roll_HOc1_full.csv", 
+    'HOc2': RESULT_FILEPATH + "/argus_exact_PNL_amb4_3roll/argus_exact_PNL_amb4_3roll_HOc2_full.csv", 
+    'RBc1': RESULT_FILEPATH + "/argus_exact_PNL_amb4_3roll/argus_exact_PNL_amb4_3roll_RBc1_full.csv", 
+    'RBc2': RESULT_FILEPATH + "/argus_exact_PNL_amb4_3roll/argus_exact_PNL_amb4_3roll_RBc2_full.csv", 
+    'QOc1': RESULT_FILEPATH + "/argus_exact_PNL_amb4_3roll/argus_exact_PNL_amb4_3roll_QOc1_full.csv",
+    'QOc2': RESULT_FILEPATH + "/argus_exact_PNL_amb4_3roll/argus_exact_PNL_amb4_3roll_QOc2_full.csv",
+    'QPc1': RESULT_FILEPATH + "/argus_exact_PNL_amb4_3roll/argus_exact_PNL_amb4_3roll_QPc1_full.csv",
+    'QPc2': RESULT_FILEPATH + "/argus_exact_PNL_amb4_3roll/argus_exact_PNL_amb4_3roll_QPc2_full.csv" 
+    }
 
 ARGUS_EXACT_PNL_SHORT_LOC = {
     'CLc1': RESULT_FILEPATH + "/argus_exact_PNL_short/argus_exact_PNL_CLc1_short.csv", 
