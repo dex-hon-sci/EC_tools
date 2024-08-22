@@ -19,7 +19,10 @@ def onetrade_simple_LEGACY(EES_dict: dict) -> tuple[tuple, tuple]:
     Parameters
     ----------
     EES_dict : dict
-        DESCRIPTION.
+        A dictionary containing the points that crosses over the Entry, Exit, 
+        and Stop Loss points (EES), as well as the closing time and price of
+        the trading day.
+        This should be the output of find_minute_EES from EC_tools.read module.
 
     Returns
     -------
@@ -57,14 +60,16 @@ def onetrade_simple_LEGACY(EES_dict: dict) -> tuple[tuple, tuple]:
 
 def onetrade_simple(EES_dict: dict) -> tuple[tuple, tuple]: 
     """
-    A simmple trading method that returns a pair of trade open and close time
+    A simple trading method that returns a pair of trade open and close time
     as long as the price. 
     
     Parameters
     ----------
     EES_dict : dict
-        A dictionary containing .
-        This should be the output of 
+        A dictionary containing the points that crosses over the Entry, Exit, 
+        and Stop Loss points (EES), as well as the closing time and price of
+        the trading day.
+        This should be the output of find_minute_EES from EC_tools.read module.
 
     Returns
     -------

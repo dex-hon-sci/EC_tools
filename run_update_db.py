@@ -5,7 +5,7 @@ Created on Wed Apr 24 23:27:00 2024
 
 @author: dexter
 
-This script updates the daily(weekly) data of apc and data with a timer.
+This script updates the daily APC data.
 It pulls data from external servers to the local directory.
 
 """
@@ -31,17 +31,19 @@ ASSET_PACK = {'categories': 'Argus Nymex WTI month 1, Daily',
                'keywords': "WTI",
                'symbol': "CL"}
 
-categories_monthly_30avg_list = [ 'Argus Nymex WTI front month average 30-day interval, Weekly',
-                           'Nymex Heating oil front month average 30-day interval, Weekly',
-                           'Nymex RBOB gasoline front month average 30-day interval, Weekly',
-                           'Argus Brent front month average 30-day interval, Weekly',
-                           'ICE gasoil front month average 30-day interval, Weekly']
+categories_monthly_30avg_list = [ 
+                    'Argus Nymex WTI front month average 30-day interval, Weekly',
+                    'Nymex Heating oil front month average 30-day interval, Weekly',
+                    'Nymex RBOB gasoline front month average 30-day interval, Weekly',
+                    'Argus Brent front month average 30-day interval, Weekly',
+                    'ICE gasoil front month average 30-day interval, Weekly']
 
-categories_monthly_list = [  'Argus Nymex WTI front month average, Monthly',
-                                 'Nymex Heating oil front month average, Monthly',
-                                 'Nymex RBOB gasoline front month average, Monthly',
-                                 'Argus Brent front month average, Monthly',
-                                 'ICE gasoil front month average, Monthly']
+categories_monthly_list = [  
+                        'Argus Nymex WTI front month average, Monthly',
+                        'Nymex Heating oil front month average, Monthly',
+                        'Nymex RBOB gasoline front month average, Monthly',
+                        'Argus Brent front month average, Monthly',
+                        'ICE gasoil front month average, Monthly']
 
 # checking function to see if the table is up to date
 
@@ -151,22 +153,23 @@ def download_latest_APC_list(auth_pack: dict,
     Parameters
     ----------
     auth_pack : dict
-        DESCRIPTION.
+        A authethication package containing the username and the password 
+        in access of Argus Data Studio.
     save_filename_list : list
-        DESCRIPTION.
+        A list of filename for saving.
     categories_list : list
-        DESCRIPTION.
+        A list of category key words.
     keywords_list : list
-        DESCRIPTION.
+        A list of keywords for a search.
     symbol_list : list
-        DESCRIPTION.
+        A list of contract symbols.
     fast_dl : bool, optional
-        DESCRIPTION. The default is True.
+        Choose whether you want to enable fast download. The default is True.
 
     Returns
     -------
     str
-        DESCRIPTION.
+        "All APC files downloaded!".
 
     """
     # a function to download the APC of a list of asset

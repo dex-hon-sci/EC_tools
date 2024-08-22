@@ -22,7 +22,7 @@ ARGUS_EXACT_PNL_AMB2_FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/resul
 ARGUS_EXACT_PNL_AMB3_FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_PNL_amb3_full_.xlsx'
 ARGUS_EXACT_MODE_PNL_FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_mode_PNL_full_.xlsx'
 ARGUS_EXACT_PNL_AMB4_ROLL3_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_PNL_amb4_roll3_.xlsx"
-ARGUS_EXACT_EARLY = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_early_PNL_test_.xlsx"
+ARGUS_EXACT_PNL_EARLY = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_early_PNL_test_.xlsx"
 
 OLD_MODE_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/profits_and_losses_data_pdfmax_17_.xlsx"
 ARGUS_EXACT_MODE_WRONGTIME_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_mode_wrongtime_PNL_.xlsx"
@@ -142,7 +142,7 @@ if __name__=='__main__':
     
     # PLot PNL for the cumulative return for a specific strategy as well as 
     # the PNL for inidividual assets
-    FILENAME = ARGUS_EXACT_PNL_AMB4_ROLL3_FILENAME
+    FILENAME = ARGUS_EXACT_PNL_EARLY
     # Extract the cumulative PNL of the strategy
     date_all, cumPNL_all = extract_PNLplot_input(FILENAME)
     
