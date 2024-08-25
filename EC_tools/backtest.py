@@ -225,11 +225,7 @@ class LoopCrossPoints(BacktestLoop):
                                  full_contract_symbol_list,
                                  strategy_name_list):
                                     
-            if direction == 'Buy':
-                target_entry = entry_price
-                target_exit = exit_price
-        
-            elif direction == 'Sell':
+            if direction == 'Buy' or direction == 'Sell':
                 target_entry = entry_price
                 target_exit = exit_price
         
@@ -247,26 +243,23 @@ class LoopCrossPoints(BacktestLoop):
             open_hr_dt, open_price = read.find_closest_price(day,
                                                              target_hr= open_hr,
                                                              direction='forward')
-            
-            #print('open',open_hr_dt, open_price)
-            
             close_hr_dt, close_price = read.find_closest_price(day,
                                                                target_hr= close_hr,
                                                                direction='backward')
-            #print('close', close_hr_dt, close_price)
 
             
             # make a dictionary for all the possible EES time and values
-            EES_dict = read.find_minute_EES(day, target_entry, target_exit, stoploss_price,
-                              open_hr=open_hr_dt, close_hr=close_hr_dt, 
-                              direction = direction)
+            EES_dict = read.find_minute_EES(day, target_entry, 
+                                            target_exit, stoploss_price,
+                                            open_hr=open_hr_dt, 
+                                            close_hr=close_hr_dt, 
+                                            direction = direction)
 
             # make the trade.
             trade_open, trade_close = trade_method(EES_dict)
             
             if trade_open != (np.nan, np.nan) and trade_close == (np.nan, np.nan):
                 raise Exception('trade WTF {},{}'.format(trade_open, trade_close))
-           # print('trade', trade_open, trade_close)
                 
             entry_price, entry_datetime = trade_open[1], trade_open[0]
             exit_price, exit_datetime = trade_close[1], trade_close[0]
@@ -279,23 +272,16 @@ class LoopCrossPoints(BacktestLoop):
                 return_trades = entry_price - exit_price
 
             # The risk and reward ratio is based on Abbe's old script but it should be the sharpe ratio
-            risk_reward_ratio = abs(target_entry-stoploss_price)/abs(target_entry-target_exit)
+            risk_reward_ratio = abs(target_entry-stoploss_price)/\
+                                abs(target_entry-target_exit)
 
 
-            # put all the data in a singular list
-            #data = [price_code, direction, date_interest,
-            #        return_trades, entry_price,  entry_datetime,
-            #            exit_price, exit_datetime, risk_reward_ratio]
-            # Trade_Id	Direction	Commodity	Price_Code	
-            # Contract_Month
-            #Entry_Date	Entry_Datetime	Entry_Price	
-            # Exit_Date	Exit_Datetime	Exit_Price
-            
+            # put all the data in a singular list            
             data = [trade_id, direction, commodity_name,  price_code, 
                     full_contract_symbol, 
                     date_interest, entry_datetime, entry_price, 
-                      date_interest, exit_datetime, exit_price, 
-                         return_trades, risk_reward_ratio, strategy_name]
+                    date_interest, exit_datetime, exit_price, 
+                    return_trades, risk_reward_ratio, strategy_name]
 
             # Storing the data    
             dict_trade_PNL = book.store_to_bucket_single(data)
@@ -395,16 +381,6 @@ class LoopCrossPoints(BacktestLoop):
         for i in range(len(signal_table)):
             item = signal_table.iloc[i]
                     
-    # =============================================================================
-    #         symbol = item['price code']
-    #         direction = item['direction'] 
-    #         target_entry = item['target entry'] 
-    #         target_exit = item['target exit'] 
-    #         stop_exit = item['stop exit'] 
-    #         
-    #         date_interest = item['APC forecast period']
-    #         get_obj_name = item['price code']
-    # =============================================================================
             symbol = item['Price_Code']
             direction = item['Direction'] 
             

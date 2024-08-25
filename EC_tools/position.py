@@ -46,8 +46,8 @@ class Position(object):
     
     """
     # key attributes
-    give_obj: dict#Asset
-    get_obj: dict#Asset
+    give_obj: dict # Asset
+    get_obj: dict # Asset
     _price: float
     status: PositionStatus = PositionStatus.PENDING
     portfolio: Portfolio = None

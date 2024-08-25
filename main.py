@@ -37,8 +37,8 @@ from crudeoil_future_const import ARGUS_BENCHMARK_SIGNAL_AMB_FILE_LOC, \
                                     
 from EC_tools.read import render_PNL_xlsx
 import EC_tools.utility as util
-from EC_tools.trade import trade_choice_simple_3, OneTradePerDay
-
+from EC_tools.trade import OneTradePerDay
+from EC_tools.simple_trade import onetrade_simple
 from run_preprocess import run_preprocess
 from run_gen_MR_dir import MR_STRATEGIES_0, run_gen_signal_bulk
 from run_backtest import run_backtest_bulk
@@ -121,8 +121,8 @@ def run_main(strategy_name,
     print("=========Running PNL EXCEL File =============")
     if backtest_runtype == 'list':
         render_PNL_xlsx([MASTER_PNL_FILENAME], 
-                    number_contracts_list = [5,10,15,20,25,50], 
-                    suffix='_.xlsx')
+                        number_contracts_list = [5,10,15,20,25,50], 
+                        suffix='_.xlsx')
 
     if plot_PNL_or_not:
     	pass
@@ -135,7 +135,7 @@ if __name__ == "__main__":
     end_date = "2024-08-15"
     
     run_main('argus_exact', 
-             trade_choice_simple_3,
+             onetrade_simple,
              start_date, end_date,         
              #buy_range = (-0.1, 0.1, -0.45), 
              #sell_range = (0.1, -0.1, +0.45),

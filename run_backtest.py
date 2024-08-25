@@ -14,7 +14,7 @@ import getpass
 import EC_tools.read as read
 import EC_tools.backtest as backtest
 import EC_tools.utility as util
-from EC_tools.trade import OneTradePerDay, trade_choice_simple_3
+from EC_tools.trade import OneTradePerDay
 from EC_tools.simple_trade import onetrade_simple
 from EC_tools.portfolio import Asset, Portfolio
 from crudeoil_future_const import OPEN_HR_DICT, CLOSE_HR_DICT, \
@@ -370,7 +370,7 @@ if __name__ == "__main__":
     #             "2022-01-03", "2024-06-17")
 
 # =============================================================================
-#     backtest_result = run_backtest_list(trade_choice_simple_3, 
+#     backtest_result = run_backtest_list(onetrade_simple, 
 #                       SAVE_FILENAME_LIST, SYMBOL_LIST,
 #                           SIGNAL_FILENAME_LIST, HISTORY_MINUTE_FILENAME_LIST,
 #                                     start_date, end_date,

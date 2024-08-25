@@ -133,7 +133,8 @@ def read_portara_daily_data(filename:str, symbol:str,
                             start_date:str, end_date:str, 
                             column_select: list[str] = 
                                         ['Settle', 'Price Code', 
-                                         'Contract Symbol', 'Date only']) -> pd.DataFrame:
+                                         'Contract Symbol', 'Date only']) -> \
+                            pd.DataFrame:
     """
     A generic function that read the Portara Data in a suitable form. 
     The function itself only read a single csv file at a time.
@@ -193,8 +194,6 @@ def read_portara_daily_data(filename:str, symbol:str,
 
     return portara_dat
 
-# tested some what
-#@time_it
 def read_portara_minute_data(filename, symbol, start_date, end_date,
                              start_filter_hour=30, end_filter_hour=331,
                              column_select=[]):
@@ -275,7 +274,6 @@ def read_portara_minute_data(filename, symbol, start_date, end_date,
     return portara_dat_2
 
 
-#@time_it
 def merge_portara_data(table1: pd.DataFrame, 
                        table2: pd.DataFrame)-> pd.DataFrame:
     """
@@ -376,7 +374,8 @@ def portara_data_handling(portara_dat: pd.DataFrame) -> pd.DataFrame:
 
 #tested
 def read_reformat_Portara_daily_data(filename: str, 
-                                     add_col_data: dict = {}) -> pd.DataFrame:
+                                     add_col_data: dict = {}) -> \
+                                     pd.DataFrame:
     """
     Reformat the Portara minute data in a format readable by the scripts.
 
@@ -395,28 +394,10 @@ def read_reformat_Portara_daily_data(filename: str,
     
     history_data.columns = ['Date', 'Open', 'High', 'Low', 
                             'Settle', 'Volume', 'OpenInterest', 'Contract Code']
-    
-    # include a function that let user to choose the reformat?
-    
+        
     # change the date from 20220222 (int) to '2022-02-22' (str)
-    #history_data['Date'] = [str(x)[0:4] + '-' + str(x)[4:6] + '-' + str(x)[6:] 
-    #                        for x in history_data['Date']]
-    
-    #history_data['Date'] = [datetime.datetime(year = int(str(x)[0:4]), 
-    #                                          month=int(str(x)[4:6]), 
-    #                                          day = int(str(x)[6:])) 
-    #                        for x in history_data['Date']]
-
-
     history_data['Date'] = [datetime.datetime.strptime(str(x)[0:4]+str(x)[4:6]+str(x)[6:], '%Y%m%d')
                             for x in history_data['Date']]
-# =============================================================================
-#     
-#     print('history_date', history_data['Date'].iloc[-1], type(history_data['Date'].iloc[-1]))
-#     print('history_date', isinstance(history_data['Date'].iloc[-1], datetime.datetime))
-#     print(history_data['Date'].iloc[-1] == datetime.datetime(year = 2024, 
-#                                               month=6,day = 17) )
-# =============================================================================
     #history_data_reindex = history_data.set_index('Date',drop=False)
     history_data_reindex = history_data
     
@@ -427,12 +408,13 @@ def read_reformat_Portara_daily_data(filename: str,
             for key in add_col_data:
                 history_data_reindex[key] = add_col_data[key] 
             
-    return history_data#history_data_reindex
+    return history_data
 
 
 #tested
 def read_reformat_Portara_minute_data(filename: str,  
-                                      add_col_data: dict = {}) -> pd.DataFrame:
+                                      add_col_data: dict = {}) -> \
+                                      pd.DataFrame:
     """
     Reformat the Portara minute data in a format readable by the scripts.
 
@@ -454,15 +436,9 @@ def read_reformat_Portara_minute_data(filename: str,
     # include a function that let user to choose the reformat?
     
     # change the date from 20220222 (int) to '2022-02-22' (str)
-    #history_data['Date'] = [str(x)[0:4] + '-' + str(x)[4:6] + '-' + str(x)[6:] 
-    #                        for x in history_data['Date']]
-    
-    #history_data['Date'] = [datetime.datetime(year = int(str(x)[0:4]), 
-    #                                          month=int(str(x)[4:6]), 
-    #                                          day = int(str(x)[6:])) 
-    #                        for x in history_data['Date']]
-    history_data['Date'] = [datetime.datetime.strptime(str(x)[0:4]+str(x)[4:6]+str(x)[6:], '%Y%m%d')
-                            for x in history_data['Date']]
+    history_data['Date'] = [datetime.datetime.strptime(str(x)[0:4]+str(x)[4:6]\
+                                                       +str(x)[6:], '%Y%m%d')
+                                                for x in history_data['Date']]
     
     # convert the format 1330 (int) to 13:30 (datetime.time) obejct
     intmin = history_data['Time']
@@ -504,11 +480,6 @@ def read_reformat_openprice_data(filename: str) ->  pd.DataFrame:
 
 def read_reformat_APC_data(filename:str) -> pd.DataFrame:
     signal_data =  pd.read_csv(filename)
-    
-    #signal_data['Forecast Period'] = [datetime.datetime(year = int(str(x)[0:4]), 
-    #                                          month=int(str(x)[5:7]), 
-    #                                          day = int(str(x)[8:])) 
-    #                        for x in signal_data['Forecast Period']]
     signal_data['Forecast Period'] = [datetime.datetime.strptime(x, '%Y-%m-%d')
                             for x in signal_data['Forecast Period']]
     #signal_data_reindex = signal_data.set_index('Forecast Period',drop=False)
@@ -581,7 +552,7 @@ def find_closest_price(day_minute_data: pd.DataFrame,
                        direction: str ='forward', 
                        step: int = 1, 
                        search_time: int = 1000) -> \
-    tuple[datetime.datetime, float]:    
+                       tuple[datetime.datetime, float]:    
     """
     A method to find the closest price next to a traget hour
 
@@ -668,10 +639,10 @@ def find_closest_price_generic(data: pd.DataFrame,
                                target_time: str ='0330', 
                                time_proxy: str = 'Time', 
                                price_proxy: str ='Open',
-                                direction: str ='forward', 
-                                step: int = 1, 
-                                search_time: int = 1000) -> \
-    tuple[datetime.datetime, float]: # WIP
+                               direction: str ='forward', 
+                               step: int = 1, 
+                               search_time: int = 1000) -> \
+                               tuple[datetime.datetime, float]: # WIP
     
     # If the input is forward, the loop search forward a unit of minute (step)
     if direction == 'forward':
@@ -680,10 +651,7 @@ def find_closest_price_generic(data: pd.DataFrame,
     elif direction == 'backward':
         step = -1* step
         
-        
     # determine whether it is in the time frame of minutes,
-    
-    #target_time_dt= datetime.time(hour=int(target_time[0:2]),minute=int(target_time[2:4]))
     target_time_dt = datetime.datetime.strftime(target_time, "%H%M")
     
     #initial estimation of the target price
@@ -696,7 +664,6 @@ def find_closest_price_generic(data: pd.DataFrame,
             
             target_time_dt = (datetime.datetime.combine(datetime.datetime.today(), 
                             target_time_dt) + delta).time()
-            
             
             target_price = data[data[time_proxy] == target_time_dt][price_proxy]
             
@@ -750,7 +717,27 @@ def find_price_by_time(history_data_daily: pd.DataFrame,
 
     return open_price_data
 
-# tested
+def find_range(input_array: np.ndarray, 
+               target_range: tuple[float|int] | list[float|int] | np.ndarray)\
+                -> dict:
+                    
+    if len(target_range) != 2:
+        raise Exception("Target Range input must contains exactly two values.")
+        
+    lower_bound = np.repeat(target_range[0], len(input_array))
+    upper_bound = np.repeat(target_range[1], len(input_array))
+    
+    delta_lower = input_array - lower_bound
+    delta_upper = upper_bound - input_array
+    
+    delta = np.sign(delta_upper) + np.sign(delta_lower)
+    
+    range_indices = np.where(delta>0)
+    bound_indices = np.where(delta ==1)
+    
+    return {'range_indices': range_indices,
+            'bound_indices': bound_indices}
+
 def find_crossover(input_array: np.ndarray, 
                    threshold: float | list[float|int] | np.ndarray) -> dict:
     """
@@ -773,7 +760,7 @@ def find_crossover(input_array: np.ndarray,
         points that drop below the the threshold.
 
     """
-    if type(threshold) == str:
+    if type(threshold) == float:
         # make a numpy array of the threshold value    
         threshold = np.repeat(threshold, len(input_array)) 
     elif (type(threshold) == list or type(threshold) == np.ndarray) and \
@@ -815,7 +802,7 @@ def find_minute_EES(histroy_data_intraday: pd.DataFrame,
                     close_trade_hr: str = '1925', 
                     dt_scale: str = 'datetime') -> dict:
     """
-    Set the EES value given a minute intraday data.
+    Set the EES value given a time-series of minute intraday data.
 
     Parameters
     ----------
@@ -873,8 +860,8 @@ def find_minute_EES(histroy_data_intraday: pd.DataFrame,
     # Temporary solution. Can be made using two to three time layer
 
     # make datetime list
-    datetime_list = np.array([ datetime.datetime.combine(pd.to_datetime(d).date(), t) \
-                     for d, t in zip(date_list,time_list)])
+    datetime_list = np.array([datetime.datetime.combine(pd.to_datetime(d).date(), t) \
+                              for d, t in zip(date_list,time_list)])
     
     if dt_scale == "time":
         time_proxy_list = time_list
@@ -884,25 +871,16 @@ def find_minute_EES(histroy_data_intraday: pd.DataFrame,
         time_proxy_list = datetime_list
 
     # Find the crossover indices
-    #print('==entry==')
-
     entry_pt_dict = find_crossover(price_list, target_entry)
-    #print('==exit==')
     exit_pt_dict = find_crossover(price_list, target_exit)
-    #print('==Stop loss==')
     stop_pt_dict = find_crossover(price_list, stop_exit)
     
     if direction == "Neitral":
         #print("Neutral day")
         # for 'Neutral' action, all info are empty
-        entry_pts = []
-        entry_times = []
-            
-        exit_pts = []
-        exit_times = []
-        
-        stop_pts = []
-        stop_times = []
+        entry_pts, entry_times = [], []
+        exit_pts, exit_times = [], []
+        stop_pts, stop_times = [], []
     
     elif direction == "Buy":
         #print("Finding Buy points.")
@@ -931,24 +909,13 @@ def find_minute_EES(histroy_data_intraday: pd.DataFrame,
         raise ValueError('Direction has to be either Buy, Sell, or Neutral.')
     
     # Define the closing time and closing price. Here we choose 19:25 for final trade
-    #close_time = datetime.time(int(close_trade_hr[:2]),int(close_trade_hr[2:]))
-    
-# =============================================================================
-#     close_time = close_hr #quick fix. need some work
-#     
-#     close_pt = price_list[np.where(time_list==close_time)[0]][0]
-#     close_date = date_list[np.where(time_list==close_time)[0]][0]
-# =============================================================================
-    close_time = close_hr
     close_hr_str = close_hr.strftime("%H%M")
-    #print(type(close_hr),close_hr, close_hr_str)
+
     ## Find the closest price and datettime instead of having it at exactly the close time
     close_date_new, close_pt = find_closest_price(histroy_data_intraday, 
-                                              target_hr=close_hr_str, 
-                                              direction='backward')
+                                                  target_hr=close_hr_str, 
+                                                  direction='backward')
     close_date = date_list[np.where(time_list==close_date_new)[0]][0]
-
-    #print('close_date, close_pt', close_date, close_pt)
 
     close_datetime = datetime.datetime.combine(pd.to_datetime(close_date).date(), 
                                                close_date_new)
@@ -957,10 +924,15 @@ def find_minute_EES(histroy_data_intraday: pd.DataFrame,
     EES_dict = {'entry': list(zip(entry_times,entry_pts)),
                 'exit': list(zip(exit_times,exit_pts)),
                 'stop': list(zip(stop_times,stop_pts)),
-                'close': tuple((close_datetime, close_pt)) }
+                'close': tuple((close_datetime, close_pt))}
 
     #print('EES_dict', EES_dict['close'])
     return EES_dict
+
+
+def find_minute_range():
+    return
+
 
 def open_portfolio(filename: str):
     """
