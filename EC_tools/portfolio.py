@@ -132,7 +132,6 @@ class Portfolio(object):
         #self._pool_window = self.pool
         return self._pool_window
     
-    @util.time_it
     def set_pool_window(self, 
                         start_time: datetime.datetime = datetime.datetime(1900,1,1), 
                         end_time: datetime.datetime = datetime.datetime(2200,12,31)) -> None:
@@ -285,10 +284,10 @@ class Portfolio(object):
 
         Parameters
         ----------
-        asset_name : TYPE
-            DESCRIPTION.
-        asset_quantity : TYPE
-            DESCRIPTION.
+        asset_name : str
+            The name of the asset.
+        asset_quantity : int or float
+            The quantity of the asset.
 
         Returns
         -------
@@ -446,7 +445,6 @@ class Portfolio(object):
         # Add the latest quantity to the remainder_dict for remainder check
         self._add_to_remainder_dict(asset_name, asset_quantity)
 
-    @util.time_it
     def value(self, 
               date_time: datetime.datetime, 
               price_dict: dict = PRICE_DICT,   
@@ -563,11 +561,11 @@ class Portfolio(object):
     
 @dataclass
 class PortfolioLog(Portfolio):
-    
+    """
+    A class that produce 
+    """
     portfolio: Portfolio = None
-    
-    def __post_init__(self):
-        super().__init__() 
+    _log: pd.DataFrame = None
 
     def _make_log(self, simple_log = False): #Decrepated time complexity too large
         """
@@ -579,7 +577,7 @@ class PortfolioLog(Portfolio):
         if simple_log:
         # simple_log make a log with only the inforamtion at the start of the day
             temp = [datetime.datetime.combine(dt.date(), datetime.time(0,0)) 
-                                            for dt in self.pool_datetime]
+                                            for dt in self.portfolio.pool_datetime]
             # reorganised the time_list because set() function scramble the order
             # Use the set function to output a unique datetime list
             time_list = sorted(list(set(temp)))
@@ -588,7 +586,8 @@ class PortfolioLog(Portfolio):
             #                [time_list[-1]+datetime.timedelta(days=1)]
 
         else:
-            time_list = self.pool_datetime
+            time_list = self.portfolio.pool_datetime
+        print(time_list)
         # Add an entry at the end of the day to see what is the earning for the last day
         last_dt = datetime.datetime.combine(time_list[-1].date(), datetime.time(23,59))
         time_list = time_list + [last_dt]
@@ -597,7 +596,7 @@ class PortfolioLog(Portfolio):
         #then loop through the pool history and store them in log list 
         for item in time_list:
             print(item)
-            value_entry = self.value(item)
+            value_entry = self.portfolio.value(item)
             value_entry["Total"] = sum(list(value_entry.values()))
             value_entry['Datetime'] = item
 
@@ -608,7 +607,8 @@ class PortfolioLog(Portfolio):
         self._log = pd.DataFrame(log)
         
         #reorganise columns order
-        asset_name_list = list(self.value(self.pool_datetime[-1]).keys())
+        asset_name_list = list(self.portfolio.value(\
+                                    self.portfolio.pool_datetime[-1]).keys())
         
         
         self._log = self._log[['Datetime', 'Total']+asset_name_list]
@@ -619,35 +619,35 @@ class PortfolioLog(Portfolio):
         return self._log
     
     @cached_property
-    def log(self):
+    def log(self) -> pd.DataFrame:
         """
         A simple log that only shows the Portfolio's value at 00:00:00 of the 
         day.
 
         Returns
         -------
-        TYPE
-            DESCRIPTION.
+        DataFrame
+            Simple Log.
 
         """
         return self._make_log(simple_log=True)
     
     @cached_property
-    def full_log(self):
+    def full_log(self) -> pd.DataFrame:
         """
         A full log that only shows every entry in the changes in the 
         Portfolio's value.
 
         Returns
         -------
-        TYPE
-            DESCRIPTION.
+        DataFrame
+            Full Log.
 
         """
         return self._make_log(simple_log=False)
     
 
-    def asset_log(self, asset_name): #tested
+    def asset_log(self, asset_name) -> pd.DataFrame: #tested
         """
         The log of the changes in values for a particular assets across 
         all time.
@@ -656,10 +656,9 @@ class PortfolioLog(Portfolio):
         asset_log = self.full_log[asset_name]
         return asset_log
 
-    def wipe_debt(self):
-        
-        return self.master_table
-    
+
+    def render_xlsx(self):
+        pass
     
 class PortfolioMetrics(PortfolioLog):
     
