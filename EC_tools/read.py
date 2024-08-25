@@ -519,7 +519,7 @@ def read_reformat_APC_data(filename:str) -> pd.DataFrame:
 def extract_lag_data(signal_data: pd.DataFrame, 
                      history_data: pd.DataFrame, 
                      date:str, lag_size:int = 5) -> \
-    tuple[pd.DataFrame, pd.DataFrame]:
+                     tuple[pd.DataFrame, pd.DataFrame]:
     """
     Extract the Lag data based on a given date.
 

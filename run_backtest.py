@@ -14,8 +14,8 @@ import getpass
 import EC_tools.read as read
 import EC_tools.backtest as backtest
 import EC_tools.utility as util
-from EC_tools.trade import OneTradePerDay, trade_choice_simple, \
-                            trade_choice_simple_2, trade_choice_simple_3
+from EC_tools.trade import OneTradePerDay, trade_choice_simple_3
+from EC_tools.simple_trade import onetrade_simple
 from EC_tools.portfolio import Asset, Portfolio
 from crudeoil_future_const import OPEN_HR_DICT, CLOSE_HR_DICT, \
                                   DATA_FILEPATH, RESULT_FILEPATH,\
@@ -360,7 +360,7 @@ if __name__ == "__main__":
     #start_date = "2021-01-11"
     end_date = "2024-06-17"
     
-    run_backtest_bulk(trade_choice_simple_3, TEST_FILE_LOC, TEST_FILE_PNL_LOC, 
+    run_backtest_bulk(onetrade_simple, TEST_FILE_LOC, TEST_FILE_PNL_LOC, 
                       start_date, end_date, 
                       method = "preload", master_pnl_filename='',
                       open_hr_dict = OPEN_HR_DICT, close_hr_dict=CLOSE_HR_DICT,

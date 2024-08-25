@@ -10,6 +10,8 @@ signal generation.
 
 """
 import numpy as np
+import pandas as pd
+
 from typing import Protocol
 from numpy.typing import NDArray
 
@@ -395,8 +397,9 @@ class ArgusMRStrategy(Strategy):
             
         return entry_price, exit_price, stop_loss
     
-    def apply_strategy(self, history_data_lag: list, 
-                       apc_curve_lag: list, 
+    def apply_strategy(self, 
+                       history_data_lag: pd.DataFrame, 
+                       apc_curve_lag: pd.DataFrame, 
                        open_price: float, 
                        qunatile: list = [0.25,0.4,0.6,0.75],
                        total_lag_days: int = 2, 
@@ -408,9 +411,9 @@ class ArgusMRStrategy(Strategy):
 
         Parameters
         ----------
-        history_data_lag : list
+        history_data_lag : DataFrame
             The history data of the lag days.
-        apc_curve_lag : list
+        apc_curve_lag : DataFrame
             The APC curve of the lag days.
         open_price : float
             The opening price of the day.

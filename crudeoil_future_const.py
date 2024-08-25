@@ -18,8 +18,8 @@ from pathlib import Path
 load_dotenv()
 DATA_FILEPATH = os.environ.get("DATA_FILEPATH")
 RESULT_FILEPATH = os.environ.get("RESULT_FILEPATH")
-# Define the contracts of interest
 
+# Define the contracts of interest
 ASSET_DICT = {"USD": {"unit":'dollars', "asset_type":'Cash'},
               "AUD": {"unit":'dollars',"asset_type":'Cash'},
               "CLc1": {"unit":'contracts',"asset_type":'Future'},
@@ -51,7 +51,16 @@ KEYWORDS_LIST = ["WTI","WTI","Heating", "Heating","Gasoline","Gasoline",
 SYMBOL_LIST = ["CLc1", "CLc2", "HOc1", "HOc2", "RBc1", "RBc2", "QOc1", "QOc2", "QPc1", "QPc2"]
 #list(HISTORY_DAILY_FILE_LOC.keys())
 
-
+def make_path_dict(folder_name: str, file_prefix: str, 
+                   file_suffix: str = '.csv',  
+                   path: str = RESULT_FILEPATH):
+    
+    bucket = dict()
+    for sym in SYMBOL_LIST: 
+        file_path = Path(path) / folder_name 
+        bucket[sym] = file_path / file_prefix + sym + file_suffix
+    return bucket
+        
 SIZE_DICT = {
     'CLc1': 1000.0,
     'CLc2': 1000.0,
@@ -541,16 +550,15 @@ ARGUS_BENCHMARK_PNL_MASTER_FILE_LOC = None
 ARGUS_BENCHMARK_PNL_MASTER_Portfolio_LOC = None
     
 TEMP_FILENAME_LIST = ['temp_signal_CLc1.csv',
-            'temp_signal_CLc2.csv',
-            'temp_signal_HOc1.csv',
-            'temp_signal_HOc2.csv',
-            'temp_signal_RBc1.csv',
-            'temp_signal_RBc2.csv',
-            'temp_signal_QOc1.csv',
-            'temp_signal_QOc2.csv',
-            'temp_signal_QPc1.csv',
-            'temp_signal_QPc2.csv'
-            ]
+                      'temp_signal_CLc2.csv',
+                      'temp_signal_HOc1.csv',
+                      'temp_signal_HOc2.csv',
+                      'temp_signal_RBc1.csv',
+                      'temp_signal_RBc2.csv',
+                      'temp_signal_QOc1.csv',
+                      'temp_signal_QOc2.csv',
+                      'temp_signal_QPc1.csv',
+                      'temp_signal_QPc2.csv']
 
 
 

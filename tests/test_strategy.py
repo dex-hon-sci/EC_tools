@@ -10,10 +10,6 @@ import EC_tools.read as read
 from EC_tools.strategy import SignalStatus
 from crudeoil_future_const import DATA_FILEPATH
 
-
-#SIGNAL = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_CLc1.csv"
-#HISTORY_DAILY = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Day/CL.day"
-#HISTORY_MINUTE = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/CL.001"
 SIGNAL = DATA_FILEPATH + "/APC_latest/APC_latest_CLc1.csv"
 HISTORY_DAILY = DATA_FILEPATH + "/history_data/Day/CL.day"
 HISTORY_MINUTE = DATA_FILEPATH + "/history_data/Minute/CL.001"
@@ -45,7 +41,9 @@ class SingleRun():
         
         # Find the opening price at 03:30 UK time. If not found, 
         #loop through the next 30 minutes to find the opening price
-        self.price_330 = read.find_open_price(self.history_data_daily, self.history_data_minute)
+        self.price_330 = read.find_price_by_time(self.history_data_daily, 
+                                                 self.history_data_minute,
+                                                 open_hr='0330')
         self.open_price = self.price_330[
             self.price_330['Date']==self.this_date]['Open Price'].item()
 

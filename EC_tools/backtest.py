@@ -16,6 +16,7 @@ from enum import Enum
 import EC_tools.read as read
 from EC_tools.bookkeep import Bookkeep
 from EC_tools.trade import  OneTradePerDay, trade_choice_simple_3
+from EC_tools.simple_trade import onetrade_simple
 import EC_tools.plot as plot
 from EC_tools.portfolio import Portfolio
 from crudeoil_future_const import OPEN_HR_DICT, CLOSE_HR_DICT
@@ -32,7 +33,6 @@ __author__="Dexter S.-H. Hon"
 
     
 
-# tested
 def prepare_signal_interest(filename_buysell_signals: str, 
                             direction: list[str] = ["Buy", "Sell"], 
                             trim: bool = False) -> pd.DataFrame:
@@ -87,7 +87,6 @@ def prepare_signal_interest(filename_buysell_signals: str,
 
     return signal_interest
 
-#tested
 def extract_intraday_minute_data(histrot_intraday_data: pd.DataFrame, 
                                  date_interest: str, 
                                  open_hr: str = '0330', 
@@ -140,7 +139,6 @@ def extract_intraday_minute_data(histrot_intraday_data: pd.DataFrame,
 
     return histrot_intraday_data
 
-# tested
 def plot_in_backtest(date_interest: str | datetime.datetime, 
                      EES_dict:dict, 
                      direction: str, 
@@ -169,10 +167,11 @@ def plot_in_backtest(date_interest: str | datetime.datetime,
             stop_times, stop_pts = [], []
         
         plot.plot_minute(FILENAME_MINUTE, APC_FILENAME, 
-                        date_interest = date_interest_str, direction=direction,
-                          bppt_x1=entry_times, bppt_y1=entry_pts,
-                          bppt_x2=exit_times, bppt_y2=exit_pts,
-                          bppt_x3=stop_times, bppt_y3=stop_pts)
+                         date_interest = date_interest_str, 
+                         direction=direction,
+                         bppt_x1=entry_times, bppt_y1=entry_pts,
+                         bppt_x2=exit_times, bppt_y2=exit_pts,
+                         bppt_x3=stop_times, bppt_y3=stop_pts)
         
     elif plot_or_not == False:
         pass
@@ -197,7 +196,7 @@ def loop_date_full():
     """
     return 
 
-def loop_date(trade_choice: trade_choice_simple_3, 
+def loop_date(trade_choice, 
               signal_table: pd.DataFrame, 
               histroy_intraday_data: pd.DataFrame, 
               strategy_name: str = 'argus_exact',

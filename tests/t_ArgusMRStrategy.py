@@ -138,13 +138,9 @@ def test_MRStrategyArgus_rund_cond(Test, signal_status, cond_list)->None:
     
     MR = ArgusMRStrategy(Test.curve_this_date)
     
-    direction, cond_info = MR.run_cond(
-                                strategy_info, Test.open_price, 
-                                total_lag_days = 2, 
-                                 apc_mid_Q = 0.5, 
-                                 apc_trade_Qrange=(0.4,0.6), 
-                                 apc_trade_Qmargin = (0.1,0.9),
-                                 apc_trade_Qlimit=(0.05,0.95))
+    direction, cond_info = MR.run_cond(strategy_info, Test.open_price, 
+                                       total_lag_days = 2, 
+                                       apc_mid_Q = 0.5)
     
     assert direction == signal_status
     assert all(cond_info[i] == cond_list[i] for i,_ in enumerate(cond_list))
@@ -162,7 +158,7 @@ def test_MRStrategyArgus_set_EES(Test, EES_answer_tuple)->None:
 
     # Run the programme.
     strategy_info, qunatile_info = MR.gen_data(history_data_lag5, 
-                                                       apc_curve_lag5)
+                                               apc_curve_lag5)
         
     direction, cond_info = MR.run_cond(strategy_info, Test.open_price)
     

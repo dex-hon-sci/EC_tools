@@ -9,6 +9,7 @@ import numpy as np
 
 from EC_tools.strategy import Strategy, SignalStatus
 import EC_tools.math_func as mfunc
+from gendata_strategy import GenHistoryStratData
  
 APC_quant_list = np.arange(0.0025, 0.9975, 0.0025)
 
@@ -32,7 +33,6 @@ class ArgusMRStrategyCentile(Strategy):
         self._curve_today_spline = mfunc.generic_spline(self._quant_list, 
                                                         self._curve_today)
         
-
         self.sub_cond_dict = {'Buy': dict(), 'Sell': dict(), 
                               'Neutral': dict()}
 
@@ -66,66 +66,6 @@ class ArgusMRStrategyCentile(Strategy):
                 cond_list.append(bool_val)
             self.cond_dict[dirr] = cond_list
              
-    
-    def gen_data(self, history_data_lag, apc_curve_lag, 
-                            price_proxy = 'Settle', 
-                            qunatile = [0.25,0.4,0.6,0.75]): ### This should be a static method or external method
-        """
-        A method that generate all the data needed for the strategy. The ouput
-        of this functions contain all the quantity that will be and can be used 
-        in creating variation of this strategy.
-        
-
-        Parameters
-        ----------
-        history_data_lag : list
-            The history data of the lag days.
-        apc_curve_lag : list
-            The APC curve of the lag days.
-        price_proxy : str, optional
-            The column name to call for price approximation. 
-            It can be either "Open", "High", "Low", or "Settle".
-            The default is 'Settle'.
-        qunatile : list, optional
-            1D list that contains the quantile desitred. 
-            This function pass it into the APC of the day and calculate the 
-            relevant price.
-            The default is [0.25,0.4,0.6,0.75].
-
-        Returns
-        -------
-        strategy_info : dict
-            A dictionary containing two key-value pairs.
-            'lag_list' is a list of quantiles of the lag days. The size of the 
-            list depends on the input size of history_data_lag and apc_curve_lag.
-            'rollingaverage' is the average of the quantiles in lag_list. It 
-            contain a singular float value.
-            
-        qunatile_info : list
-            A list of prices calculating using qunatile input into the APC
-            of the date of interest.
-
-        """
-        # use the history data to call a column using either OHLC                      
-        lag_price = history_data_lag[price_proxy]
-        
-        # Find the quantile number for the lag APC at the Lag Prices 
-        lag_list = [mfunc.find_quant(apc_curve_lag.iloc[i].to_numpy()[1:-1], 
-                                     self._quant_list, lag_price.iloc[i]) for 
-                                    i in range(len(apc_curve_lag))]
-        lag_list.reverse()
-        # Note that the list goes like this [lag1q,lag2q,...]
-        
-        # calculate the rolling average
-        rollingaverage_q = np.average(lag_list)
-        
-        # Storage
-        strategy_info = {'lag_list': lag_list, 
-                         'rollingaverage': rollingaverage_q}
-        # The price of the quantile of interest, mostly for bookkeeping
-        qunatile_info = list(self._curve_today_spline(qunatile))
-        
-        return strategy_info, qunatile_info
         
     def add_cond(self, cond_name, cond_list= [], direction = 'Buy'):
         """
@@ -373,9 +313,10 @@ class ArgusMRStrategy(ArgusMRStrategyCentile):
                         status).
         """
         
-        strategy_info, quantile_info = self.gen_data(history_data_lag, 
-                                                     apc_curve_lag,
-                                                     qunatile = qunatile)
+        strategy_info, quantile_info = GenHistoryStratData.gen_lag_data(
+                                                            history_data_lag, 
+                                                            apc_curve_lag,
+                                                            qunatile = qunatile)
         
         direction = self.run_cond(strategy_info, open_price,
                                   total_lag_days = total_lag_days, 
@@ -413,8 +354,32 @@ class ArgusMRStrategy(ArgusMRStrategyCentile):
         return {'data': data, 'direction': direction.value}
         
     
+    
+    
 class ArgusMRStrategyMoment():
-    pass
+    
+    def __init__(self, 
+                 curve_today, 
+                 quant_list = np.arange(0.0025, 0.9975, 0.0025)):
+        
+        super().__init__()
+        
+        self._curve_today = curve_today
+        self._quant_list = quant_list
+        self._curve_today_spline = mfunc.generic_spline(self._quant_list, 
+                                                        self._curve_today,
+                                                        method='cubic')
+        self._curve_today_reverse_spline = mfunc.generic_spline(self._curve_today, 
+                                                                self._quant_list, 
+                                                                method='cubic')
+
+        self._pdf_price, self._pdf = mfunc.cal_pdf(self._quant_list, 
+                                                   self._curve_today)
+        self._pdf_spline = mfunc.generic_spline(self._pdf_price, self._pdf)
+
+        self._sub_buy_cond_dict = dict()
+        self._sub_sell_cond_dict = dict()
+        self.sub_cond_dict = {'Buy':[], 'Sell':[], 'Neutral': []}
 
 
 

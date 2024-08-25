@@ -102,7 +102,6 @@ def run_main(strategy_name,
                         merge_or_not=True)
     
 
-
     print("=========Running Back-Testing =============")
     
     MASTER_PNL_FILENAME = RESULT_FILEPATH + '/argus_exact_early_PNL_test.csv'

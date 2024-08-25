@@ -9,6 +9,7 @@ Created on Mon May  6 08:55:17 2024
 from dataclasses import dataclass, field
 from functools import cached_property
 import datetime as datetime
+import time as time
 # package import 
 import pandas as pd
 
@@ -65,7 +66,6 @@ class Portfolio(object):
         self._table = None
         self._master_table = None
         self._value = None
-        self._log = None
         self._zeropoint = 0.0
         self._remainder_limiter = False
         self._remainder_dict = dict()
@@ -177,9 +177,8 @@ class Portfolio(object):
         
         return self._pool_window
     
-    
     @staticmethod
-    def _make_table(pool_type) -> pd.DataFrame:
+    def _make_table(pool_type: list) -> pd.DataFrame:
         """
         A static method that create a datafreame table using either pool_window
         or pool. This is an internal method to construct the table and master 
@@ -202,19 +201,19 @@ class Portfolio(object):
 
         """
         # Find the keys and values for asset within a particular time window
-        # The function operate on the previously defiend poo_window\        
+        # The function operate on the previously defined pool_window      
         values = [list(pool_type[i][1].values()) 
                                   for i in range(len(pool_type))]
         keys = [list(pool_type[i][1].keys()) 
                                   for i in range(len(pool_type))][0]
-        
+                
         # Load the inforamtion to self._table
         table = pd.DataFrame.from_records(data = values, columns = keys)
         
         # Handle repeating aseet type
         for index, (val_name, misc) in enumerate(zip(table['name'], table['misc'])):
-            
-            temp_df = table[(table['name'] == val_name) & (table['misc'] == misc)] # add more conditions with unit and type
+            # add more conditions with unit and type
+            temp_df = table[(table['name'] == val_name) & (table['misc'] == misc)] 
             
             # If the asset is unique in the pool, pass.
             if len(temp_df) == 1:
@@ -247,7 +246,7 @@ class Portfolio(object):
                 table.reset_index(drop=True, inplace=True)
 
         return table
-    
+
     @property
     def table(self) -> pd.DataFrame: # tested
         """
@@ -277,11 +276,12 @@ class Portfolio(object):
         self._master_table  = self._make_table(self.pool)
         return self._master_table
     
-    def _add_to_remainder_dict(self, asset_name: str, 
-                               asset_quantity: int | float):
+    def _add_to_remainder_dict(self, 
+                               asset_name: str, 
+                               asset_quantity: int | float) -> None:
         """
         An internal method to add to the reaminder_dict every time there is 
-        a 'add' or 'sub' action operating on the pool attribute
+        a 'add' or 'sub' action operating on the pool attributes.
 
         Parameters
         ----------
@@ -306,10 +306,23 @@ class Portfolio(object):
                                                 new_quantity
          
             
-    def check_remainder(self, asset_name: str, quantity: int | float) -> bool:
+    def check_remainder(self, 
+                        asset_name: str, 
+                        quantity: int | float) -> bool:
         """
         A function that check the remainder if there are enough asset of a 
-        particular name in the portfolio
+        particular name in the portfolio.
+        
+        Parameters
+        ----------
+        asset_name : str
+            The name of the asset.
+        asset_quantity : int or float
+            The quantity of the asset.
+            
+        Returns
+        -------
+        bool: whether
         
         """
         baseline = self._remainder_dict[asset_name] - self._zeropoint
@@ -317,9 +330,11 @@ class Portfolio(object):
         return baseline < quantity
          
     
-    def add(self, asset: Asset | str | dict,  
-            datetime= datetime.datetime.now(), 
-            quantity: int | float = 0, unit: str ='contract', 
+    def add(self, 
+            asset: Asset | str | dict,  
+            datetime: datetime.datetime = datetime.datetime.now(), 
+            quantity: int | float = 0, 
+            unit: str ='contract', 
             asset_type: str ='future') -> None: #tested
         """
         A function that add a new asset to the pool.
@@ -336,6 +351,10 @@ class Portfolio(object):
             The unit name of the asset. The default is 'contract'.
         asset_type: str
             The type name of the asset. The default is 'future'.
+            
+        Returns
+        -------
+        None.
         
         """
         #asset cannot be a list
@@ -363,10 +382,13 @@ class Portfolio(object):
         # Add the latest quantity to the remainder_dict for remainder check
         self._add_to_remainder_dict(asset_name, asset_quantity)
     
-    def sub(self, asset,  
+    def sub(self, 
+            asset: Asset | str | dict,  
             datetime: datetime.datetime = datetime.datetime.today(),  
-            asset_name: str = "", quantity: int | float = 0, 
-            unit: str = 'contract', asset_type: str = 'future') -> None: #tested
+            asset_name: str = "", 
+            quantity: int | float = 0, 
+            unit: str = 'contract', 
+            asset_type: str = 'future') -> None: #tested
         """
         A function that subtract an existing asset from the pool.
     
@@ -383,6 +405,10 @@ class Portfolio(object):
         asset_type: str
             The type name of the asset. The default is 'future'.
         
+        Returns
+        -------
+        None.
+
         """
         # check if it asset is an asset format            
         if type(asset) == dict:
@@ -415,14 +441,19 @@ class Portfolio(object):
             asset_quantity = new_asset['quantity']
         
         self.__pool_asset.append(new_asset)   # save new asset
-        self.__pool_datetime.append(datetime) #record datetime
+        self.__pool_datetime.append(datetime) # record datetime
         
         # Add the latest quantity to the remainder_dict for remainder check
         self._add_to_remainder_dict(asset_name, asset_quantity)
 
     @util.time_it
-    def value(self, date_time, price_dict = PRICE_DICT,   
-              size_dict = SIZE_DICT, dntr='USD'): #WIP
+    def value(self, 
+              date_time: datetime.datetime, 
+              price_dict: dict = PRICE_DICT,   
+              size_dict: dict = SIZE_DICT, 
+              dntr: str ='USD', 
+              price_proxy: str = "Settle",
+              time_proxy: str = 'Date'): #WIP
         """
         A function that return a dict with the price for each assets on 
         a particular date and time.
@@ -447,58 +478,42 @@ class Portfolio(object):
         value_dict: dict
             A dictionary for the value of each assets for that time.
         """
-        # price_table is a dict containing the pricing data files
-        # read the value of the portfolio of a particular date
-        
-        value_dict = dict()
-        
-        #print(self.pool, date_time)
+        # Set a pool window for intrest
         self.set_pool_window(self.__pool_datetime[0], date_time)
+        
+        # Initialise dict, find unique asset_name
+        unique_name_list = list(set([asset['name'] for asset in self.__pool_asset]))  
+        quantity_dict = {unique_name: 0 for unique_name in unique_name_list}
+        
+        # loop and get the quantity of each assets
+        for i, (_, asset)in enumerate(self.pool_window): 
+            quantity_dict[asset['name']] =  quantity_dict[asset['name']] + \
+                                                                asset['quantity'] 
 
-        for i, asset_name in enumerate(self.table['name']):
-            # specia handling the denomator asset (usually a currency)
-            if asset_name == dntr:
-                dntr_value = float(self.table['quantity'].iloc[0])
-                value_dict[asset_name] = float(self.table['quantity'].iloc[0])
-                #print('Cashhh')
+        value_dict = dict() 
+        for i, (dt, asset)in enumerate(self.pool_window): 
+            if asset['name'] == dntr:
+                value_dict[dntr] = quantity_dict[dntr]
             else:
-            
-                # manage the size of the asset
-                if size_dict == None:
+                if size_dict == None: # manage the size of the asset
                     size = 1
-                else:
-                    # Get the size of each asset
-                    size = size_dict[asset_name]
-                   
-                #asset_price_filename = price_dict[asset_name]
-                sub_price_table = price_dict[asset_name]
-                #sub_price_table = read.read_reformat_Portara_daily_data(
-                #                                        asset_price_filename)
-                # The current version of this method only gets the price data iff 
-                # it exist in the table, i.e. it does not get anything outside of the trading days
+                else:                     # Get the size of each asset
+                    size = size_dict[asset['name']]
+                    
+                sub_price_table = price_dict[asset['name']]
                 target_time = date_time.strftime("%Y-%m-%d")
-                ####print(sub_price_table['Settle'], target_time)
-                #print('TT',target_time, sub_price_table[(sub_price_table['Date'] > datetime.datetime(2024,2,28)) 
-                #                                        & (sub_price_table['Date'] < datetime.datetime(2024,3,6))])
-                
-                value = sub_price_table['Settle'][sub_price_table['Date'] == target_time].item()
-                #value = sub_price_table.loc[target_time]['Open']
-               # _ , value = read.find_closest_price_date(sub_price_table, 
-               #                                          target_time=target_time)
-                #print('value',value)
-                #value = float(sub_price_table[sub_price_table['Date'] == date_time]['Settle'].iloc[0])
-                quantity = int(self.table['quantity'].iloc[i])
-                
-                #new way to do things  
-                #print('------------')
-                #print(_, asset_name, quantity, float(value.iloc[0]), size)
-                #print(asset_name, float(value.iloc[0])*quantity*size)
-                # storage
-                value_dict[asset_name] = float(value)*quantity*size
+
+                # query search for the price of an asset of the date of interest
+                price = sub_price_table[price_proxy][sub_price_table[time_proxy] == \
+                                                      target_time].item()
+                quantity = quantity_dict[asset['name']]
+                value_dict[asset['name']] = float(price)*quantity*size
 
         return value_dict
-        
-    def asset_value(self, asset_name: str, datetime: datetime.datetime, 
+
+    def asset_value(self, 
+                    asset_name: str, 
+                    datetime: datetime.datetime, 
                     price_dict: dict = PRICE_DICT,   
                     size_dict: dict = SIZE_DICT, dntr: str = 'USD') -> float:
         """
@@ -522,7 +537,7 @@ class Portfolio(object):
                   size_dict = size_dict, dntr=dntr)[asset_name]
         return asset_value
             
-    def total_value(self, datetime: datetime.datetime):
+    def total_value(self, datetime: datetime.datetime) -> float:
         """
         A function that return the total value of the entire portfolio on 
         a particular date and time.
@@ -541,90 +556,6 @@ class Portfolio(object):
         total_value = sum(self.value(datetime).values())
         return total_value
 
-    def _make_log(self, simple_log: bool = False): #Decrepated time complexity too large
-        """
-        An internal method to construct logs for the portfolio.
-        """
-        log = list()
-        print("Generating Portfolio Log...")
-        
-        if simple_log:
-        # simple_log make a log with only the inforamtion at the start of the day
-            temp = [datetime.datetime.combine(dt.date(), datetime.time(0,0)) 
-                                            for dt in self.pool_datetime]
-            # reorganised the time_list because set() function scramble the order
-            # Use the set function to output a unique datetime list
-            time_list = sorted(list(set(temp)))
-            # Add an extra day to see what is the earning for the last day
-            #time_list = time_list + \
-            #                [time_list[-1]+datetime.timedelta(days=1)]
-
-        else:
-            time_list = self.pool_datetime
-        # Add an entry at the end of the day to see what is the earning for the last day
-        last_dt = datetime.datetime.combine(time_list[-1].date(), datetime.time(23,59))
-        time_list = time_list + [last_dt]
-        
-            
-        #then loop through the pool history and store them in log list 
-        for item in time_list:
-            print(item)
-            value_entry = self.value(item)
-            value_entry["Total"] = sum(list(value_entry.values()))
-            value_entry['Datetime'] = item
-
-            #print('VE', item, value_entry)
-            log.append(value_entry)
-            
-        # return a log of the values of each asset by time
-        self._log = pd.DataFrame(log)
-        
-        #reorganise columns order
-        asset_name_list = list(self.value(self.pool_datetime[-1]).keys())
-        self._log = self._log[['Datetime', 'Total']+asset_name_list]
-        
-        print("Log is avalibale.")     
-        
-        self._log.sort_values(by="Datetime", inplace = True, ignore_index= True)
-        return self._log
-    
-    @cached_property
-    def log(self):
-        """
-        A simple log that only shows the Portfolio's value at 00:00:00 of the 
-        day.
-
-        Returns
-        -------
-        TYPE
-            DESCRIPTION.
-
-        """
-        return self._make_log(simple_log=True)
-    
-    @cached_property
-    def full_log(self):
-        """
-        A full log that only shows every entry in the changes in the 
-        Portfolio's value.
-
-        Returns
-        -------
-        TYPE
-            DESCRIPTION.
-
-        """
-        return self._make_log(simple_log=False)
-    
-
-    def asset_log(self, asset_name): #tested
-        """
-        The log of the changes in values for a particular assets across 
-        all time.
-        
-        """
-        asset_log = self.full_log[asset_name]
-        return asset_log
 
     def wipe_debt(self):
         
@@ -635,124 +566,8 @@ class PortfolioLog(Portfolio):
     
     portfolio: Portfolio = None
     
-    def value(self, date_time, price_dict = PRICE_DICT,   
-              size_dict = SIZE_DICT, dntr='USD'): #WIP
-        """
-        A function that return a dict with the price for each assets on 
-        a particular date and time.
-        
-        Parameters
-        ----------
-        datetime: datetime object
-            The datetime for query.
-        price_dict: dict
-            A dictionary that contains the pricing data filename for each 
-            assets. The default is PRICE_DICT.
-            
-        size_dict: dict
-            A dictionary that contains the size (for example, number of barrels)
-            contained in each assets. The default is SIZE_DICT.
-        dntr: str
-            The denomanator currency for calculating the value of each asset.
-            The default is USD'.
-            
-        Returns
-        ------_
-        value_dict: dict
-            A dictionary for the value of each assets for that time.
-        """
-        # price_table is a dict containing the pricing data files
-        # read the value of the portfolio of a particular date
-        
-        value_dict = dict()
-        
-        #print(self.pool, date_time)
-        self.set_pool_window(self.__pool_datetime[0], date_time)
-
-        for i, asset_name in enumerate(self.table['name']):
-            # specia handling the denomator asset (usually a currency)
-            if asset_name == dntr:
-                dntr_value = float(self.table['quantity'].iloc[0])
-                value_dict[asset_name] = float(self.table['quantity'].iloc[0])
-                #print('Cashhh')
-            else:
-            
-                # manage the size of the asset
-                if size_dict == None:
-                    size = 1
-                else:
-                    # Get the size of each asset
-                    size = size_dict[asset_name]
-                   
-                #asset_price_filename = price_dict[asset_name]
-                sub_price_table = price_dict[asset_name]
-                #sub_price_table = read.read_reformat_Portara_daily_data(
-                #                                        asset_price_filename)
-                # The current version of this method only gets the price data iff 
-                # it exist in the table, i.e. it does not get anything outside of the trading days
-                target_time = date_time.strftime("%Y-%m-%d")
-                ##print(sub_price_table['Settle'], target_time)
-                #print('TT',target_time, sub_price_table[(sub_price_table['Date'] > datetime.datetime(2024,2,28)) 
-                #                                        & (sub_price_table['Date'] < datetime.datetime(2024,3,6))])
-                
-                value = sub_price_table['Settle'][sub_price_table['Date'] == target_time].item()
-                #value = sub_price_table.loc[target_time]['Open']
-               # _ , value = read.find_closest_price_date(sub_price_table, 
-               #                                          target_time=target_time)
-                #print('value',value)
-                #value = float(sub_price_table[sub_price_table['Date'] == date_time]['Settle'].iloc[0])
-                quantity = int(self.table['quantity'].iloc[i])
-                
-                #new way to do things  
-                #print('------------')
-                #print(_, asset_name, quantity, float(value.iloc[0]), size)
-                #print(asset_name, float(value.iloc[0])*quantity*size)
-                # storage
-                value_dict[asset_name] = float(value)*quantity*size
-
-        return value_dict
-
-    def asset_value(self, asset_name, datetime, price_dict = PRICE_DICT,   
-              size_dict = SIZE_DICT, dntr='USD'):
-        """
-        A function that return a dict with of a particular asset on 
-        a particular date and time.
-        
-        Parameters
-        ----------
-        asset_name : str
-            The name of the asset.
-        datetime : datetime object
-            The date and time of interest.
-
-        Returns
-        -------
-        asset_value : float
-            the asset value.
-
-        """
-        asset_value = self.value(datetime, price_dict = price_dict,   
-                  size_dict = size_dict, dntr=dntr)[asset_name]
-        return asset_value
-            
-    def total_value(self, datetime):
-        """
-        A function that return the total value of the entire portfolio on 
-        a particular date and time.
-
-        Parameters
-        ----------
-        datetime : datetime object
-            The date and time of interest.
-
-        Returns
-        -------
-        total_value : float
-            the total value.
-
-        """
-        total_value = sum(self.value(datetime).values())
-        return total_value
+    def __post_init__(self):
+        super().__init__() 
 
     def _make_log(self, simple_log = False): #Decrepated time complexity too large
         """
@@ -794,6 +609,8 @@ class PortfolioLog(Portfolio):
         
         #reorganise columns order
         asset_name_list = list(self.value(self.pool_datetime[-1]).keys())
+        
+        
         self._log = self._log[['Datetime', 'Total']+asset_name_list]
         
         print("Log is avalibale.")     
@@ -866,6 +683,7 @@ class PortfolioMetrics(PortfolioLog):
     
     def make_full_report(self):
         return 
+    
     # Period (Days)
     # Start_cash
     # End_cash
