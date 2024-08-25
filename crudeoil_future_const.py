@@ -51,6 +51,9 @@ KEYWORDS_LIST = ["WTI","WTI","Heating", "Heating","Gasoline","Gasoline",
 SYMBOL_LIST = ["CLc1", "CLc2", "HOc1", "HOc2", "RBc1", "RBc2", "QOc1", "QOc2", "QPc1", "QPc2"]
 #list(HISTORY_DAILY_FILE_LOC.keys())
 
+OIL_FUTURES_FEE = {'name':'USD', 'quantity':24.0, 
+                   'unit':'dollats', 'asset_type': 'Cash'}
+
 def make_path_dict(folder_name: str, file_prefix: str, 
                    file_suffix: str = '.csv',  
                    path: str = RESULT_FILEPATH):

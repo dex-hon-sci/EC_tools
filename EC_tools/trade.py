@@ -16,9 +16,9 @@ import numpy as np
 import pandas as pd
 
 from EC_tools.position import Position, ExecutePosition
-#from EC_tools.portfolio import Asset
 import EC_tools.read as read
 import EC_tools.utility as util
+from crudeoil_future_const import OIL_FUTURES_FEE
 
 ASSET_DICT = {"USD": {"unit":'dollars', "asset_type":'Cash'},
               "AUD": {"unit":'dollars',"asset_type":'Cash'},
@@ -108,82 +108,6 @@ def trade_choice_simple(EES_dict: dict) -> tuple[tuple, tuple]:
                     pass
                 
     return trade_open, trade_close 
-    
-
-def trade_choice_simple_2(EES_dict: dict) -> tuple[tuple, tuple]: 
-    
-    entry_pt, exit_pt = (np.nan,np.nan), (np.nan,np.nan)
-    stop_pt, close_pt = (np.nan,np.nan), (np.nan,np.nan)
-    
-    earliest_exit, earliest_stop = exit_pt, stop_pt
-    
-    # closr_pt always exist so we do it outside of the switch cases
-    close_pt = EES_dict['close']
-    
-    if close_pt == (np.nan,np.nan):
-        print('no close WTF', EES_dict['entry'])
-        print(type(close_pt), close_pt)
-    
-    # To get the correct EES and close time and price
-    if len(EES_dict['entry']) == 0: # entry price not hit. No trade that day.
-        #print('no entry', EES_dict['entry'], close_pt)
-        trade_open, trade_close =  (np.nan,np.nan), (np.nan,np.nan)
-        pass
-    else:
-        # choose the entry point
-        entry_pt = EES_dict['entry'][0]
-        trade_open = entry_pt
-
-        if len(EES_dict['exit']) > 0:
-            # Find exit point candidates
-            for i, exit_cand in enumerate(EES_dict['exit']):  
-                if exit_cand[0] > entry_pt[0]:
-                    earliest_exit = exit_cand
-                    #print('earliest_exit', earliest_exit)
-                    break
-
-        if len(EES_dict['stop']) > 0:
-            # Finde stop loss point candidates
-            for i, stop_cand in enumerate(EES_dict['stop']):
-                if stop_cand[0] > entry_pt[0]:
-                    earliest_stop = stop_cand
-                    #print('earliest_stop', earliest_stop)
-                    break
-        
-        # put in the new exit and stop
-        exit_pt = earliest_exit
-        stop_pt = earliest_stop
-        #print('SSC_key', exit_pt, stop_pt, close_pt)
-        
-        #see which points comes the earliest
-        if exit_pt == (np.nan,np.nan) and stop_pt == (np.nan,np.nan):
-            print('both null')
-            trade_close = close_pt
-        elif exit_pt != (np.nan,np.nan) and stop_pt == (np.nan,np.nan):
-            trade_close = exit_pt
-            print('stop null')
-
-        elif exit_pt == (np.nan,np.nan) and stop_pt != (np.nan,np.nan):
-            trade_close = stop_pt
-            print('exit null')
-
-        elif exit_pt != (np.nan,np.nan) and stop_pt != (np.nan,np.nan):
-            if exit_pt[0] >= stop_pt[0]:
-                print('stop loss')
-                trade_close = stop_pt
-            elif exit_pt[0] < stop_pt[0]:
-                print('exit')
-                trade_close = exit_pt
-        else:
-            raise Exception("WTF")
-
-    if trade_open != (np.nan,np.nan) and trade_close == (np.nan,np.nan):
-        print('trade', trade_open, trade_close)
-        
-    #print('trade', trade_open, trade_close, type(trade_open), type(trade_close))
-    return trade_open, trade_close
-
-
 
 def trade_choice_simple_3(EES_dict: dict) -> tuple[tuple, tuple]: 
     """
@@ -490,13 +414,14 @@ class OneTradePerDay(Trade):
     
     def open_positions(self, 
                        give_obj_name: str, 
-                       get_obj_name, 
-                       get_obj_quantity, 
-                       EES_target_list, 
-                       pos_type,
-                       size = 1, 
-                       fee = None, 
-                       open_time = datetime.datetime.now()):
+                       get_obj_name: str, 
+                       get_obj_quantity: int | float, 
+                       EES_target_list: list, 
+                       pos_type: str,
+                       size: int | float = 1, 
+                       fee: dict = None, 
+                       open_time: datetime.datetime = datetime.datetime.now())\
+                                                            -> list[Position]:
         """
         A method to open the entry, exit, stop, and close positions
 
@@ -558,7 +483,9 @@ class OneTradePerDay(Trade):
 
         return pos_list
     
-    def execute_position(self, EES_dict: dict, pos_list: list, 
+    def execute_position(self, 
+                         EES_dict: dict, 
+                         pos_list: list, 
                          pos_type: str = "Long"):
         """
         A method that execute the a list posiiton given a EES_dict.
@@ -691,9 +618,8 @@ class OneTradePerDay(Trade):
                   open_hr: str = "0300", 
                   close_hr: str = "2000", 
                   direction: str = "Buy",
-                  fee: dict =  {'name':'USD', 'quantity':24.0, 
-                                'unit':'dollats', 'asset_type': 
-                                'Cash'}) -> tuple[dict, tuple, tuple, list, list]: 
+                  fee: dict =  OIL_FUTURES_FEE) -> \
+                  tuple[dict, tuple, tuple, list, list]: 
         #EES_dict, trade_open, trade_close, pos_list, exec_pos_list 
         """
         This method only look into the data points that crosses the threashold.

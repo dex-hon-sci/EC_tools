@@ -272,9 +272,7 @@ class ExecutePosition(object):
             debt_obj['quantity'] = debt_obj['quantity']*-1
             debt_obj['misc'] = {'debt'}
             
-            
             self.position.portfolio.add(self.position.get_obj, datetime= fill_time) #actual asset
-            
             
             # sell the asset here
             self.position.portfolio.sub(self.position.get_obj, datetime = 
@@ -343,3 +341,6 @@ class ExecutePosition(object):
         self.position.void_time = void_time
         #return self.position
     
+class PositionLog():
+    def __init__():
+        return

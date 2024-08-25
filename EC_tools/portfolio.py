@@ -41,13 +41,6 @@ class Asset:
     asset_type:str 
     misc: dict[str] = field(default_factory=dict)
     
-    def check_exp_date(): #WIP
-        # a function to check the exp date and create an open position at the 
-        # exp date for the future contract.
-        return
-    
-    #meta: field(default_factory=dict)
-
 
 class Portfolio(object):
     """
@@ -55,6 +48,7 @@ class Portfolio(object):
     
     It contains the pool list which contain every transaction operating on this
     Portfolio.
+    
     
     """
     
@@ -65,10 +59,9 @@ class Portfolio(object):
         self._pool_window = None
         self._table = None
         self._master_table = None
-        self._value = None
-        self._zeropoint = 0.0
-        self._remainder_limiter = False
-        self._remainder_dict = dict()
+        self._zeropoint = 0.0 # The zero point value for the portfolio
+        self._remainder_limiter = False # Controls the limitation
+        self._remainder_dict = dict() # A dict that contains the remainder for each assets
  
     @property
     def pool_asset(self) -> list[dict]:
@@ -562,11 +555,15 @@ class Portfolio(object):
 @dataclass
 class PortfolioLog(Portfolio):
     """
-    A class that produce 
+    A class that produce A full transaction Log for the Portfolio.
+    Note that this method generates a log that contains the changes in Portfolio
+    values, not the trade records.
+    
     """
     portfolio: Portfolio = None
     _log: pd.DataFrame = None
 
+    @util.time_it
     def _make_log(self, simple_log = False): #Decrepated time complexity too large
         """
         An internal method to construct logs for the portfolio.
@@ -653,9 +650,23 @@ class PortfolioLog(Portfolio):
         all time.
         
         """
+        asset_log = self.log[asset_name]
+        return asset_log
+    
+    def asset_full_log(self, asset_name) -> pd.DataFrame: #tested
+        """
+        The log of the changes in values for a particular assets across 
+        all time.
+        
+        """
         asset_log = self.full_log[asset_name]
         return asset_log
-
+    
+    def add_column(self):
+        pass
+    
+    def render_trade_record(self):
+        pass
 
     def render_xlsx(self):
         pass
@@ -663,6 +674,9 @@ class PortfolioLog(Portfolio):
 class PortfolioMetrics(PortfolioLog):
     
     def __init__():
+        return
+    
+    def avg_daily_return():
         return
     
     def total_trade():
@@ -688,8 +702,9 @@ class PortfolioMetrics(PortfolioLog):
     # End_cash
     # Total Return [%]
     # Max Gross Exposure
+    
 # =============================================================================
-#Benchmark Return [%]                        92987.961948
+# Benchmark Return [%]                        92987.961948
 # Max Gross Exposure [%]                             100.0
 # Total Fees Paid                             10991.676981
 # Max Drawdown [%]                               70.734951

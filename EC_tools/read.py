@@ -807,13 +807,13 @@ def find_crossover(input_array: np.ndarray,
             'drop': indices_drop_below}
 #tested
 def find_minute_EES(histroy_data_intraday: pd.DataFrame, 
-                      target_entry: float, target_exit: float, stop_exit: float,
-                      open_hr: str = "0330", close_hr: str = "1930", 
-                      price_approx: str = 'Open', 
-                      time_proxy: str= 'Time',
-                      direction: str = 'Neutral',
-                      close_trade_hr: str = '1925', 
-                      dt_scale: str = 'datetime') -> dict:
+                    target_entry: float, target_exit: float, stop_exit: float,
+                    open_hr: str = "0330", close_hr: str = "1930", 
+                    price_approx: str = 'Open', 
+                    time_proxy: str= 'Time',
+                    direction: str = 'Neutral',
+                    close_trade_hr: str = '1925', 
+                    dt_scale: str = 'datetime') -> dict:
     """
     Set the EES value given a minute intraday data.
 
