@@ -71,10 +71,10 @@ def run_main(strategy_name,
              plot_PNL_or_not: bool = False) -> None:
     
     
-    #FILE_LOC = TEST_FILE_LOC
-    #FILE_PNL_LOC = TEST_FILE_PNL_LOC
-    FILE_LOC = ARGUS_EXACT_SIGNAL_EARLY_FILE_LOC# ARGUS_EXACT_SIGNAL_AMB4_3ROLL_FILE_LOC
-    FILE_PNL_LOC = ARGUS_EXACT_PNL_EARLY_FILE_LOC
+    FILE_LOC = TEST_FILE_LOC
+    FILE_PNL_LOC = TEST_FILE_PNL_LOC
+    #FILE_LOC = ARGUS_EXACT_SIGNAL_EARLY_FILE_LOC# ARGUS_EXACT_SIGNAL_AMB4_3ROLL_FILE_LOC
+    #FILE_PNL_LOC = ARGUS_EXACT_PNL_EARLY_FILE_LOC
         
     if preprocess:
         print("===============Data Preprocessing=============")
@@ -87,7 +87,7 @@ def run_main(strategy_name,
     strategy = MR_STRATEGIES_0[strategy_name]
     #SAVE_SIGNAL_FILENAME_LIST = list(FILE_LOC.values())
    
-    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/argus_exact_early_test.csv'
+    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/test_signal.csv'
 
     
     run_gen_signal_bulk(strategy, FILE_LOC,
@@ -104,7 +104,7 @@ def run_main(strategy_name,
 
     print("=========Running Back-Testing =============")
     
-    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/argus_exact_early_PNL_test.csv'
+    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/test_PNL.csv'
     #SAVE_PNL_FILENAME_LIST = FILE_PNL_LOC
 
     run_backtest_bulk(trade_method, 
@@ -135,7 +135,7 @@ if __name__ == "__main__":
     end_date = "2024-08-15"
     
     run_main('argus_exact', 
-             onetrade_simple,
+             OneTradePerDay,  #onetrade_simple,
              start_date, end_date,         
              #buy_range = (-0.1, 0.1, -0.45), 
              #sell_range = (0.1, -0.1, +0.45),
@@ -143,7 +143,7 @@ if __name__ == "__main__":
              sell_range = ([0.6,0.75],[0.35,0.4],0.9), 
              preprocess = False, 
              signal_gen_runtype='preload',
-             backtest_runtype = "list")
+             backtest_runtype = "preload")
    
     ## Visualise PNL plot and metrics.
     ##run_PNL
