@@ -720,6 +720,32 @@ def find_price_by_time(history_data_daily: pd.DataFrame,
 def find_range(input_array: np.ndarray, 
                target_range: tuple[float|int] | list[float|int] | np.ndarray)\
                 -> dict:
+    """
+    A function that find the points' indicies given a target range. 
+    It finds the points within that range .
+
+
+    Parameters
+    ----------
+    input_array : np.ndarray
+        A 1D numpy array with only numbers.
+    target_range : tuple[float|int] | list[float|int] | np.ndarray
+        A tuple, list, or array of target range. e.g. [0,1], (0,1),...
+        The first element is the lower bound and the second the upper bound.
+
+    Raises
+    ------
+    Exception
+        When the target_range input does not contain exactly two values.
+
+    Returns
+    -------
+    dict
+        range_dict contains the indices of the element of the input_array that
+        is within the target_range, outside the target_range, and the boundaries
+        of the range.
+
+    """
                     
     if len(target_range) != 2:
         raise Exception("Target Range input must contains exactly two values.")
@@ -734,8 +760,10 @@ def find_range(input_array: np.ndarray,
     
     range_indices = np.where(delta>0)
     bound_indices = np.where(delta ==1)
+    outbound_indices = np.where(delta<0)
     
     return {'range_indices': range_indices,
+            'outbound_indices': outbound_indices,
             'bound_indices': bound_indices}
 
 def find_crossover(input_array: np.ndarray, 
@@ -930,8 +958,90 @@ def find_minute_EES(histroy_data_intraday: pd.DataFrame,
     return EES_dict
 
 
-def find_minute_range():
-    return
+def find_minute_range(histroy_data_intraday: pd.DataFrame,
+                      target_entry_range: list[float|int] | tuple[float|int], 
+                      target_exit_range: list[float|int] | tuple[float|int], 
+                      stop_exit: float | int,
+                      open_hr: str = "0330", close_hr: str = "1930", 
+                      price_approx: str = 'Open', 
+                      time_proxy: str= 'Time',
+                      direction: str = 'Neutral',
+                      dt_scale: str = 'datetime'):
+    
+    # define subsample. turn the pandas series into a numpy array
+    price_array = histroy_data_intraday[price_approx].to_numpy()
+    time_array = histroy_data_intraday[time_proxy].to_numpy()
+    
+    # read in date list
+    date_array = histroy_data_intraday['Date'].to_numpy() 
+    # Temporary solution. Can be made using two to three time layer
+
+    # make datetime list
+    datetime_array = np.array([datetime.datetime.combine(pd.to_datetime(d).date(), t) \
+                              for d, t in zip(date_array,time_array)])
+        
+    if dt_scale == "time":
+        time_proxy_array = time_array
+    elif dt_scale == 'date':
+        time_proxy_array = date_array
+    elif dt_scale == 'datetime':
+        time_proxy_array = datetime_array
+        
+    # Find the crossover indices
+    entry_region_dict = find_range(price_array, target_entry_range)
+    exit_region_dict = find_range(price_array, target_exit_range)
+    # Stop loss find crossover
+    stop_pt_dict = find_crossover(price_array, stop_exit)
+    
+    if direction == "Neitral":
+        # for 'Neutral' action, all info are empty
+        entry_pts, entry_times = [], []
+        exit_pts, exit_times = [], []
+        stop_pts, stop_times = [], []
+        
+    elif direction == "Buy":
+        #print("Finding Buy points.")
+        # for 'Buy' action EES sequence is drop,rise,drop
+        entry_pts = price_array[entry_region_dict['range_indices'][0]]
+        entry_times = time_proxy_array[entry_region_dict['range_indices'][0]]
+            
+        exit_pts = price_array[exit_region_dict['range_indices'][0]]
+        exit_times = time_proxy_array[exit_region_dict['range_indices'][0]]
+        
+        stop_pts = price_array[stop_pt_dict['drop'][0]]
+        stop_times = time_proxy_array[stop_pt_dict['drop'][0]]
+        
+    elif direction == "Sell":
+        #print("Finding Sell points.")
+        # for 'Sell' action EES sequence is rise,drop,rise
+        entry_pts = price_array[entry_region_dict['range_indices'][0]]
+        entry_times = time_proxy_array[entry_region_dict['range_indices'][0]]
+            
+        exit_pts = price_array[exit_region_dict['range_indices'][0]]
+        exit_times = time_proxy_array[exit_region_dict['range_indices'][0]]
+        
+        stop_pts = price_array[stop_pt_dict['rise'][0]]
+        stop_times = time_proxy_array[stop_pt_dict['rise'][0]]
+    
+    
+    # Define the closing time and closing price. Here we choose 19:25 for final trade
+    close_hr_str = close_hr.strftime("%H%M")
+
+    ## Find the closest price and datettime instead of having it at exactly the close time
+    close_date_new, close_pt = find_closest_price(histroy_data_intraday, 
+                                                  target_hr=close_hr_str, 
+                                                  direction='backward')
+    close_date = date_array[np.where(time_array==close_date_new)[0]][0]
+
+    close_datetime = datetime.datetime.combine(pd.to_datetime(close_date).date(), 
+                                               close_date_new)
+
+    range_dict = {'entry_region': list(zip(entry_times,entry_pts)),
+                  'exit_region': list(zip(exit_times,exit_pts)),
+                  'stop': list(zip(stop_times,stop_pts)),
+                  'close': tuple((close_datetime, close_pt))}
+
+    return range_dict
 
 
 def open_portfolio(filename: str):

@@ -221,23 +221,9 @@ class ExecutePosition(object):
         else:
             raise Exception("The position must be in Pending state to be filled.")
             
-        port = self.position.portfolio
         # define a delay time so that each entry would not be simultaneous.
         # simultaneous entry results in fault calculation in the Portfolio method 
         delay_time = datetime.timedelta(seconds=0.1) 
-
-# =============================================================================
-#         # check if you have the avaliable fund in the portfolio
-#         if port.master_table[port.master_table['name']==
-#                              self.position.give_obj['name']]['quantity'].iloc[0] <\
-#                                                 self.position.give_obj['quantity']:
-#                                                 
-#             raise Exception('{} action failed. You do not have enough {} in \
-#                             your portfolio'.format(pos_type, 
-#                                                 self.position.give_obj['name']))
-#         else: pass
-# =============================================================================
-    
 
         if pos_type == 'Long-Buy':
             #print('Execute Long-buy position.')

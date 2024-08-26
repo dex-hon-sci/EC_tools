@@ -53,15 +53,16 @@ class Portfolio(object):
     """
     
     def __init__(self):
-        self.__pool_asset = [] # set pool to be a private attribute
-        self.__pool_datetime = []
-        self._pool = []
-        self._pool_window = None
-        self._table = None
-        self._master_table = None
-        self._zeropoint = 0.0 # The zero point value for the portfolio
-        self._remainder_limiter = False # Controls the limitation
-        self._remainder_dict = dict() # A dict that contains the remainder for each assets
+        self.__pool_asset: list = [] # set pool to be a private attribute
+        self.__pool_datetime: list = []
+        self._pool: list = []
+        self._pool_window: list = []
+        self._position_pool: list = []
+        self._table: list = []
+        self._master_table: pd.DataFrame = None
+        self._zeropoint: float = 0.0 # The zero point value for the portfolio
+        self._remainder_limiter: bool = False # Controls the limitation
+        self._remainder_dictL: dict = dict() # A dict that contains the remainder for each assets
  
     @property
     def pool_asset(self) -> list[dict]:
@@ -168,6 +169,15 @@ class Portfolio(object):
         ##print(len(self._pool_window), len(self.pool[start_time_index:end_time_index+1]))
         
         return self._pool_window
+    
+    def position_pool(self):
+        """
+        The position pool is a list that contains the Position objects.
+        This can be used to construct trading records using the PortfolioLog
+        class and its method
+
+        """
+        return self._position_pool
     
     @staticmethod
     def _make_table(pool_type: list) -> pd.DataFrame:

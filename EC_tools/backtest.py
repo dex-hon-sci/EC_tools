@@ -4,6 +4,34 @@
 Created on Thu Apr 18 18:22:17 2024
 
 @author: dexter
+
+The backtest module contains all the necessary functions and class to run 
+backtesting on any strategy. At the moment, the module only contains methods 
+that include static instruction.
+
+Backtest Loop Type:
+    This module contains a vareity of Loop type for users. 
+    Pricing data can be too much to compute. Going through each ticks will be 
+    wildly inefficient and redundant. To solve this problem, there are a 
+    few Loop Types available in this module to make backtest faster
+    
+        (1) FullLoop
+            Looping through every single data point. It contains the most 
+            grandnuality and details but is also the slowest (by a large margin).
+        (2) CrossoverLoop
+            Looping over only the points of interest. Given a set of EES values.
+            The loop only look at the time and price in which the price action
+            breaches these threshold. This loop type contains the least details
+            but is also the fastest.
+        (3) RangeLoop
+    
+Static Instruction Backtest:
+    Functions in this module takes a precalculated Buy/Sell/Neutral
+    signal with a predetermined target Entry, Exit, and Stop Loss (EES) level.
+    The backtest loop utilise different trading method to search in the 
+    pricing chart the appropriate time and price of EES and record 
+    what trade was taken.
+ 
 """
 # import Python package
 import pandas as pd
@@ -19,12 +47,9 @@ from EC_tools.trade import  OneTradePerDay, trade_choice_simple_3
 from EC_tools.simple_trade import onetrade_simple
 import EC_tools.plot as plot
 from EC_tools.portfolio import Portfolio
-from crudeoil_future_const import OPEN_HR_DICT, CLOSE_HR_DICT
+from crudeoil_future_const import OPEN_HR_DICT, CLOSE_HR_DICT, OIL_FUTURES_FEES
 
 FILENAME_MINUTE =  "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/HO.001"
-FILENSME_BUYSELL_SIGNALS = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_HOc1_full.csv"
-SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/benchmark_signal_test.csv"   
-
 APC_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_HOc1.csv"  
 
 __all__ = ['prepare_signal_interest', 'extract_intraday_minute_data', 
@@ -176,6 +201,7 @@ def plot_in_backtest(date_interest: str | datetime.datetime,
     elif plot_or_not == False:
         pass
 
+##############################################
 class BacktestLoop(Protocol):
     pass
 
@@ -450,6 +476,8 @@ def loop_date_full():
     """
     return 
 
+###############################3
+
 def loop_date(trade_method, 
               signal_table: pd.DataFrame, 
               histroy_intraday_data: pd.DataFrame, 
@@ -468,14 +496,6 @@ def loop_date(trade_method,
     symbol_list = signal_table['Price_Code']
     direction_list = signal_table['Direction'] 
     commodity_list = signal_table['Commodity_name']
-    
-    #upper_entry_list= signal_table['Target_Upper_Entry_Price']
-    #lower_entry_list = signal_table['Target_Lower_Entry_Price'] 
-    
-    #upper_exit_list = signal_table['Target_Upper_Exit_Price']
-    #lower_exit_list = signal_table['Target_Lower_Exit_Price'] 
-
-    #stop_exit_list = signal_table['Stop_Exit_Price'] 
     
     entry_price_list = signal_table['Entry_Price']
     exit_price_list = signal_table['Exit_Price']
@@ -573,8 +593,8 @@ def loop_date(trade_method,
         data = [trade_id, direction, commodity_name,  price_code, 
                 full_contract_symbol, 
                 date_interest, entry_datetime, entry_price, 
-                  date_interest, exit_datetime, exit_price, 
-                     return_trades, risk_reward_ratio, strategy_name]
+                date_interest, exit_datetime, exit_price, 
+                return_trades, risk_reward_ratio, strategy_name]
 
         # Storing the data    
         dict_trade_PNL = book.store_to_bucket_single(data)
@@ -608,7 +628,7 @@ def loop_date_portfolio(portfo: Portfolio,
     
     """
     
-    
+    i=0
     for date_interest, direction, target_entry, target_exit, \
         stop_exit, price_code in zip(signal_table['Date'], 
                                     signal_table['direction'], 
@@ -639,21 +659,25 @@ def loop_date_portfolio(portfo: Portfolio,
         print('==================================')
         # The main Trade function here
         EES_dict, trade_open, trade_close, \
-            pos_list, exec_pos_list = trade_method(portfo).run_trade(\
-                                            day, give_obj_name, get_obj_name, 
-                                            get_obj_quantity, target_entry, 
-                                            target_exit, stop_exit, 
-                                            open_hr=open_hr_dt, 
-                                            close_hr=close_hr_dt, 
-                                            direction = direction)
+        pos_list, exec_pos_list = trade_method(portfo).run_trade(\
+                                                            day, give_obj_name, 
+                                                            get_obj_name, 
+                                                            get_obj_quantity, 
+                                                            target_entry, 
+                                                            target_exit, stop_exit, 
+                                                            open_hr=open_hr_dt, 
+                                                            close_hr=close_hr_dt, 
+                                                            direction = direction,
+                                                            fee=OIL_FUTURES_FEES[price_code],
+                                                            trade_id = i)
         print("----value----")
         print("value",portfo.total_value(date_interest))
         print('==================================')
 
-                                    
         # plotting mid-backtest
         plot_in_backtest(date_interest, EES_dict, direction, 
                          plot_or_not=plot_or_not)
+        i = i+1
         
     return portfo
     
@@ -670,20 +694,11 @@ def loop_portfolio_preloaded_list(portfo: Portfolio,
     
     """
     #symbol_list = list(histroy_intraday_data_pkl.keys())
+    #tradebook = trade_method(portfo)
     
     for i in range(len(signal_table)):
         item = signal_table.iloc[i]
                 
-# =============================================================================
-#         symbol = item['price code']
-#         direction = item['direction'] 
-#         target_entry = item['target entry'] 
-#         target_exit = item['target exit'] 
-#         stop_exit = item['stop exit'] 
-#         
-#         date_interest = item['APC forecast period']
-#         get_obj_name = item['price code']
-# =============================================================================
         symbol = item['Price_Code']
         direction = item['Direction'] 
         
@@ -710,27 +725,29 @@ def loop_portfolio_preloaded_list(portfo: Portfolio,
 
         
         day = extract_intraday_minute_data(histroy_intraday_data, date_interest, 
-                                      open_hr=open_hr, close_hr=close_hr)
+                                           open_hr=open_hr, close_hr=close_hr)
         
         open_hr_dt, open_price = read.find_closest_price(day,target_hr= open_hr,
-                                                            direction='forward')
+                                                         direction='forward')
         
         
         close_hr_dt, close_price = read.find_closest_price(day,target_hr= close_hr,
-                                                            direction='backward')
-    
-        #print('==================================')
-        
+                                                           direction='backward')
+            
         print(i, date_interest, direction, symbol)
         
         EES_dict, trade_open, trade_close, \
-            pos_list, exec_pos_list = trade_method(portfo).run_trade(\
-                                            day, give_obj_name, get_obj_name, 
-                                            get_obj_quantity, target_entry, 
-                                            target_exit, stop_exit, 
-                                            open_hr=open_hr_dt, 
-                                            close_hr=close_hr_dt, 
-                                            direction = direction)
+        pos_list, exec_pos_list = trade_method(portfo).run_trade(\
+                                                      day, give_obj_name, 
+                                                      get_obj_name, 
+                                                      get_obj_quantity, 
+                                                      target_entry, 
+                                                      target_exit, stop_exit, 
+                                                      open_hr=open_hr_dt, 
+                                                      close_hr=close_hr_dt, 
+                                                      direction = direction,
+                                                      fee=OIL_FUTURES_FEES[symbol],
+                                                      trade_id= i)
                 
         # plotting mid-backtest
         plot_in_backtest(date_interest, EES_dict, direction, 
