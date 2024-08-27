@@ -20,7 +20,7 @@ import EC_tools.read as read
 import EC_tools.utility as util
 from crudeoil_future_const import OIL_FUTURES_FEE, SIZE_DICT, ASSET_DICT
 
-
+import copy 
 
 round_turn_fees = {
     'CLc1': 24.0,
@@ -162,10 +162,6 @@ class Trade(Protocol):
                            open_time = open_time,
                            pos_id = trade_id)
             
-            
-        # Add posiyion in the position book
-        self._portfolio._position_pool.append(pos)
-        
         return pos
 
 
@@ -370,7 +366,7 @@ class OneTradePerDay(Trade):
             
         # Unpack inputs
         entry_pos, exit_pos, stop_pos, close_pos = pos_list[0], pos_list[1], \
-                                                    pos_list[2], pos_list[3]
+                                                   pos_list[2], pos_list[3]
               
         # Search for the appropiate time for entry, exit, stop loss,
         # and close time for the trade                                    
@@ -434,7 +430,8 @@ class OneTradePerDay(Trade):
             # Cancel all order positions
             ExecutePosition(stop_pos).cancel_pos(void_time=trade_close[0])
             ExecutePosition(exit_pos).cancel_pos(void_time=trade_close[0])
-            
+        
+
         # change the price for the open position
         opening_pos.price = entry_pt[1]
         
@@ -452,6 +449,10 @@ class OneTradePerDay(Trade):
         exec_pos_list = [opening_pos,closing_pos]
         pos_list = [entry_pos, exit_pos, stop_pos, close_pos]
         
+        for pos in pos_list:
+            # Add position in the position book
+            self._portfolio._position_pool.append(copy.copy(pos))
+
         return trade_open, trade_close, pos_list, exec_pos_list
     
     def run_trade(self, 
@@ -466,6 +467,7 @@ class OneTradePerDay(Trade):
                   close_hr: str = "2000", 
                   direction: str = "Buy",
                   fee: dict =  OIL_FUTURES_FEE,
+                  open_time: datetime.datetime = None,
                   trade_id: int = 0) -> \
                   tuple[dict, tuple, tuple, list, list]: 
         """
@@ -522,8 +524,10 @@ class OneTradePerDay(Trade):
         pos_list = self.open_positions(give_obj_name, get_obj_name, \
                                        get_obj_quantity, EES_target_list, \
                                        pos_type=pos_type, 
-                                       size=num_per_contract[get_obj_name],
-                                       fee=fee, trade_id= trade_id)
+                                       size=SIZE_DICT[get_obj_name],
+                                       fee=fee, 
+                                       open_time = open_time,
+                                       trade_id= trade_id)
 
 
         trade_open, trade_close, pos_list, exec_pos_list = \
@@ -577,22 +581,26 @@ class MultiTradePerDay(Trade): # WIP
         # Make positions for initial price estimation
         entry_pos = super().add_position(give_obj_name, get_obj_name, 
                                       get_obj_quantity, entry_price, 
-                                      size = size, fee = None, pos_type = pos_type1,
+                                      size = size, fee = None, 
+                                      pos_type = pos_type1,
                                       open_time=open_time)
 
         exit_pos = super().add_position(give_obj_name, get_obj_name, 
                           get_obj_quantity, exit_price, 
-                          size = size, fee = fee, pos_type = pos_type2,
+                          size = size, fee = fee, 
+                          pos_type = pos_type2,
                           open_time=open_time)
 
         stop_pos = super().add_position(give_obj_name, get_obj_name, 
                           get_obj_quantity, stop_price, 
-                          size = size, fee = fee, pos_type = pos_type2,
+                          size = size, fee = fee, 
+                          pos_type = pos_type2,
                           open_time=open_time)
         
         close_pos = super().add_position(give_obj_name, get_obj_name, 
                           get_obj_quantity, close_price,
-                          size = size, fee = fee, pos_type = pos_type2,
+                          size = size, fee = fee, 
+                          pos_type = pos_type2,
                           open_time=open_time)
 
         pos_list = [entry_pos, exit_pos, stop_pos, close_pos]

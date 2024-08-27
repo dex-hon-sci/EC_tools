@@ -10,6 +10,7 @@ from dataclasses import dataclass, field, replace
 from typing import Protocol, Union
 from enum import Enum, auto
 import datetime as datetime
+from attrs import setters
 
 # EC_tools import
 from EC_tools.portfolio import Asset, Portfolio
@@ -58,7 +59,7 @@ class Position(object):
     pos_type: str = 'Long-Buy'
     
     # position attribute adjustable
-    open_time: datetime = datetime.datetime.now()
+    open_time: datetime = datetime.datetime.now() 
     fill_time: datetime = None
     void_time: datetime = None
     auto_adjust: bool = True

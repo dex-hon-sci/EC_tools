@@ -62,7 +62,7 @@ class Portfolio(object):
         self._master_table: pd.DataFrame = None
         self._zeropoint: float = 0.0 # The zero point value for the portfolio
         self._remainder_limiter: bool = False # Controls the limitation
-        self._remainder_dictL: dict = dict() # A dict that contains the remainder for each assets
+        self._remainder_dict: dict = dict() # A dict that contains the remainder for each assets
  
     @property
     def pool_asset(self) -> list[dict]:
@@ -170,6 +170,7 @@ class Portfolio(object):
         
         return self._pool_window
     
+    @property
     def position_pool(self):
         """
         The position pool is a list that contains the Position objects.
@@ -675,7 +676,9 @@ class PortfolioLog(Portfolio):
     def add_column(self):
         pass
     
-    def render_trade_record(self):
+    def render_tradebook(self):
+        position_pool = self.portfolio.position_pool
+        
         pass
 
     def render_xlsx(self):
