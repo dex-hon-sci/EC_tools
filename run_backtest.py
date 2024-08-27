@@ -46,8 +46,10 @@ class BacktestType(Enum):
 def run_backtest(trade_choice, 
                  filename_minute: str,
                  filename_buysell_signals: str, 
-                 start_date: datetime.datetime, end_date: datetime.datetime, 
-                 open_hr: str = '0800', close_hr: str = '1630') -> pd.DataFrame:
+                 start_date: datetime.datetime, 
+                 end_date: datetime.datetime, 
+                 open_hr: str = '0800', 
+                 close_hr: str = '1630') -> pd.DataFrame:
     """
     
     The simplest backtest method. It uses the basic 'loop_date' to iterate 
@@ -213,7 +215,7 @@ def run_backtest_portfolio(TradeMethod,
 
 #@util.pickle_save("/home/dexter/Euler_Capital_codes/EC_tools/results/test3_portfolio_nonconcurrent_1contracts_full.pkl")
 def run_backtest_portfolio_preloaded(TradeMethod,
-                                     master_buysell_signals_filename: str, 
+                                     master_signals_filename: str, 
                                      histroy_intraday_data_pkl: dict,
                                      start_date: str, end_date: str,
                                      give_obj_name: str = "USD", 
@@ -250,8 +252,8 @@ def run_backtest_portfolio_preloaded(TradeMethod,
 
     #histroy_intraday_data_pkl = util.load_pkl(histroy_intraday_data_pkl_filename)
     # Find the date for trading, only "Buy" or "Sell" date are taken.
-    trade_date_table = backtest.prepare_signal_interest(master_buysell_signals_filename, 
-                                               trim = False)
+    trade_date_table = backtest.prepare_signal_interest(master_signals_filename, 
+                                                        trim = False)
     #start_date_lag = datetime.datetime.strptime(start_date, '%Y-%m-%d') - \
     #                        datetime.timedelta(days= start_date_pushback)
     trade_date_table = trade_date_table[(trade_date_table['Date'] >= start_date) & 
@@ -276,14 +278,17 @@ def run_backtest_portfolio_preloaded(TradeMethod,
 
     
 def run_backtest_bulk(TradeMethod, 
-                      signal_file_loc: dict, save_file_loc: dict, 
-                      start_date: str, end_date: str, 
+                      signal_file_loc: dict, 
+                      save_file_loc: dict, 
+                      start_date: str, 
+                      end_date: str, 
                       method: str = "list", 
                       master_signal_filename: str = "", 
                       master_pnl_filename: str = '',
                       open_hr_dict = OPEN_HR_DICT, 
                       close_hr_dict=CLOSE_HR_DICT,
-                      save_or_not: bool = True, merge_or_not: bool = True):
+                      save_or_not: bool = True, 
+                      merge_or_not: bool = True):
             
     if method == "list":
         SAVE_FILENAME_LIST = list(save_file_loc.values())
@@ -323,7 +328,7 @@ def run_backtest_bulk(TradeMethod,
                                               HISTORY_MINUTE_PKL,
                                               start_date, end_date)
         backtest_result = PP
-        if save_or_not:
+        if save_or_not: # save pkl portfolio
             file = open(master_pnl_filename, 'wb')
             pickle.dump(PP, file)
         
@@ -333,9 +338,10 @@ def run_backtest_bulk(TradeMethod,
 if __name__ == "__main__":
     
     Backtest_Lib = {"run_backtest": run_backtest,
-                "run_backtest_list": run_backtest_list,
-                "run_backtest_portfolio": run_backtest_portfolio,
-                "run_backtest_portfolio_preloaded": run_backtest_portfolio_preloaded}
+                    "run_backtest_list": run_backtest_list,
+                    "run_backtest_portfolio": run_backtest_portfolio,
+                    "run_backtest_portfolio_preloaded": \
+                                            run_backtest_portfolio_preloaded}
     
     # master function that runs the backtest itself.
     FILENAME_MINUTE = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/CL.001"

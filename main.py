@@ -104,13 +104,14 @@ def run_main(strategy_name,
 
     print("=========Running Back-Testing =============")
     
-    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/test_PNL.csv'
+    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/test_PNL.pkl'
     #SAVE_PNL_FILENAME_LIST = FILE_PNL_LOC
 
     run_backtest_bulk(trade_method, 
                       FILE_LOC, FILE_PNL_LOC, 
                       start_date, end_date, 
                       method = backtest_runtype, 
+                      master_signal_filename = MASTER_SIGNAL_FILENAME,
                       master_pnl_filename=MASTER_PNL_FILENAME,
                       open_hr_dict = OPEN_HR_DICT_EARLY, 
                       close_hr_dict= CLOSE_HR_DICT_EARLY,

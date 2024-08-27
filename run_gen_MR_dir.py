@@ -497,7 +497,7 @@ def run_gen_MR_signals_preloaded(strategy: type[Strategy],
             Timezone= timezone_dict[symbol]
             
             # The strategy will be ran in loop_signal decorator
-            dict_contracts_quant_signals = loop_signal(Strategy, book, 
+            dict_contracts_quant_signals = loop_signal(strategy, book, 
                                                        signal_file, 
                                                        history_daily_file, 
                                                        open_price,
