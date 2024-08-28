@@ -45,6 +45,8 @@ class Position(object):
     """
     Position class that create and manage position objects.
     
+    The position objects tracks the give and get objects and the 
+    
     """
     # key attributes
     give_obj: dict # Asset
@@ -64,6 +66,7 @@ class Position(object):
     void_time: datetime = None
     auto_adjust: bool = True
     pos_id: str = util.random_string()  
+    misc: dict = dict()
     
     def __post_init__(self, 
                       void_time: datetime = datetime.datetime.now(), 

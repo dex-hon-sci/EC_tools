@@ -18,7 +18,7 @@ from EC_tools.portfolio import Portfolio
 from crudeoil_future_const import round_turn_fees, SIZE_DICT
 
 # Argus API 
-from EC_tools.ArgusPossibilityCurves2 import ArgusPossibilityCurves
+from EC_tools.ext_codes.ArgusPossibilityCurves2 import ArgusPossibilityCurves
 
 __all__ = ['get_apc_from_server','read_apc_data','read_portara_daily_data', 
            'read_portara_minute_data','merge_portara_data',
@@ -1246,18 +1246,18 @@ def group_trade(position_pool: list,
         # loop through each position, if the pos_id == trade_id_now, save in 
         # a temp list
         if  pos_pool[i].pos_id == trade_id_now:
-            print(select_func(i))
+           # print(select_func(i))
             if select_func(i):
                 temp.append(pos_pool[i])
-                print(i,'FILLED!')
-            print(i, pos_pool[i].pos_id, 'same id')
+                #print(i,'FILLED!')
+            #print(i, pos_pool[i].pos_id, 'same id')
             i = i + 1
                 
         elif pos_pool[i].pos_id != trade_id_now: 
             # Otherwise, put the temp list into the overall bucket, restart 
             # the counter and make a new temp list to repeat the process
-            print('switch')
-            print(i, pos_pool[i].pos_id)
+            #print('switch')
+            #print(i, pos_pool[i].pos_id)
             bucket.append(temp)
             trade_id_now = pos_pool[i].pos_id
             temp = []
@@ -1266,12 +1266,7 @@ def group_trade(position_pool: list,
             i = i + 1
 
     return bucket
+
 # =============================================================================
 # #%% Construction Area
-# def extract_lag_data_to_list(signal_data, history_data_daily,lag_size=5):
-#     # make a list of lag data with a nested data structure.
-#     
-#     return None
-#     #extract_lag_data(signal_data, history_data_daily, "2024-01-10")
-# 
 # =============================================================================
