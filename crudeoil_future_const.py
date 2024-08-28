@@ -5,10 +5,6 @@ Created on Sun Jun 23 09:00:12 2024
 
 @author: dexter
 """
-# =============================================================================
-# DATA_FILEPATH = "/home/dexter/Euler_Capital_codes/EC_tools/data"
-# RESULT_FILEPATH = "/home/dexter/Euler_Capital_codes/EC_tools/results"
-# =============================================================================
 
 from dotenv import load_dotenv 
 import os
@@ -52,7 +48,7 @@ SYMBOL_LIST = ["CLc1", "CLc2", "HOc1", "HOc2", "RBc1", "RBc2", "QOc1", "QOc2", "
 #list(HISTORY_DAILY_FILE_LOC.keys())
 
 OIL_FUTURES_FEE = {'name':'USD', 'quantity':24.0, 
-                   'unit':'dollats', 'asset_type': 'Cash'}
+                   'unit':'dollars', 'asset_type': 'Cash'}
 
 def make_path_dict(folder_name: str, file_prefix: str, 
                    file_suffix: str = '.csv',  

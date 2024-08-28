@@ -13,7 +13,7 @@ import datetime as datetime
 from attrs import setters
 
 # EC_tools import
-from EC_tools.portfolio import Asset, Portfolio
+from EC_tools.portfolio import Portfolio
 import EC_tools.utility as util  
     
 

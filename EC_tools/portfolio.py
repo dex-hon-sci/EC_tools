@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from functools import cached_property
 import datetime as datetime
 import time as time
+import re
 # package import 
 import pandas as pd
 
@@ -52,7 +53,6 @@ class Portfolio(object):
     
     
     """
-    
     def __init__(self):
         self.__pool_asset: list = [] # set pool to be a private attribute
         self.__pool_datetime: list = []
@@ -677,7 +677,7 @@ class PortfolioLog(Portfolio):
     def add_column(self):
         pass
     
-    def render_tradebook(self):
+    def render_tradebook(self): # WIP
         position_pool = self.portfolio.position_pool
         book = Bookkeep(bucket_type='backtest')
         custom_list0 = ['Trade_Id', 'Direction', 'Commodity', 'Price_Code', 
@@ -686,7 +686,8 @@ class PortfolioLog(Portfolio):
                         'Exit_Date','Exit_Datetime','Exit_Price',
                         'Return_Trades', 'Risk_Reward_Ratio', 'strategy_name']
         trade_PNL = book.make_bucket(custom_keywords_list=custom_list0)
-        
+        q = 'long-short'
+        re.sub(r'\-(.*)','',q)
         data = None
         trade_PNL = book.store_to_bucket_single(data)
 
