@@ -15,6 +15,7 @@ import pandas as pd
 
 # EC_tools import
 import EC_tools.utility as util
+from EC_tools.bookkeep import Bookkeep
 from crudeoil_future_const import SIZE_DICT, HISTORY_DAILY_FILE_LOC
 
 #PRICE_DICT = HISTORY_DAILY_FILE_LOC 
@@ -678,7 +679,17 @@ class PortfolioLog(Portfolio):
     
     def render_tradebook(self):
         position_pool = self.portfolio.position_pool
+        book = Bookkeep(bucket_type='backtest')
+        custom_list0 = ['Trade_Id', 'Direction', 'Commodity', 'Price_Code', 
+                        'Contract_Month',
+                        'Entry_Date',	'Entry_Datetime', 'Entry_Price',
+                        'Exit_Date','Exit_Datetime','Exit_Price',
+                        'Return_Trades', 'Risk_Reward_Ratio', 'strategy_name']
+        trade_PNL = book.make_bucket(custom_keywords_list=custom_list0)
         
+        data = None
+        trade_PNL = book.store_to_bucket_single(data)
+
         pass
 
     def render_xlsx(self):

@@ -767,20 +767,7 @@ def loop_portfolio_preloaded_list(portfo: Portfolio,
     return portfo
 
 # =============================================================================
-# def loop_date_portfolio_preloaded_list(portfo, 
-#                                        signal_table: pd.DataFrame, 
-#                                        histroy_intraday_data_pkl, 
-#                                        give_obj_name: str = "USD", 
-#                                        get_obj_quantity: int = 3, 
-#                                        time_proxy: str='APC forecast period'): #WIP
-#     
-#     date_list = list(signal_table[time_proxy])
-#     date_list = list(set(date_list))
-#     
-#     print(date_list)
-#     
-#     #signal_table[signal_table['Date'] = ]
-# 
+# def loop_date_concurrent
 # =============================================================================
 
 if __name__ == "__main__":

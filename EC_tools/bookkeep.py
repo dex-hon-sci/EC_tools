@@ -136,9 +136,15 @@ class Bookkeep(object):
         elif bucket_type =='backtest':
             self.bucket_dict = self.BACKTEST_PNL_COL_DICT
 
-    def make_bucket(self, keyword='benchmark'):
+    def make_bucket(self, 
+                    keyword: str='benchmark',
+                    custom_keywords_list: list = []):
         # simple method to make a bucket given some keywords
-        bucket_keys = self.bucket_dict[keyword]
+        if len(custom_keywords_list) != 0:
+            bucket_keys = custom_keywords_list
+        elif len(custom_keywords_list) == 0:
+            bucket_keys = self.bucket_dict[keyword]
+            
         for i in bucket_keys:
             self.bucket[i] = []
             

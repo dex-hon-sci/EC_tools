@@ -10,10 +10,11 @@ import pandas as pd
 import datetime
 import pickle
 
-from typing import Union
+from typing import Union, Callable
 
 
 import EC_tools.utility as util
+from EC_tools.portfolio import Portfolio
 from crudeoil_future_const import round_turn_fees, SIZE_DICT
 
 # Argus API 
@@ -558,23 +559,24 @@ def find_closest_price(day_minute_data: pd.DataFrame,
 
     Parameters
     ----------
-    day_minute_data : TYPE
-        DESCRIPTION.
-    target_hr : TYPE, optional
-        DESCRIPTION. The default is '0330'.
-    direction : TYPE, optional
-        DESCRIPTION. The default is 'forward'.
-    step : TYPE, optional
-        DESCRIPTION. The default is 1.
-    search_time : TYPE, optional
-        DESCRIPTION. The default is 1000.
+    day_minute_data : DataFrame
+        The minute pricing data.
+    target_hr : str, optional
+        The target hour for the search. The default is '0330'.
+    direction : dtr, optional
+        To search the list either 'backward' or 'forward'. 
+        The default is 'forward'.
+    step : int, optional
+        The step size of the search. The default is 1.
+    search_time : int, optional
+        The total minutes (steps) of the search. The default is 1000.
 
     Returns
     -------
-    target_hr_dt : TYPE
-        DESCRIPTION.
-    TYPE
-        DESCRIPTION.
+    target_hr_dt : datetime.datetime
+        The datetime of the closest hour to the target.
+    float
+        The target price.
 
     """
     # If the input is forward, the loop search forward a unit of minute (step)
@@ -607,7 +609,7 @@ def find_closest_price_date(data: pd.DataFrame,
                             direction: str = 'forward', 
                             step: int = 1, 
                             search_time: int = 30) -> \
-    tuple[datetime.datetime, float]: # WIP
+                            tuple[datetime.datetime, float]: # WIP
     
     # If the input is forward, the loop search forward a unit of minute (step)
     if direction == 'forward':
@@ -936,15 +938,24 @@ def find_minute_EES(histroy_data_intraday: pd.DataFrame,
     else:
         raise ValueError('Direction has to be either Buy, Sell, or Neutral.')
     
-    # Define the closing time and closing price. Here we choose 19:25 for final trade
+    # Define the opening/closing time and closing price. 
+    # Here we choose 19:25 for final trade
+    open_hr_str = open_hr.strftime("%H%M")
     close_hr_str = close_hr.strftime("%H%M")
 
-    ## Find the closest price and datettime instead of having it at exactly the close time
-    close_date_new, close_pt = find_closest_price(histroy_data_intraday, 
-                                                  target_hr=close_hr_str, 
-                                                  direction='backward')
-    close_date = date_list[np.where(time_list==close_date_new)[0]][0]
+    ## Find the closest price and datettime instead of having it at exactly the open time
+    open_date_new, open_pt = find_closest_price(histroy_data_intraday, 
+                                                  target_hr = open_hr_str, 
+                                                  direction = 'forward')
+    open_date = date_list[np.where(time_list==open_date_new)[0]][0]
+    open_datetime = datetime.datetime.combine(pd.to_datetime(open_date).date(), 
+                                               open_date_new)
 
+    # Find the closest price and datettime instead of having it at exactly the close time
+    close_date_new, close_pt = find_closest_price(histroy_data_intraday, 
+                                                  target_hr = close_hr_str, 
+                                                  direction = 'backward')
+    close_date = date_list[np.where(time_list==close_date_new)[0]][0]
     close_datetime = datetime.datetime.combine(pd.to_datetime(close_date).date(), 
                                                close_date_new)
 
@@ -952,6 +963,7 @@ def find_minute_EES(histroy_data_intraday: pd.DataFrame,
     EES_dict = {'entry': list(zip(entry_times,entry_pts)),
                 'exit': list(zip(exit_times,exit_pts)),
                 'stop': list(zip(stop_times,stop_pts)),
+                'open': tuple((open_datetime, open_pt)),
                 'close': tuple((close_datetime, close_pt))}
 
     #print('EES_dict', EES_dict['close'])
@@ -1044,19 +1056,19 @@ def find_minute_range(histroy_data_intraday: pd.DataFrame,
     return range_dict
 
 
-def open_portfolio(filename: str):
+def open_portfolio(filename: str) -> type[Portfolio]:
     """
     A handy function to open a portfolio. Nothing special but easy to remember.
 
     Parameters
     ----------
-    filename : TYPE
-        DESCRIPTION.
+    filename : str
+        The filename of the Portfolio object in pickle format  .
 
     Returns
     -------
-    portfo : TYPE
-        DESCRIPTION.
+    portfo : Portfolio
+        A.
 
     """
     file = open(filename, 'rb')
@@ -1069,12 +1081,12 @@ def open_portfolio(filename: str):
 def concat_CSVtable(filename_list: list[str], 
                     sort_by: str = 'Date') -> pd.DataFrame:
     """
-    
+    Concatenate CSV tables.
 
     Parameters
     ----------
     filename_list : list
-        A list of filename.
+        A list of CSV filename.
     sort_by : str, optional
         The column name in which the dataframe is sorted. 
         The default is 'Date'.
@@ -1095,7 +1107,6 @@ def concat_CSVtable(filename_list: list[str],
     master_table.sort_values(by=sort_by, inplace=True)
     return master_table
 
-@util.time_it
 def merge_raw_data(filename_list: list[str], 
                    save_filename: str, 
                    sort_by: str = "Forecast Period") -> pd.DataFrame:
@@ -1129,7 +1140,18 @@ def render_PNL_xlsx(listfiles: list[str],
     LEGACY function from Abbe.
     A function that read in the back-test result to generate an xlsx PNL file 
 
+    Parameters
+    ----------
+    listfiles : list
     
+    number_contracts_list : list
+    
+    suffix : str
+    
+    Returns
+    -------
+    datpc : DataFrame
+        
     """
     for fn in listfiles: 
         
@@ -1177,7 +1199,6 @@ def render_PNL_xlsx(listfiles: list[str],
                 # First drop the columns previously calculated
                 datpc = dattotal[dattotal['Price_Code'] == pc].drop(columns=cum_col_name_list)
                        
-                
                 ##################################
                 datpc['cumulative P&L from trades'] = np.cumsum(datpc['scaled returns from trades']) 
                 
@@ -1189,10 +1210,62 @@ def render_PNL_xlsx(listfiles: list[str],
                                 
                 if len(datpc) > 0:
                     
-                    datpc.to_excel(excel_writer=excel_writer, sheet_name=pc)
-                    
+                    datpc.to_excel(excel_writer=excel_writer, sheet_name=pc)         
     return datpc            
 
+def group_trade(position_pool: list, 
+                select_func: Callable[[int], bool] = True) -> list:
+    """
+    A function to group positions by trade id along with some given conditions.
+
+    Parameters
+    ----------
+    position_pool : list
+        The position_pool list inside a portfolio object.
+    select_func : Callable function, optional
+        Additional functions for unique condition for grouping trade.
+        The default is True.
+        
+    Returns
+    -------
+    list
+        A new list with each traded grouped as a list element in a bucket
+
+    """
+    # A function that matches the trade_id and group them in a list
+    # First sort the pool by trade_id.
+    pos_pool = position_pool.copy()
+    pos_pool.sort(key=lambda x : x.pos_id)
+    
+    bucket, temp = [], []
+    trade_id_now = pos_pool[0].pos_id
+    
+    i=0
+    while i < len(pos_pool):
+        
+        # loop through each position, if the pos_id == trade_id_now, save in 
+        # a temp list
+        if  pos_pool[i].pos_id == trade_id_now:
+            print(select_func(i))
+            if select_func(i):
+                temp.append(pos_pool[i])
+                print(i,'FILLED!')
+            print(i, pos_pool[i].pos_id, 'same id')
+            i = i + 1
+                
+        elif pos_pool[i].pos_id != trade_id_now: 
+            # Otherwise, put the temp list into the overall bucket, restart 
+            # the counter and make a new temp list to repeat the process
+            print('switch')
+            print(i, pos_pool[i].pos_id)
+            bucket.append(temp)
+            trade_id_now = pos_pool[i].pos_id
+            temp = []
+            temp.append(pos_pool[i])
+            
+            i = i + 1
+
+    return bucket
 # =============================================================================
 # #%% Construction Area
 # def extract_lag_data_to_list(signal_data, history_data_daily,lag_size=5):
