@@ -5,8 +5,17 @@ Created on Sat Jun 22 23:32:11 2024
 
 @author: dexter
 """
-import getpass
-#from crudeoil_future_const import *
+                                
+# Import EC_tools    
+from EC_tools.read import render_PNL_xlsx
+import EC_tools.utility as util
+from EC_tools.trade import OneTradePerDay
+from EC_tools.simple_trade import onetrade_simple
+from app.run_preprocess import run_preprocess
+from app.run_gen_MR_dir import MR_STRATEGIES_0, run_gen_signal_bulk
+from app.run_backtest import run_backtest_bulk
+
+# Import global constants
 from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, \
                                   OPEN_HR_DICT, CLOSE_HR_DICT, \
                                   OPEN_HR_DICT_EARLY, CLOSE_HR_DICT_EARLY,\
@@ -34,14 +43,6 @@ from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, \
 from crudeoil_future_const import ARGUS_BENCHMARK_SIGNAL_AMB_FILE_LOC, \
                                   ARGUS_BENCHMARK_SIGNAL_AMB_BUY_FILE_LOC, \
                                   ARGUS_BENCHMARK_SIGNAL_AMB_SELL_FILE_LOC
-                                    
-from EC_tools.read import render_PNL_xlsx
-import EC_tools.utility as util
-from EC_tools.trade import OneTradePerDay
-from EC_tools.simple_trade import onetrade_simple
-from run_preprocess import run_preprocess
-from run_gen_MR_dir import MR_STRATEGIES_0, run_gen_signal_bulk
-from run_backtest import run_backtest_bulk
 
 
 @util.time_it

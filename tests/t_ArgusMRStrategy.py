@@ -1,25 +1,27 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# Import Python packages
+import numpy as np
+import pytest
+
+# Import EC_tools
+from EC_tools.strategy import ArgusMRStrategy, SignalStatus
+import EC_tools.read as read
+import EC_tools.math_func as mfunc
+from tests.test_strategy import SingleRun
+
+# Import global constatns
+from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, \
+                                  APC_FILE_LOC, HISTORY_DAILY_FILE_LOC,\
+                                  HISTORY_MINTUE_FILE_LOC, TIMEZONE_DICT,\
+                                  OPEN_HR_DICT, CLOSE_HR_DICT, DATA_FILEPATH
 """
 Created on Sun Jul 14 05:03:16 2024
 
 @author: dexter
 
 """
-import datetime as datetime
-import numpy as np
-import pytest
 
-from EC_tools.strategy import ArgusMRStrategy, SignalStatus
-import EC_tools.read as read
-import EC_tools.math_func as mfunc
-from tests.test_strategy import SingleRun
-
-
-from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, \
-                                APC_FILE_LOC, HISTORY_DAILY_FILE_LOC,\
-                                    HISTORY_MINTUE_FILE_LOC, TIMEZONE_DICT,\
-                                        OPEN_HR_DICT, CLOSE_HR_DICT, DATA_FILEPATH
                                         
 SIGNAL = DATA_FILEPATH +"/APC_latest/APC_latest_CLc1.csv"
 HISTORY_DAILY = DATA_FILEPATH + "/history_data/Day/CL.day"

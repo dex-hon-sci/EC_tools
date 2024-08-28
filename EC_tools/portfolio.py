@@ -9,15 +9,17 @@ Created on Mon May  6 08:55:17 2024
 from dataclasses import dataclass, field
 from functools import cached_property
 import datetime as datetime
-import time as time
 import re
 # package import 
 import pandas as pd
 
 # EC_tools import
 import EC_tools.utility as util
+from EC_tools.asset import Asset
 from EC_tools.bookkeep import Bookkeep
-from crudeoil_future_const import SIZE_DICT, HISTORY_DAILY_FILE_LOC
+import EC_tools.read as read
+from crudeoil_future_const import SIZE_DICT, HISTORY_DAILY_FILE_LOC, \
+                                  SYMBOL_KEYWORDS_DICT
 
 #PRICE_DICT = HISTORY_DAILY_FILE_LOC 
     
@@ -26,23 +28,9 @@ PRICE_DICT = HISTORY_DAILY_PKL
 
 #now we preload the price dict
 
-__all__ = ['Asset','Portfolio']
+__all__ = ['Portfolio']
 
 __author__="Dexter S.-H. Hon"
-
-@dataclass
-class Asset:
-    """
-    A class that solely define the attribute of a Asset object.
-    # We can abnadon this and just use a dict for asset
-    
-    """
-    name: str  # note that future countract should be written in the CLM24 format
-    quantity: int or float
-    unit: str
-    asset_type:str 
-    misc: dict[str] = field(default_factory=dict)
-    
 
 class Portfolio(object):
     """
@@ -679,17 +667,40 @@ class PortfolioLog(Portfolio):
     
     def render_tradebook(self): # WIP
         position_pool = self.portfolio.position_pool
-        book = Bookkeep(bucket_type='backtest')
+        #book = Bookkeep(bucket_type='backtest')
         custom_list0 = ['Trade_Id', 'Direction', 'Commodity', 'Price_Code', 
                         'Contract_Month',
                         'Entry_Date',	'Entry_Datetime', 'Entry_Price',
                         'Exit_Date','Exit_Datetime','Exit_Price',
                         'Return_Trades', 'Risk_Reward_Ratio', 'strategy_name']
-        trade_PNL = book.make_bucket(custom_keywords_list=custom_list0)
-        q = 'long-short'
-        re.sub(r'\-(.*)','',q)
-        data = None
-        trade_PNL = book.store_to_bucket_single(data)
+        
+       # trade_PNL = book.make_bucket(custom_keywords_list=custom_list0)
+        select_func_fill = lambda x: position_pool(x).status.value == 'Filled'
+        PP = read.group_trade(select_func=select_func_fill)
+
+        
+        for i, ele in enumerate(PP):
+            trade_id = ele[0].pos_id
+            direction = re.sub(r'\-(.*)','', ele[0].status)
+            symbol = ele[0].get_obj['name']
+            commodity_name = SYMBOL_KEYWORDS_DICT[symbol]
+            contract_month = None
+            entry_date = ele[0].fill_time.date()
+            entry_datetime = ele[0].fill_time
+            entry_price = ele[0].price
+            exit_date = ele[1].file_time.date()
+            exit_datetime = ele[1].file_time
+            exit_price = ele[1].price
+            
+            if direction == "Long":
+                trade_return = entry_price - exit_price
+            elif direction == "Short":
+                trade_return = exit_price - entry_price
+
+        data = [trade_id, direction, commodity_name, symbol]
+        
+        
+        #trade_PNL = book.store_to_bucket_single(data)
 
         pass
 

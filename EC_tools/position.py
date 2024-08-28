@@ -66,7 +66,7 @@ class Position(object):
     void_time: datetime = None
     auto_adjust: bool = True
     pos_id: str = util.random_string()  
-    misc: dict = dict()
+    #misc: dict = field(default_factory={'None'})
     
     def __post_init__(self, 
                       void_time: datetime = datetime.datetime.now(), 
@@ -122,7 +122,7 @@ class Position(object):
         return self._fix_quantity
     
     @fix_quantity.setter
-    def fix_quantity(self, value: Union[int, float]):
+    def fix_quantity(self, value: Union[int, float]) -> int | float:
         """
         Setter method to change the value of fix_quantity.
 
@@ -141,27 +141,22 @@ class Position(object):
         return self._fix_quantity
     
     @property
-    def price(self):
+    def price(self) -> float:
         """
         Getter method for calling position's price.
 
         Returns
         -------
-        TYPE
-            DESCRIPTION.
+        float
+            The price of this exchanges.
 
         """
         return self._price
     
     @price.setter
-    def price(self, value: Union[int, float]):
+    def price(self, value: Union[int, float]) -> None:
         """
         Setter method for calling position's price.
-
-        Returns
-        -------
-        TYPE
-            DESCRIPTION.
 
         """
         # check if the new price is the same 
@@ -330,7 +325,3 @@ class ExecutePosition(object):
         self.position.status = PositionStatus.VOID
         self.position.void_time = void_time
         #return self.position
-    
-class PositionLog():
-    def __init__():
-        return

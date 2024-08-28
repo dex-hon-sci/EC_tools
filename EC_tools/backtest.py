@@ -1,5 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+# import Python package
+import pandas as pd
+import numpy as np
+import datetime as datetime
+
+from typing import Protocol
+
+# import from EC_tools
+import EC_tools.read as read
+from EC_tools.bookkeep import Bookkeep
+import EC_tools.plot as plot
+from EC_tools.portfolio import Portfolio
+from crudeoil_future_const import OPEN_HR_DICT, CLOSE_HR_DICT, OIL_FUTURES_FEES
 """
 Created on Thu Apr 18 18:22:17 2024
 
@@ -24,6 +38,7 @@ Backtest Loop Type:
             breaches these threshold. This loop type contains the least details
             but is also the fastest.
         (3) RangeLoop
+            Looping over a subset of data point given a boundary of intervals
     
 Static Instruction Backtest:
     Functions in this module takes a precalculated Buy/Sell/Neutral
@@ -48,20 +63,6 @@ Preload_list
 Concurrent
  
 """
-# import Python package
-import pandas as pd
-import numpy as np
-import datetime as datetime
-from typing import Protocol, Type
-from enum import Enum
-
-# import from EC_tools
-import EC_tools.read as read
-from EC_tools.bookkeep import Bookkeep
-import EC_tools.plot as plot
-from EC_tools.portfolio import Portfolio
-from crudeoil_future_const import OPEN_HR_DICT, CLOSE_HR_DICT, OIL_FUTURES_FEES
-
 FILENAME_MINUTE =  "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/HO.001"
 APC_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_HOc1.csv"  
 

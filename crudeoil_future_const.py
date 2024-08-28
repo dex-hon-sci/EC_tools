@@ -15,6 +15,11 @@ load_dotenv()
 DATA_FILEPATH = os.environ.get("DATA_FILEPATH")
 RESULT_FILEPATH = os.environ.get("RESULT_FILEPATH")
 
+DAILY_DATA_PKL = DATA_FILEPATH +"/pkl_vault/crudeoil_future_daily_full.pkl"
+DAILY_MINUTE_DATA_PKL = DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_full.pkl"
+DAILY_APC_PKL = DATA_FILEPATH +"/pkl_vault/crudeoil_future_APC_full.pkl"
+DAILY_OPENPRICE_PKL = DATA_FILEPATH +'/pkl_vault/crudeoil_future_openprice_full.pkl'
+
 # Define the contracts of interest
 ASSET_DICT = {"USD": {"unit":'dollars', "asset_type":'Cash'},
               "AUD": {"unit":'dollars',"asset_type":'Cash'},
@@ -44,8 +49,15 @@ CAT_LIST = [ 'Argus Nymex WTI month 1, Daily',
 KEYWORDS_LIST = ["WTI","WTI","Heating", "Heating","Gasoline","Gasoline",
                  'Brent', 'Brent',"gasoil", 'gasoil']
 
-SYMBOL_LIST = ["CLc1", "CLc2", "HOc1", "HOc2", "RBc1", "RBc2", "QOc1", "QOc2", "QPc1", "QPc2"]
+SYMBOL_LIST = ["CLc1", "CLc2", "HOc1", "HOc2", "RBc1", "RBc2", 
+               "QOc1", "QOc2", "QPc1", "QPc2"]
 #list(HISTORY_DAILY_FILE_LOC.keys())
+
+SYMBOL_KEYWORDS_DICT = {"CLc1": "WTI", "CLc2": "WTI",
+                        "HOc1": "Heating", "HOc2": "Heating",
+                        "RBc1": "Gasoline", "RBc2": "Gasoline",
+                        "QOc1": "Brent", "QOc2": "Brent", 
+                        "QPc1": "gasoil", "QPc2": "gasoil"}
 
 OIL_FUTURES_FEE = {'name':'USD', 'quantity':24.0, 
                    'unit':'dollars', 'asset_type': 'Cash'}

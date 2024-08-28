@@ -22,20 +22,6 @@ from crudeoil_future_const import OIL_FUTURES_FEE, SIZE_DICT, ASSET_DICT
 
 import copy 
 
-round_turn_fees = {
-    'CLc1': 24.0,
-    'CLc2': 24.0,
-    'HOc1': 25.2,
-    'HOc2': 25.2,
-    'RBc1': 25.2,
-    'RBc2': 25.2,
-    'QOc1': 24.0,
-    'QOc2': 24.0,
-    'QPc1': 24.0,
-    'QPc2': 24.0
-}
-
-
 # there are two ways to backtest strategies, 
 # (1) is to loop through every unit time interval and make a judgement call
 # (2) is collapsing the intraday data into a smaller set of data, search for 

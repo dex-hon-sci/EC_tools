@@ -18,7 +18,7 @@ from EC_tools.portfolio import Portfolio
 from crudeoil_future_const import round_turn_fees, SIZE_DICT
 
 # Argus API 
-from EC_tools.ext_codes.ArgusPossibilityCurves2 import ArgusPossibilityCurves
+from ext_codes.ArgusPossibilityCurves2 import ArgusPossibilityCurves
 
 __all__ = ['get_apc_from_server','read_apc_data','read_portara_daily_data', 
            'read_portara_minute_data','merge_portara_data',
