@@ -112,7 +112,7 @@ def loop_signal(strategy: type[Strategy],
 
     """
     #make bucket
-    bucket = book.make_bucket(keyword='argus_exact_mode')#Strategy().strategy_name)
+    bucket = book.make_bucket(keyword=strategy().strategy_name) # 'argus_exact_mode')#
     print('Start looping signal: {}...'.format(loop_symbol))
 
     # Find the index of the start_date and end_date here.

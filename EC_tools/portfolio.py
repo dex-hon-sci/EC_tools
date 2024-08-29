@@ -12,7 +12,7 @@ import datetime as datetime
 import re
 # package import 
 import pandas as pd
-
+import numpy as np
 # EC_tools import
 import EC_tools.utility as util
 from EC_tools.asset import Asset
@@ -47,6 +47,7 @@ class Portfolio(object):
         self._pool: list = []
         self._pool_window: list = []
         self._position_pool: list = []
+        self._position_pool_window: list = []
         self._table: list = []
         self._master_table: pd.DataFrame = None
         self._zeropoint: float = 0.0 # The zero point value for the portfolio
@@ -168,6 +169,12 @@ class Portfolio(object):
 
         """
         return self._position_pool
+    
+    def set_position_pool_window(self):
+        
+        
+        return
+    
     
     @staticmethod
     def _make_table(pool_type: list) -> pd.DataFrame:
@@ -508,7 +515,8 @@ class Portfolio(object):
                     asset_name: str, 
                     datetime: datetime.datetime, 
                     price_dict: dict = PRICE_DICT,   
-                    size_dict: dict = SIZE_DICT, dntr: str = 'USD') -> float:
+                    size_dict: dict = SIZE_DICT, 
+                    dntr: str = 'USD') -> float:
         """
         A function that return a dict with of a particular asset on 
         a particular date and time.
@@ -530,7 +538,9 @@ class Portfolio(object):
                   size_dict = size_dict, dntr=dntr)[asset_name]
         return asset_value
             
-    def total_value(self, datetime: datetime.datetime) -> float:
+    def total_value(self, 
+                    datetime: datetime.datetime, 
+                    dntr: str = 'USD') -> float:
         """
         A function that return the total value of the entire portfolio on 
         a particular date and time.
@@ -546,7 +556,7 @@ class Portfolio(object):
             the total value.
 
         """
-        total_value = sum(self.value(datetime).values())
+        total_value = sum(self.value(datetime, dntr=dntr).values())
         return total_value
 
 
@@ -669,14 +679,16 @@ class PortfolioLog(Portfolio):
     def add_column(self):
         pass
     
-    def render_tradebook(self, save_or_not= True): # WIP
+    def _render_tradebook(self, 
+                          save_or_not: bool = True): 
+    
         position_pool = self.portfolio.position_pool
         book = Bookkeep(bucket_type='backtest')
         
-        custom_list0 = ['Trade_ID', 'Direction', 'Price_Code', 
+        custom_list0 = ['Trade_ID', 'Direction', 'Price_Code', 'Commodity',
                         'Entry_Date', 'Entry_Datetime', 'Entry_Price',
                         'Exit_Date','Exit_Datetime','Exit_Price',
-                        'Return_Trades'] #, 'Risk_Reward_Ratio', 'strategy_name']
+                        'Trade_Return', 'Trade_Return_Fraction'] #, 'Risk_Reward_Ratio', 'strategy_name']
         
         trade_PNL = book.make_bucket(custom_keywords_list=custom_list0)
         
@@ -698,46 +710,122 @@ class PortfolioLog(Portfolio):
             exit_price = ele[1].price
 
             if direction == "Long":
-                trade_return = entry_price - exit_price
-            elif direction == "Short":
                 trade_return = exit_price - entry_price
-            
+                trade_return_fraction = (exit_price - entry_price) / entry_price
+            elif direction == "Short":
+                trade_return = entry_price - exit_price
+                trade_return_fraction = (entry_price - exit_price) / exit_price
+
             data = [trade_id, direction, commodity_name, symbol, 
                     entry_date, entry_datetime, entry_price,
                     exit_date, exit_datetime, exit_price, 
-                    trade_return]
+                    trade_return, trade_return_fraction]
         
             trade_PNL = book.store_to_bucket_single(data)
             
         trade_PNL = pd.DataFrame(trade_PNL)
-        #sort by date
-        trade_PNL = trade_PNL.sort_values(by='Trade_ID')
-        
-        print(trade_PNL)
-        
+        trade_PNL = trade_PNL.sort_values(by='Trade_ID') #sort by ID
+
         if save_or_not:
             trade_PNL.to_csv(self.tradebook_filename, index=False)
-        elif not save_or_not:
-            pass
-        
+    
         return trade_PNL
+    
+    @property
+    def tradebook(self):
+        
+        return self._render_tradebook(save_or_not = False)
 
     def render_xlsx(self):
         pass
     
-class PortfolioMetrics(PortfolioLog):
     
-    def __init__():
+@dataclass 
+class PortfolioMetrics(Portfolio):
+    """
+    A class that generate all Portfolio metrics
+    """
+    portfolio: Portfolio
+    
+    def __post_init__(self):
+        self.portfolio_log = PortfolioLog(self.portfolio)
+        self.tradebook = self.portfolio_log.tradebook
+    
+    def period(self, time_proxy: str = 'Exit_Date', unit: str = "Days"):
+        return len(set(self.tradebook[time_proxy].to_list())), unit
+    
+    def total_trades(self):
+        return len(self.tradebook)
+    
+    def total_fee_paid(self):
+        position_pool = self.portfolio.position_pool
+        
+        select_func_fill = lambda x: position_pool[x].status.value == 'Filled'
+        PP = read.group_trade(position_pool,
+                              select_func=select_func_fill)
+        
+        total_fee_dict = dict()
+        total_fee = 0
+        for ele in PP:
+            # Assuming the second item in each element contains the fee
+            total_fee = total_fee + ele[1].fee['quantity']
+        
+        
+        return total_fee
+    
+    def total_returns(self, dntr='USD'):
+        first_date = self.portfolio.pool_datetime[0]
+        last_date = self.portfolio.pool_datetime[-1]
+        
+        first_entry_total_value = self.portfolio.total_value(first_date, dntr=dntr)
+        last_entry_total_value = self.portfolio.total_value(last_date, dntr=dntr)
+        
+        return (last_entry_total_value - first_entry_total_value), dntr
+
+
+    def total_returns_fraction(self, unit: str = '%'):
+        first_date = self.portfolio.pool_datetime[0]
+        last_date = self.portfolio.pool_datetime[-1]
+        
+        first_entry_total_value = self.portfolio.total_value(first_date)
+        last_entry_total_value = self.portfolio.total_value(last_date)
+        
+        return 100*(last_entry_total_value - first_entry_total_value) / \
+               first_entry_total_value, unit
+    
+    def win_rate(self, return_proxy:str = "Trade_Return", unit: str = "%")->int:
+        
+        win_trades = sum(1 for i in self.tradebook[return_proxy].to_list() if i >= 0)
+        lose_trades = sum(1 for i in self.tradebook[return_proxy].to_list() if i < 0)
+        
+        return (win_trades/lose_trades)*100, unit
+    
+    def profit_factor(self, return_proxy: str = "Trade_Return")->float:
+        
+        win_trades_val = sum(i for i in self.tradebook[return_proxy].to_list() 
+                             if i >= 0)
+        lose_trades_val = sum(i for i in self.tradebook[return_proxy].to_list() 
+                              if i < 0)
+        #print(win_trades_val, lose_trades_val)
+        return abs(win_trades_val)/abs(lose_trades_val)
+    
+    def total_open_positions(self):
+        return
+
+    def avg_daily_return(self,return_proxy: str = "Trade_Return"):
+        trade_return = self.tradebook[return_proxy].to_numpy()
+        
         return
     
-    def avg_daily_return():
-        return
     
-    def total_trade():
-        return
-    
-    def sharpe_ratio(self):
-        return
+    def sharpe_ratio(self, 
+                     return_proxy: str = "Trade_Return" ,
+                     riskfree_rate: float| list = 0.05):
+        trade_return = self.tradebook[return_proxy].to_numpy()
+        riskfree_rate = np.repeat(riskfree_rate, len(trade_return))
+        
+        
+        return np.average(trade_return - riskfree_rate)/ np.std(trade_return)
     
     def calmar_ratio(self):
         return
@@ -748,8 +836,21 @@ class PortfolioMetrics(PortfolioLog):
     def sortino_ratio(self):
         return
     
+    def make_full_data(self):
+        # Calculate all metrics related to thid portfolio
+        full_data = dict()
+        return
+    
     def make_full_report(self):
-        return 
+        print('Period [{}]'.format(self.period()[1]), self.period()[0])
+        print('Total_trades', self.total_trades())
+        print('Total Fee', self.total_fee_paid())
+        print('Total_returns [{}]'.format(self.total_returns()[1]), 
+                                           self.total_returns()[0])
+        print('total_returns [{}]'.format(self.total_returns_fraction()[1]), 
+                                           self.total_returns_fraction()[0])
+        print('win_rate [{}]'.format(self.win_rate()[1]), self.win_rate()[0])
+        print('profit_factor',self.profit_factor())
     
     # Period (Days)
     # Start_cash

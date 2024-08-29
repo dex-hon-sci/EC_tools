@@ -100,25 +100,25 @@ round_turn_fees = {
 
 OIL_FUTURES_FEES = {    
     'CLc1': {'name':'USD', 'quantity':24.0, 
-             'unit':'dollats', 'asset_type': 'Cash'},
+             'unit':'dollars', 'asset_type': 'Cash'},
     'CLc2': {'name':'USD', 'quantity':24.0, 
-             'unit':'dollats', 'asset_type': 'Cash'},
+             'unit':'dollars', 'asset_type': 'Cash'},
     'HOc1': {'name':'USD', 'quantity':25.2, 
-             'unit':'dollats', 'asset_type': 'Cash'},
+             'unit':'dollars', 'asset_type': 'Cash'},
     'HOc2': {'name':'USD', 'quantity':25.2, 
-             'unit':'dollats', 'asset_type': 'Cash'},
+             'unit':'dollars', 'asset_type': 'Cash'},
     'RBc1': {'name':'USD', 'quantity':25.2, 
-             'unit':'dollats', 'asset_type': 'Cash'},
+             'unit':'dollars', 'asset_type': 'Cash'},
     'RBc2': {'name':'USD', 'quantity':25.2, 
-             'unit':'dollats', 'asset_type': 'Cash'},
+             'unit':'dollars', 'asset_type': 'Cash'},
     'QOc1': {'name':'USD', 'quantity':24.0, 
-             'unit':'dollats', 'asset_type': 'Cash'},
+             'unit':'dollars', 'asset_type': 'Cash'},
     'QOc2': {'name':'USD', 'quantity':24.0, 
-             'unit':'dollats', 'asset_type': 'Cash'},
+             'unit':'dollars', 'asset_type': 'Cash'},
     'QPc1': {'name':'USD', 'quantity':24.0, 
-             'unit':'dollats', 'asset_type': 'Cash'},
+             'unit':'dollars', 'asset_type': 'Cash'},
     'QPc2': {'name':'USD', 'quantity':24.0, 
-             'unit':'dollats', 'asset_type': 'Cash'}
+             'unit':'dollars', 'asset_type': 'Cash'}
     }
 
 
