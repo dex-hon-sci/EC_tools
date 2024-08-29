@@ -225,7 +225,7 @@ def run_backtest_portfolio_preloaded(TradeMethod,
 
     Parameters
     ----------
-    TradeMethod : TYPE
+    TradeMethod : func or Trade object
         DESCRIPTION.
     master_buysell_signals_filename : str
         DESCRIPTION.
