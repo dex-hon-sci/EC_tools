@@ -38,6 +38,10 @@ class PositionType(Enum):
     LONG_SELL = 'Long-Sell'
     SHORT_BORROW = 'Short-Borrow'
     SHORT_BUYBACK = 'Short-Buyback'
+    CALL_BUY = 'Call-Buy'
+    CALL_SELL = 'Call-Sell'
+    PUT_BUY = 'Put-Buy'
+    PUT_SELL = 'Put-Sell'
     
     
 @dataclass
@@ -106,17 +110,12 @@ class Position(object):
         self._fix_quantity = self.get_obj['quantity']
         
     @property
-    def fix_quantity(self):
+    def fix_quantity(self) -> None:
         """
         This is a speical attribute for each position object. It defines which 
         quantity to be fixed for an exchange to be executed when the price is 
         not exactly as stated in the position object. It can either be 
         self.give_obj.quantity or self.get_obj.quantity.
-
-        Returns
-        -------
-        TYPE
-            DESCRIPTION.
 
         """
         return self._fix_quantity
@@ -128,12 +127,12 @@ class Position(object):
 
         Parameters
         ----------
-        value : TYPE
-            DESCRIPTION.
+        value : int or float
+            The new fix value.
 
         Returns
         -------
-        TYPE
+        int or float
             DESCRIPTION.
 
         """
@@ -294,9 +293,8 @@ class ExecutePosition(object):
         self.position.status = PositionStatus.FILLED
         self.position.fill_time = fill_time
         
-        #return self.position
     
-    def cancel_pos(self, void_time: datetime = datetime.datetime.now()):
+    def cancel_pos(self, void_time: datetime = datetime.datetime.now()) -> None:
         """
         Cancel position method.
 
@@ -324,4 +322,3 @@ class ExecutePosition(object):
             
         self.position.status = PositionStatus.VOID
         self.position.void_time = void_time
-        #return self.position

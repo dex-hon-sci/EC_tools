@@ -493,6 +493,8 @@ class Portfolio(object):
                     
                 sub_price_table = price_dict[asset['name']]
                 target_time = date_time.strftime("%Y-%m-%d")
+                #print('price:', sub_price_table[price_proxy][sub_price_table[time_proxy] == \
+                #                                      target_time])
 
                 # query search for the price of an asset of the date of interest
                 price = sub_price_table[price_proxy][sub_price_table[time_proxy] == \
@@ -562,6 +564,7 @@ class PortfolioLog(Portfolio):
     """
     portfolio: Portfolio = None
     _log: pd.DataFrame = None
+    tradebook_filename = str = ""
 
     @util.time_it
     def _make_log(self, simple_log = False): #Decrepated time complexity too large
@@ -584,7 +587,7 @@ class PortfolioLog(Portfolio):
 
         else:
             time_list = self.portfolio.pool_datetime
-        print(time_list)
+        #print(time_list)
         # Add an entry at the end of the day to see what is the earning for the last day
         last_dt = datetime.datetime.combine(time_list[-1].date(), datetime.time(23,59))
         time_list = time_list + [last_dt]
@@ -592,12 +595,13 @@ class PortfolioLog(Portfolio):
             
         #then loop through the pool history and store them in log list 
         for item in time_list:
-            print(item)
+            print('time', item)
+
             value_entry = self.portfolio.value(item)
             value_entry["Total"] = sum(list(value_entry.values()))
             value_entry['Datetime'] = item
 
-            #print('VE', item, value_entry)
+            print('VE', item, value_entry)
             log.append(value_entry)
             
         # return a log of the values of each asset by time
@@ -665,44 +669,58 @@ class PortfolioLog(Portfolio):
     def add_column(self):
         pass
     
-    def render_tradebook(self): # WIP
+    def render_tradebook(self, save_or_not= True): # WIP
         position_pool = self.portfolio.position_pool
-        #book = Bookkeep(bucket_type='backtest')
-        custom_list0 = ['Trade_Id', 'Direction', 'Commodity', 'Price_Code', 
-                        'Contract_Month',
-                        'Entry_Date',	'Entry_Datetime', 'Entry_Price',
-                        'Exit_Date','Exit_Datetime','Exit_Price',
-                        'Return_Trades', 'Risk_Reward_Ratio', 'strategy_name']
+        book = Bookkeep(bucket_type='backtest')
         
-       # trade_PNL = book.make_bucket(custom_keywords_list=custom_list0)
-        select_func_fill = lambda x: position_pool(x).status.value == 'Filled'
-        PP = read.group_trade(select_func=select_func_fill)
+        custom_list0 = ['Trade_ID', 'Direction', 'Price_Code', 
+                        'Entry_Date', 'Entry_Datetime', 'Entry_Price',
+                        'Exit_Date','Exit_Datetime','Exit_Price',
+                        'Return_Trades'] #, 'Risk_Reward_Ratio', 'strategy_name']
+        
+        trade_PNL = book.make_bucket(custom_keywords_list=custom_list0)
+        
+        select_func_fill = lambda x: position_pool[x].status.value == 'Filled'
+        PP = read.group_trade(position_pool,
+                              select_func=select_func_fill)
 
         
         for i, ele in enumerate(PP):
             trade_id = ele[0].pos_id
-            direction = re.sub(r'\-(.*)','', ele[0].status)
+            direction = re.sub(r'\-(.*)','', ele[0].pos_type)
             symbol = ele[0].get_obj['name']
             commodity_name = SYMBOL_KEYWORDS_DICT[symbol]
-            contract_month = None
             entry_date = ele[0].fill_time.date()
             entry_datetime = ele[0].fill_time
             entry_price = ele[0].price
-            exit_date = ele[1].file_time.date()
-            exit_datetime = ele[1].file_time
+            exit_date = ele[1].fill_time.date()
+            exit_datetime = ele[1].fill_time
             exit_price = ele[1].price
-            
+
             if direction == "Long":
                 trade_return = entry_price - exit_price
             elif direction == "Short":
                 trade_return = exit_price - entry_price
-
-        data = [trade_id, direction, commodity_name, symbol]
+            
+            data = [trade_id, direction, commodity_name, symbol, 
+                    entry_date, entry_datetime, entry_price,
+                    exit_date, exit_datetime, exit_price, 
+                    trade_return]
         
+            trade_PNL = book.store_to_bucket_single(data)
+            
+        trade_PNL = pd.DataFrame(trade_PNL)
+        #sort by date
+        trade_PNL = trade_PNL.sort_values(by='Trade_ID')
         
-        #trade_PNL = book.store_to_bucket_single(data)
-
-        pass
+        print(trade_PNL)
+        
+        if save_or_not:
+            trade_PNL.to_csv(self.tradebook_filename, index=False)
+        elif not save_or_not:
+            pass
+        
+        return trade_PNL
 
     def render_xlsx(self):
         pass

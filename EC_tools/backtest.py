@@ -346,7 +346,8 @@ class LoopCrossPoints(BacktestLoop):
                             signal_table: pd.DataFrame, 
                             histroy_intraday_data: pd.DataFrame, 
                             strategy_name: str = 'argus_exact',
-                            give_obj_name: str = "USD", get_obj_name: str = "CLc1", 
+                            give_obj_name: str = "USD", 
+                            get_obj_name: str = "CLc1", 
                             get_obj_quantity: int = 50,
                             open_hr: str = '0330', close_hr: str ='1930',
                             plot_or_not: bool = False):
@@ -621,12 +622,13 @@ def loop_date(trade_method,
          
     return dict_trade_PNL
     
-def loop_date_portfolio(portfo: Portfolio, 
+def loop_date_portfolio(portfo: type[Portfolio], 
                         trade_method, 
                         signal_table: pd.DataFrame, 
                         histroy_intraday_data: pd.DataFrame, 
                         strategy_name: str = 'argus_exact',
-                        give_obj_name: str = "USD", get_obj_name: str = "CLc1", 
+                        give_obj_name: str = "USD", 
+                        get_obj_name: str = "CLc1", 
                         get_obj_quantity: int = 50,
                         open_hr: str = '0330', close_hr: str ='1930',
                         plot_or_not: bool = False):
