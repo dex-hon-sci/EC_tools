@@ -412,7 +412,7 @@ class LoopCrossPoints(BacktestLoop):
                                       signal_table: pd.DataFrame, 
                                       histroy_intraday_data_pkl, 
                                       give_obj_name: str = "USD", 
-                                      get_obj_quantity: int = 1,
+                                      get_obj_quantity: int = 20,
                                       plot_or_not: bool = False):
         """
         A method that utilise one portfolio to run multi-strategy

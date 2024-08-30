@@ -26,7 +26,8 @@ from crudeoil_future_const import OPEN_HR_DICT, CLOSE_HR_DICT, \
                                   ARGUS_EXACT_SIGNAL_AMB2_FILE_LOC, ARGUS_EXACT_PNL_AMB2_LOC,\
                                   ARGUS_EXACT_SIGNAL_AMB3_FILE_LOC, ARGUS_EXACT_PNL_AMB3_LOC,\
                                   ARGUS_EXACT_SIGNAL_MODE_FILE_LOC, ARGUS_EXACT_PNL_MODE_LOC,\
-                                  TEST_FILE_LOC, TEST_FILE_PNL_LOC\
+                                  TEST_FILE_LOC, TEST_FILE_PNL_LOC,\
+                                  DAILY_MINUTE_DATA_PKL\
 
 
 __all__ = ['run_backtest','run_backtest_list', 
@@ -321,7 +322,7 @@ def run_backtest_bulk(TradeMethod,
         
     elif method == "preload":
         #MASTER_SIGNAL_FILENAME
-        HISTORY_MINUTE_PKL = util.load_pkl(DATA_FILEPATH+"/pkl_vault/crudeoil_future_minute_full.pkl")
+        HISTORY_MINUTE_PKL = util.load_pkl(DAILY_MINUTE_DATA_PKL)
 
         PP = run_backtest_portfolio_preloaded(OneTradePerDay,
                                               master_signal_filename, 

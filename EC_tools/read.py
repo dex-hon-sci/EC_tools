@@ -12,9 +12,7 @@ import pickle
 
 from typing import Union, Callable
 
-
 import EC_tools.utility as util
-from EC_tools.portfolio import Portfolio
 from crudeoil_future_const import round_turn_fees, SIZE_DICT
 
 # Argus API 
@@ -1056,7 +1054,7 @@ def find_minute_range(histroy_data_intraday: pd.DataFrame,
     return range_dict
 
 
-def open_portfolio(filename: str) -> type[Portfolio]:
+def open_portfolio(filename: str):
     """
     A handy function to open a portfolio. Nothing special but easy to remember.
 
@@ -1211,10 +1209,11 @@ def render_PNL_xlsx(listfiles: list[str],
                 if len(datpc) > 0:
                     
                     datpc.to_excel(excel_writer=excel_writer, sheet_name=pc)         
-    return datpc            
+    return datpc 
+           
 
 def group_trade(position_pool: list, 
-                select_func: Callable[[int], bool] = True) -> list:
+                select_func: Callable[[int], bool] = lambda x: True) -> list: #
     """
     A function to group positions by trade id along with some given conditions.
 
@@ -1224,7 +1223,7 @@ def group_trade(position_pool: list,
         The position_pool list inside a portfolio object.
     select_func : Callable function, optional
         Additional functions for unique condition for grouping trade.
-        The default is True.
+        The default is type (It will return true no matter what.
         
     Returns
     -------
@@ -1240,17 +1239,14 @@ def group_trade(position_pool: list,
     bucket, temp = [], []
     trade_id_now = pos_pool[0].pos_id
     
+    
     i=0
     while i < len(pos_pool):
-        
         # loop through each position, if the pos_id == trade_id_now, save in 
         # a temp list
         if  pos_pool[i].pos_id == trade_id_now:
-           # print(select_func(i))
             if select_func(i):
                 temp.append(pos_pool[i])
-                #print(i,'FILLED!')
-            #print(i, pos_pool[i].pos_id, 'same id')
             i = i + 1
                 
         elif pos_pool[i].pos_id != trade_id_now: 

@@ -96,7 +96,7 @@ round_turn_fees = {
     'QOc2': 24.0,
     'QPc1': 24.0,
     'QPc2': 24.0
-}
+} #30
 
 OIL_FUTURES_FEES = {    
     'CLc1': {'name':'USD', 'quantity':24.0, 
