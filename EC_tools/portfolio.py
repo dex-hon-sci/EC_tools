@@ -13,6 +13,8 @@ import re
 # package import
 import pandas as pd
 import numpy as np
+from prettytable import PrettyTable
+
 # EC_tools import
 import EC_tools.utility as util
 from EC_tools.asset import Asset
@@ -839,6 +841,14 @@ class PortfolioMetrics(Portfolio):
         self.tradebook = self.portfolio_log.tradebook
 
     def _load_filled_position_pool(self) -> list:
+        """
+        A function to load only the filled position to a list
+        
+        Returns
+        -------
+        list
+            Filled position list
+        """
         position_pool = self.portfolio.position_pool
 
         def select_func_fill(x): 
@@ -847,8 +857,33 @@ class PortfolioMetrics(Portfolio):
         PP = read.group_trade(position_pool,
                               select_func=select_func_fill)
         return PP
+    
+    def start_capital(self, 
+                      dntr: str = 'USD', 
+                      cash_only: bool = False) -> tuple[float, str]:
+        
+        first_date = self.portfolio.pool_datetime[0]
 
-    def period(self, time_proxy: str = 'Exit_Date', unit: str = "Days"):
+        if not cash_only:
+            first_entry_total_value = self.portfolio.total_value(
+                first_date, dntr=dntr)
+            
+        return first_entry_total_value, dntr
+    
+    def end_capital(self, 
+                    dntr: str = 'USD', 
+                    cash_only: bool = False) -> tuple[float, str]:
+        
+        last_date = self.portfolio.pool_datetime[-1]
+
+        if not cash_only:
+            last_entry_total_value = self.portfolio.total_value(
+                last_date, dntr=dntr)
+        return last_entry_total_value, dntr
+    
+    def period(self, 
+               time_proxy: str = 'Exit_Date', 
+               unit: str = "Days") -> tuple[int,str]:
         """
         Total Days of trading
 
@@ -860,14 +895,16 @@ class PortfolioMetrics(Portfolio):
             Unit. The default is "Days".
 
         """
-        return len(set(self.tradebook[time_proxy].to_list())), unit
+        
+        period = self.tradebook[time_proxy].iloc[-1] - self.tradebook[time_proxy].iloc[0]
+        return period, unit
 
-    def total_trades(self) -> int:
+    def total_trades(self) -> tuple[int, str]:
         """
         The total number of trades in the tradebook.
 
         """
-        return len(self.tradebook)
+        return len(self.tradebook), '#'
 
     def total_fee_paid(self) -> float: # WIP
         position_pool = self.portfolio.position_pool
@@ -997,21 +1034,45 @@ class PortfolioMetrics(Portfolio):
                                 pos[1].status.value == 'Pending' and
                                 pos[2].status.value == 'Pending' and
                                 pos[3].status.value == 'Pending')
-        return total_open_pos
+        return total_open_pos, '#'
     
     def total_close_positions(self): #WIP
         position_pool = self.portfolio.position_pool
         
-        trade_pool = read.group_trade(position_pool)
-        
-        total_open_pos = sum(1 for pos in trade_pool 
-                             if pos[0].status.value == 'Filled' and 
-                                pos[1].status.value == 'Filled' or
-                                pos[2].status.value == 'Filled' or
-                                pos[3].status.value == 'Filled')
-        return total_open_pos
 
-    def avg_trade_return(self, return_proxy: str = "Trade_Return"): #WIP
+        trade_pool = read.group_trade(position_pool, select_func= 
+                                      lambda x : position_pool[x].status.value 
+                                      == 'Filled')
+        
+        total_open_pos = sum(1 for pos in trade_pool if len(pos) == 2)
+# =============================================================================
+#                              [0].status.value == 'Filled' and 
+#                                 pos[1].status.value == 'Filled' or
+#                                 pos[2].status.value == 'Filled' or
+#                                 pos[3].status.value == 'Filled')
+# =============================================================================
+        return total_open_pos, '#'
+
+    def avg_trade_return(self, return_proxy: str = "Trade_Return", 
+                         unit: str = 'USD') -> tuple[str,str]:
+        """
+        A method that calculate average trade return
+
+        Parameters
+        ----------
+        return_proxy : str, optional
+            DESCRIPTION. The default is "Trade_Return".
+        unit : str, optional
+            The unit relies on user-input. 
+            The default is 'USD'.
+
+        Returns
+        -------
+        tuple[str,str]
+            The average trade return and the currency unit.
+
+        """
+        
         filled_pos_list = self._load_filled_position_pool()
     
         trade_return = np.array([trade for trade 
@@ -1021,9 +1082,9 @@ class PortfolioMetrics(Portfolio):
                                     for trade in filled_pos_list])
         
         daily_return_amount = trade_return*trade_size*trade_quantity
-        return np.average(daily_return_amount)
+        return np.average(daily_return_amount), unit
     
-    def _exposure(self):
+    def _daily_exposure(self):
         return
 
     def sharpe_ratio(self,
@@ -1070,19 +1131,29 @@ class PortfolioMetrics(Portfolio):
 
     def make_full_report(self):
         print('Period [{}]'.format(self.period()[1]), self.period()[0])
-        print('Total_trades', self.total_trades())
-        print('Total Fee', self.total_fee_paid())
+        print("Initial Capital [{}]".format(self.start_capital()[1]), 
+              self.start_capital()[0])
+        print("Final Capital [{}]".format(self.end_capital()[1]), 
+              self.end_capital()[0])  
+        print('Total Trades [{}]'.format(self.total_trades()[1]), self.total_trades()[0])
+        print('Total Fee []', self.total_fee_paid())
         print('Total_returns [{}]'.format(self.total_returns()[1]),
               self.total_returns()[0])
         print('Total_returns [{}]'.format(self.total_returns_fraction()[1]),
               self.total_returns_fraction()[0])
         print('win_rate [{}]'.format(self.win_rate()[1]), self.win_rate()[0])
-        print('profit_factor', self.profit_factor())
-        print('total_open_positions', self.total_open_positions())
-        print('total_close_positions', self.total_close_positions())
-        print('avg_trade_return', self.avg_trade_return())
+        print('Profit Factor', self.profit_factor())
+        print('Total Open Positions [{}]'.format(self.total_open_positions()[1]), 
+              self.total_open_positions()[0])
+        print('total Close Positions [{}]'.format(self.total_close_positions()[1]), 
+              self.total_close_positions()[0])
+        print('Average Trade Return [{}]'.format(self.avg_trade_return()[1]), 
+              self.avg_trade_return()[0])
 
-
+        x = PrettyTable()
+        
+        #print(x)
+    
     # Period (Days)
     # Start_cash
     # End_cash
