@@ -1156,7 +1156,7 @@ class PortfolioMetrics(Portfolio):
         #methods = filter(inspect.ismethod, attrs)
         
         for attr, name in zip(attrs, attr_name):
-            print(attr(cls), name)
+            print(attr, name)
             #df = method(cls)
             #full_data[name] = df
             

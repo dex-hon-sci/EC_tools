@@ -831,6 +831,7 @@ def find_minute_EES(histroy_data_intraday: pd.DataFrame,
                     dt_scale: str = 'datetime') -> dict:
     """
     Set the EES value given a time-series of minute intraday data.
+    This function is the key for crossover loops in the backtest
 
     Parameters
     ----------
