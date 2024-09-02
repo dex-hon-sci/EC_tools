@@ -1133,7 +1133,12 @@ def merge_raw_data(filename_list: list[str],
 
 def render_PNL_xlsx(listfiles: list[str], 
                     number_contracts_list: list[int | float] = [5,10,15,20,25,50], 
-                    suffix: str = '_.xlsx') -> pd.DataFrame:
+                    suffix: str = '_.xlsx',
+                    symbol_proxy: str = 'Price_Code', 
+                    entry_price_proxy: str = 'Entry_Price', 
+                    entry_date_proxy: str = 'Entry_Date', 
+                    exit_price_proxy: str = 'Exit_Price',
+                    return_proxy: str = 'Return_Trades') -> pd.DataFrame:
     """
     LEGACY function from Abbe.
     A function that read in the back-test result to generate an xlsx PNL file 
@@ -1156,20 +1161,20 @@ def render_PNL_xlsx(listfiles: list[str],
         # regular output
         price_codes = list(SIZE_DICT.keys())
         dat = pd.read_csv(fn)
-        
+        print(fn,dat)
         with pd.ExcelWriter(fn[:-4]+suffix) as excel_writer: 
             
             dattotal = dat
-            dattotal = dattotal.sort_values(by='Entry_Date')
-            dattotal['number barrels/gallons'] = dattotal['Price_Code'].apply(
+            dattotal = dattotal.sort_values(by = entry_date_proxy)
+            dattotal['number barrels/gallons'] = dattotal[symbol_proxy].apply(
                                                         lambda x: SIZE_DICT[x])
-            dattotal['fees'] = dattotal['Price_Code'].apply(
+            dattotal['fees'] = dattotal[symbol_proxy].apply(
                                                     lambda x: round_turn_fees[x])
             dattotal['fees'] = np.where(np.isnan(dattotal['Entry_Price']), 
                                                     0.0, dattotal['fees'])
             
             # Make columns for scaled returns
-            dattotal['scaled returns from trades'] =  dattotal['Return_Trades']*\
+            dattotal['scaled returns from trades'] =  dattotal[return_proxy]*\
                                                         dattotal['number barrels/gallons']\
                                                             - dattotal['fees']
             
@@ -1195,7 +1200,7 @@ def render_PNL_xlsx(listfiles: list[str],
             for _, pc in enumerate(price_codes): 
                 # recalculate the cumulative returns for each assets
                 # First drop the columns previously calculated
-                datpc = dattotal[dattotal['Price_Code'] == pc].drop(columns=cum_col_name_list)
+                datpc = dattotal[dattotal[symbol_proxy] == pc].drop(columns=cum_col_name_list)
                        
                 ##################################
                 datpc['cumulative P&L from trades'] = np.cumsum(datpc['scaled returns from trades']) 

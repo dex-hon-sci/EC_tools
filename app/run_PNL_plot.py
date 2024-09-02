@@ -23,6 +23,7 @@ ARGUS_EXACT_PNL_AMB3_FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/resul
 ARGUS_EXACT_MODE_PNL_FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_mode_PNL_full_.xlsx'
 ARGUS_EXACT_PNL_AMB4_ROLL3_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_PNL_amb4_roll3_.xlsx"
 ARGUS_EXACT_PNL_EARLY = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_early_PNL_test_.xlsx"
+ARGUS_EXACT_PNL_Port_test = "/home/dexter/Euler_Capital_codes/EC_tools/tradebook_test_.xlsx"
 
 OLD_MODE_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/profits_and_losses_data_pdfmax_17_.xlsx"
 ARGUS_EXACT_MODE_WRONGTIME_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_mode_wrongtime_PNL_.xlsx"
@@ -209,7 +210,8 @@ if __name__=='__main__':
                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB4_ROLL3_FILENAME)[0],
                           extract_PNLplot_input(ARGUS_EXACT_MODE_WRONGTIME_FILENAME)[0],
                           extract_PNLplot_input(test_FILENAME)[0],
-                          extract_PNLplot_input(ARGUS_EXACT_EARLY)[0]
+                          extract_PNLplot_input(ARGUS_EXACT_PNL_EARLY)[0],
+                          extract_PNLplot_input(ARGUS_EXACT_PNL_Port_test)[0]
                           ]
     strategy_data_list = [extract_PNLplot_input(ARGUS_EXACT_PNL_FILENAME)[1],
                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB_FILENAME)[1], 
@@ -220,16 +222,17 @@ if __name__=='__main__':
                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB4_ROLL3_FILENAME)[1],
                           extract_PNLplot_input(ARGUS_EXACT_MODE_WRONGTIME_FILENAME)[1],
                           extract_PNLplot_input(test_FILENAME)[1],
-                          extract_PNLplot_input(ARGUS_EXACT_EARLY)[1]
+                          extract_PNLplot_input(ARGUS_EXACT_PNL_EARLY)[1],
+                          extract_PNLplot_input(ARGUS_EXACT_PNL_Port_test)[1]
                           ]
     strategy_label_list = ['Argus_Exact', 'Ambituous', 'Ambituous2', 
                            'Ambituous3', 'Argus_Exact_Mode', 'old_mode',
                            'amb4_roll3', 'argus_exact_wrongtime','test_op_mode', 
-                           'argus_exact_early']
+                           'argus_exact_early', 'Port_test']
     strategy_col_list = ['b','w','w', 'y', 'r', 'g', 'w', '#b3c27a', 
-                         '#c32b2b', '#919191']
+                         '#c32b2b', '#919191', '#c509c8']
     strategy_line_list = ['solid','dotted', 'dashed', 'dashdot', 'dashdot', 
-                          'dashdot', 'solid', 'dashed', 'solid', 'solid']
+                          'dashdot', 'solid', 'dashed', 'solid', 'solid', 'solid']
     
     # Plot different strategies cumulative PNL
     twopanel_plot([], [], [], label='',

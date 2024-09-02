@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from functools import cached_property
 import datetime as datetime
 import re
+import inspect
 # package import
 import pandas as pd
 import numpy as np
@@ -165,15 +166,6 @@ class Portfolio(object):
 
         return self._pool_window
 
-    @property
-    def position_pool(self):  # WIP
-        """
-        The position pool is a list that contains the Position objects.
-        This can be used to construct trading records using the PortfolioLog
-        class and its method
-
-        """
-        return self._position_pool
 
     def set_position_pool_window(self,
                                  start_time: datetime.datetime = \
@@ -181,7 +173,7 @@ class Portfolio(object):
                                  end_time: datetime.datetime = \
                                            datetime.datetime(2200, 12, 31)):
         
-        position_time_list = [ pos.open_time for pos in self.position_pool]
+        position_time_list = [pos.open_time for pos in self.position_pool]
         
         start_time_delta_list = [abs(pool_dt - start_time) for pool_dt in
                                  position_time_list]
@@ -197,20 +189,25 @@ class Portfolio(object):
                                                         end_time_index+1]
         
         return self._position_pool_window
+    
+    def position_pool_window(self):
+        """
+        A subset of position pool that is made by the set_position_pool_window
+        method. 
 
+        """
+        return self._position_pool_window
+    
     @property
-    def remainder_dict(self):
+    def position_pool(self):
         """
-        Remainder_dict contains the 
-
-        Returns
-        -------
-        TYPE
-            DESCRIPTION.
+        The master position pool is a list that contains all the Position objects.
+        This can be used to construct trading records using the PortfolioLog
+        class and its method
 
         """
-        
-        return self._remainder_dict
+        return self._position_pool
+
 
     @staticmethod
     def _make_table(pool_type: list) -> pd.DataFrame:
@@ -405,7 +402,22 @@ class Portfolio(object):
         baseline = self._remainder_dict[asset_name] - self._zeropoint
 
         return baseline < quantity
+    
+    @property
+    def remainder_dict(self) -> dict:
+        """
+        It contains a dictionary of how much remainder of each asset is remained
+        in the portfolio, essentially a counter for the ease of calculation.
+        
+        Returns
+        -------
+        dict
+            remainder_dict.
 
+        """
+        
+        return self._remainder_dict
+    
     def add(self,
             asset: Asset | str | dict,
             datetime: datetime.datetime = datetime.datetime.now(),
@@ -830,16 +842,23 @@ class PortfolioLog(Portfolio):
 class PortfolioMetrics(Portfolio):
     """
     A class that generate all Portfolio metrics.
-    Generally, the Portfolio Metrics method returns a tuple of (value, unit) 
-    pairs.
+    Generally, the Portfolio Metrics method returns a tuple of 
+    (value, unit, metric_name).
     
     """
-    portfolio: Portfolio
+    _portfolio: Portfolio
 
     def __post_init__(self):
-        self.portfolio_log = PortfolioLog(self.portfolio)
+        self.portfolio_log = PortfolioLog(self._portfolio)
         self.tradebook = self.portfolio_log.tradebook
-
+        
+# =============================================================================
+#         
+#     @property
+#     def portfolio(self):
+#         return self._portfolio
+#     
+# =============================================================================
     def _load_filled_position_pool(self) -> list:
         """
         A function to load only the filled position to a list
@@ -849,7 +868,7 @@ class PortfolioMetrics(Portfolio):
         list
             Filled position list
         """
-        position_pool = self.portfolio.position_pool
+        position_pool = self._portfolio.position_pool
 
         def select_func_fill(x): 
             return position_pool[x].status.value == 'Filled'
@@ -860,30 +879,30 @@ class PortfolioMetrics(Portfolio):
     
     def start_capital(self, 
                       dntr: str = 'USD', 
-                      cash_only: bool = False) -> tuple[float, str]:
+                      cash_only: bool = False) -> tuple[float, str, str]:
         
-        first_date = self.portfolio.pool_datetime[0]
+        first_date = self._portfolio.pool_datetime[0]
 
         if not cash_only:
-            first_entry_total_value = self.portfolio.total_value(
+            first_entry_total_value = self._portfolio.total_value(
                 first_date, dntr=dntr)
             
-        return first_entry_total_value, dntr
+        return first_entry_total_value, dntr, 'Starting Capital'
     
     def end_capital(self, 
                     dntr: str = 'USD', 
-                    cash_only: bool = False) -> tuple[float, str]:
+                    cash_only: bool = False) -> tuple[float, str, str]:
         
-        last_date = self.portfolio.pool_datetime[-1]
+        last_date = self._portfolio.pool_datetime[-1]
 
         if not cash_only:
-            last_entry_total_value = self.portfolio.total_value(
+            last_entry_total_value = self._portfolio.total_value(
                 last_date, dntr=dntr)
-        return last_entry_total_value, dntr
+        return last_entry_total_value, dntr,  "Final Capital"
     
     def period(self, 
                time_proxy: str = 'Exit_Date', 
-               unit: str = "Days") -> tuple[int,str]:
+               unit: str = "Days") -> tuple[int, str, str]:
         """
         Total Days of trading
 
@@ -897,17 +916,17 @@ class PortfolioMetrics(Portfolio):
         """
         
         period = self.tradebook[time_proxy].iloc[-1] - self.tradebook[time_proxy].iloc[0]
-        return period, unit
+        return period, unit, "Period"
 
-    def total_trades(self) -> tuple[int, str]:
+    def total_trades(self) -> tuple[int, str, str]:
         """
         The total number of trades in the tradebook.
 
         """
-        return len(self.tradebook), '#'
+        return len(self.tradebook), '#', "Total Trades"
 
     def total_fee_paid(self) -> float: # WIP
-        position_pool = self.portfolio.position_pool
+        position_pool = self._portfolio.position_pool
 
         def select_func_fill(x): 
             return position_pool[x].status.value == 'Filled'
@@ -921,7 +940,7 @@ class PortfolioMetrics(Portfolio):
             # Assuming the second item in each element contains the fee
             total_fee = total_fee + ele[1].fee['quantity']
 
-        return total_fee
+        return total_fee, '', 'Total Fee Paid'
 
     def total_returns(self, dntr='USD') -> tuple[float,str]:
         """
@@ -934,21 +953,22 @@ class PortfolioMetrics(Portfolio):
 
         Returns
         -------
-        tuple[float,str]
-            total returns, unit.
+        tuple[float,str,str]
+            total returns, unit, metric name.
 
         """
-        first_date = self.portfolio.pool_datetime[0]
-        last_date = self.portfolio.pool_datetime[-1]
+        first_date = self._portfolio.pool_datetime[0]
+        last_date = self._portfolio.pool_datetime[-1]
 
-        first_entry_total_value = self.portfolio.total_value(
+        first_entry_total_value = self._portfolio.total_value(
             first_date, dntr=dntr)
-        last_entry_total_value = self.portfolio.total_value(
+        last_entry_total_value = self._portfolio.total_value(
             last_date, dntr=dntr)
 
-        return (last_entry_total_value - first_entry_total_value), dntr
+        return (last_entry_total_value - first_entry_total_value), dntr, \
+               "Total Returns"
 
-    def total_returns_fraction(self, unit: str = '%') -> tuple[float,str]:
+    def total_returns_fraction(self, unit: str = '%') -> tuple[float,str, str]:
         """
         The total returns by fraction (percentage).
 
@@ -963,19 +983,19 @@ class PortfolioMetrics(Portfolio):
             total return
 
         """
-        first_date = self.portfolio.pool_datetime[0]
-        last_date = self.portfolio.pool_datetime[-1]
+        first_date = self._portfolio.pool_datetime[0]
+        last_date = self._portfolio.pool_datetime[-1]
 
-        first_entry_total_value = self.portfolio.total_value(first_date)
-        last_entry_total_value = self.portfolio.total_value(last_date)
+        first_entry_total_value = self._portfolio.total_value(first_date)
+        last_entry_total_value = self._portfolio.total_value(last_date)
         
         #print(first_entry_total_value, last_entry_total_value)
 
         return 100*(last_entry_total_value - first_entry_total_value) / \
-               first_entry_total_value, unit
+               first_entry_total_value, unit, "Total Returns"
 
     def win_rate(self, return_proxy: str = "Trade_Return", unit: str = "%") -> \
-                 tuple[float,str]:
+                 tuple[float, str, str]:
         """
         The win rate by percentage.
 
@@ -998,9 +1018,10 @@ class PortfolioMetrics(Portfolio):
         lose_trades = sum(
             1 for i in self.tradebook[return_proxy].to_list() if i < 0)
 
-        return (win_trades/(win_trades+lose_trades))*100, unit
+        return (win_trades/(win_trades+lose_trades))*100, unit, "Win Rate"
 
-    def profit_factor(self, return_proxy: str = "Trade_Return") -> float:
+    def profit_factor(self, return_proxy: str = "Trade_Return") -> \
+        tuple[float, str, str]:
         """
         The Profit factor (Money Won /Money Lose)
 
@@ -1022,10 +1043,10 @@ class PortfolioMetrics(Portfolio):
         lose_trades_val = sum(i for i in self.tradebook[return_proxy].to_list()
                               if i < 0)
         # print(win_trades_val, lose_trades_val)
-        return abs(win_trades_val)/abs(lose_trades_val)
+        return abs(win_trades_val)/abs(lose_trades_val), '', 'Profit Factor'
 
-    def total_open_positions(self): #WIP
-        position_pool = self.portfolio.position_pool
+    def total_open_positions(self) -> tuple[int, str, str]: #WIP
+        position_pool = self._portfolio.position_pool
         
         trade_pool = read.group_trade(position_pool)
         
@@ -1034,26 +1055,22 @@ class PortfolioMetrics(Portfolio):
                                 pos[1].status.value == 'Pending' and
                                 pos[2].status.value == 'Pending' and
                                 pos[3].status.value == 'Pending')
-        return total_open_pos, '#'
+        return total_open_pos, '#', 'Total Open Positions'
     
-    def total_close_positions(self): #WIP
-        position_pool = self.portfolio.position_pool
+    def total_close_positions(self): 
+        position_pool = self._portfolio.position_pool
         
-
+        # Group the trades by ID and Filled status
         trade_pool = read.group_trade(position_pool, select_func= 
                                       lambda x : position_pool[x].status.value 
                                       == 'Filled')
         
         total_open_pos = sum(1 for pos in trade_pool if len(pos) == 2)
-# =============================================================================
-#                              [0].status.value == 'Filled' and 
-#                                 pos[1].status.value == 'Filled' or
-#                                 pos[2].status.value == 'Filled' or
-#                                 pos[3].status.value == 'Filled')
-# =============================================================================
-        return total_open_pos, '#'
+        
+        return total_open_pos, '#', 'Total Close Positions'
 
-    def avg_trade_return(self, return_proxy: str = "Trade_Return", 
+    def avg_trade_return(self, 
+                         return_proxy: str = "Trade_Return", 
                          unit: str = 'USD') -> tuple[str,str]:
         """
         A method that calculate average trade return
@@ -1082,7 +1099,7 @@ class PortfolioMetrics(Portfolio):
                                     for trade in filled_pos_list])
         
         daily_return_amount = trade_return*trade_size*trade_quantity
-        return np.average(daily_return_amount), unit
+        return np.average(daily_return_amount), unit, 'Average Trade Return'
     
     def _daily_exposure(self):
         return
@@ -1113,7 +1130,8 @@ class PortfolioMetrics(Portfolio):
         trade_return = self.tradebook[return_proxy].to_numpy()
         riskfree_rate = np.repeat(riskfree_rate, len(trade_return))
 
-        return np.average(trade_return - riskfree_rate) / np.std(trade_return)
+        return np.average(trade_return - riskfree_rate) / np.std(trade_return), \
+               '', 'Sharpe Ratio'
 
     def calmar_ratio(self):
         return
@@ -1124,10 +1142,35 @@ class PortfolioMetrics(Portfolio):
     def sortino_ratio(self):
         return
 
-    def make_full_data(self):
+    @classmethod
+    def make_full_data(cls):
         # Calculate all metrics related to thid portfolio
         full_data = dict()
-        return
+
+        attr_name = [value for value in dir(cls) if value not 
+                     in dir(Portfolio) and value[0] != '_' 
+                     and value[0:4] != 'make']
+        
+        attrs = (getattr(cls, name) for name in attr_name)
+
+        #methods = filter(inspect.ismethod, attrs)
+        
+        for attr, name in zip(attrs, attr_name):
+            print(attr(cls), name)
+            #df = method(cls)
+            #full_data[name] = df
+            
+# =============================================================================
+#             try:
+#                 df = method(cls)
+#                 full_data[name] = df
+#             except Exception as e:
+#                 print(e)
+# =============================================================================
+        print(attr_name, attrs)
+        #full_data = {name: getattr(cls, name)() for name in attr_name}
+        print(full_data)
+        return full_data
 
     def make_full_report(self):
         print('Period [{}]'.format(self.period()[1]), self.period()[0])
@@ -1137,7 +1180,7 @@ class PortfolioMetrics(Portfolio):
               self.end_capital()[0])  
         print('Total Trades [{}]'.format(self.total_trades()[1]), self.total_trades()[0])
         print('Total Fee []', self.total_fee_paid())
-        print('Total_returns [{}]'.format(self.total_returns()[1]),
+        print('Total Returns [{}]'.format(self.total_returns()[1]),
               self.total_returns()[0])
         print('Total_returns [{}]'.format(self.total_returns_fraction()[1]),
               self.total_returns_fraction()[0])
