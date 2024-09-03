@@ -10,7 +10,7 @@ Created on Wed May 29 16:50:39 2024
 
 from EC_tools.portfolio import Asset, Portfolio
 from EC_tools.position import Position, ExecutePosition, PositionStatus
-from EC_tools.trade import Trade, trade_choice_simple, OneTradePerDay
+from EC_tools.trade import Trade, OneTradePerDay
 from EC_tools.backtest import extract_intraday_minute_data, \
                             prepare_signal_interest, plot_in_backtest
 from crudeoil_future_const import DATA_FILEPATH, RESULT_FILEPATH
@@ -35,14 +35,14 @@ def setup_trade_test(date_interest, open_hr, close_hr, direction):
     
     
     day = extract_intraday_minute_data(histroy_intraday_data, date_interest, 
-                                 open_hr=open_hr, close_hr=close_hr)
+                                       open_hr=open_hr, close_hr=close_hr)
     signal_table = signal_table[signal_table['Date'] == date_interest] 
     
     #print(signal_table.iloc[0])
     
     target_entry, target_exit, stop_exit = float(signal_table['Entry_Price'].iloc[0]), \
-                                            float(signal_table['Exit_Price'].iloc[0]), \
-                                            float(signal_table['StopLoss_Price'].iloc[0])
+                                           float(signal_table['Exit_Price'].iloc[0]), \
+                                           float(signal_table['StopLoss_Price'].iloc[0])
     
     print(day['Date'].iloc[0], direction, target_entry, target_exit, stop_exit)
     
@@ -60,7 +60,7 @@ def setup_trade_test(date_interest, open_hr, close_hr, direction):
     
     #print(P1.master_table)
     return P1, day, target_entry, target_exit, \
-        stop_exit, open_hr_dt, close_hr_dt
+           stop_exit, open_hr_dt, close_hr_dt
 
 
 
@@ -75,11 +75,11 @@ def onetradeperday(date_interest, direction):
     P1, day, target_entry, target_exit, \
         stop_exit, open_hr_dt, close_hr_dt = setup_trade_test(date_interest, \
                                                               open_hr, close_hr,\
-                                                                  direction)
+                                                              direction)
             
     open_hr_dt, open_price = read.find_closest_price(day,
-                                                       target_hr= open_hr,
-                                                       direction='forward')
+                                                     target_hr= open_hr,
+                                                     direction='forward')
     
     
     close_hr_dt, close_price = read.find_closest_price(day,
@@ -126,10 +126,9 @@ def test_onetradeperday_buy_noentry() -> None:
     give_obj_name = "USD"
     
     P1, day, target_entry, target_exit, \
-        stop_exit, open_hr_dt, close_hr_dt, EES_dict, trade_open, \
-            trade_close, pos_list, exec_pos_list = onetradeperday(
-                                                date_interest_no_entry_buy,
-                                                        'Buy')
+    stop_exit, open_hr_dt, close_hr_dt, EES_dict, trade_open, \
+    trade_close, pos_list, exec_pos_list = onetradeperday(date_interest_no_entry_buy,
+                                                          'Buy')
 
     assert pos_list[0].status == PositionStatus.VOID
     assert pos_list[1].status == PositionStatus.VOID
@@ -141,11 +140,10 @@ def test_onetradeperday_buy_noentry() -> None:
     USD_amount = P1.master_table[P1.master_table['name'] == give_obj_name\
                                  ]['quantity'].iloc[0]
         
-    #print(P1.pool)
+    print(P1.pool)
     assert USD_amount == 10000000
     assert len(P1.pool) == 1
     
-#test_onetradeperday_buy_noentry() 
 
 def test_onetradeperday_buy_normalexit()->None:
     # Setting up the trade itself. First load the parameters
@@ -170,14 +168,12 @@ def test_onetradeperday_buy_normalexit()->None:
     CL_amount = P1.master_table[P1.master_table['name'] == get_obj_name\
                                 ]['quantity'].iloc[0]
         
-    #print(P1.pool)
-    #print(P1.master_table)
+    print(P1.pool)
+    print(P1.master_table)
     assert USD_amount > 10000000
     assert CL_amount < 1
-    assert len(P1.pool) == 6
+    assert len(P1.pool) == 6 #Initial fund + 4 Four exchanges + Fee = 6 entries
     
-#test_onetradeperday_buy_normalexit()
-
 def test_onetradeperday_buy_stoploss() -> None:   
     give_obj_name = "USD"
     get_obj_name = "CLc1"
@@ -208,6 +204,10 @@ def test_onetradeperday_buy_stoploss() -> None:
     assert CL_amount < 1
     assert len(P1.pool) == 6
     
+#test_onetradeperday_buy_noentry() 
+test_onetradeperday_buy_normalexit()
+test_onetradeperday_buy_stoploss()
+
 def test_onetradeperday_buy_closeexit() -> None:   
     give_obj_name = "USD"
     get_obj_name = "CLc1"

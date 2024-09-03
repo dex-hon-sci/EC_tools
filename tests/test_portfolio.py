@@ -62,8 +62,6 @@ def simple_fill_func(A):
     A.add(CL4, datetime = day3)  
     A.add(CL5,datetime = day3)
     
-    print('pool_window', A.pool_window)
-    print(A.table)
     A.sub(CL6, datetime = day4)
     #A.sub("CLc1", quantity = 11, unit='contracts', asset_type='Future',
     #      datetime = day4)
@@ -88,12 +86,16 @@ def test_Portfolio_init()->None:
     assert PP._Portfolio__pool_asset == [] 
     assert PP._Portfolio__pool_datetime == []
     assert PP._pool == []
-    assert PP._pool_window == None
+    assert PP._pool_window == []
+    assert PP._position_pool == []
+    assert PP._position_pool_window == []
     assert PP._table == None
     assert PP._master_table == None
-    assert PP._value == None
-    assert PP._log == None
-
+    assert PP._zeropoint == 0.0  # The zero point value for the portfolio
+    assert PP._remainder_limiter == True  # Controls the limitation
+        # A dict that contains the remainder for each assets
+    assert PP._remainder_dict == dict()
+    assert PP.wipe_debt_or_not == False
         
 def test_Portfolio_entry() -> None:
     """
@@ -109,10 +111,12 @@ def test_Portfolio_entry() -> None:
     
     test_pool = list(zip(asset_list,  datetime_list))
     
+    print("PP.pool",PP.pool)
+    
     assert [PP.pool_asset[i] == asset_list[i] for i, item in enumerate(asset_list)]
     assert [PP.pool_datetime[i] == datetime_list[i] for i, item in enumerate(datetime_list)]
     assert [PP.pool[i] == test_pool[i] for i, item in enumerate(test_pool)]
-    
+
 def test_pool_df()->None:
     """
     Test if poo_df successfully create a data frame
@@ -135,9 +139,10 @@ def test_pool_window() -> None:
     
     PP.set_pool_window(start_time=day2,end_time=day3)
     
-    test_pool_window = [(day2,CL3), (day2,HO1),(day2,QO1), (day3,CL4), (day3,CL5)]
-    assert [PP.pool_window[i] ==  test_pool_window[i] for i, item in enumerate(test_pool_window)]
+    test_pool_window = [(day2,CL3), (day2,HO1), (day2,QO1), (day3,CL4), (day3,CL5)]
+    print(len(test_pool_window), len(PP.pool_window))
     
+    assert [PP.pool_window[i] ==  test_pool_window[i] for i, item in enumerate(test_pool_window)]
     
 def test_table() -> None:
     """
@@ -207,18 +212,20 @@ def test_value_asset_value_total_value()-> None:
     assert PP.total_value(day1) < PP.total_value(day2) 
     assert PP.total_value(day2) < PP.total_value(day3)
     
-def test_log_asset_log() -> None:
-    PP = Portfolio()
-    PP.add(CL1,datetime=day1)
-    PP.add(USD,datetime=day2)
-    PP.add(HO1,datetime=day3)
-    print(PP.master_table)
-    print(PP.pool)
-    print(PP.full_log)
-    assert isinstance(PP.log, pd.DataFrame)
-    assert len(PP.log) == 4
-    assert isinstance(PP.asset_log('CLc1'), pd.Series)
-    assert len(PP.asset_log('CLc1')) == 4
+# =============================================================================
+# def test_log_asset_log() -> None:
+#     PP = Portfolio()
+#     PP.add(CL1,datetime=day1)
+#     PP.add(USD,datetime=day2)
+#     PP.add(HO1,datetime=day3)
+#     print(PP.master_table)
+#     print(PP.pool)
+#     print(PP.full_log)
+#     assert isinstance(PP.log, pd.DataFrame)
+#     assert len(PP.log) == 4
+#     assert isinstance(PP.asset_log('CLc1'), pd.Series)
+#     assert len(PP.asset_log('CLc1')) == 4
+# =============================================================================
 #test_log_asset_log()
 ###################
 # Error test

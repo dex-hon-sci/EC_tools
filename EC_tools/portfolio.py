@@ -51,7 +51,7 @@ class Portfolio(object):
         self._pool_window: list = []
         self._position_pool: list = []
         self._position_pool_window: list = []
-        self._table: list = []
+        self._table: pd.DataFrame = None
         self._master_table: pd.DataFrame = None
         self._zeropoint: float = 0.0  # The zero point value for the portfolio
         self._remainder_limiter: bool = True  # Controls the limitation
@@ -145,20 +145,17 @@ class Portfolio(object):
         # end_time_list = [end_time for i, _ in enumerate(self.__pool_datetime)]
 
         # subtract the original datetime with them
-        start_time_delta_list = [abs(pool_dt - start_time) for i, pool_dt in
-                                 enumerate(self.__pool_datetime)]
-        end_time_delta_list = [abs(pool_dt - end_time) for i, pool_dt in
-                               enumerate(self.__pool_datetime)]
+        start_time_delta_array = np.array([abs(pool_dt - start_time) for i, pool_dt in
+                                 enumerate(self.__pool_datetime)])
+        end_time_delta_array = np.array([abs(pool_dt - end_time) for i, pool_dt in
+                               enumerate(self.__pool_datetime)])
         # Find the index of the min() time delta
         # print(min(start_time_delta_list), min(end_time_delta_list))
 
         # print(start_time_delta_list, end_time_delta_list)
         # define a window of interest amount the pool object
-        start_time_index = start_time_delta_list.index(
-            min(start_time_delta_list))
-        end_time_index = end_time_delta_list.index(min(end_time_delta_list))
-
-        # print(start_time_index, end_time_index)
+        start_time_index = np.where(start_time_delta_array == min(start_time_delta_array))[0][0] 
+        end_time_index = np.where(end_time_delta_array == min(end_time_delta_array))[0][-1] 
 
         self._pool_window = self.pool[start_time_index:end_time_index+1]
 
@@ -326,7 +323,7 @@ class Portfolio(object):
 
         self._table = self._make_table(self._pool_window)
         
-        if self.wipe_debt == True:
+        if self.wipe_debt_or_not == True:
             self._table = self._wipe_debt(self._table)
             
         self._table.reset_index(drop=True)
@@ -344,7 +341,7 @@ class Portfolio(object):
         """
         self._master_table = self._make_table(self.pool)
         
-        if self.wipe_debt == True:
+        if self.wipe_debt_or_not == True:
             self._master_table = self._wipe_debt(self._master_table)
             
         self._master_table.reset_index(drop=True)
@@ -396,7 +393,7 @@ class Portfolio(object):
 
         Returns
         -------
-        bool: whether
+        bool: whether it has more cash or asset than the zeropoint
 
         """
         baseline = self._remainder_dict[asset_name] - self._zeropoint
@@ -508,25 +505,23 @@ class Portfolio(object):
                 if self.check_remainder(asset_name, asset['quantity']):
                     raise Exception('There is not enough {} to be subtracted \
                                     from the portfolio.'.format(asset_name))
-            else:
-                quantity = asset['quantity']
-                unit = asset['unit']
-                asset_type = asset['asset_type']
-                pass
-
-            new_asset = {'name': asset_name, 'quantity': quantity*-1,
-                         'unit': unit, 'asset_type': asset_type, 'misc': {}}
-            asset_quantity = new_asset['quantity']
+            
+            quantity = asset['quantity']
+            unit = asset['unit']
+            asset_type = asset['asset_type']
+                
 
         if type(asset) == str:
             # # search the dictionary to see what kind of asset is this
             # make a new asset
             asset_name = asset
 
-            # make a new asset with a minus value for quantity
-            new_asset = {'name': asset_name, 'quantity': quantity*-1,
-                         'unit': unit, 'asset_type': asset_type, 'misc': {}}
-            asset_quantity = new_asset['quantity']
+        # make a new asset with a minus value for quantity
+        new_asset = {'name': asset_name, 'quantity': quantity*-1,
+                     'unit': unit, 'asset_type': asset_type, 'misc': {}}
+        asset_quantity = new_asset['quantity']
+
+        #print('sub','new_asset', new_asset)
 
         self.__pool_asset.append(new_asset)   # save new asset
         self.__pool_datetime.append(datetime)  # record datetime

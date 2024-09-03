@@ -83,17 +83,20 @@ class Position(object):
         # check if the quantity of both assets are 
         #correct_ratio = self.give_obj.quantity / (self.get_obj.quantity*self.size)
         # reminder: give is cash, get is asset (usually)
-        if self.pos_type == 'Long-Buy' or 'Long-Sell':
-            correct_ratio = self.give_obj['quantity'] / (self.get_obj['quantity']*self.size)
+# =============================================================================
+#         if self.pos_type == 'Long-Buy' or 'Long-Sell':
+#             correct_ratio = self.give_obj['quantity'] / (self.get_obj['quantity']*self.size)
+# 
+#         elif self.pos_type == 'Short-Borrow':
+#             correct_ratio = self.give_obj['quantity'] / (self.get_obj['quantity']*self.size)
+#         elif self.pos_type == 'Short-Buyback':
+#             #correct_ratio =  (self.get_obj['quantity']*self.size) / self.give_obj['quantity'] 
+#             correct_ratio =  self.give_obj['quantity'] / (self.get_obj['quantity']*self.size)
+# =============================================================================
 
-        elif self.pos_type == 'Short-Borrow':
-            correct_ratio = self.give_obj['quantity'] / (self.get_obj['quantity']*self.size)
-        elif self.pos_type == 'Short-Buyback':
-            #correct_ratio =  (self.get_obj['quantity']*self.size) / self.give_obj['quantity'] 
-            correct_ratio =  self.give_obj['quantity'] /  (self.get_obj['quantity']*self.size)
+        correct_ratio =  self.give_obj['quantity'] / (self.get_obj['quantity']*self.size)
 
-        #print(correct_ratio, self.price)
-        #self._check = (self._price == correct_ratio)
+        print('correction_ratio', correct_ratio, self.price)
         
         # If the price is within the interval of (-epi, +epi) upon the correct ratio
         # We consider it is equal to the correct ratio
@@ -225,25 +228,33 @@ class ExecutePosition(object):
         delay_time = datetime.timedelta(seconds=0.1) 
 
         if pos_type == 'Long-Buy':
-            #print('Execute Long-buy position.')
+            print('Execute Long-buy position.')
             
             # Pay pre-existing asset
-            self.position.portfolio.sub(self.position.give_obj, datetime= fill_time)
+            self.position.portfolio.sub(self.position.give_obj, 
+                                        datetime= fill_time)
+            
+            print(self.position.give_obj)
             
             # Get the desired asset
-            self.position.portfolio.add(self.position.get_obj, datetime = 
-                                                        fill_time + delay_time)
+            self.position.portfolio.add(self.position.get_obj, 
+                                        datetime = fill_time + delay_time)
+            print(self.position.get_obj)
+
             
         elif pos_type == 'Long-Sell':
-            #print('Execute Long-sell position.')
+            print('Execute Long-sell position.')
 
             # Pay pre-existing asset
-            self.position.portfolio.sub(self.position.get_obj, datetime= fill_time)
+            self.position.portfolio.sub(self.position.get_obj, 
+                                        datetime= fill_time)
+            print(self.position.get_obj)
 
             # Get the desired asset
-            self.position.portfolio.add(self.position.give_obj, datetime = 
-                                                        fill_time + delay_time) 
+            self.position.portfolio.add(self.position.give_obj, 
+                                        datetime = fill_time + delay_time) 
 
+            print(self.position.give_obj)
 
         elif pos_type == 'Short-Borrow':
             #print('Execute Short-Borrow position.')
@@ -262,11 +273,11 @@ class ExecutePosition(object):
                                         datetime= fill_time) #actual asset
             
             # sell the asset here
-            self.position.portfolio.sub(self.position.get_obj, datetime = 
-                                        fill_time + delay_time)
+            self.position.portfolio.sub(self.position.get_obj,
+                                        datetime = fill_time + delay_time)
             # earn the cash here
-            self.position.portfolio.add(self.position.give_obj, datetime = 
-                                        fill_time + delay_time*2)
+            self.position.portfolio.add(self.position.give_obj, 
+                                        datetime = fill_time + delay_time*2)
             
             # Issue a debt object for recording the borrowingaction
             self.position.portfolio.add(debt_obj, datetime = 
@@ -280,7 +291,8 @@ class ExecutePosition(object):
             
             # normal long
             # subtract the cash here to buy back the asset
-            self.position.portfolio.sub(self.position.give_obj, datetime = fill_time)
+            self.position.portfolio.sub(self.position.give_obj, 
+                                        datetime = fill_time)
             # Get the desired asset the set balance out the debt object
             # Buyback the debt object to settle the debt automatically
             self.position.portfolio.add(payback_debt_obj, 
