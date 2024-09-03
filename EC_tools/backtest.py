@@ -458,12 +458,12 @@ class LoopCrossPoints(BacktestLoop):
             close_hr_dt, close_price = read.find_closest_price(day,target_hr= close_hr,
                                                                 direction='backward')
         
-            #print('==================================')
+            print('==================================')
             
             print(i, date_interest, direction, symbol)
             
             EES_dict, trade_open, trade_close, \
-                pos_list, exec_pos_list = trade_method(portfo).run_trade(\
+            pos_list, exec_pos_list = trade_method(portfo).run_trade(\
                                                 day, give_obj_name, get_obj_name, 
                                                 get_obj_quantity, target_entry, 
                                                 target_exit, stop_exit, 

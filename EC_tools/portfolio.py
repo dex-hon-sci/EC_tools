@@ -233,8 +233,8 @@ class Portfolio(object):
 
         # Load the inforamtion to self._table
         table = pd.DataFrame.from_records(data=values, columns=keys)
-        print('tabletable', table)
-        # Handle repeating aseet type
+        #print('tabletable', table)
+        
         for index, (val_name, misc) in enumerate(zip(table['name'], table['misc'])):
             # add more conditions with unit and type
             temp_df = table[(table['name'] == val_name) & (table['misc'] == misc)]
@@ -764,7 +764,7 @@ class PortfolioLog(Portfolio):
         custom_list0 = ['Trade_ID', 'Direction', 'Commodity', 'Price_Code',
                         'Entry_Date', 'Entry_Datetime', 'Entry_Price',
                         'Exit_Date', 'Exit_Datetime', 'Exit_Price',
-                        'Trade_Return', 'Trade_Return_Fraction']
+                        'Trade_Return', 'Trade_Return_Fraction', 'value']
         #, 'Scaled_Return']  # , 'Risk_Reward_Ratio', 'strategy_name']
 
         trade_PNL = book.make_bucket(custom_keywords_list=custom_list0)
@@ -773,7 +773,6 @@ class PortfolioLog(Portfolio):
         
         PP = read.group_trade(position_pool,
                               select_func=select_func_fill)
-
         for i, ele in enumerate(PP):
             trade_id = ele[0].pos_id
             direction = re.sub(r'\-(.*)', '', ele[0].pos_type)
@@ -796,12 +795,12 @@ class PortfolioLog(Portfolio):
                 trade_return = entry_price - exit_price
                 trade_return_fraction = (entry_price - exit_price) / exit_price
                 
-
-
+            
+            
             data = [trade_id, direction, commodity_name, symbol,
                     entry_date, entry_datetime, entry_price,
                     exit_date, exit_datetime, exit_price,
-                    trade_return, trade_return_fraction]
+                    trade_return, trade_return_fraction, value]
 
             trade_PNL = book.store_to_bucket_single(data)
 
@@ -812,6 +811,12 @@ class PortfolioLog(Portfolio):
             trade_PNL.to_csv(self.tradebook_filename, index=False)
 
         return trade_PNL
+    
+    
+    def render_tradebook_xlsx(self):
+        tradebook_xlsx = read.render_PNL_xlsx([self.tradebook_filename],
+                                              return_proxy='Trade_Return')
+        return tradebook_xlsx
 
     @property
     def tradebook(self) -> pd.DataFrame:
@@ -833,8 +838,6 @@ class PortfolioLog(Portfolio):
     def add_column(self):
         pass
 
-    def render_PNL_xlsx(self):
-        pass
 
 
 @dataclass
@@ -1127,11 +1130,63 @@ class PortfolioMetrics(Portfolio):
             The Sharpe Ratio.
 
         """
-        trade_return = self.tradebook[return_proxy].to_numpy()
-        riskfree_rate = np.repeat(riskfree_rate, len(trade_return))
+        #trade_return = self.tradebook[return_proxy].to_numpy()
+        filled_pos_list = self._load_filled_position_pool()
+        
+        
+        direction = np.array([trade for trade 
+                                 in self.tradebook["Direction"].to_list()])
+        
+        entry_price = np.array([trade for trade 
+                                 in self.tradebook["Entry_Price"].to_list()])
 
-        return np.average(trade_return - riskfree_rate) / np.std(trade_return), \
-               '', 'Sharpe Ratio'
+        exit_price = np.array([trade for trade 
+                                         in self.tradebook["Exit_Price"].to_list()])
+
+        #print("filled_pos_list", filled_pos_list[0:2])
+        trade_return = np.array([trade for trade 
+                                 in self.tradebook["Trade_Return"].to_list()])
+
+        trade_return_fraction = np.array([trade for trade 
+                                 in self.tradebook["Trade_Return_Fraction"].to_list()])
+        
+       # trade_open = np.array([trade[0].give_obj['quantity'] for trade in filled_pos_list])
+       # trade_close = np.array([trade[1].give_obj['quantity'] for trade in filled_pos_list])
+        
+      #  print('trade_open', trade_open, 'trade_close', trade_close)
+         
+        trade_size = np.array([trade[1].size for trade in filled_pos_list])
+        trade_quantity =  np.array([trade[1].get_obj['quantity'] 
+                                    for trade in filled_pos_list])
+        
+        daily_return_amount = trade_return*trade_size*trade_quantity
+        cumsum = np.cumsum(daily_return_amount)
+        cumsum_growth = (cumsum[1:-1] - cumsum[0:-2])/cumsum[0:-2]
+        
+        print('entry_price', entry_price)
+        print('exit_price', exit_price)
+        print('trade_return', trade_return)
+        print("trade_return_fraction", trade_return_fraction)
+        print('max, min', max(trade_return_fraction), min(trade_return_fraction))
+        print('daily_return_amount', daily_return_amount)
+        print('cumsum', cumsum, len(cumsum))
+        print('cumsum_growth', cumsum_growth, len(cumsum_growth))
+        print("self.total_returns_fraction()[0]*0.01", self.total_returns_fraction()[0]*0.01)
+        print('std(cumsum_growth)', np.std(cumsum_growth))
+        
+       # trade_return_fraction = (trade_close-trade_open)/trade_open
+        
+        #print('daily_return_amount', daily_return_amount, trade_close-trade_open)
+        #print('trade_return_fraction', trade_return_fraction)
+        
+        #riskfree_rate = np.repeat(riskfree_rate, len(daily_return_amount))
+        #sharpe_ratio = (self.total_returns_fraction()[0]*0.01 - riskfree_rate) / \
+        #               np.std(daily_return_amount)
+        sharpe_ratio = (self.total_returns_fraction()[0]*0.01-riskfree_rate)/\
+                       np.std(cumsum_growth)**0.5
+        return sharpe_ratio, '', 'Sharpe Ratio' 
+    # so far it is the wrong number because the growth of cumsum is corss-asset, 
+    # the return should be calculated using per day basis not per trade/
 
     def calmar_ratio(self):
         return
@@ -1185,6 +1240,8 @@ class PortfolioMetrics(Portfolio):
               self.total_close_positions()[0])
         print('Average Trade Return [{}]'.format(self.avg_trade_return()[1]), 
               self.avg_trade_return()[0])
+        print('Sharpe Ratio (#sigma not stable)', 
+              self.sharpe_ratio()[0])
 
         x = PrettyTable()
         

@@ -165,21 +165,11 @@ def test_onetradeperday_buy_normalexit()->None:
     assert exec_pos_list[0].status == PositionStatus.FILLED
     assert exec_pos_list[1].status == PositionStatus.FILLED
     
-    import datetime as datetime
-    print("value1", P1.value(datetime.datetime(2021,4,1,15,49,1)))
-    print("value2", P1.value(datetime.datetime(2024,5,1)))
-    P1.set_pool_window(end_time=datetime.datetime(2021,4,1,15,49,1))
-    print('table1', P1.table)
-    P1.set_pool_window(end_time=datetime.datetime(2021,5,1,15,49,1))
-    print('table2', P1.table)
-
     USD_amount = P1.master_table[P1.master_table['name'] == give_obj_name\
                                  ]['quantity'].iloc[0]
     CL_amount = P1.master_table[P1.master_table['name'] == get_obj_name\
                                 ]['quantity'].iloc[0]
-    print(USD_amount, CL_amount)
-    print(P1.pool)
-    print('P1.master_table', P1.master_table)
+
     assert USD_amount > 10000000
     assert CL_amount < 1
     assert len(P1.pool) == 6 #Initial fund + 4 Four exchanges + Fee = 6 entries
@@ -193,12 +183,8 @@ def test_onetradeperday_buy_stoploss() -> None:
     open_hr_dt, close_hr_dt, \
     EES_dict, trade_open, trade_close, \
     pos_list, exec_pos_list = onetradeperday(date_interest_stop_loss_buy,'Buy')
-    
-    print(pos_list[0].status, pos_list[1].status, 
-          pos_list[2].status, pos_list[3].status)
 
-    print(exec_pos_list[0].status, exec_pos_list[1].status)
-    
+    print("target_entry, target_exit", target_entry, target_exit)
     assert pos_list[0].status == PositionStatus.FILLED
     assert pos_list[1].status == PositionStatus.VOID
     assert pos_list[2].status == PositionStatus.FILLED
@@ -228,7 +214,8 @@ def test_onetradeperday_buy_closeexit() -> None:
     EES_dict, trade_open, trade_close, \
     pos_list, exec_pos_list = onetradeperday(date_interest_close_exit_buy,
                                                         'Buy')
-            
+    print("target_entry, target_exit", target_entry, target_exit)
+
     assert pos_list[0].status == PositionStatus.FILLED
     #assert pos_list[1].status == PositionStatus.VOID
     assert pos_list[2].status == PositionStatus.VOID

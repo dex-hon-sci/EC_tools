@@ -334,7 +334,8 @@ class OneTradePerDay(Trade):
             #print("Noraml exit.")
             trade_open, trade_close = entry_pt, exit_pt
             opening_pos, closing_pos = entry_pos, exit_pos
-            
+            print("Before price adjustment", opening_pos, closing_pos)
+
             # change the closing price
             closing_pos.price = round(exit_pt[1],9)
             
@@ -347,7 +348,8 @@ class OneTradePerDay(Trade):
             #print('Stop loss.')
             trade_open, trade_close = entry_pt, stop_pt
             opening_pos, closing_pos = entry_pos, stop_pos
-            
+            print("Before price adjustment", opening_pos, closing_pos)
+
             # change the closing price
             closing_pos.price = round(stop_pt[1],9)
             
@@ -360,6 +362,7 @@ class OneTradePerDay(Trade):
             #print("Sell at close.")
             trade_open, trade_close = entry_pt, close_pt
             opening_pos, closing_pos = entry_pos, close_pos
+            print("Before price adjustment", opening_pos, closing_pos)
 
             # change the closing price
             closing_pos.price = round(close_pt[1],9)
@@ -369,25 +372,34 @@ class OneTradePerDay(Trade):
             ExecutePosition(exit_pos).cancel_pos(void_time=trade_close[0])
         
 
-        print(opening_pos, closing_pos)
+        
         # change the price for the open position
         opening_pos.price = entry_pt[1]
         
+        print('entry_pt[1]', entry_pt[1])
+        print('exit_pt[1]', exit_pt[1])
+        print('stop_pt[1]', stop_pt[1])
+        print('close_pt[1]', close_pt[1])
+        
+        print("After price adjustment", opening_pos, closing_pos)
+
         # Execute the positions
         ExecutePosition(opening_pos).fill_pos(fill_time = trade_open[0], 
                                               pos_type=pos_type1)
-        print(opening_pos.portfolio.master_table)
+        #print(opening_pos.portfolio.master_table)
         
         ExecutePosition(closing_pos).fill_pos(fill_time = trade_close[0], 
                                               pos_type=pos_type2)
         
-        print(closing_pos.portfolio.master_table)
-        print(closing_pos.portfolio.pool)
+        #print(closing_pos.portfolio.master_table)
+        #print(closing_pos.portfolio.pool)
 
         # pack the outputs objects into lists
         exec_pos_list = [opening_pos, closing_pos]
         pos_list = [entry_pos, exit_pos, stop_pos, close_pos]
-        print("exec_pos_list", exec_pos_list)
+        
+        #print("exec_pos_list", exec_pos_list)
+        
         for pos in pos_list: # Add position in the position book
             self._portfolio._position_pool.append(copy.copy(pos))
 
@@ -469,10 +481,10 @@ class OneTradePerDay(Trade):
                                        open_time = open_time,
                                        trade_id= trade_id)
 
-
-        trade_open, trade_close, pos_list, exec_pos_list = \
-                                        self.execute_position(EES_dict, pos_list,
-                                                              pos_type=pos_type)
+        print(get_obj_name, SIZE_DICT[get_obj_name])
+        trade_open, trade_close, \
+        pos_list, exec_pos_list = self.execute_position(EES_dict, pos_list,
+                                                        pos_type = pos_type)
 
         # the search function for entry and exit time should be completely 
         # sepearate to the trading actions

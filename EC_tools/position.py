@@ -96,7 +96,7 @@ class Position(object):
 
         correct_ratio =  self.give_obj['quantity'] / (self.get_obj['quantity']*self.size)
 
-        print('correction_ratio', correct_ratio, self.price)
+        #print('correction_ratio', correct_ratio, self.price)
         
         # If the price is within the interval of (-epi, +epi) upon the correct ratio
         # We consider it is equal to the correct ratio
@@ -228,33 +228,33 @@ class ExecutePosition(object):
         delay_time = datetime.timedelta(seconds=0.1) 
 
         if pos_type == 'Long-Buy':
-            print('Execute Long-buy position.')
+            #print('Execute Long-buy position.')
             
             # Pay pre-existing asset
             self.position.portfolio.sub(self.position.give_obj, 
                                         datetime= fill_time)
             
-            print(self.position.give_obj)
+            #print(self.position.give_obj)
             
             # Get the desired asset
             self.position.portfolio.add(self.position.get_obj, 
                                         datetime = fill_time + delay_time)
-            print(self.position.get_obj)
+            #print(self.position.get_obj)
 
             
         elif pos_type == 'Long-Sell':
-            print('Execute Long-sell position.')
+            #print('Execute Long-sell position.')
 
             # Pay pre-existing asset
             self.position.portfolio.sub(self.position.get_obj, 
                                         datetime= fill_time)
-            print(self.position.get_obj)
+            #print(self.position.get_obj)
 
             # Get the desired asset
             self.position.portfolio.add(self.position.give_obj, 
                                         datetime = fill_time + delay_time) 
 
-            print(self.position.give_obj)
+            #print(self.position.give_obj)
 
         elif pos_type == 'Short-Borrow':
             #print('Execute Short-Borrow position.')
