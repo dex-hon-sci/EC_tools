@@ -115,7 +115,8 @@ def run_backtest_list(trade_choice,
                       signal_filename_list: list[str], 
                       history_minute_filename_list: list[str],
                       start_date, end_date,
-                      open_hr_dict = OPEN_HR_DICT, close_hr_dict=CLOSE_HR_DICT, 
+                      open_hr_dict = OPEN_HR_DICT, 
+                      close_hr_dict = CLOSE_HR_DICT, 
                       save_or_not: bool = False):
 
     
@@ -133,14 +134,17 @@ def run_backtest_list(trade_choice,
                          start_date, end_date, open_hr='0300', close_hr='2200'):
 
             backtest_data = run_backtest(trade_choice, 
-                                       filename_minute,filename_buysell_signals, 
+                                        filename_minute, 
+                                        filename_buysell_signals, 
                                         start_date, end_date, 
-                                        open_hr=open_hr, close_hr=close_hr)
+                                        open_hr=open_hr, 
+                                        close_hr=close_hr)
             return backtest_data
                        
             
         backtest_data = run_backtest_indi(trade_choice, 
-                                          history_minute_file, signal_filename,
+                                          history_minute_file, 
+                                          signal_filename,
                                           start_date, end_date, 
                                           open_hr=open_hr, close_hr=close_hr)
         
@@ -220,7 +224,8 @@ def run_backtest_portfolio_preloaded(TradeMethod,
                                      histroy_intraday_data_pkl: dict,
                                      start_date: str, end_date: str,
                                      give_obj_name: str = "USD", 
-                                     get_obj_quantity: int = 1): 
+                                     get_obj_quantity: int = 1,
+                                     plot_or_not: bool = False): 
     """
     
 
@@ -270,7 +275,10 @@ def run_backtest_portfolio_preloaded(TradeMethod,
     P1 = backtest.loop_portfolio_preloaded_list(P1, 
                                                 TradeMethod,
                                                 trade_date_table, 
-                                                histroy_intraday_data_pkl)
+                                                histroy_intraday_data_pkl,
+                                                give_obj_name=give_obj_name,
+                                                get_obj_quantity=get_obj_quantity,
+                                                plot_or_not=plot_or_not)
     
     t2 = time.time()-t1
     print("It takes {} seconds to run the backtest".format(t2))
@@ -286,6 +294,8 @@ def run_backtest_bulk(TradeMethod,
                       method: str = "list", 
                       master_signal_filename: str = "", 
                       master_pnl_filename: str = '',
+                      give_obj_name: str = 'USD',
+                      get_obj_quantity: int = 1,
                       open_hr_dict = OPEN_HR_DICT, 
                       close_hr_dict=CLOSE_HR_DICT,
                       save_or_not: bool = True, 
@@ -327,7 +337,9 @@ def run_backtest_bulk(TradeMethod,
         PP = run_backtest_portfolio_preloaded(OneTradePerDay,
                                               master_signal_filename, 
                                               HISTORY_MINUTE_PKL,
-                                              start_date, end_date)
+                                              start_date, end_date,
+                                              give_obj_name=give_obj_name,
+                                              get_obj_quantity=get_obj_quantity)
         backtest_result = PP
         if save_or_not: # save pkl portfolio
             file = open(master_pnl_filename, 'wb')

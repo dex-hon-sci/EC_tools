@@ -750,18 +750,19 @@ def loop_portfolio_preloaded_list(portfo: Portfolio,
         pos_open_dt = datetime.datetime.combine(date_interest.date(), open_hr_dt)
         
         EES_dict, trade_open, trade_close, \
-        pos_list, exec_pos_list = trade_method(portfo).run_trade(\
-                                                      day, give_obj_name, 
-                                                      get_obj_name, 
-                                                      get_obj_quantity, 
-                                                      target_entry, 
-                                                      target_exit, stop_exit, 
-                                                      open_hr=open_hr_dt, 
-                                                      close_hr=close_hr_dt, 
-                                                      direction = direction,
-                                                      fee=OIL_FUTURES_FEES[symbol],
-                                                      open_time= pos_open_dt,
-                                                      trade_id= i)
+        pos_list, exec_pos_list = trade_method(portfo).run_trade(day,
+                                                                 give_obj_name, 
+                                                                 get_obj_name, 
+                                                                 get_obj_quantity, 
+                                                                 target_entry, 
+                                                                 target_exit, 
+                                                                 stop_exit, 
+                                                                 open_hr = open_hr_dt, 
+                                                                 close_hr=close_hr_dt, 
+                                                                 direction = direction,
+                                                                 fee=OIL_FUTURES_FEES[symbol],
+                                                                 open_time= pos_open_dt,
+                                                                 trade_id= i)
                 
         # plotting mid-backtest
         plot_in_backtest(date_interest, EES_dict, direction, 

@@ -172,7 +172,7 @@ def test_ErrorMsg_invalid_portfolio()->None:
     with pytest.raises(Exception):
         ExecutePosition(PP)
         
-test_ErrorMsg_invalid_portfolio()
+#test_ErrorMsg_invalid_portfolio()
 def test_ErrorMsg_insufficient_asset_fill_pos() -> None:
     # Test for insufficient fund
     P1 = Portfolio()

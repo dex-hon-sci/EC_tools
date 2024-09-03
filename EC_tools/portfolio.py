@@ -22,7 +22,7 @@ from EC_tools.asset import Asset
 from EC_tools.bookkeep import Bookkeep
 import EC_tools.read as read
 from crudeoil_future_const import SIZE_DICT, HISTORY_DAILY_FILE_LOC, \
-    SYMBOL_KEYWORDS_DICT, DAILY_DATA_PKL
+                                  SYMBOL_KEYWORDS_DICT, DAILY_DATA_PKL
 
 # PRICE_DICT = HISTORY_DAILY_FILE_LOC
 # now we preload the price dict
@@ -696,7 +696,7 @@ class PortfolioLog(Portfolio):
 
         # then loop through the pool history and store them in log list
         for item in time_list:
-            print('time', item)
+            #print('time', item)
 
             value_entry = self.portfolio.value(item)
             value_entry["Total"] = sum(list(value_entry.values()))
@@ -765,16 +765,17 @@ class PortfolioLog(Portfolio):
         asset_log = self.full_log[asset_name]
         return asset_log
 
-    def _render_tradebook(self,
+    def render_tradebook(self,
                           save_or_not: bool = True):
 
         position_pool = self.portfolio.position_pool
         book = Bookkeep(bucket_type='backtest')
 
-        custom_list0 = ['Trade_ID', 'Direction', 'Price_Code', 'Commodity',
+        custom_list0 = ['Trade_ID', 'Direction', 'Commodity', 'Price_Code',
                         'Entry_Date', 'Entry_Datetime', 'Entry_Price',
                         'Exit_Date', 'Exit_Datetime', 'Exit_Price',
-                        'Trade_Return', 'Trade_Return_Fraction']  # , 'Risk_Reward_Ratio', 'strategy_name']
+                        'Trade_Return', 'Trade_Return_Fraction']
+        #, 'Scaled_Return']  # , 'Risk_Reward_Ratio', 'strategy_name']
 
         trade_PNL = book.make_bucket(custom_keywords_list=custom_list0)
 
@@ -794,14 +795,18 @@ class PortfolioLog(Portfolio):
             exit_date = ele[1].fill_time.date()
             exit_datetime = ele[1].fill_time
             exit_price = ele[1].price
-
+            
             if direction == "Long":
                 trade_return = exit_price - entry_price
-                trade_return_fraction = (
-                    exit_price - entry_price) / entry_price
+                trade_return_fraction = (exit_price - entry_price) / entry_price
+                #scaled_return = 000
+
+                
             elif direction == "Short":
                 trade_return = entry_price - exit_price
                 trade_return_fraction = (entry_price - exit_price) / exit_price
+                
+
 
             data = [trade_id, direction, commodity_name, symbol,
                     entry_date, entry_datetime, entry_price,
@@ -829,7 +834,11 @@ class PortfolioLog(Portfolio):
             Tradebook.
 
         """
-        return self._render_tradebook(save_or_not=False)
+        return self.render_tradebook(save_or_not=False)
+    
+    def full_tradebook(self) -> pd.DataFrame:
+        
+        return self.render_tradebook(save_or_not=False)
 
     def add_column(self):
         pass
@@ -1055,6 +1064,7 @@ class PortfolioMetrics(Portfolio):
                                 pos[1].status.value == 'Pending' and
                                 pos[2].status.value == 'Pending' and
                                 pos[3].status.value == 'Pending')
+        
         return total_open_pos, '#', 'Total Open Positions'
     
     def total_close_positions(self): 
@@ -1101,8 +1111,8 @@ class PortfolioMetrics(Portfolio):
         daily_return_amount = trade_return*trade_size*trade_quantity
         return np.average(daily_return_amount), unit, 'Average Trade Return'
     
-    def _daily_exposure(self):
-        return
+    #def _daily_exposure(self):
+    #    return
 
     def sharpe_ratio(self,
                      return_proxy: str = "Trade_Return",
@@ -1160,13 +1170,6 @@ class PortfolioMetrics(Portfolio):
             #df = method(cls)
             #full_data[name] = df
             
-# =============================================================================
-#             try:
-#                 df = method(cls)
-#                 full_data[name] = df
-#             except Exception as e:
-#                 print(e)
-# =============================================================================
         print(attr_name, attrs)
         #full_data = {name: getattr(cls, name)() for name in attr_name}
         print(full_data)

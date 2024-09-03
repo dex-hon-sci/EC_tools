@@ -78,24 +78,35 @@ class Trade(Protocol):
         give_obj_unit = ASSET_DICT[give_obj_name]['unit']
         give_obj_type = ASSET_DICT[give_obj_name]['asset_type']
         
-        get_obj = {'name': get_obj_name, 'quantity': get_obj_quantity, 
-                     'unit': get_obj_unit, 'asset_type': get_obj_type,
-                     'misc': {}}
-        give_obj = {'name': give_obj_name, 'quantity': target_price*get_obj_quantity, 
-                     'unit':give_obj_unit, 'asset_type': give_obj_type, 
-                     'misc':{}}
+        # get_obj, asset
+        get_obj = {'name': get_obj_name, 
+                   'quantity': get_obj_quantity, 
+                   'unit': get_obj_unit, 
+                   'asset_type': get_obj_type,
+                   'misc': {}}
+        # give_obj, cash
+        give_obj = {'name': give_obj_name, 
+                    'quantity': target_price*get_obj_quantity*size, 
+                    'unit':give_obj_unit, 
+                    'asset_type': give_obj_type, 
+                    'misc':{}}
+        
         # different type of posiitons
         if pos_type == 'Long-Buy':
             # an example, get_obj is the asset, give_obj is the cash
             # Setup the amount of asset we want
-            get_obj = {'name': get_obj_name, 'quantity': get_obj_quantity, 
-                         'unit': get_obj_unit, 'asset_type': get_obj_type,
-                         'misc': {}}
+            get_obj = {'name': get_obj_name, 
+                       'quantity': get_obj_quantity, 
+                       'unit': get_obj_unit, 
+                       'asset_type': get_obj_type,
+                       'misc': {}}
 
             # calculate the money we have to pay
-            give_obj = {'name': give_obj_name, 'quantity': target_price*get_obj_quantity*size, 
-                         'unit':give_obj_unit, 'asset_type': give_obj_type, 
-                         'misc':{}}
+            give_obj = {'name': give_obj_name, 
+                        'quantity': target_price*get_obj_quantity*size, 
+                        'unit':give_obj_unit, 
+                        'asset_type': give_obj_type, 
+                        'misc':{}}
             
             pos = Position(give_obj, get_obj, target_price, 
                            portfolio= self._portfolio, size = size,
@@ -106,11 +117,11 @@ class Trade(Protocol):
         elif pos_type == 'Long-Sell':
             # an example, get_obj is the asset, give_obj is the cash
             get_obj = {'name': get_obj_name, 'quantity': get_obj_quantity, 
-                         'unit': get_obj_unit, 'asset_type': get_obj_type,
-                         'misc': {}}
+                        'unit': get_obj_unit, 'asset_type': get_obj_type,
+                        'misc': {}}
             give_obj = {'name': give_obj_name, 'quantity': target_price*get_obj_quantity*size, 
-                         'unit':give_obj_unit, 'asset_type': give_obj_type, 
-                         'misc':{}}
+                        'unit':give_obj_unit, 'asset_type': give_obj_type, 
+                        'misc':{}}
             
             pos = Position(give_obj, get_obj, target_price, 
                            portfolio= self._portfolio, size = size,
@@ -121,11 +132,11 @@ class Trade(Protocol):
         elif pos_type == 'Short-Borrow':
             # an example, get_obj is the asset, give_obj is the cash
             get_obj = {'name': get_obj_name, 'quantity': get_obj_quantity, 
-                         'unit': get_obj_unit, 'asset_type': get_obj_type,
-                         'misc': {}}
+                       'unit': get_obj_unit, 'asset_type': get_obj_type,
+                       'misc': {}}
             give_obj = {'name': give_obj_name, 'quantity': target_price*get_obj_quantity*size, 
-                         'unit':give_obj_unit, 'asset_type': give_obj_type, 
-                         'misc':{}}  
+                        'unit':give_obj_unit, 'asset_type': give_obj_type, 
+                        'misc':{}}  
             
             pos = Position(give_obj, get_obj, target_price, 
                            portfolio= self._portfolio, size = size,
@@ -136,11 +147,11 @@ class Trade(Protocol):
         elif pos_type == 'Short-Buyback':
             # an example, get_obj is the asset, give_obj is the cash
             get_obj = {'name': get_obj_name, 'quantity': get_obj_quantity, 
-                         'unit': get_obj_unit, 'asset_type': get_obj_type,
-                         'misc': {}}
+                       'unit': get_obj_unit, 'asset_type': get_obj_type,
+                       'misc': {}}
             give_obj = {'name': give_obj_name, 'quantity': target_price*get_obj_quantity*size, 
-                         'unit':give_obj_unit, 'asset_type': give_obj_type, 
-                         'misc':{}}  
+                        'unit':give_obj_unit, 'asset_type': give_obj_type, 
+                        'misc':{}}  
             
             pos = Position(give_obj, get_obj, target_price, 
                            portfolio= self._portfolio, size = size,
@@ -423,20 +434,19 @@ class OneTradePerDay(Trade):
         
         # Execute the positions
         ExecutePosition(opening_pos).fill_pos(fill_time = trade_open[0], 
-                                            pos_type=pos_type1)
+                                              pos_type=pos_type1)
         #print(opening_pos.portfolio.master_table)
         
         ExecutePosition(closing_pos).fill_pos(fill_time = trade_close[0], 
-                                           pos_type=pos_type2)
+                                              pos_type=pos_type2)
         
         #print(closing_pos.portfolio.master_table)
 
         # pack the outputs objects into lists
-        exec_pos_list = [opening_pos,closing_pos]
+        exec_pos_list = [opening_pos, closing_pos]
         pos_list = [entry_pos, exit_pos, stop_pos, close_pos]
         
-        for pos in pos_list:
-            # Add position in the position book
+        for pos in pos_list: # Add position in the position book
             self._portfolio._position_pool.append(copy.copy(pos))
 
         return trade_open, trade_close, pos_list, exec_pos_list

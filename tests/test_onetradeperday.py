@@ -90,12 +90,14 @@ def onetradeperday(date_interest, direction):
     #print('day', day, read.find_crossover(day['Open'].to_numpy(), stop_exit))
     #print(target_entry, target_exit, stop_exit)
     # this is the main function to be tested
-    EES_dict, trade_open, trade_close, pos_list, exec_pos_list = OneTradePerDay(
-                            P1).run_trade(day, give_obj_name, get_obj_name, 
-                                        50, target_entry, 
-                                        target_exit, stop_exit, 
-                                        open_hr=open_hr_dt, close_hr=close_hr_dt,
-                                        direction = direction)
+    EES_dict, trade_open, trade_close, pos_list, exec_pos_list = \
+        OneTradePerDay(P1).run_trade(day, 
+                                     give_obj_name, get_obj_name, 
+                                     50, target_entry, 
+                                     target_exit, stop_exit, 
+                                     open_hr=open_hr_dt, 
+                                     close_hr=close_hr_dt,
+                                     direction = direction)
                                           
     #print(EES_dict, trade_open, trade_close)
     print('2')
@@ -232,10 +234,10 @@ def test_onetradeperday_buy_closeexit() -> None:
 ############################################################################
 #Sell side test
 
-date_interest_no_entry_sell = "2023-04-13" # no entry test case (Buy) Done
-date_interest_normal_exit_sell = "2023-05-24" #  normal exit case (Buy) 
-date_interest_stop_loss_sell = "2021-04-14" # stop loss test case (Buy) Done
-date_interest_close_exit_sell = "2022-10-27" #  sell at close case (Buy) Done
+date_interest_no_entry_sell = "2023-04-13" # no entry test case (Sell) Done
+date_interest_normal_exit_sell = "2023-05-24" #  normal exit case (Sell) 
+date_interest_stop_loss_sell = "2021-04-14" # stop loss test case (Sell) Done
+date_interest_close_exit_sell = "2022-10-27" #  sell at close case (Sell) Done
 
 def test_onetradeperday_sell_noentry() -> None:   
     give_obj_name = "USD"
