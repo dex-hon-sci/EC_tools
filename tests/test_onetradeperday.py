@@ -6,7 +6,7 @@ Created on Wed May 29 16:50:39 2024
 @author: dexter
 """
 
-# make a Portfolio
+import datetime as datetime
 
 from EC_tools.portfolio import Asset, Portfolio
 from EC_tools.position import Position, ExecutePosition, PositionStatus
@@ -15,6 +15,7 @@ from EC_tools.backtest import extract_intraday_minute_data, \
                             prepare_signal_interest, plot_in_backtest
 from crudeoil_future_const import DATA_FILEPATH, RESULT_FILEPATH
 import EC_tools.read as read
+
 
 
 
@@ -28,7 +29,7 @@ def setup_trade_test(date_interest, open_hr, close_hr, direction):
     P1 = Portfolio()
     USD_initial = {'name':"USD", 'quantity': 10_000_000, 'unit':"dollars", 
                    'asset_type':"Cash", 'misc':{}} # initial fund
-    P1.add(USD_initial)
+    P1.add(USD_initial, datetime= datetime.datetime(2020,12,30))
     
     histroy_intraday_data = read.read_reformat_Portara_minute_data(FILENAME_MINUTE)
     signal_table = prepare_signal_interest(FILENSME_BUYSELL_SIGNALS, trim = False)
@@ -125,10 +126,11 @@ date_interest_normal_exit_buy = "2021-04-01" #  normal exit case (Buy) Done
 def test_onetradeperday_buy_noentry() -> None:   
     give_obj_name = "USD"
     
-    P1, day, target_entry, target_exit, \
-    stop_exit, open_hr_dt, close_hr_dt, EES_dict, trade_open, \
-    trade_close, pos_list, exec_pos_list = onetradeperday(date_interest_no_entry_buy,
-                                                          'Buy')
+    P1, day, \
+    target_entry, target_exit, stop_exit, \
+    open_hr_dt, close_hr_dt, \
+    EES_dict, trade_open, trade_close, \
+    pos_list, exec_pos_list = onetradeperday(date_interest_no_entry_buy,'Buy')
 
     assert pos_list[0].status == PositionStatus.VOID
     assert pos_list[1].status == PositionStatus.VOID
@@ -150,11 +152,11 @@ def test_onetradeperday_buy_normalexit()->None:
     give_obj_name = "USD"
     get_obj_name = "CLc1"
     
-    P1, day, target_entry, target_exit, \
-        stop_exit, open_hr_dt, close_hr_dt, EES_dict, trade_open, \
-            trade_close, pos_list, exec_pos_list = onetradeperday(
-                                                date_interest_normal_exit_buy,
-                                                        'Buy')
+    P1, day, \
+    target_entry, target_exit, stop_exit, \
+    open_hr_dt, close_hr_dt, \
+    EES_dict, trade_open, trade_close, \
+    pos_list, exec_pos_list = onetradeperday(date_interest_normal_exit_buy,'Buy')
 
     assert pos_list[0].status == PositionStatus.FILLED
     assert pos_list[1].status == PositionStatus.FILLED
@@ -162,14 +164,22 @@ def test_onetradeperday_buy_normalexit()->None:
     assert pos_list[3].status == PositionStatus.VOID
     assert exec_pos_list[0].status == PositionStatus.FILLED
     assert exec_pos_list[1].status == PositionStatus.FILLED
+    
+    import datetime as datetime
+    print("value1", P1.value(datetime.datetime(2021,4,1,15,49,1)))
+    print("value2", P1.value(datetime.datetime(2024,5,1)))
+    P1.set_pool_window(end_time=datetime.datetime(2021,4,1,15,49,1))
+    print('table1', P1.table)
+    P1.set_pool_window(end_time=datetime.datetime(2021,5,1,15,49,1))
+    print('table2', P1.table)
 
     USD_amount = P1.master_table[P1.master_table['name'] == give_obj_name\
                                  ]['quantity'].iloc[0]
     CL_amount = P1.master_table[P1.master_table['name'] == get_obj_name\
                                 ]['quantity'].iloc[0]
-        
+    print(USD_amount, CL_amount)
     print(P1.pool)
-    print(P1.master_table)
+    print('P1.master_table', P1.master_table)
     assert USD_amount > 10000000
     assert CL_amount < 1
     assert len(P1.pool) == 6 #Initial fund + 4 Four exchanges + Fee = 6 entries
@@ -178,11 +188,12 @@ def test_onetradeperday_buy_stoploss() -> None:
     give_obj_name = "USD"
     get_obj_name = "CLc1"
     
-    P1, day, target_entry, target_exit, \
-        stop_exit, open_hr_dt, close_hr_dt, EES_dict, trade_open, \
-            trade_close, pos_list, exec_pos_list = onetradeperday(
-                                                date_interest_stop_loss_buy,
-                                                        'Buy')
+    P1, day, \
+    target_entry, target_exit, stop_exit, \
+    open_hr_dt, close_hr_dt, \
+    EES_dict, trade_open, trade_close, \
+    pos_list, exec_pos_list = onetradeperday(date_interest_stop_loss_buy,'Buy')
+    
     print(pos_list[0].status, pos_list[1].status, 
           pos_list[2].status, pos_list[3].status)
 
@@ -194,7 +205,6 @@ def test_onetradeperday_buy_stoploss() -> None:
     assert pos_list[3].status == PositionStatus.VOID
     assert exec_pos_list[0].status == PositionStatus.FILLED
     assert exec_pos_list[1].status == PositionStatus.FILLED
-
     USD_amount = P1.master_table[P1.master_table['name'] == give_obj_name\
                                  ]['quantity'].iloc[0]
     CL_amount = P1.master_table[P1.master_table['name'] == get_obj_name\
@@ -212,10 +222,11 @@ def test_onetradeperday_buy_closeexit() -> None:
     give_obj_name = "USD"
     get_obj_name = "CLc1"
     
-    P1, day, target_entry, target_exit, \
-        stop_exit, open_hr_dt, close_hr_dt, EES_dict, trade_open, \
-            trade_close, pos_list, exec_pos_list = onetradeperday(
-                                                date_interest_close_exit_buy,
+    P1, day, \
+    target_entry, target_exit, stop_exit, \
+    open_hr_dt, close_hr_dt, \
+    EES_dict, trade_open, trade_close, \
+    pos_list, exec_pos_list = onetradeperday(date_interest_close_exit_buy,
                                                         'Buy')
             
     assert pos_list[0].status == PositionStatus.FILLED
@@ -242,11 +253,11 @@ date_interest_close_exit_sell = "2022-10-27" #  sell at close case (Sell) Done
 def test_onetradeperday_sell_noentry() -> None:   
     give_obj_name = "USD"
     
-    P1, day, target_entry, target_exit, \
-        stop_exit, open_hr_dt, close_hr_dt, EES_dict, trade_open, \
-            trade_close, pos_list, exec_pos_list = onetradeperday(
-                                                date_interest_no_entry_sell,
-                                                        'Sell')
+    P1, day, \
+    target_entry, target_exit, stop_exit, \
+    open_hr_dt, close_hr_dt, \
+    EES_dict, trade_open, trade_close, \
+    pos_list, exec_pos_list = onetradeperday(date_interest_no_entry_sell,'Sell')
 
     assert pos_list[0].status == PositionStatus.VOID
     assert pos_list[1].status == PositionStatus.VOID
@@ -267,11 +278,11 @@ def test_onetradeperday_sell_normalexit()->None:
     give_obj_name = "USD"
     get_obj_name = "CLc1"
     
-    P1, day, target_entry, target_exit, \
-        stop_exit, open_hr_dt, close_hr_dt, EES_dict, trade_open, \
-            trade_close, pos_list, exec_pos_list = onetradeperday(
-                                                date_interest_normal_exit_sell,
-                                                        'Sell')
+    P1, day, \
+    target_entry, target_exit, stop_exit, \
+    open_hr_dt, close_hr_dt, \
+    EES_dict, trade_open, trade_close, \
+    pos_list, exec_pos_list = onetradeperday(date_interest_normal_exit_sell,'Sell')
 
     assert pos_list[0].status == PositionStatus.FILLED
     assert pos_list[1].status == PositionStatus.FILLED
@@ -300,11 +311,11 @@ def test_onetradeperday_sell_stoploss() -> None:
     give_obj_name = "USD"
     get_obj_name = "CLc1"
     
-    P1, day, target_entry, target_exit, \
-        stop_exit, open_hr_dt, close_hr_dt, EES_dict, trade_open, \
-            trade_close, pos_list, exec_pos_list = onetradeperday(
-                                                date_interest_stop_loss_sell,
-                                                        'Sell')
+    P1, day, \
+    target_entry, target_exit, stop_exit, \
+    open_hr_dt, close_hr_dt, \
+    EES_dict, trade_open, trade_close, \
+    pos_list, exec_pos_list = onetradeperday(date_interest_stop_loss_sell,'Sell')
 
 
     assert pos_list[0].status == PositionStatus.FILLED
@@ -330,11 +341,12 @@ def test_onetradeperday_sell_closeexit() -> None:
     give_obj_name = "USD"
     get_obj_name = "CLc1"
     
-    P1, day, target_entry, target_exit, \
-        stop_exit, open_hr_dt, close_hr_dt, EES_dict, trade_open, \
-            trade_close, pos_list, exec_pos_list = onetradeperday(
-                                                date_interest_close_exit_sell,
-                                                        'Sell')
+    P1, day, \
+    target_entry, target_exit, stop_exit, \
+    open_hr_dt, close_hr_dt, \
+    EES_dict, trade_open, trade_close, \
+    pos_list, exec_pos_list = onetradeperday(date_interest_close_exit_sell,'Sell')
+    
     assert pos_list[0].status == PositionStatus.FILLED
     assert pos_list[1].status == PositionStatus.VOID
     assert pos_list[2].status == PositionStatus.VOID

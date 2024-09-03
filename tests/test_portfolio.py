@@ -111,7 +111,6 @@ def test_Portfolio_entry() -> None:
     
     test_pool = list(zip(asset_list,  datetime_list))
     
-    print("PP.pool",PP.pool)
     
     assert [PP.pool_asset[i] == asset_list[i] for i, item in enumerate(asset_list)]
     assert [PP.pool_datetime[i] == datetime_list[i] for i, item in enumerate(datetime_list)]

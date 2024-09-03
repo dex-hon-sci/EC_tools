@@ -141,9 +141,6 @@ class Portfolio(object):
 
         """
         # make a list of start_time and end_time
-        # start_time_list = [start_time for i, _ in enumerate(self.__pool_datetime)]
-        # end_time_list = [end_time for i, _ in enumerate(self.__pool_datetime)]
-
         # subtract the original datetime with them
         start_time_delta_array = np.array([abs(pool_dt - start_time) for i, pool_dt in
                                  enumerate(self.__pool_datetime)])
@@ -231,19 +228,16 @@ class Portfolio(object):
         """
         # Find the keys and values for asset within a particular time window
         # The function operate on the previously defined pool_window
-        values = [list(pool_type[i][1].values())
-                  for i in range(len(pool_type))]
-        keys = [list(pool_type[i][1].keys())
-                for i in range(len(pool_type))][0]
+        values = [list(pool_type[i][1].values()) for i in range(len(pool_type))]
+        keys = [list(pool_type[i][1].keys()) for i in range(len(pool_type))][0]
 
         # Load the inforamtion to self._table
         table = pd.DataFrame.from_records(data=values, columns=keys)
-
+        print('tabletable', table)
         # Handle repeating aseet type
         for index, (val_name, misc) in enumerate(zip(table['name'], table['misc'])):
             # add more conditions with unit and type
-            temp_df = table[(table['name'] == val_name)
-                            & (table['misc'] == misc)]
+            temp_df = table[(table['name'] == val_name) & (table['misc'] == misc)]
 
             # If the asset is unique in the pool, pass.
             if len(temp_df) == 1:
@@ -299,7 +293,8 @@ class Portfolio(object):
         index_list = []
         # This assume misc contains a set. We may need to change this into dict later
         for i in range(len(table_type)):
-            if table_type['quantity'].iloc[i] == 0 and 'debt' in table_type['misc'].iloc[i]:
+            if table_type['quantity'].iloc[i] == 0 and \
+               'debt' in table_type['misc'].iloc[i]:
                 index_list.append(i)
                 
         new_table = table_type.drop(index_list)
@@ -321,7 +316,7 @@ class Portfolio(object):
             raise Exception("pool_window not found. Use either master_table or \
                             define a pool_window for viewing first")
 
-        self._table = self._make_table(self._pool_window)
+        self._table = self._make_table(self.pool_window)
         
         if self.wipe_debt_or_not == True:
             self._table = self._wipe_debt(self._table)
@@ -330,7 +325,7 @@ class Portfolio(object):
         
         return self._table
 
-    @cached_property
+    @property
     def master_table(self) -> pd.DataFrame:  # tested
         """
         An attribute that show a table of all the assets in the portfolio.
@@ -580,7 +575,7 @@ class Portfolio(object):
             else:
                 if size_dict == None:  # manage the size of the asset
                     size = 1
-                else:                     # Get the size of each asset
+                else: # Get the size of each asset
                     size = size_dict[asset['name']]
 
                 sub_price_table = price_dict[asset['name']]

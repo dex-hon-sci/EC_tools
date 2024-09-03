@@ -23,8 +23,10 @@ def test_Position_input_valid()-> None:
     P1 = Portfolio()
     
     # inputs
-    USD = {'name':'USD', 'quantity':1000, 'unit':'dollars', 'asset_type':'Cash', 'misc':{}}
-    A = {'name':"CL24N", 'quantity':50,  'unit':'contracts', 'asset_type':'future', 'misc':{}}
+    USD = {'name':'USD', 'quantity':1000, 'unit':'dollars', 
+           'asset_type':'Cash', 'misc':{}}
+    A = {'name':"CL24N", 'quantity':50,  'unit':'contracts', 
+         'asset_type':'future', 'misc':{}}
     
     # 
     PP = Position( USD, A, 1000/50,portfolio=P1, 
@@ -53,8 +55,10 @@ def test_Position_input_invalid()-> None:
     P1 = Portfolio()
     
     # inputs
-    USD = {'name':'USD', 'quantity':1000, 'unit':'dollars', 'asset_type':'Cash', 'misc':{}}
-    A = {'name':"CL24N", 'quantity':50,  'unit':'contracts', 'asset_type':'future', 'misc':{}}
+    USD = {'name':'USD', 'quantity':1000, 'unit':'dollars', 
+           'asset_type':'Cash', 'misc':{}}
+    A = {'name':"CL24N", 'quantity':50,  'unit':'contracts', 
+         'asset_type':'future', 'misc':{}}
     
     # 
     PP = Position(USD, A, 2000, portfolio=P1, 
@@ -70,8 +74,10 @@ def test_Position_input_invalid()-> None:
 
 def test_position_price_setter()-> None:
     P1 = Portfolio()
-    USD = {'name':'USD', 'quantity':1000, 'unit':'dollars', 'asset_type':'Cash', 'misc':{}}
-    A = {'name':"CL24N", 'quantity':50,  'unit':'contracts', 'asset_type':'future', 'misc':{}}
+    USD = {'name':'USD', 'quantity':1000, 'unit':'dollars', 
+           'asset_type':'Cash', 'misc':{}}
+    A = {'name':"CL24N", 'quantity':50,  'unit':'contracts', 
+         'asset_type':'future', 'misc':{}}
     
     P1.add(USD, datetime= datetime.datetime(2019,12,31))
     
@@ -89,14 +95,20 @@ def test_position_price_setter()-> None:
 def test_Execute_fill_pos()-> None:
     P1 = Portfolio()
     
-    USD = {'name':'USD', 'quantity':1025, 'unit':'dollars', 'asset_type':'Cash', 'misc':{}}
-    USD_exchange = {'name':'USD', 'quantity':1000, 'unit':'dollars', 'asset_type':'Cash', 'misc':{}}
-    A = {'name':'CL24N', 'quantity':50, 'unit':'contracts', 'asset_type':'future', 'misc':{}}
+    USD = {'name':'USD', 'quantity':1025, 'unit':'dollars', 
+           'asset_type':'Cash', 'misc':{}}
+    USD_exchange = {'name':'USD', 'quantity':1000, 'unit':'dollars', 
+                    'asset_type':'Cash', 'misc':{}}
+    A = {'name':'CL24N', 'quantity':50, 'unit':'contracts', 
+         'asset_type':'future', 'misc':{}}
 
-    fee = {'name':'USD', 'quantity':24, 'unit':'dollars', 'asset_type':'Cash', 'misc':{}}
+    fee = {'name':'USD', 'quantity':24, 'unit':'dollars', 
+           'asset_type':'Cash', 'misc':{}}
     
-    USD_minus = {'name':'USD', 'quantity':-1000, 'unit':'dollars', 'asset_type':'Cash', 'misc':{}}
-    fee_minus =   {'name':'USD', 'quantity':-24, 'unit':'dollars', 'asset_type':'Cash', 'misc':{}}
+    USD_minus = {'name':'USD', 'quantity':-1000, 'unit':'dollars', 
+                 'asset_type':'Cash', 'misc':{}}
+    fee_minus =   {'name':'USD', 'quantity':-24, 'unit':'dollars', 
+                   'asset_type':'Cash', 'misc':{}}
     
     
     P1.add(USD, datetime= datetime.datetime(2019,12,31))
@@ -129,8 +141,10 @@ def test_Execute_fill_pos()-> None:
 
 def test_Execute_cancel_pos()->None:
     P1 = Portfolio()
-    USD = {'name':'USD', 'quantity':1000, 'unit':'dollars', 'asset_type':'Cash', 'misc':{}}
-    A = {'name':"CL24N", 'quantity':50,  'unit':'contracts', 'asset_type':'future', 'misc':{}}
+    USD = {'name':'USD', 'quantity':1000, 'unit':'dollars', 
+           'asset_type':'Cash', 'misc':{}}
+    A = {'name':"CL24N", 'quantity':50,  'unit':'contracts', 
+         'asset_type':'future', 'misc':{}}
     
     P1.add(USD, datetime= datetime.datetime(2019,12,31))
     
@@ -150,12 +164,14 @@ def test_Execute_cancel_pos()->None:
 
 def test_ErrorMsg_auto_adjust_off_invalid_price():
     P1 = Portfolio()
-    USD = {'name':'USD', 'quantity':1000, 'unit':'dollars', 'asset_type':'Cash', 'misc':{}}
-    A = {'name':"CL24N", 'quantity':50,  'unit':'contracts', 'asset_type':'future', 'misc':{}}
+    USD = {'name':'USD', 'quantity':1000, 'unit':'dollars', 
+           'asset_type':'Cash', 'misc':{}}
+    A = {'name':"CL24N", 'quantity':50,  'unit':'contracts', 
+         'asset_type':'future', 'misc':{}}
     P1.add(USD, datetime= datetime.datetime(2019,12,31))
     PP = Position(USD, A, USD['quantity']/ A['quantity'], 
-                      portfolio=P1, open_time = datetime.datetime(2020,1,1),
-                      auto_adjust=False)
+                  portfolio=P1, open_time = datetime.datetime(2020,1,1),
+                  auto_adjust=False)
     
     with pytest.raises(Exception):
         PP.price = 21
@@ -163,10 +179,12 @@ def test_ErrorMsg_auto_adjust_off_invalid_price():
 def test_ErrorMsg_invalid_portfolio()->None:
     P1 = None # An invalid Portfolio
     
-    USD = {'name':'USD', 'quantity':1000, 'unit':'dollars', 'asset_type':'Cash', 'misc':{}}
-    A = {'name':"CL24N", 'quantity':50,  'unit':'contracts', 'asset_type':'future', 'misc':{}}
+    USD = {'name':'USD', 'quantity':1000, 'unit':'dollars', 
+           'asset_type':'Cash', 'misc':{}}
+    A = {'name':"CL24N", 'quantity':50,  'unit':'contracts', 
+         'asset_type':'future', 'misc':{}}
     PP = Position(USD, A, USD['quantity']/ A['quantity'], 
-                      portfolio=P1, open_time = datetime.datetime(2020,1,1))
+                  portfolio=P1, open_time = datetime.datetime(2020,1,1))
     
     # A Position can belong to no Portfolio but it cannot be executed.
     with pytest.raises(Exception):
@@ -176,9 +194,12 @@ def test_ErrorMsg_invalid_portfolio()->None:
 def test_ErrorMsg_insufficient_asset_fill_pos() -> None:
     # Test for insufficient fund
     P1 = Portfolio()
-    USD = {'name':'USD','quantity': 2, 'unit':'dollars', 'asset_type':'Cash', 'misc':{}}
-    A = {'name':"CL24N", 'quantity':50,  'unit':'contracts', 'asset_type':'future', 'misc':{}}
-    USD_trade = {'name':'USD', 'quantity':1000, 'unit':'dollars', 'asset_type':'Cash', 'misc':{}}
+    USD = {'name':'USD','quantity': 2, 'unit':'dollars', 
+           'asset_type':'Cash', 'misc':{}}
+    A = {'name':"CL24N", 'quantity':50,  'unit':'contracts', 
+         'asset_type':'future', 'misc':{}}
+    USD_trade = {'name':'USD', 'quantity':1000, 'unit':'dollars', 
+                 'asset_type':'Cash', 'misc':{}}
 
     P1.add(USD, datetime= datetime.datetime(2019,12,31))
     
@@ -191,8 +212,10 @@ def test_ErrorMsg_insufficient_asset_fill_pos() -> None:
         
 def test_ErrorMsg_fill_pos_error_msg()-> None:
     P1 = Portfolio()
-    USD = {'name':'USD', 'quantity':1000, 'unit':'dollars', 'asset_type':'Cash', 'misc':{}}
-    A = {'name':"CL24N", 'quantity':50,  'unit':'contracts', 'asset_type':'future', 'misc':{}}
+    USD = {'name':'USD', 'quantity':1000, 'unit':'dollars', 
+           'asset_type':'Cash', 'misc':{}}
+    A = {'name':"CL24N", 'quantity':50,  'unit':'contracts', 
+         'asset_type':'future', 'misc':{}}
 
     P1.add(USD, datetime= datetime.datetime(2019,12,31))
     
@@ -208,12 +231,16 @@ def test_ErrorMsg_close_pos_invalid_position() -> None:
     # Test for invalid input of Poistion
     P1 = Portfolio()
     #USD = Asset('USD', 1025, 'dollars', 'Cash')
-    USD = {'name':'USD', 'quantity':1025, 'unit':'dollars', 'asset_type':'Cash', 'misc':{}}
+    USD = {'name':'USD', 'quantity':1025, 'unit':'dollars', 
+           'asset_type':'Cash', 'misc':{}}
     P1.add(USD, datetime= datetime.datetime(2019,12,31))
 
-    USD_exchange = {'name':'USD', 'quantity':1000, 'unit':'dollars', 'asset_type':'Cash', 'misc':{}}
-    A = {'name':"CL24N", 'quantity':50,  'unit':'contracts', 'asset_type':'future', 'misc':{}}
-    fee = {'name':"USD", 'quantity':24,  'unit':'dollars', 'asset_type':'Cash', 'misc':{}}
+    USD_exchange = {'name':'USD', 'quantity':1000, 'unit':'dollars', 
+                    'asset_type':'Cash', 'misc':{}}
+    A = {'name':"CL24N", 'quantity':50,  'unit':'contracts', 
+         'asset_type':'future', 'misc':{}}
+    fee = {'name':"USD", 'quantity':24,  'unit':'dollars', 
+           'asset_type':'Cash', 'misc':{}}
     
     PP = Position(USD_exchange, A, 10.0, portfolio=P1, 
                     open_time = datetime.datetime(2020,1,1), size= 2, fee=fee)    
