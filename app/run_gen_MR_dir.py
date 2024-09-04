@@ -165,7 +165,8 @@ def loop_signal(strategy: type[Strategy],
             # Apply the strategy, The Strategy is variable
             strategy_output = strategy(curve_this_date).apply_strategy(
                                      history_data_lag5, apc_curve_lag5, price_330,
-                                     buy_range=buy_range, sell_range=sell_range)
+                                     buy_range=buy_range, sell_range=sell_range,
+                                     qunatile=[0.1,0.25,0.4,0.5,0.6,0.75,0.9])
 
             print('====================================')
             print(forecast_date, full_contract_symbol,'MR signal generated!', 

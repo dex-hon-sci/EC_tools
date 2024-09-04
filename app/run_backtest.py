@@ -272,13 +272,13 @@ def run_backtest_portfolio_preloaded(TradeMethod,
     P1.add(USD_initial,datetime=datetime.datetime(2020,12,31))
     
     # a list of input files
-    P1 = backtest.loop_portfolio_preloaded_list(P1, 
-                                                TradeMethod,
-                                                trade_date_table, 
-                                                histroy_intraday_data_pkl,
-                                                give_obj_name=give_obj_name,
-                                                get_obj_quantity=get_obj_quantity,
-                                                plot_or_not=plot_or_not)
+    P1 = backtest.loop_portfolio_preloaded(P1, 
+                                           TradeMethod,
+                                           trade_date_table, 
+                                           histroy_intraday_data_pkl,
+                                           give_obj_name=give_obj_name,
+                                           get_obj_quantity=get_obj_quantity,
+                                           plot_or_not=plot_or_not)
     
     t2 = time.time()-t1
     print("It takes {} seconds to run the backtest".format(t2))
@@ -324,17 +324,19 @@ def run_backtest_bulk(TradeMethod,
             read.merge_raw_data(SAVE_FILENAME_LIST, 
                                 master_pnl_filename, sort_by="Entry_Date")
         
-    elif method == "portfolio":
-        
-        backtest_result =  run_backtest_portfolio(FILENAME_MINUTE, 
-                                                  FILENAME_BUYSELL_SIGNALS, 
-                                                  start_date, end_date)
+# =============================================================================
+#     elif method == "portfolio":
+#         
+#         backtest_result =  run_backtest_portfolio(FILENAME_MINUTE, 
+#                                                   FILENAME_BUYSELL_SIGNALS, 
+#                                                   start_date, end_date)
+# =============================================================================
         
     elif method == "preload":
         #MASTER_SIGNAL_FILENAME
         HISTORY_MINUTE_PKL = util.load_pkl(DAILY_MINUTE_DATA_PKL)
 
-        PP = run_backtest_portfolio_preloaded(OneTradePerDay,
+        PP = run_backtest_portfolio_preloaded(TradeMethod,
                                               master_signal_filename, 
                                               HISTORY_MINUTE_PKL,
                                               start_date, end_date,

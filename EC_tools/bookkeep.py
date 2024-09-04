@@ -57,7 +57,7 @@ class Bookkeep(object):
                         'Quant_Close_Price_Lag_1', 'Quant_Close_Price_Lag_2',	
                         'Quant_Close_Price_Lag_3', 'Quant_Close_Price_Lag_4',	
                         'Quant_Close_Price_Lag_5', 'Quant_Close_Price_Lag_1_rm_5',	
-                        'Q0.25', 'Q0.4', 'Q0.6', 'Q0.75', 
+                        'Q0.1','Q0.25', 'Q0.4', 'Q0.5', 'Q0.6', 'Q0.75', 'Q0.9',
                         'Entry_Price', 'Exit_Price', 'StopLoss_Price',
                         'strategy_name']
     

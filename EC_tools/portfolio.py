@@ -764,7 +764,7 @@ class PortfolioLog(Portfolio):
         custom_list0 = ['Trade_ID', 'Direction', 'Commodity', 'Price_Code',
                         'Entry_Date', 'Entry_Datetime', 'Entry_Price',
                         'Exit_Date', 'Exit_Datetime', 'Exit_Price',
-                        'Trade_Return', 'Trade_Return_Fraction', 'value']
+                        'Trade_Return', 'Trade_Return_Fraction']
         #, 'Scaled_Return']  # , 'Risk_Reward_Ratio', 'strategy_name']
 
         trade_PNL = book.make_bucket(custom_keywords_list=custom_list0)
@@ -773,6 +773,9 @@ class PortfolioLog(Portfolio):
         
         PP = read.group_trade(position_pool,
                               select_func=select_func_fill)
+        
+        
+        
         for i, ele in enumerate(PP):
             trade_id = ele[0].pos_id
             direction = re.sub(r'\-(.*)', '', ele[0].pos_type)
@@ -800,7 +803,7 @@ class PortfolioLog(Portfolio):
             data = [trade_id, direction, commodity_name, symbol,
                     entry_date, entry_datetime, entry_price,
                     exit_date, exit_datetime, exit_price,
-                    trade_return, trade_return_fraction, value]
+                    trade_return, trade_return_fraction]
 
             trade_PNL = book.store_to_bucket_single(data)
 

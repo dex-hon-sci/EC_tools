@@ -9,7 +9,7 @@ Created on Sat Jun 22 23:32:11 2024
 # Import EC_tools    
 from EC_tools.read import render_PNL_xlsx
 import EC_tools.utility as util
-from EC_tools.trade import OneTradePerDay
+from EC_tools.trade import OneTradePerDay, BiDirectionalTrade
 from EC_tools.simple_trade import onetrade_simple
 from app.run_preprocess import run_preprocess
 from app.run_gen_MR_dir import MR_STRATEGIES_0, run_gen_signal_bulk
@@ -107,7 +107,7 @@ def run_main(strategy_name,
 
     print("=========Running Back-Testing =============")
     
-    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/test_PNL.pkl'
+    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/test_PNL_bitrade.pkl'
     #SAVE_PNL_FILENAME_LIST = FILE_PNL_LOC
 
     run_backtest_bulk(trade_method, 
@@ -141,7 +141,7 @@ if __name__ == "__main__":
     end_date = "2024-08-15"
     
     run_main('argus_exact', 
-             OneTradePerDay,  #onetrade_simple,
+             BiDirectionalTrade, #OneTradePerDay,  #onetrade_simple,
              start_date, end_date,         
              #buy_range = (-0.1, 0.1, -0.45), 
              #sell_range = (0.1, -0.1, +0.45),
