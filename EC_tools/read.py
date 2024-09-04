@@ -898,7 +898,7 @@ def find_minute_EES(histroy_data_intraday: pd.DataFrame,
         time_proxy_list = date_list
     elif dt_scale == 'datetime':
         time_proxy_list = datetime_list
-
+        
     # Find the crossover indices
     entry_pt_dict = find_crossover(price_list, target_entry)
     exit_pt_dict = find_crossover(price_list, target_exit)

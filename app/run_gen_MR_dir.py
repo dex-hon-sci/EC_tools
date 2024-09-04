@@ -266,7 +266,10 @@ def run_gen_MR_signals(strategy: type[Strategy],
     
     # Find the opening price at 03:30 UK time. If not found, 
     #loop through the next 30 minutes to find the opening price
-    price_330 = read.find_open_price(history_data_daily, history_data_minute)
+    #price_330 = read.find_open_price(history_data_daily, history_data_minute)
+    price_330 = read.find_price_by_time(history_data_daily, 
+                                        history_data_minute,
+                                        open_hr=OPEN_HR_DICT[symbol])
 
     # make an empty signal dictionary for storage
     book = Bookkeep(bucket_type = 'mr_signals')
@@ -412,7 +415,8 @@ def run_gen_MR_signals_preloaded(strategy: type[Strategy],
                                  history_daily_pkl: dict, 
                                  openprice_pkl: dict, 
                                  start_date: str, end_date: str,
-                                 open_hr_dict: dict, close_hr_dict: dict, 
+                                 open_hr_dict: dict, 
+                                 close_hr_dict: dict, 
                                  timezone_dict: dict,
                                  buy_range: tuple[float] = (0.4,0.6,0.1),
                                  sell_range: tuple[float] = (0.6,0.4,0.9),
@@ -598,8 +602,9 @@ def run_gen_signal_bulk(strategy: type[Strategy],
                                 save_or_not=save_or_not)
         
         if merge_or_not:
-            merge_filename = getpass.getpass(prompt="please enter the name for the merged file :") 
-            MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + merge_filename
+            #merge_filename = getpass.getpass(prompt="please enter the name for the merged file :") 
+            MASTER_SIGNAL_FILENAME = master_signal_filename            
+            #MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + merge_filename
             
             read.merge_raw_data(SAVE_FILENAME_LIST, 
                                 MASTER_SIGNAL_FILENAME, sort_by="Date")

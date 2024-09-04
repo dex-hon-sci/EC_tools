@@ -36,7 +36,7 @@ __all__ = ['run_backtest','run_backtest_list',
 __author__="Dexter S.-H. Hon"
 
 
-class BacktestType(Enum):
+class BacktestType(Enum): #WIP
     BACKTEST_SINGLE = "backtest_single"
     BACKTEST_LIST = "backtest_list"
     BACKTEST_PORTFOLIO = "backtest_portfolio"

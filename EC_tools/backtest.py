@@ -759,17 +759,18 @@ def loop_portfolio_preloaded(portfo: Portfolio,
     """
     #symbol_list = list(histroy_intraday_data_pkl.keys())
     #tradebook = trade_method(portfo)
-    
+    #print("TradeMethod_name", trade_method.__name__)
+
     for i in range(len(signal_table)):
         item = signal_table.iloc[i]
                 
         symbol = item['Price_Code']
-        
+        #print("item", item)
         
         if trade_method.__name__ == "OneTradePerDay":
             direction = item['Direction'] 
 
-            if direction == 'Buy' and direction == 'Sell':
+            if direction == 'Buy' or direction == 'Sell':
                 target_entry = item['Entry_Price']
                 target_exit = item['Exit_Price'] 
                 stop_exit = item['StopLoss_Price'] 
@@ -782,9 +783,9 @@ def loop_portfolio_preloaded(portfo: Portfolio,
             target_exit = {'Buy': item['Q0.6'], 'Sell': item['Q0.4']}
             stop_exit = {'Buy': item['Q0.1'], 'Sell': item['Q0.9']}
             
-            direction = 'Bitrade-' + item['Direction'] 
+            direction = 'Bitrade-' 
 
-        
+        #print('EES', target_entry,target_exit, stop_exit, direction)
         date_interest = item['Date']
         get_obj_name = item['Price_Code']
 

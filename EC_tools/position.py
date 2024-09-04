@@ -83,17 +83,6 @@ class Position(object):
         # check if the quantity of both assets are 
         #correct_ratio = self.give_obj.quantity / (self.get_obj.quantity*self.size)
         # reminder: give is cash, get is asset (usually)
-# =============================================================================
-#         if self.pos_type == 'Long-Buy' or 'Long-Sell':
-#             correct_ratio = self.give_obj['quantity'] / (self.get_obj['quantity']*self.size)
-# 
-#         elif self.pos_type == 'Short-Borrow':
-#             correct_ratio = self.give_obj['quantity'] / (self.get_obj['quantity']*self.size)
-#         elif self.pos_type == 'Short-Buyback':
-#             #correct_ratio =  (self.get_obj['quantity']*self.size) / self.give_obj['quantity'] 
-#             correct_ratio =  self.give_obj['quantity'] / (self.get_obj['quantity']*self.size)
-# =============================================================================
-
         correct_ratio =  self.give_obj['quantity'] / (self.get_obj['quantity']*self.size)
 
         #print('correction_ratio', correct_ratio, self.price)

@@ -488,21 +488,21 @@ class OneTradePerDay(Trade):
 
 class BiDirectionalTrade(Trade):
     """
-    Bi-Directional Trade (Heding position). The idea is to open two position,
-    both Buy and Sell at trade open given a set of entry and exit prices. 
+    Bi-Directional Trade (Hedging position). The idea is to open two position,
+    both Buy and Sell at trade-open given a set of entry and exit prices. 
     If the price moves past the entry point of either direction, we fill the 
     Buy/Sell order and enter the position. When the exit value is hit, we 
     exit and close the position. 
     
     The entry and exit range can be asymmetrical. User can manually input the 
-    range they want for wither trade.
+    range they want for either trades.
     
     At the moment, this method is limited to trading one Buy or Sell position 
     per day, i.e., the maximum number of trades per day is one Buy plus one 
     Sell.
     
     This method also assume the Buy and Sell action are independent from each 
-    other, that is, the two trade can be calculated and executed in parrallel. 
+    other, that is, the two trade can be calculated and executed in parallel. 
     
     
     """
@@ -644,7 +644,8 @@ class BiDirectionalTrade(Trade):
         # independently (in Parallel). Therefore, the resulting Portfolio
         # pool and position pool are not going to be sorted perfectly by 
         # entry time.
-        
+        trade_id_buy = 'Buy' + trade_id  
+        trade_id_sell = 'Sell' + trade_id  
         # Buy
         pos_list_buy = self.open_positions(give_obj_name, get_obj_name, \
                                            get_obj_quantity, 
@@ -653,7 +654,7 @@ class BiDirectionalTrade(Trade):
                                            size=SIZE_DICT[get_obj_name],
                                            fee=fee, 
                                            open_time = open_time,
-                                           trade_id= trade_id)
+                                           trade_id= trade_id_buy)
             
         trade_open_buy, trade_close_buy, pos_list_buy, exec_pos_list_buy = \
                                         self.execute_positions(EES_dict_buy, 
@@ -668,7 +669,7 @@ class BiDirectionalTrade(Trade):
                                             size=SIZE_DICT[get_obj_name],
                                             fee=fee, 
                                             open_time = open_time,
-                                            trade_id= trade_id)
+                                            trade_id= trade_id_sell)
 
         trade_open_sell, trade_close_sell, pos_list_sell, exec_pos_list_sell = \
                                         self.execute_positions(EES_dict_sell, 

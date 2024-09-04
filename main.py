@@ -90,7 +90,7 @@ def run_main(strategy_name,
     strategy = MR_STRATEGIES_0[strategy_name]
     #SAVE_SIGNAL_FILENAME_LIST = list(FILE_LOC.values())
    
-    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/test_signal.csv'
+    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/consistency/test_signal_Portfolio_ArgusExact_Full_SR.csv'
 
     
     run_gen_signal_bulk(strategy, FILE_LOC,
@@ -107,7 +107,7 @@ def run_main(strategy_name,
 
     print("=========Running Back-Testing =============")
     
-    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/test_PNL_bitrade.pkl'
+    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/consistency/test_PNL_Portfolio_ArgusExact_Full_SR.pkl' 
     #SAVE_PNL_FILENAME_LIST = FILE_PNL_LOC
 
     run_backtest_bulk(trade_method, 
@@ -122,7 +122,6 @@ def run_main(strategy_name,
                       close_hr_dict= CLOSE_HR_DICT_EARLY,
                       save_or_not=True, 
                       merge_or_not=True)
-    
     
     print("=========Running PNL EXCEL File =============")
     if backtest_runtype == 'list':
@@ -141,12 +140,12 @@ if __name__ == "__main__":
     end_date = "2024-08-15"
     
     run_main('argus_exact', 
-             BiDirectionalTrade, #OneTradePerDay,  #onetrade_simple,
+             OneTradePerDay, #onetrade_simple, #BiDirectionalTrade, #OneTradePerDay, 
              start_date, end_date,         
              #buy_range = (-0.1, 0.1, -0.45), 
              #sell_range = (0.1, -0.1, +0.45),
              buy_range = ([0.25,0.4],[0.6,0.75],0.1),
-             sell_range = ([0.6,0.75],[0.35,0.4],0.9), 
+             sell_range = ([0.6,0.75],[0.25,0.4],0.9), 
              give_obj_name = 'USD',
              get_obj_quantity = 50,
              preprocess = False, 

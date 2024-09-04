@@ -774,9 +774,10 @@ class PortfolioLog(Portfolio):
         PP = read.group_trade(position_pool,
                               select_func=select_func_fill)
         
-        
+        print(PP[0:2])
         
         for i, ele in enumerate(PP):
+            print(i)
             trade_id = ele[0].pos_id
             direction = re.sub(r'\-(.*)', '', ele[0].pos_type)
             symbol = ele[0].get_obj['name']
@@ -857,13 +858,6 @@ class PortfolioMetrics(Portfolio):
         self.portfolio_log = PortfolioLog(self._portfolio)
         self.tradebook = self.portfolio_log.tradebook
         
-# =============================================================================
-#         
-#     @property
-#     def portfolio(self):
-#         return self._portfolio
-#     
-# =============================================================================
     def _load_filled_position_pool(self) -> list:
         """
         A function to load only the filled position to a list
@@ -1166,16 +1160,18 @@ class PortfolioMetrics(Portfolio):
         cumsum = np.cumsum(daily_return_amount)
         cumsum_growth = (cumsum[1:-1] - cumsum[0:-2])/cumsum[0:-2]
         
-        print('entry_price', entry_price)
-        print('exit_price', exit_price)
-        print('trade_return', trade_return)
-        print("trade_return_fraction", trade_return_fraction)
-        print('max, min', max(trade_return_fraction), min(trade_return_fraction))
-        print('daily_return_amount', daily_return_amount)
-        print('cumsum', cumsum, len(cumsum))
-        print('cumsum_growth', cumsum_growth, len(cumsum_growth))
-        print("self.total_returns_fraction()[0]*0.01", self.total_returns_fraction()[0]*0.01)
-        print('std(cumsum_growth)', np.std(cumsum_growth))
+# =============================================================================
+#         print('entry_price', entry_price)
+#         print('exit_price', exit_price)
+#         print('trade_return', trade_return)
+#         print("trade_return_fraction", trade_return_fraction)
+#         print('max, min', max(trade_return_fraction), min(trade_return_fraction))
+#         print('daily_return_amount', daily_return_amount)
+#         print('cumsum', cumsum, len(cumsum))
+#         print('cumsum_growth', cumsum_growth, len(cumsum_growth))
+#         print("self.total_returns_fraction()[0]*0.01", self.total_returns_fraction()[0]*0.01)
+#         print('std(cumsum_growth)', np.std(cumsum_growth))
+# =============================================================================
         
        # trade_return_fraction = (trade_close-trade_open)/trade_open
         
