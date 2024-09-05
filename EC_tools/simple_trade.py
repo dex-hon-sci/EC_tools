@@ -15,6 +15,8 @@ def onetrade_simple_LEGACY(EES_dict: dict) -> tuple[tuple, tuple]:
     """
     LEGACY code before the development of trade and portfolio modules
     a function that control which price to buy and sell.
+    
+    The trade logic is incorrect in this one (It hit the stop-loss automatically)
 
     Parameters
     ----------
@@ -77,8 +79,8 @@ def onetrade_simple(EES_dict: dict) -> tuple[tuple, tuple]:
         Two tuples containing rhe trade open and trade close in the format of 
         (time. price).
     """
-    entry_pt, exit_pt = (np.nan,np.nan), (np.nan,np.nan)
-    stop_pt, close_pt = (np.nan,np.nan), (np.nan,np.nan)
+    entry_pt, exit_pt, stop_pt, close_pt = (np.nan,np.nan), (np.nan,np.nan),\
+                                           (np.nan,np.nan), (np.nan,np.nan)
     
     earliest_exit, earliest_stop = exit_pt, stop_pt
     
@@ -93,7 +95,7 @@ def onetrade_simple(EES_dict: dict) -> tuple[tuple, tuple]:
     if len(EES_dict['entry']) == 0: # entry price not hit. No trade that day.
         #print('no entry', EES_dict['entry'], close_pt)
         trade_open, trade_close =  (np.nan,np.nan), (np.nan,np.nan)
-        pass
+        
     else:
         # choose the entry point
         entry_pt = EES_dict['entry'][0]

@@ -189,7 +189,8 @@ def run_backtest_portfolio(TradeMethod,
     history_data = read.read_reformat_Portara_minute_data(filename_minute)
 
     # Find the date for trading, only "Buy" or "Sell" date are taken.
-    trade_date_table = backtest.prepare_signal_interest(filename_buysell_signals, trim = False)
+    trade_date_table = backtest.prepare_signal_interest(filename_buysell_signals, 
+                                                        trim = False)
     
     # Turn the start and end date from str to datetime.datetime
     start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")# datetime.datetime(2023,1,1)
@@ -210,10 +211,10 @@ def run_backtest_portfolio(TradeMethod,
     # loop through the date and set the EES prices for each trading day   
     P1 = backtest.loop_date_portfolio(P1, TradeMethod,
                                       trade_date_table, history_data,
-                                            give_obj_name = "USD", get_obj_name = "HOc1",
-                                            get_obj_quantity = 10,
-                                            open_hr='1300', close_hr='1828', 
-                                            plot_or_not = False)    
+                                      give_obj_name = "USD", get_obj_name = "HOc1",
+                                      get_obj_quantity = 10,
+                                      open_hr='1300', close_hr='1828', 
+                                      plot_or_not = False)    
     print('master_table', P1.master_table)
 
     return P1
@@ -364,8 +365,6 @@ if __name__ == "__main__":
     #SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_CLc1_full.csv"   
     #APC_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_HOc2.csv"  
     
-    MASTER_SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_signal_full.csv"
-    HISTORY_MINUTE_PKL_FILENAME ="/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_full.pkl"
 
     SAVE_FILENAME_LIST = list(ARGUS_EXACT_PNL_AMB3_LOC.values())
     SIGNAL_FILENAME_LIST = list(ARGUS_EXACT_SIGNAL_AMB3_FILE_LOC.values())
@@ -376,21 +375,32 @@ if __name__ == "__main__":
 #     FILEPATH = "/home/dexter/Euler_Capital_codes/EC_tools/results/"
 #     MASTER_PNL_FILENAME = FILEPATH+'argus_exact_PNL_amb3_full.csv'
 # =============================================================================
-
-    start_date = "2024-03-04"
-    #start_date = "2021-01-11"
-    end_date = "2024-06-17"
+    MASTER_SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/Argus_sample_signals_2.csv"
+    MASTER_PNL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/Argus_sample_PNL_with_mybacktest.pkl"
     
-    run_backtest_bulk(onetrade_simple, TEST_FILE_LOC, TEST_FILE_PNL_LOC, 
+    start_date = "2022-01-05"
+    end_date = "2024-06-28"
+    #start_date = "2024-03-04"
+    #end_date = "2024-06-17"
+    
+    run_backtest_bulk(OneTradePerDay, 
+                      TEST_FILE_LOC, TEST_FILE_PNL_LOC, 
                       start_date, end_date, 
-                      method = "preload", master_pnl_filename='',
-                      open_hr_dict = OPEN_HR_DICT, close_hr_dict=CLOSE_HR_DICT,
-                      save_or_not=True, merge_or_not=True)
+                      method = "preload", 
+                      master_signal_filename = MASTER_SIGNAL_FILENAME,
+                      master_pnl_filename= MASTER_PNL_FILENAME,
+                      give_obj_name = 'USD',
+                      get_obj_quantity = 1,
+                      open_hr_dict = OPEN_HR_DICT, 
+                      close_hr_dict= CLOSE_HR_DICT,
+                      save_or_not=True, 
+                      merge_or_not=True)
     
     #run_backtest(trade_choice_simple_2,FILENAME_MINUTE, FILENAME_BUYSELL_SIGNALS, 
     #             "2022-01-03", "2024-06-17")
 
 # =============================================================================
+#     HISTORY_MINUTE_PKL_FILENAME ="/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_full.pkl"
 #     backtest_result = run_backtest_list(onetrade_simple, 
 #                       SAVE_FILENAME_LIST, SYMBOL_LIST,
 #                           SIGNAL_FILENAME_LIST, HISTORY_MINUTE_FILENAME_LIST,

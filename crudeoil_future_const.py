@@ -85,39 +85,54 @@ SIZE_DICT = {
     'QPc2': 100.0
     } # num_per_contract
 
+# =============================================================================
+# round_turn_fees = {
+#     'CLc1': 24.0,
+#     'CLc2': 24.0,
+#     'HOc1': 25.2,
+#     'HOc2': 25.2,
+#     'RBc1': 25.2,
+#     'RBc2': 25.2,
+#     'QOc1': 24.0,
+#     'QOc2': 24.0,
+#     'QPc1': 24.0,
+#     'QPc2': 24.0
+# } #30
+# =============================================================================
+
 round_turn_fees = {
-    'CLc1': 24.0,
-    'CLc2': 24.0,
-    'HOc1': 25.2,
-    'HOc2': 25.2,
-    'RBc1': 25.2,
-    'RBc2': 25.2,
-    'QOc1': 24.0,
-    'QOc2': 24.0,
-    'QPc1': 24.0,
-    'QPc2': 24.0
+    'CLc1': 15.0,
+    'CLc2': 15.0,
+    'HOc1': 15.0,
+    'HOc2': 15.0,
+    'RBc1': 15.0,
+    'RBc2': 15.0,
+    'QOc1': 15.0,
+    'QOc2': 15.0,
+    'QPc1': 15.0,
+    'QPc2': 15.0
 } #30
 
 OIL_FUTURES_FEES = {    
-    'CLc1': {'name':'USD', 'quantity':24.0, 
+    'CLc1': {'name':'USD', 'quantity': 15.0, 
              'unit':'dollars', 'asset_type': 'Cash'},
-    'CLc2': {'name':'USD', 'quantity':24.0, 
+    'CLc2': {'name':'USD', 'quantity': 15.0, 
              'unit':'dollars', 'asset_type': 'Cash'},
-    'HOc1': {'name':'USD', 'quantity':25.2, 
+    'HOc1': {'name':'USD', 'quantity': 15.0, 
              'unit':'dollars', 'asset_type': 'Cash'},
-    'HOc2': {'name':'USD', 'quantity':25.2, 
+    'HOc2': {'name':'USD', 'quantity': 15.0, 
              'unit':'dollars', 'asset_type': 'Cash'},
-    'RBc1': {'name':'USD', 'quantity':25.2, 
+    'RBc1': {'name':'USD', 'quantity': 15.0, 
              'unit':'dollars', 'asset_type': 'Cash'},
-    'RBc2': {'name':'USD', 'quantity':25.2, 
+    'RBc2': {'name':'USD', 'quantity': 15.0, 
              'unit':'dollars', 'asset_type': 'Cash'},
-    'QOc1': {'name':'USD', 'quantity':24.0, 
+    'QOc1': {'name':'USD', 'quantity': 15.0, 
              'unit':'dollars', 'asset_type': 'Cash'},
-    'QOc2': {'name':'USD', 'quantity':24.0, 
+    'QOc2': {'name':'USD', 'quantity': 15.0, 
              'unit':'dollars', 'asset_type': 'Cash'},
-    'QPc1': {'name':'USD', 'quantity':24.0, 
+    'QPc1': {'name':'USD', 'quantity': 15.0, 
              'unit':'dollars', 'asset_type': 'Cash'},
-    'QPc2': {'name':'USD', 'quantity':24.0, 
+    'QPc2': {'name':'USD', 'quantity': 15.0, 
              'unit':'dollars', 'asset_type': 'Cash'}
     }
 

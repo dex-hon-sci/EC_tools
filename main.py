@@ -7,13 +7,15 @@ Created on Sat Jun 22 23:32:11 2024
 """
                                 
 # Import EC_tools    
-from EC_tools.read import render_PNL_xlsx
+from EC_tools.read import render_PNL_xlsx, open_portfolio
 import EC_tools.utility as util
 from EC_tools.trade import OneTradePerDay, BiDirectionalTrade
 from EC_tools.simple_trade import onetrade_simple
 from app.run_preprocess import run_preprocess
 from app.run_gen_MR_dir import MR_STRATEGIES_0, run_gen_signal_bulk
 from app.run_backtest import run_backtest_bulk
+
+from EC_tools.portfolio import PortfolioMetrics, PortfolioLog, PortfolioLog
 
 # Import global constants
 from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, \
@@ -128,14 +130,23 @@ def run_main(strategy_name,
         render_PNL_xlsx([MASTER_PNL_FILENAME], 
                         number_contracts_list = [5,10,15,20,25,50], 
                         suffix='_.xlsx')
+        
+    if backtest_runtype == "preload":
 
+        P = open_portfolio(MASTER_PNL_FILENAME)
+        PL = PortfolioLog(P)
+        PL.tradebook_filename = RESULT_FILEPATH + "/consistency/test_PNL_Portfolio_ArgusExact_Full_SR.csv"
+        PL.render_tradebook()
+        PL.render_tradebook_xlsx()
+        
     if plot_PNL_or_not:
     	pass
      
 
 if __name__ == "__main__":
 
-    #start_date = "2024-03-04"
+    #start_date = "2022-01-05"
+    #end_date = "2024-06-28"
     start_date = "2021-01-11"
     end_date = "2024-08-15"
     

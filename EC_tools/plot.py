@@ -23,7 +23,8 @@ import EC_tools.read as read
 import EC_tools.math_func as mfunc
 import EC_tools.utility as util
 
-from crudeoil_future_const import HISTORY_MINTUE_FILE_LOC, APC_FILE_LOC
+from crudeoil_future_const import HISTORY_MINTUE_FILE_LOC, APC_FILE_LOC, \
+                                  OPEN_HR_DICT, CLOSE_HR_DICT
 
 color_dict_light_mode = {'data_col':'k','bg_col':'white', 'col':'g'}
 color_dict_dark_mode = {'data_col':'white','bg_col':'k', 'col':'g'}
@@ -165,7 +166,6 @@ class PlotPricing(object):
                        quant_list, quant_price_list, direction="Neutral",
                        price_chart_title = "Date", 
                        events_lower_limit=70, events_upper_limit =78,
-
                        open_hr = '0330', close_hr='1930',
                        xlabel = "Time (minutes)",
                        x_format = '%H:%M',
@@ -516,7 +516,10 @@ def plot_minute(filename_minute: str, signal_filename: str,
                 price_approx: str = 'Open',
                 date_interest: str = "2022-05-19", 
                 direction: str = "Buy", 
-                APC_time_str: str = 'Forecast Period', title: str ="",
+                open_hr: str = '0330', 
+                close_hr: str = '1930',
+                APC_time_str: str = 'Forecast Period', 
+                title: str ="",
                 bppt_x1 =[], bppt_y1 = [], 
                 bppt_x2 =[], bppt_y2 = [], 
                 bppt_x3 =[], bppt_y3 = []):
@@ -578,6 +581,7 @@ def plot_minute(filename_minute: str, signal_filename: str,
                        quant_list, quant_price_list, 
                        direction=direction,
                        price_chart_title = date_interest+title, 
+                       open_hr= open_hr, close_hr = close_hr,
                        bppt_x1 = bppt_x1, bppt_y1 = bppt_y1, 
                        bppt_x2 = bppt_x2, bppt_y2 = bppt_y2, 
                        bppt_x3 = bppt_x3, bppt_y3 = bppt_y3)
@@ -605,9 +609,10 @@ if __name__ == "__main__":
     #date_interest = "2023-12-29"
     #date_interest = "2023-11-01"
     
-    symbol = 'CLc1'
+    symbol = 'QOc1'
 
-    date_interest = "2024-08-12"
+    date_interest = "2022-06-16"
     
     plot_minute(HISTORY_MINTUE_FILE_LOC[symbol], APC_FILE_LOC[symbol], 
-                date_interest = date_interest, title=symbol, direction="Sell")
+                date_interest = date_interest, title=symbol, direction="Sell",
+                open_hr= OPEN_HR_DICT[symbol] , close_hr = CLOSE_HR_DICT[symbol])

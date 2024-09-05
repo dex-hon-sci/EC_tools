@@ -709,7 +709,7 @@ class PortfolioLog(Portfolio):
         self._log.sort_values(by="Datetime", inplace=True, ignore_index=True)
         return self._log
 
-    @cached_property
+    @property
     def log(self) -> pd.DataFrame:
         """
         A simple log that only shows the Portfolio's value at 00:00:00 of the 
@@ -723,7 +723,7 @@ class PortfolioLog(Portfolio):
         """
         return self._make_log(simple_log=True)
 
-    @cached_property
+    @property
     def full_log(self) -> pd.DataFrame:
         """
         A full log that only shows every entry in the changes in the 
@@ -794,12 +794,10 @@ class PortfolioLog(Portfolio):
                 trade_return_fraction = (exit_price - entry_price) / entry_price
                 #scaled_return = 000
 
-                
             elif direction == "Short":
                 trade_return = entry_price - exit_price
                 trade_return_fraction = (entry_price - exit_price) / exit_price
                 
-            
             
             data = [trade_id, direction, commodity_name, symbol,
                     entry_date, entry_datetime, entry_price,
