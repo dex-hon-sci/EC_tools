@@ -35,6 +35,8 @@ PORTFOLIO_ARGUSEXACT_SR = "/home/dexter/Euler_Capital_codes/EC_tools/results/con
 OLD_BENCHMARK_SHORT = "/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/Old_Benchmark/profits_and_losses_data_benchmark_19_Short_.xlsx"
 OLD_BENCHMARK_FINENTRY_SHORT = "/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/Old_Benchmark/profits_and_losses_data_test_with_finiteentry_19_Short_.xlsx"
 PORTFOLIO_ARGUSEXACT_SHORT_SR = "/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/Portfolio_backtest_ArgusExact_Short_SR/test_PNL_Portfolio_ArgusExact_Short_SR_.xlsx"
+PORTFOLIO_ARGUSEXACT_SHORT_SR2 = "/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/Portfolio_backtest_ArgusExact_Short_SR2/test_PNL_Portfolio_ArgusExact_Short_SR2_.xlsx"
+PORTFOLIO_ARGUSEXACT_SHORT_SR3 = "/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/Portfolio_backtest_ArgusExact_Short_SR3/test_PNL_Portfolio_ArgusExact_Short_SR3_.xlsx"
 ARGUS_SAMPLE_SHORT = "/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/Argus_sample/Argus_sample_trades_2_.xlsx"
 ARGUS_SAMPLE_SHORT_MYBACKTEST = "/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/Argus_sample_with_mybacktest/Argus_sample_PNL_with_mybacktest_.xlsx"
 #####################
@@ -111,7 +113,7 @@ def twopanel_plot(x_data: list, y1_data: list, y2_data: list,
 
     
     for i, (x_element, y1_element) in enumerate(zip(sub_x_list, sub_y1_list)):
-        ax1.plot(x_element, y1_element, ls=sub_line_list[i], 
+        ax1.plot(x_element, y1_element,'-', ls=sub_line_list[i], 
                  label=sub_label_list[i], color=sub_col_list[i])
         
     ax1.plot(x_data, y1_data,'-', c=line_color, label=label, alpha = alpha)
@@ -152,7 +154,7 @@ if __name__=='__main__':
     
     # PLot PNL for the cumulative return for a specific strategy as well as 
     # the PNL for inidividual assets
-    FILENAME = PORTFOLIO_ARGUSEXACT_SR #OLD_BENCHMARK
+    FILENAME = PORTFOLIO_ARGUSEXACT_SHORT_SR #OLD_BENCHMARK
     date_col = 'Entry_Date'#'date'
     # Extract the cumulative PNL of the strategy
     date_all, cumPNL_all = extract_PNLplot_input(FILENAME, date_col=date_col)
@@ -168,17 +170,17 @@ if __name__=='__main__':
     date_list = [extract_PNLplot_input(FILENAME, 
                                        sheet_name=symbol_list[i], \
                                        date_col = date_col)[0] \
-                                                    for i in range(len(symbol_list))]
+                                       for i in range(len(symbol_list))]
     data_list = [extract_PNLplot_input(FILENAME, 
                                        sheet_name=symbol_list[i], 
                                        date_col = date_col)[1] \
-                                                     for i in range(len(symbol_list))]
+                                       for i in range(len(symbol_list))]
     return_list = [extract_PNLplot_input(FILENAME, 
                                          sheet_name=symbol_list[i], 
                                          val_col='scaled returns from trades', 
                                          date_col = date_col,
                                          fill_or_not=False)[1] \
-                                                   for i in range(len(symbol_list))]
+                                         for i in range(len(symbol_list))]
     
     #date_list = [date_CLc1, date_HOc1, date_RBc1, date_QOc1, date_QPc1]
     #data_list = [cumPNL_50_CLc1, cumPNL_50_HOc1, cumPNL_50_RBc1, cumPNL_50_QOc1, cumPNL_50_QPc1]
@@ -259,7 +261,7 @@ if __name__=='__main__':
                                                 val_col="cumulative P&L from trades")[0],
                           extract_PNLplot_input(OLD_BENCHMARK_FINENTRY_SHORT, date_col="date",
                                                 val_col="cumulative P&L from trades")[0],
-                          extract_PNLplot_input(PORTFOLIO_ARGUSEXACT_SHORT_SR,
+                          extract_PNLplot_input(PORTFOLIO_ARGUSEXACT_SHORT_SR3,
                                                 val_col="cumulative P&L from trades")[0], 
                           extract_PNLplot_input(ARGUS_SAMPLE_SHORT,
                                                 val_col="cumulative P&L from trades")[0],
@@ -270,7 +272,7 @@ if __name__=='__main__':
                                                 val_col="cumulative P&L from trades")[1],
                           extract_PNLplot_input(OLD_BENCHMARK_FINENTRY_SHORT, date_col="date",
                                                 val_col="cumulative P&L from trades")[1],
-                          extract_PNLplot_input(PORTFOLIO_ARGUSEXACT_SHORT_SR,
+                          extract_PNLplot_input(PORTFOLIO_ARGUSEXACT_SHORT_SR3,
                                                 val_col="cumulative P&L from trades")[1],
                           extract_PNLplot_input(ARGUS_SAMPLE_SHORT,
                                                 val_col="cumulative P&L from trades")[1],

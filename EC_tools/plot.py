@@ -557,13 +557,13 @@ def plot_minute(filename_minute: str, signal_filename: str,
     print(len(curve.to_numpy()[0][1:-1]), len(pdf))
     # Define the quantile list of interest based on a strategy
     # The lists are for marking the lines only. 
-    quant_list=['q0.1','q0.4','q0.5','q0.6','q0.9']
-    quant_price_list = [curve['0.1'], curve['0.4'], curve['0.5'], 
-                        curve['0.6'], curve['0.9']]
+    quant_list=['q0.05','q0.4','q0.5','q0.6','q0.95']
+    quant_price_list = [curve['0.05'], curve['0.4'], curve['0.5'], 
+                        curve['0.6'], curve['0.95']]
 
     # Define the upper and lower bound of the pricing plot in the y-axis
-    price_lower_limit = curve['0.05'].to_numpy()
-    price_upper_limit = curve['0.95'].to_numpy()
+    price_lower_limit = curve['0.005'].to_numpy()
+    price_upper_limit = curve['0.905'].to_numpy()
     
     # First set up the axes limit class to define the plot limit
     new_axis_limit = AxisLimit()
@@ -609,10 +609,10 @@ if __name__ == "__main__":
     #date_interest = "2023-12-29"
     #date_interest = "2023-11-01"
     
-    symbol = 'QOc1'
+    symbol = 'CLc1'
 
     date_interest = "2022-06-16"
     
     plot_minute(HISTORY_MINTUE_FILE_LOC[symbol], APC_FILE_LOC[symbol], 
-                date_interest = date_interest, title=symbol, direction="Sell",
+                date_interest = date_interest, title=symbol, direction="Buy",
                 open_hr= OPEN_HR_DICT[symbol] , close_hr = CLOSE_HR_DICT[symbol])

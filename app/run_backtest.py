@@ -183,18 +183,16 @@ def run_backtest_portfolio(TradeMethod,
         DESCRIPTION.
 
     """
-    # master function that runs the backtest itself.
-
+    # Turn the start and end date from str to datetime.datetime
+    start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")# datetime.datetime(2023,1,1)
+    end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")##datetime.datetime(2023,12,30)
+    
     # read the reformatted minute history data
     history_data = read.read_reformat_Portara_minute_data(filename_minute)
 
     # Find the date for trading, only "Buy" or "Sell" date are taken.
     trade_date_table = backtest.prepare_signal_interest(filename_buysell_signals, 
                                                         trim = False)
-    
-    # Turn the start and end date from str to datetime.datetime
-    start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")# datetime.datetime(2023,1,1)
-    end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")##datetime.datetime(2023,12,30)
     
     # Select for the date interval for investigation
     history_data = history_data[(history_data['Date'] >= start_date) & 
@@ -375,8 +373,8 @@ if __name__ == "__main__":
 #     FILEPATH = "/home/dexter/Euler_Capital_codes/EC_tools/results/"
 #     MASTER_PNL_FILENAME = FILEPATH+'argus_exact_PNL_amb3_full.csv'
 # =============================================================================
-    MASTER_SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/Argus_sample_signals_2.csv"
-    MASTER_PNL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/Argus_sample_PNL_with_mybacktest.pkl"
+    MASTER_SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/Argus_sample/Argus_sample_signals_2.csv"
+    MASTER_PNL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/Argus_sample_PNL_with_mybacktest_ShortShort.pkl"
     
     start_date = "2022-01-05"
     end_date = "2024-06-28"
@@ -396,6 +394,13 @@ if __name__ == "__main__":
                       save_or_not=True, 
                       merge_or_not=True)
     
+    from EC_tools.portfolio import PortfolioLog
+    
+    P = read.open_portfolio(MASTER_PNL_FILENAME)
+    PL = PortfolioLog(P)
+    PL.tradebook_filename = RESULT_FILEPATH + "/consistency/Argus_sample_PNL_with_mybacktest_ShortShort.csv"
+    PL.render_tradebook()
+    PL.render_tradebook_xlsx()
     #run_backtest(trade_choice_simple_2,FILENAME_MINUTE, FILENAME_BUYSELL_SIGNALS, 
     #             "2022-01-03", "2024-06-17")
 

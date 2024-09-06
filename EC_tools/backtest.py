@@ -552,10 +552,17 @@ def loop_portfolio_preloaded(portfo: Portfolio,
             
         # The time to open all positions
         pos_open_dt = datetime.datetime.combine(date_interest.date(), open_hr_dt)
+        
         print(i, pos_open_dt, direction, symbol)
+        
         trade_id = i #direction + str(i)
         
-        EES_dict, trade_open, trade_close, \
+        EES_dict = read.find_minute_EES(day, 
+                                        target_entry, target_exit, stop_exit,
+                                        open_hr=open_hr, close_hr=close_hr, 
+                                        direction = direction)
+        
+        trade_open, trade_close, \
         pos, exec_pos = trade_method(portfo).run_trade(day, 
                                                        give_obj_name, 
                                                        get_obj_name, 
