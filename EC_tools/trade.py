@@ -401,7 +401,8 @@ class OneTradePerDay(Trade):
         return trade_open, trade_close, pos_list, exec_pos_list
     
     def run_trade(self, 
-                  day: pd.DataFrame, 
+                  trunc_dict: dict,
+                  #day: pd.DataFrame, 
                   give_obj_name: str, 
                   get_obj_name: str, 
                   get_obj_quantity: float | int,
@@ -414,7 +415,7 @@ class OneTradePerDay(Trade):
                   fee: dict =  OIL_FUTURES_FEE,
                   open_time: datetime.datetime = None,
                   trade_id: int = 0) -> \
-                  tuple[dict, tuple, tuple, list, list]: 
+                  tuple[tuple, tuple, list, list]: 
         """
         This method only look into the data points that crosses the threashold.
         Thus it is fast but it only perform simple testing. 
@@ -422,9 +423,10 @@ class OneTradePerDay(Trade):
 
         Parameters
         ----------
-        EES_dict : dict
-            A dictionary for all possible EES values. This assume you are 
-            running a crossover loop.
+        trunc_dict : dict
+            Truncation dictionary. It contains the relevant points selected 
+            by some given EES values or EES ranges.
+            This assume you are running a crossover or range loop.
         give_obj_name : str
             The name of the give_obj, e.g. 'USD'.
         get_obj_name : str
@@ -451,11 +453,13 @@ class OneTradePerDay(Trade):
         """
         
         #Find the minute that the price crosses the EES values
-        EES_dict = read.find_minute_EES(day, 
-                                        target_entry, target_exit, stop_exit,
-                                        open_hr=open_hr, close_hr=close_hr, 
-                                        direction = direction)
-    
+# =============================================================================
+#         EES_dict = read.find_minute_EES(day, 
+#                                         target_entry, target_exit, stop_exit,
+#                                         open_hr=open_hr, close_hr=close_hr, 
+#                                         direction = direction)
+#     
+# =============================================================================
         # Input the position type
         if direction == 'Buy':
             pos_type= 'Long'
@@ -463,7 +467,7 @@ class OneTradePerDay(Trade):
             pos_type = 'Short'
             
         EES_target_list = [target_entry, target_exit, 
-                           stop_exit, EES_dict['close'][1]] 
+                           stop_exit, trunc_dict['close'][1]] 
         
         # run the trade via position module
         pos_list = self.open_positions(give_obj_name,
@@ -478,12 +482,12 @@ class OneTradePerDay(Trade):
 
         #print(get_obj_name, SIZE_DICT[get_obj_name])
         trade_open, trade_close, \
-        pos_list, exec_pos_list = self.execute_positions(EES_dict, pos_list,
+        pos_list, exec_pos_list = self.execute_positions(trunc_dict, pos_list,
                                                          pos_type = pos_type)
 
         # the search function for entry and exit time should be completely 
         # sepearate to the trading actions
-        return EES_dict, trade_open, trade_close, pos_list, exec_pos_list            
+        return trade_open, trade_close, pos_list, exec_pos_list            
 
 
 class BiDirectionalTrade(Trade):

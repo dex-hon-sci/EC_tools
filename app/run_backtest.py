@@ -222,6 +222,7 @@ def run_backtest_portfolio_preloaded(TradeMethod,
                                      master_signals_filename: str, 
                                      histroy_intraday_data_pkl: dict,
                                      start_date: str, end_date: str,
+                                     loop_method: str = "crossover",
                                      give_obj_name: str = "USD", 
                                      get_obj_quantity: int = 1,
                                      plot_or_not: bool = False): 
@@ -275,6 +276,7 @@ def run_backtest_portfolio_preloaded(TradeMethod,
                                            TradeMethod,
                                            trade_date_table, 
                                            histroy_intraday_data_pkl,
+                                           loop_method = loop_method,
                                            give_obj_name=give_obj_name,
                                            get_obj_quantity=get_obj_quantity,
                                            plot_or_not=plot_or_not)
@@ -297,6 +299,7 @@ def run_backtest_bulk(TradeMethod,
                       get_obj_quantity: int = 1,
                       open_hr_dict = OPEN_HR_DICT, 
                       close_hr_dict=CLOSE_HR_DICT,
+                      loop_method: str = "crossover",
                       save_or_not: bool = True, 
                       merge_or_not: bool = True):
             
@@ -339,6 +342,7 @@ def run_backtest_bulk(TradeMethod,
                                               master_signal_filename, 
                                               HISTORY_MINUTE_PKL,
                                               start_date, end_date,
+                                              loop_method = loop_method,
                                               give_obj_name=give_obj_name,
                                               get_obj_quantity=get_obj_quantity)
         backtest_result = PP
@@ -377,7 +381,10 @@ if __name__ == "__main__":
     MASTER_PNL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/Argus_sample_PNL_with_mybacktest_ShortShort.pkl"
     
     start_date = "2022-01-05"
-    end_date = "2024-06-28"
+    end_date = "2022-01-08"
+
+    #end_date = "2024-06-28"
+    
     #start_date = "2024-03-04"
     #end_date = "2024-06-17"
     
@@ -391,6 +398,7 @@ if __name__ == "__main__":
                       get_obj_quantity = 1,
                       open_hr_dict = OPEN_HR_DICT, 
                       close_hr_dict= CLOSE_HR_DICT,
+                      loop_method = "range",
                       save_or_not=True, 
                       merge_or_not=True)
     

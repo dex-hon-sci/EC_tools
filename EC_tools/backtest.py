@@ -471,6 +471,7 @@ def loop_portfolio_preloaded(portfo: Portfolio,
                              trade_method,
                              signal_table: pd.DataFrame, 
                              histroy_intraday_data_pkl, 
+                             loop_method: str = "crossover",
                              give_obj_name: str = "USD", 
                              get_obj_quantity: int = 1,
                              plot_or_not: bool = False):
@@ -514,15 +515,24 @@ def loop_portfolio_preloaded(portfo: Portfolio,
         
         if trade_method.__name__ == "OneTradePerDay":
             direction = item['Direction'] 
-
-            if direction == 'Buy' or direction == 'Sell':
-                target_entry = item['Entry_Price']
-                target_exit = item['Exit_Price'] 
-                stop_exit = item['StopLoss_Price'] 
-                
-            else:
-                target_entry, target_exit, stop_exit = 'NA', 'NA', 'NA'
             
+            if loop_method == "crossover":
+                if direction == 'Buy' or direction == 'Sell':
+                    target_entry = item['Entry_Price']
+                    target_exit = item['Exit_Price'] 
+                    stop_exit = item['StopLoss_Price'] 
+                    
+                else:
+                    target_entry, target_exit, stop_exit = 'NA', 'NA', 'NA'
+            elif loop_method == "range":
+                
+                if direction == 'Buy' or direction == 'Sell':
+                    target_entry = [item['Target_Lower_Entry_Price'], item['Target_Upper_Entry_Price']]
+                    target_exit = [item['Target_Lower_Exit_Price'], item['Target_Upper_Exit_Price']]
+                    stop_exit = item['StopLoss_Price'] 
+                else:
+                    target_entry, target_exit, stop_exit = ['NA', 'NA'], ['NA','NA'], 'NA'
+
         elif trade_method.__name__ == "BiDirectionalTrade":
             target_entry = {'Buy': item['Q0.4'],'Sell': item['Q0.6']}
             target_exit = {'Buy': item['Q0.6'], 'Sell': item['Q0.4']}
@@ -557,13 +567,32 @@ def loop_portfolio_preloaded(portfo: Portfolio,
         
         trade_id = i #direction + str(i)
         
-        EES_dict = read.find_minute_EES(day, 
-                                        target_entry, target_exit, stop_exit,
-                                        open_hr=open_hr, close_hr=close_hr, 
-                                        direction = direction)
+# =============================================================================
+#         EES_dict = read.find_minute_EES(day, 
+#                                         target_entry, target_exit, stop_exit,
+#                                         open_hr=open_hr, close_hr=close_hr, 
+#                                         direction = direction)
+# =============================================================================
+        if loop_method == "crossover":
+            trunc_dict = read.find_minute_EES(day, 
+                                              target_entry, target_exit, stop_exit,
+                                              open_hr=open_hr_dt, close_hr=close_hr_dt, 
+                                              direction = direction)
+        elif loop_method == "range":
+  
+            
+            # Find the appropiate range of EES
+            trunc_dict = read.find_minute_range(day, 
+                                                target_entry, target_exit, stop_exit,
+                                                open_hr=open_hr_dt, close_hr=close_hr_dt, 
+                                                direction = direction)
+            
+            target_entry_mid = (target_entry[1] - target_entry[0])/2
+            target_exit_mid =  (target_exit[1] - target_exit[0])/2
+            target_entry, target_exit = target_entry_mid, target_exit_mid 
         
         trade_open, trade_close, \
-        pos, exec_pos = trade_method(portfo).run_trade(day, 
+        pos, exec_pos = trade_method(portfo).run_trade(trunc_dict, 
                                                        give_obj_name, 
                                                        get_obj_name, 
                                                        get_obj_quantity, 
@@ -578,7 +607,7 @@ def loop_portfolio_preloaded(portfo: Portfolio,
                                                        trade_id= trade_id)
                 
         # plotting mid-backtest
-        plot_in_backtest(date_interest, EES_dict, direction, 
+        plot_in_backtest(date_interest, trunc_dict, direction, 
                           plot_or_not=plot_or_not)
         
     return portfo

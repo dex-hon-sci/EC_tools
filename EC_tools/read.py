@@ -749,6 +749,10 @@ def find_range(input_array: np.ndarray,
                     
     if len(target_range) != 2:
         raise Exception("Target Range input must contains exactly two values.")
+    if not target_range[1] > target_range[0]:
+        raise Exception("Second element is not larger than the first.\
+                        Target Range input must in the form of [lower_bound, \
+                                                                upper_bound].")
         
     lower_bound = np.repeat(target_range[0], len(input_array))
     upper_bound = np.repeat(target_range[1], len(input_array))
@@ -756,10 +760,13 @@ def find_range(input_array: np.ndarray,
     delta_lower = input_array - lower_bound
     delta_upper = upper_bound - input_array
     
-    delta = np.sign(delta_upper) + np.sign(delta_lower)
+    delta = np.sign(delta_upper) * np.sign(delta_lower)
+    
+    #print(np.sign(delta_lower), np.sign(delta_upper), delta)
+    #print(delta_lower, delta_upper, delta)
     
     range_indices = np.where(delta>0)
-    bound_indices = np.where(delta ==1)
+    bound_indices = np.where(delta ==0)
     outbound_indices = np.where(delta<0)
     
     return {'range_indices': range_indices,
@@ -977,7 +984,7 @@ def find_minute_range(histroy_data_intraday: pd.DataFrame,
                       price_approx: str = 'Open', 
                       time_proxy: str= 'Time',
                       direction: str = 'Neutral',
-                      dt_scale: str = 'datetime'):
+                      dt_scale: str = 'datetime'): # WIP
     
     # define subsample. turn the pandas series into a numpy array
     price_array = histroy_data_intraday[price_approx].to_numpy()
@@ -1036,8 +1043,15 @@ def find_minute_range(histroy_data_intraday: pd.DataFrame,
     
     
     # Define the closing time and closing price. Here we choose 19:25 for final trade
+    open_hr_str = open_hr.strftime("%H%M")
     close_hr_str = close_hr.strftime("%H%M")
-
+    ## Find the closest price and datettime instead of having it at exactly the open time
+    open_date_new, open_pt = find_closest_price(histroy_data_intraday, 
+                                                  target_hr = open_hr_str, 
+                                                  direction = 'forward')
+    open_date = date_array[np.where(time_array==open_date_new)[0]][0]
+    open_datetime = datetime.datetime.combine(pd.to_datetime(open_date).date(), 
+                                               open_date_new)
     ## Find the closest price and datettime instead of having it at exactly the close time
     close_date_new, close_pt = find_closest_price(histroy_data_intraday, 
                                                   target_hr=close_hr_str, 
@@ -1047,10 +1061,12 @@ def find_minute_range(histroy_data_intraday: pd.DataFrame,
     close_datetime = datetime.datetime.combine(pd.to_datetime(close_date).date(), 
                                                close_date_new)
 
-    range_dict = {'entry_region': list(zip(entry_times,entry_pts)),
-                  'exit_region': list(zip(exit_times,exit_pts)),
+    range_dict = {'entry': list(zip(entry_times,entry_pts)),
+                  'exit': list(zip(exit_times,exit_pts)),
                   'stop': list(zip(stop_times,stop_pts)),
+                  'open': tuple((open_datetime, open_pt)),
                   'close': tuple((close_datetime, close_pt))}
+    print(range_dict)
 
     return range_dict
 
