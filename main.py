@@ -92,7 +92,7 @@ def run_main(strategy_name,
     strategy = MR_STRATEGIES_0[strategy_name]
     #SAVE_SIGNAL_FILENAME_LIST = list(FILE_LOC.values())
    
-    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/consistency/test_signal_Portfolio_ArgusExact_Full_SR3.csv'
+    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/consistency/test_signal_Portfolio_ArgusExact_Short_SR_range.csv'
 
     
     run_gen_signal_bulk(strategy, FILE_LOC,
@@ -109,7 +109,7 @@ def run_main(strategy_name,
 
     print("=========Running Back-Testing =============")
     
-    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/consistency/test_PNL_Portfolio_ArgusExact_Full_SR3.pkl' 
+    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/consistency/test_PNL_Portfolio_ArgusExact_Short_SR_range.pkl' 
     #SAVE_PNL_FILENAME_LIST = FILE_PNL_LOC
 
     run_backtest_bulk(trade_method, 
@@ -123,7 +123,8 @@ def run_main(strategy_name,
                       open_hr_dict = OPEN_HR_DICT_EARLY, 
                       close_hr_dict= CLOSE_HR_DICT_EARLY,
                       save_or_not=True, 
-                      merge_or_not=True)
+                      merge_or_not=True,
+                      loop_method='range')
     
     print("=========Running PNL EXCEL File =============")
     if backtest_runtype == 'list':
@@ -135,7 +136,7 @@ def run_main(strategy_name,
 
         P = open_portfolio(MASTER_PNL_FILENAME)
         PL = PortfolioLog(P)
-        PL.tradebook_filename = RESULT_FILEPATH + "/consistency/test_PNL_Portfolio_ArgusExact_Full_SR3.csv"
+        PL.tradebook_filename = RESULT_FILEPATH + "/consistency/test_PNL_Portfolio_ArgusExact_Short_SR_range.csv"
         PL.render_tradebook()
         PL.render_tradebook_xlsx()
         

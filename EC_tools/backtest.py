@@ -7,6 +7,7 @@ import numpy as np
 import datetime as datetime
 
 from typing import Protocol
+from enum import Enum
 
 # import from EC_tools
 import EC_tools.read as read
@@ -205,7 +206,11 @@ def plot_in_backtest(date_interest: str | datetime.datetime,
             stop_times, stop_pts = list(zip(*EES_dict['stop']))
         else: 
             stop_times, stop_pts = [], []
-        
+            
+        print('bppt', entry_times, entry_pts,
+                      exit_times, exit_pts,
+                      stop_times, stop_pts)
+    
         plot.plot_minute(FILENAME_MINUTE, APC_FILENAME, 
                          date_interest = date_interest_str, 
                          direction=direction,
@@ -217,6 +222,9 @@ def plot_in_backtest(date_interest: str | datetime.datetime,
         pass
 
 ##############################################
+class LoopType(Enum):
+    pass 
+
 class BacktestLoop(Protocol):
     pass
 

@@ -774,10 +774,10 @@ class PortfolioLog(Portfolio):
         PP = read.group_trade(position_pool,
                               select_func=select_func_fill)
         
-        print(PP[0:2])
+        #print(PP[0:2])
         
         for i, ele in enumerate(PP):
-            print(i)
+            #print(i)
             trade_id = ele[0].pos_id
             direction = re.sub(r'\-(.*)', '', ele[0].pos_type)
             symbol = ele[0].get_obj['name']

@@ -270,7 +270,8 @@ class PlotPricing(object):
         # Add subcomponents  
         subcomp = SubComponents(ax1)
         subcomp._quant_lines = True
-        subcomp._add_EES_region = True
+        subcomp._add_EES_region = False
+        subcomp._add_EES_range_region = True
         subcomp._add_crossover_pts = True
         subcomp._add_trade_region = True
 
@@ -296,16 +297,39 @@ class PlotPricing(object):
                                 end_x = self.axis_limit.end_line, 
                                 direction = direction)
             
+        if subcomp._add_EES_range_region:
+            
+            if direction == "Buy":
+                entry_price = [quant_price_list[1], quant_price_list[2]]
+                exit_price = [quant_price_list[4], quant_price_list[5]]
+                stop_loss = quant_price_list[0]
+            elif direction == "Sell":
+                entry_price = [quant_price_list[4],quant_price_list[5]]
+                exit_price = [quant_price_list[1], quant_price_list[2]]
+                stop_loss = quant_price_list[6]
+            elif direction == "Neutral":
+                entry_price = [np.nan, np.nan]
+                exit_price = [np.nan, np.nan]
+                stop_loss = np.nan
+                
+            subcomp.EES_range_region(entry_price, exit_price ,stop_loss, 
+                                     txt_shift_x_date, txt_shift_y, 
+                                     start_x = EES_txt_start_time,
+                                     end_x = self.axis_limit.end_line, 
+                                     direction = direction)
+                            
+            
         # add quantile lines to the plot
         if subcomp._quant_lines:
             subcomp.quant_lines(quant_list, quant_price_list, 
-                                        txt_shift_x_date, txt_shift_y, 
-                            start_x = self.axis_limit.start_line, 
-                            end_x = self.axis_limit.end_line, 
-                            alpha = 0.5)
+                                txt_shift_x_date, txt_shift_y, 
+                                start_x = self.axis_limit.start_line, 
+                                end_x = self.axis_limit.end_line, 
+                                alpha = 0.5)
             
         # add cross over points
         if subcomp._add_crossover_pts:
+            print("Add crossover points")
             bppt_x1 = [datetime.datetime.combine(datetime.date.today(), t.time()) 
                        for t in bppt_x1]
             bppt_x2 = [datetime.datetime.combine(datetime.date.today(), t.time()) 
@@ -483,6 +507,103 @@ class SubComponents(object):
                      "Stop Loss", 
                       fontsize=8, color=pt_col, bbox=dict(boxstyle="round",
                        ec= pt_col,fc='#80271B'))
+
+
+    def EES_range_region(self, 
+                         entry_price_range, exit_price_range, stop_loss, 
+                         txt_shift_x, txt_shift_y, 
+                         start_x = 0.0, end_x = 2150, 
+                         direction="Neutral"):
+        """
+        A function that add the Entry, Exit, and Stop Loss regions to a plot.
+        It plot only in horizontal line. I will change this to np.arrage later.
+    
+        Parameters
+        ----------
+        ax : <class 'matplotlib.axes._axes.Axes'>
+            The figure.
+        entry_price : float
+            entry_price.
+        exit_price : float
+            exit_price.
+        stop_loss : float
+            stop_loss.
+        txt_shift_x : float
+            The shift in x-axis for the text.
+        txt_shift_y : float
+            The shift in y-axis for the text.
+        direction : str, optional
+            "Buy", "Sell", or "Neutral" signal. The default is "Neutral".
+    
+        """
+        # dashed line is the entry line, solid line is the exit line
+        # dashed red line is the stop loss
+        
+        if direction == "Buy":
+            limit = -10000
+        elif direction == "Sell":
+            limit = 10000
+        elif direction == "Neutral":
+            limit = np.nan
+            
+        entry_price_lower = float(entry_price_range[0].iloc[0])
+        entry_price_upper = float(entry_price_range[1].iloc[0])
+        
+        exit_price_lower = float(exit_price_range[0].iloc[0])
+        exit_price_upper = float(exit_price_range[1].iloc[0])
+        
+        stop_loss = float(stop_loss.iloc[0])
+
+        # The EES lines
+        self.ax.hlines(entry_price_lower, self.axis_limit.start_line, 
+                       self.axis_limit.end_line, color='#18833D', 
+                       ls="dashed", lw = 2)
+        self.ax.hlines(entry_price_upper, self.axis_limit.start_line, 
+                       self.axis_limit.end_line, color='#18833D', 
+                       ls="dashed", lw = 2)
+        self.ax.hlines(exit_price_lower, self.axis_limit.start_line, 
+                       self.axis_limit.end_line, color='#18833D', 
+                       ls="solid", lw = 2)
+        self.ax.hlines(exit_price_upper, self.axis_limit.start_line, 
+                       self.axis_limit.end_line, color='#18833D', 
+                       ls="solid", lw = 2)
+        self.ax.hlines(stop_loss, self.axis_limit.start_line, 
+                       self.axis_limit.end_line, color='#E5543D', 
+                       ls = "dashed", lw = 2)
+        
+        # Green shade is the target region.
+        self.ax.fill_between([self.axis_limit.start_line, 
+                              self.axis_limit.end_line], 
+                              entry_price_lower, entry_price_upper, 
+                              color='green', alpha=0.3)
+        self.ax.fill_between([self.axis_limit.start_line, 
+                              self.axis_limit.end_line], 
+                              exit_price_lower, exit_price_upper, 
+                              color='green', alpha=0.3)
+        
+        # Red shade is the stop loss region. 
+        self.ax.fill_between([self.axis_limit.start_line, 
+                              self.axis_limit.end_line], 
+                             stop_loss, limit, 
+                             color='red', alpha=0.3)
+        
+        # The texts that indicate the regions
+        self.ax.text(start_x + txt_shift_x, entry_price_upper + txt_shift_y, 
+                     "Entry Price", 
+                      fontsize=8, color = pt_col, bbox=dict(boxstyle="round",
+                      ec= pt_col,fc='#206829'))
+                      
+                     # facecolor='#206829')
+        self.ax.text(start_x + txt_shift_x, exit_price_upper + txt_shift_y, 
+                     "Exit Price", 
+                      fontsize=8, color= pt_col, bbox=dict(boxstyle="round",
+                       ec= pt_col,fc='#206829'))
+                      
+        self.ax.text(start_x + txt_shift_x, stop_loss + txt_shift_y, 
+                     "Stop Loss", 
+                      fontsize=8, color=pt_col, bbox=dict(boxstyle="round",
+                       ec= pt_col,fc='#80271B'))
+
         
     def trade_region(self, open_hr, close_hr):
         # fill the closed trading hours with shade
@@ -499,12 +620,15 @@ class SubComponents(object):
         self.ax.vlines(open_hr, 0, 2000, 'k')
         self.ax.vlines(close_hr, 0, 2000, 'k')
     
-    def crossover_pts(self, bppt_x1, bppt_y1, bppt_x2, bppt_y2, 
-                          bppt_x3, bppt_y3):
+    def crossover_pts(self, 
+                      bppt_x1, bppt_y1, 
+                      bppt_x2, bppt_y2, 
+                      bppt_x3, bppt_y3):
+        print("crossover_pts")
         # crossover points set 1 
         self.ax.plot(bppt_x1, bppt_y1,'o', ms=10, c='blue')
         self.ax.plot(bppt_x2, bppt_y2,'o', ms=10, c='green')
-        self.ax.plot(bppt_x3, bppt_y3,'o', ms=10, c='red')
+        self.ax.plot(bppt_x3, bppt_y3,'o', ms=26, c='red')
         
     def buysellpoints(self, buy_time = "1201", buy_price =  86.05,
                            sell_time = "1900", sell_price = 85.70):
@@ -557,13 +681,21 @@ def plot_minute(filename_minute: str, signal_filename: str,
     print(len(curve.to_numpy()[0][1:-1]), len(pdf))
     # Define the quantile list of interest based on a strategy
     # The lists are for marking the lines only. 
-    quant_list=['q0.05','q0.4','q0.5','q0.6','q0.95']
-    quant_price_list = [curve['0.05'], curve['0.4'], curve['0.5'], 
-                        curve['0.6'], curve['0.95']]
+    #quant_list=['q0.05','q0.4','q0.5','q0.6','q0.95']
+    #quant_price_list = [curve['0.05'], curve['0.4'], curve['0.5'], 
+    #                    curve['0.6'], curve['0.95']]
+    
+    quant_list=['q0.05','q0.25', 'q0.4', 'q0.5', 'q0.6', 'q0.75', 'q0.95']
+    quant_price_list = [curve['0.05'], 
+                        curve['0.25'], curve['0.4'], 
+                        curve['0.5'], 
+                        curve['0.6'], curve['0.75'], 
+                        curve['0.95']]
+
 
     # Define the upper and lower bound of the pricing plot in the y-axis
-    price_lower_limit = curve['0.005'].to_numpy()
-    price_upper_limit = curve['0.905'].to_numpy()
+    price_lower_limit = curve['0.03'].to_numpy()
+    price_upper_limit = curve['0.97'].to_numpy()
     
     # First set up the axes limit class to define the plot limit
     new_axis_limit = AxisLimit()
@@ -611,8 +743,8 @@ if __name__ == "__main__":
     
     symbol = 'CLc1'
 
-    date_interest = "2022-06-16"
+    date_interest = "2022-06-17"
     
     plot_minute(HISTORY_MINTUE_FILE_LOC[symbol], APC_FILE_LOC[symbol], 
-                date_interest = date_interest, title=symbol, direction="Buy",
+                date_interest = date_interest, title=symbol, direction="Sell",
                 open_hr= OPEN_HR_DICT[symbol] , close_hr = CLOSE_HR_DICT[symbol])

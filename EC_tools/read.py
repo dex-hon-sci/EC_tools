@@ -1066,7 +1066,7 @@ def find_minute_range(histroy_data_intraday: pd.DataFrame,
                   'stop': list(zip(stop_times,stop_pts)),
                   'open': tuple((open_datetime, open_pt)),
                   'close': tuple((close_datetime, close_pt))}
-    print(range_dict)
+    #print(range_dict)
 
     return range_dict
 

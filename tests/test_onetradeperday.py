@@ -12,7 +12,7 @@ from EC_tools.portfolio import Asset, Portfolio
 from EC_tools.position import Position, ExecutePosition, PositionStatus
 from EC_tools.trade import Trade, OneTradePerDay
 from EC_tools.backtest import extract_intraday_minute_data, \
-                            prepare_signal_interest, plot_in_backtest
+                              prepare_signal_interest, plot_in_backtest
 from crudeoil_future_const import DATA_FILEPATH, RESULT_FILEPATH
 import EC_tools.read as read
 
@@ -87,24 +87,29 @@ def onetradeperday(date_interest, direction):
                                                        target_hr= close_hr,
                                                        direction='backward')
 
+    EES_dict = read.find_minute_EES(day, 
+                                    target_entry, target_exit, stop_exit,
+                                    open_hr=open_hr_dt, close_hr=close_hr_dt, 
+                                    direction = direction)
+    print(EES_dict)
     print('1')
     #print('day', day, read.find_crossover(day['Open'].to_numpy(), stop_exit))
     #print(target_entry, target_exit, stop_exit)
     # this is the main function to be tested
-    EES_dict, trade_open, trade_close, pos_list, exec_pos_list = \
-        OneTradePerDay(P1).run_trade(day, 
-                                     give_obj_name, get_obj_name, 
-                                     50, target_entry, 
-                                     target_exit, stop_exit, 
-                                     open_hr=open_hr_dt, 
-                                     close_hr=close_hr_dt,
-                                     direction = direction)
+    trade_open, trade_close, pos_list, exec_pos_list = \
+    OneTradePerDay(P1).run_trade(EES_dict,  
+                                 give_obj_name, get_obj_name, 
+                                 50, target_entry, 
+                                 target_exit, stop_exit, 
+                                 open_hr=open_hr_dt, 
+                                 close_hr=close_hr_dt,
+                                 direction = direction)
                                           
     #print(EES_dict, trade_open, trade_close)
     print('2')
 
     
-    plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=False)
+    plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=True)
 
     return P1, day, target_entry, target_exit, \
         stop_exit, open_hr_dt, close_hr_dt, EES_dict, trade_open, \
@@ -202,7 +207,7 @@ def test_onetradeperday_buy_stoploss() -> None:
     
 #test_onetradeperday_buy_noentry() 
 test_onetradeperday_buy_normalexit()
-test_onetradeperday_buy_stoploss()
+#test_onetradeperday_buy_stoploss()
 
 def test_onetradeperday_buy_closeexit() -> None:   
     give_obj_name = "USD"

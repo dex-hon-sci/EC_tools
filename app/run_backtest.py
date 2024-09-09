@@ -203,7 +203,7 @@ def run_backtest_portfolio(TradeMethod,
     
     # Initialise Portfolio
     P1 = Portfolio()
-    USD_initial = Asset("USD", 10_300_000, "dollars", "Cash") # initial fund
+    USD_initial = Asset("USD", 10_000_000, "dollars", "Cash") # initial fund
     P1.add(USD_initial,datetime=datetime.datetime(2020,12,31))
     
     # loop through the date and set the EES prices for each trading day   
