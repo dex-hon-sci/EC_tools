@@ -86,11 +86,16 @@ class Trade(Protocol):
                     'unit': give_obj_unit, 
                     'asset_type': give_obj_type, 
                     'misc':{}}
-
+        #print("before add fee", fee, get_obj_quantity)
+        if type(fee) == dict:
+            new_fee = fee.copy()
+            new_fee['quantity'] = fee['quantity']*get_obj_quantity
+        elif fee == None:
+            new_fee = None
         # Create a position
         pos = Position(give_obj, get_obj, target_price, 
                        portfolio= self._portfolio, size = size,
-                       fee = fee, pos_type = pos_type, 
+                       fee = new_fee, pos_type = pos_type, 
                        open_time = open_time,
                        pos_id = trade_id)
 

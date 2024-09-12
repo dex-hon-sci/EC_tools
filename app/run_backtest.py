@@ -9,6 +9,7 @@ import getpass
 import EC_tools.read as read
 import EC_tools.backtest as backtest
 import EC_tools.utility as util
+from EC_tools.backtest import LoopType, Loop
 from EC_tools.trade import OneTradePerDay
 from EC_tools.simple_trade import onetrade_simple
 from EC_tools.portfolio import Asset, Portfolio
@@ -134,7 +135,7 @@ def run_backtest_list(trade_choice,
                       start_date, end_date,
                       open_hr_dict = OPEN_HR_DICT, 
                       close_hr_dict = CLOSE_HR_DICT, 
-                      save_or_not: bool = False):
+                      save_or_not: bool = False) -> dict:
 
     
     output_dict = dict()
@@ -173,7 +174,9 @@ def run_backtest_list(trade_choice,
 def run_backtest_portfolio(TradeMethod,
                            filename_minute: str, 
                            filename_buysell_signals: str, 
-                           start_date: str, end_date: str):
+                           start_date: str, end_date: str,
+                           loop_type: LoopType = LoopType.CROSSOVER) \
+                           -> Portfolio:
     """
     The basic backtest method utilising the Portfolio module.
     
@@ -224,12 +227,12 @@ def run_backtest_portfolio(TradeMethod,
     P1.add(USD_initial,datetime=datetime.datetime(2020,12,31))
     
     # loop through the date and set the EES prices for each trading day   
-    P1 = backtest.loop_date_portfolio(P1, TradeMethod,
-                                      trade_date_table, history_data,
-                                      give_obj_name = "USD", get_obj_name = "HOc1",
-                                      get_obj_quantity = 10,
-                                      open_hr='1300', close_hr='1828', 
-                                      plot_or_not = False)    
+    P1 = Loop(loop_type).loop_date_portfolio(P1, TradeMethod,
+                                             trade_date_table, history_data,
+                                             give_obj_name = "USD", get_obj_name = "HOc1",
+                                             get_obj_quantity = 10,
+                                             open_hr='1300', close_hr='1828', 
+                                             plot_or_not = False)    
     print('master_table', P1.master_table)
 
     return P1
@@ -242,6 +245,7 @@ def run_backtest_portfolio_preloaded(TradeMethod,
                                      loop_method: str = "crossover",
                                      give_obj_name: str = "USD", 
                                      get_obj_quantity: int = 1,
+                                     loop_type: LoopType = LoopType.CROSSOVER,
                                      plot_or_not: bool = False): 
     """
     
@@ -265,7 +269,7 @@ def run_backtest_portfolio_preloaded(TradeMethod,
 
     Returns
     -------
-    P1 : TYPE
+    P1 : Portfolio object
         DESCRIPTION.
 
     """
@@ -289,14 +293,22 @@ def run_backtest_portfolio_preloaded(TradeMethod,
     P1.add(USD_initial,datetime=datetime.datetime(2020,12,31))
     
     # a list of input files
-    P1 = backtest.loop_portfolio_preloaded(P1, 
-                                           TradeMethod,
+# =============================================================================
+#     P1 = Loop(loop_type).loop_portfolio_preloaded(P1, 
+#                                                   TradeMethod,
+#                                                   trade_date_table, 
+#                                                   histroy_intraday_data_pkl,
+#                                                   give_obj_name=give_obj_name,
+#                                                   get_obj_quantity=get_obj_quantity,
+#                                                   plot_or_not=plot_or_not)
+# =============================================================================
+    P1 = backtest.loop_portfolio_preloaded(P1, TradeMethod,
                                            trade_date_table, 
                                            histroy_intraday_data_pkl,
-                                           loop_method = loop_method,
                                            give_obj_name=give_obj_name,
                                            get_obj_quantity=get_obj_quantity,
-                                           plot_or_not=plot_or_not)
+                                           plot_or_not=plot_or_not,
+                                           loop_method="range")
     
     t2 = time.time()-t1
     print("It takes {} seconds to run the backtest".format(t2))
@@ -316,7 +328,7 @@ def run_backtest_bulk(TradeMethod,
                       get_obj_quantity: int = 1,
                       open_hr_dict = OPEN_HR_DICT, 
                       close_hr_dict=CLOSE_HR_DICT,
-                      loop_method: str = "crossover",
+                      loop_type: LoopType = LoopType.CROSSOVER,
                       save_or_not: bool = True, 
                       merge_or_not: bool = True):
             
@@ -344,13 +356,6 @@ def run_backtest_bulk(TradeMethod,
             read.merge_raw_data(SAVE_FILENAME_LIST, 
                                 master_pnl_filename, sort_by="Entry_Date")
         
-# =============================================================================
-#     elif method == "portfolio":
-#         
-#         backtest_result =  run_backtest_portfolio(FILENAME_MINUTE, 
-#                                                   FILENAME_BUYSELL_SIGNALS, 
-#                                                   start_date, end_date)
-# =============================================================================
         
     elif method == "preload":
         #MASTER_SIGNAL_FILENAME
@@ -360,9 +365,10 @@ def run_backtest_bulk(TradeMethod,
                                               master_signal_filename, 
                                               HISTORY_MINUTE_PKL,
                                               start_date, end_date,
-                                              loop_method = loop_method,
+                                              loop_type = loop_type,
                                               give_obj_name=give_obj_name,
                                               get_obj_quantity=get_obj_quantity)
+        
         backtest_result = PP
         if save_or_not: # save pkl portfolio
             file = open(master_pnl_filename, 'wb')
@@ -416,7 +422,7 @@ if __name__ == "__main__":
                       get_obj_quantity = 1,
                       open_hr_dict = OPEN_HR_DICT, 
                       close_hr_dict= CLOSE_HR_DICT,
-                      loop_method = "range",
+                      loop_type = LoopType.CROSSOVER,
                       save_or_not=True, 
                       merge_or_not=True)
     
@@ -427,6 +433,7 @@ if __name__ == "__main__":
     PL.tradebook_filename = RESULT_FILEPATH + "/consistency/Argus_sample_PNL_with_mybacktest_ShortShort.csv"
     PL.render_tradebook()
     PL.render_tradebook_xlsx()
+    
     #run_backtest(trade_choice_simple_2,FILENAME_MINUTE, FILENAME_BUYSELL_SIGNALS, 
     #             "2022-01-03", "2024-06-17")
 

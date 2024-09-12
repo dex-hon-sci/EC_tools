@@ -247,8 +247,8 @@ def plot_in_backtest(date_interest: str | datetime.datetime,
     
 def gen_trunc_dict(loop_type: LoopType, 
                    day: pd.DataFrame, 
-                   target_entry: float |list[float,float] |tuple(float,float), 
-                   target_exit: float |list[float,float] |tuple(float,float), 
+                   target_entry: float |list[float,float] |tuple[float, float], 
+                   target_exit: float |list[float,float] |tuple[float, float], 
                    stop_exit: float, 
                    open_hr: datetime.datetime, 
                    close_hr: datetime.datetime, 
@@ -321,7 +321,7 @@ def gen_trunc_dict(loop_type: LoopType,
         target_exit_mid =  (target_exit[1] - target_exit[0])/2
         target_entry, target_exit = target_entry_mid, target_exit_mid 
         
-        return trunc_dict, target_entry, target_exit, stop_exit
+    return trunc_dict, target_entry, target_exit, stop_exit
     
 
 def load_EES_from_signal(trade_method, 
@@ -441,37 +441,55 @@ def loop_date(trade_method,
 
     """
 
-    symbol_list = signal_table['Price_Code']
-    direction_list = signal_table['Direction'] 
-    commodity_list = signal_table['Commodity_name']
-    
-    entry_price_list = signal_table['Entry_Price']
-    exit_price_list = signal_table['Exit_Price']
-    stoploss_price_list = signal_table['StopLoss_Price']
-
-    
-    date_interest_list = signal_table['Date']
-    full_contract_symbol_list = signal_table['Contract_Month']
-
-    get_obj_name_list = signal_table['Price_Code']
-    strategy_name_list = signal_table['strategy_name']
-    
-        
+# =============================================================================
+#     symbol_list = signal_table['Price_Code']
+#     direction_list = signal_table['Direction'] 
+#     commodity_list = signal_table['Commodity_name']
+#     
+#     entry_price_list = signal_table['Entry_Price']
+#     exit_price_list = signal_table['Exit_Price']
+#     stoploss_price_list = signal_table['StopLoss_Price']
+# 
+#     
+#     date_interest_list = signal_table['Date']
+#     full_contract_symbol_list = signal_table['Contract_Month']
+# 
+#     get_obj_name_list = signal_table['Price_Code']
+#     strategy_name_list = signal_table['strategy_name']
+#     
+#         
+#     # make bucket 
+#     book = Bookkeep(bucket_type='backtest')
+#     dict_trade_PNL = book.make_bucket(keyword=strategy_name)
+#     
+#     for date_interest, direction, commodity_name, \
+#         entry_price, exit_price, stoploss_price, \
+#         price_code, full_contract_symbol, \
+#         strategy_name in zip(date_interest_list,  \
+#                              direction_list, commodity_list,
+#                              entry_price_list, exit_price_list, stoploss_price_list,
+#                              symbol_list,
+#                              full_contract_symbol_list,
+#                              strategy_name_list):
+# =============================================================================
     # make bucket 
     book = Bookkeep(bucket_type='backtest')
     dict_trade_PNL = book.make_bucket(keyword=strategy_name)
-    
+
     trade_id = 0
-    for date_interest, direction, commodity_name, \
-        entry_price, exit_price, stoploss_price, \
-        price_code, full_contract_symbol, \
-        strategy_name in zip(date_interest_list,  \
-                             direction_list, commodity_list,
-                             entry_price_list, exit_price_list, stoploss_price_list,
-                             symbol_list,
-                             full_contract_symbol_list,
-                             strategy_name_list):
-                                
+
+    for i in range(len(signal_table)):
+        
+        date_interest = signal_table['Date'].iloc[i]
+        direction = signal_table['Direction'].iloc[i]
+        commodity_name = signal_table['Commodity_name'].iloc[i]
+        entry_price = signal_table['Entry_Price'].iloc[i]
+        exit_price = signal_table['Exit_Price'].iloc[i]
+        stoploss_price = signal_table['StopLoss_Price'].iloc[i]
+        price_code = signal_table['Price_Code'].iloc[i]
+        full_contract_symbol = signal_table['Contract_Month'].iloc[i]
+        strategy_name = signal_table['strategy_name'].iloc[i]
+        
         if direction == 'Buy':
             target_entry = entry_price
             target_exit = exit_price
@@ -541,9 +559,8 @@ def loop_date(trade_method,
         dict_trade_PNL = book.store_to_bucket_single(data)
                                     
         # plotting mid-backtest
-        plot_in_backtest(date_interest, EES_dict, direction, 
+        plot_in_backtest(date_interest, price_code, EES_dict, direction, 
                          plot_or_not=plot_or_not)
-        
         trade_id = trade_id +1       
 
         #print('info', data)
@@ -617,7 +634,7 @@ def loop_date_portfolio(portfo: type[Portfolio],
         print('==================================')
 
         # plotting mid-backtest
-        plot_in_backtest(date_interest, EES_dict, direction, 
+        plot_in_backtest(date_interest, price_code, EES_dict, direction, 
                          plot_or_not=plot_or_not)
         i = i+1
         
@@ -768,13 +785,10 @@ def loop_portfolio_preloaded(portfo: Portfolio,
                                                        trade_id= trade_id)
                 
         # plotting mid-backtest
-        plot_in_backtest(date_interest, trunc_dict, direction, 
+        plot_in_backtest(date_interest,get_obj_name, trunc_dict, direction, 
                           plot_or_not=plot_or_not)
         
     return portfo
-
-
-
 
 
 
@@ -786,19 +800,9 @@ class Loop(Protocol):
     
     def __init__(self, 
                  loop_type: LoopType = LoopType.CROSSOVER):
+                 
         self._loop_type = loop_type
-        self._signal_dtype = None
-        self._history_dtype = None
-        
-        if self._signal_dtype == "1":
-            pass
-        elif self._signal_dtype == "2":
-            pass
-        
-        if self._history_dtype == "1":
-            pass
-        elif self._history_dtype == "2":
-            pass
+
         
     def loop_date(trade_method, 
                   signal_table: pd.DataFrame, 
@@ -809,10 +813,11 @@ class Loop(Protocol):
                   sort_by: str = 'Entry_Date') -> pd.DataFrame:
         """
         Fast looping method that generate simple CSV output file.
-        This method isolate out the crossover points to find optimal EES 
-        using onetradeperday. This loop is meant to be fast and only produce a 
+        This loop is meant to be fast and only produce a 
         simple table, not a portfolio file.
-    
+        
+        This loop assume trading one asset with a unique symbol.
+        
         Parameters
         ----------
         trade_method : TYPE
@@ -844,38 +849,24 @@ class Loop(Protocol):
             DESCRIPTION.
     
         """
-    
-        symbol_list = signal_table['Price_Code']
-        direction_list = signal_table['Direction'] 
-        commodity_list = signal_table['Commodity_name']
-        
-        entry_price_list = signal_table['Entry_Price']
-        exit_price_list = signal_table['Exit_Price']
-        stoploss_price_list = signal_table['StopLoss_Price']
-    
-        
-        date_interest_list = signal_table['Date']
-        full_contract_symbol_list = signal_table['Contract_Month']
-    
-        get_obj_name_list = signal_table['Price_Code']
-        strategy_name_list = signal_table['strategy_name']
-        
-            
         # make bucket 
         book = Bookkeep(bucket_type='backtest')
         dict_trade_PNL = book.make_bucket(keyword=strategy_name)
-        
+    
         trade_id = 0
-        for date_interest, direction, commodity_name, \
-            entry_price, exit_price, stoploss_price, \
-            price_code, full_contract_symbol, \
-            strategy_name in zip(date_interest_list,  \
-                                 direction_list, commodity_list,
-                                 entry_price_list, exit_price_list, stoploss_price_list,
-                                 symbol_list,
-                                 full_contract_symbol_list,
-                                 strategy_name_list):
-                                    
+    
+        for i in range(len(signal_table)):
+            # Inputs
+            date_interest = signal_table['Date'].iloc[i]
+            direction = signal_table['Direction'].iloc[i]
+            commodity_name = signal_table['Commodity_name'].iloc[i]
+            entry_price = signal_table['Entry_Price'].iloc[i]
+            exit_price = signal_table['Exit_Price'].iloc[i]
+            stoploss_price = signal_table['StopLoss_Price'].iloc[i]
+            price_code = signal_table['Price_Code'].iloc[i]
+            full_contract_symbol = signal_table['Contract_Month'].iloc[i]
+            strategy_name = signal_table['strategy_name'].iloc[i]
+            
             if direction == 'Buy':
                 target_entry = entry_price
                 target_exit = exit_price
@@ -933,7 +924,6 @@ class Loop(Protocol):
             # The risk and reward ratio is based on Abbe's old script but it should be the sharpe ratio
             risk_reward_ratio = abs(target_entry-stoploss_price)/abs(target_entry-target_exit)
     
-    
             # put all the data in a singular list       
             data = [trade_id, direction, commodity_name,  price_code, 
                     full_contract_symbol, 
@@ -945,7 +935,7 @@ class Loop(Protocol):
             dict_trade_PNL = book.store_to_bucket_single(data)
                                         
             # plotting mid-backtest
-            plot_in_backtest(date_interest, EES_dict, direction, 
+            plot_in_backtest(date_interest, price_code, EES_dict, direction, 
                              plot_or_not=plot_or_not)
             
             trade_id = trade_id +1       
@@ -970,7 +960,8 @@ class Loop(Protocol):
                             open_hr: str = '0330', close_hr: str ='1930',
                             plot_or_not: bool = False):
         """
-        Portfolio module method.
+        Portfolio module method. This method assume looping through using only
+        one unique asset.
         
         
         """
@@ -982,7 +973,7 @@ class Loop(Protocol):
             price_code = item['Price_Code']
             date_interest = item['Date']
             get_obj_name = item['Price_Code']
-
+            
             # Define the date of interest by reading TimeStamp. 
             # We may want to remake all this and make Timestamp the universal 
             # parameter when dealing with time
@@ -1039,7 +1030,7 @@ class Loop(Protocol):
           
     
             # plotting mid-backtest
-            plot_in_backtest(date_interest, trunc_dict, direction, 
+            plot_in_backtest(date_interest, price_code, trunc_dict, direction, 
                              plot_or_not=plot_or_not)
             
         return portfo
@@ -1049,13 +1040,12 @@ class Loop(Protocol):
                                   trade_method,
                                   signal_table: pd.DataFrame, 
                                   histroy_intraday_data_pkl: dict[str, pd.DataFrame], 
-                                  loop_type = LoopType.CROSSOVER,
                                   give_obj_name: str = "USD", 
                                   get_obj_quantity: int = 1,
                                   plot_or_not: bool = False):
         """
         A method that utilise one portfolio to run multi-asset backtest using 
-        preloaded data.
+        preloaded data with multiple assets.
     
     
         Parameters
@@ -1120,7 +1110,7 @@ class Loop(Protocol):
                                                         self._loop_type, item)
             
             print(i, pos_open_dt, direction, symbol)
-
+            #print(self._loop_type,day,target_entry,target_exit, stop_exit, open_hr_dt, close_hr_dt, direction)
             # Find the truncation dict and the modified target entry and exit
             trunc_dict, \
             target_entry, target_exit, stop_exit = gen_trunc_dict(self._loop_type, 
@@ -1149,8 +1139,9 @@ class Loop(Protocol):
                                                            trade_id= trade_id)
                     
             # plotting mid-backtest
-            plot_in_backtest(date_interest, trunc_dict, direction, 
-                              plot_or_not=plot_or_not)
+            plot_in_backtest(date_interest,get_obj_name, trunc_dict, direction, 
+                             plot_or_not=plot_or_not)
+
             
         return portfo
     

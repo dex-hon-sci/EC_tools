@@ -11,11 +11,13 @@ from EC_tools.read import render_PNL_xlsx, open_portfolio
 import EC_tools.utility as util
 from EC_tools.trade import OneTradePerDay, BiDirectionalTrade
 from EC_tools.simple_trade import onetrade_simple
+from EC_tools.backtest import LoopType
+from EC_tools.portfolio import PortfolioMetrics, PortfolioLog, PortfolioLog
+
 from app.run_preprocess import run_preprocess
 from app.run_gen_MR_dir import MR_STRATEGIES_0, run_gen_signal_bulk
 from app.run_backtest import run_backtest_bulk
 
-from EC_tools.portfolio import PortfolioMetrics, PortfolioLog, PortfolioLog
 
 # Import global constants
 from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, \
@@ -92,7 +94,7 @@ def run_main(strategy_name,
     strategy = MR_STRATEGIES_0[strategy_name]
     #SAVE_SIGNAL_FILENAME_LIST = list(FILE_LOC.values())
    
-    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/consistency/test_signal_Portfolio_ArgusExact_Short_SR_range.csv'
+    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/consistency/test_newloop_signal_Portfolio_ArgusExact_Short_SR_range.csv'
 
     
     run_gen_signal_bulk(strategy, FILE_LOC,
@@ -109,7 +111,7 @@ def run_main(strategy_name,
 
     print("=========Running Back-Testing =============")
     
-    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/consistency/test_PNL_Portfolio_ArgusExact_Short_SR_range.pkl' 
+    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/consistency/test_newloop_PNL_Portfolio_ArgusExact_Short_SR_range.pkl' 
     #SAVE_PNL_FILENAME_LIST = FILE_PNL_LOC
 
     run_backtest_bulk(trade_method, 
@@ -124,7 +126,7 @@ def run_main(strategy_name,
                       close_hr_dict= CLOSE_HR_DICT_EARLY,
                       save_or_not=True, 
                       merge_or_not=True,
-                      loop_method='range')
+                      loop_type= LoopType.RANGE)
     
     print("=========Running PNL EXCEL File =============")
     if backtest_runtype == 'list':
@@ -136,7 +138,7 @@ def run_main(strategy_name,
 
         P = open_portfolio(MASTER_PNL_FILENAME)
         PL = PortfolioLog(P)
-        PL.tradebook_filename = RESULT_FILEPATH + "/consistency/test_PNL_Portfolio_ArgusExact_Short_SR_range.csv"
+        PL.tradebook_filename = RESULT_FILEPATH + "/consistency/test_newloop_PNL_Portfolio_ArgusExact_Short_SR_range.csv"
         PL.render_tradebook()
         PL.render_tradebook_xlsx()
         
@@ -145,9 +147,11 @@ def run_main(strategy_name,
      
 
 if __name__ == "__main__":
-
+    #start_date = "2022-01-05"
+    #end_date = "2022-01-18"
     start_date = "2022-01-05"
     end_date = "2024-06-28"
+    
     #start_date = "2021-01-11"
     #end_date = "2024-08-15"
     

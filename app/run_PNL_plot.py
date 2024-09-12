@@ -37,11 +37,14 @@ OLD_BENCHMARK_FINENTRY_SHORT = "/home/dexter/Euler_Capital_codes/EC_tools/result
 PORTFOLIO_ARGUSEXACT_SHORT_SR = "/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/Portfolio_backtest_ArgusExact_Short_SR/test_PNL_Portfolio_ArgusExact_Short_SR_.xlsx"
 PORTFOLIO_ARGUSEXACT_SHORT_SR2 = "/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/Portfolio_backtest_ArgusExact_Short_SR2/test_PNL_Portfolio_ArgusExact_Short_SR2_.xlsx"
 PORTFOLIO_ARGUSEXACT_SHORT_SR3 = "/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/Portfolio_backtest_ArgusExact_Short_SR3/test_PNL_Portfolio_ArgusExact_Short_SR3_.xlsx"
-PORTFOLIO_ARGUSEXACT_SHORT_SR_range = "/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/test_PNL_Portfolio_ArgusExact_Short_SR_range_.xlsx"
-
+PORTFOLIO_ARGUSEXACT_SHORT_SR_range = "/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/Portfolio_backtest_ArgusExact_Short_SR_range/test_PNL_Portfolio_ArgusExact_Short_SR_range_.xlsx"
 
 ARGUS_SAMPLE_SHORT = "/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/Argus_sample/Argus_sample_trades_2_.xlsx"
 ARGUS_SAMPLE_SHORT_MYBACKTEST = "/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/Argus_sample_with_mybacktest/Argus_sample_PNL_with_mybacktest_.xlsx"
+
+TEST_NEWLOOP_PORTFOLIO_ARGUSEXACT_SHORT_SR = "/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/test_newloop/test_newloop_PNL_Portfolio_ArgusExact_Short_SR_crossover_.xlsx"
+TEST_NEWLOOP_PORTFOLIO_ARGUSEXACT_SHORT_SR_range = "/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/test_newloop/test_newloop_PNL_Portfolio_ArgusExact_Short_SR_range_.xlsx"
+
 #####################
 symbol_list = ['CLc1', 'HOc1', 'RBc1', 'QOc1', 'QPc1', 'CLc2', 'HOc2', 'RBc2', 'QOc2', 'QPc2']
 label_list = ['CLc1 (x50)', 'HOc1 (x50)', 'RBc1 (x50)', 'QOc1 (x50)', 'QPc1 (x50)', 'CLc2 (x50)', 'HOc2 (x50)', 'RBc2 (x50)', 'QOc2 (x50)', 'QPc2 (x50)']
@@ -271,6 +274,10 @@ if __name__=='__main__':
                           extract_PNLplot_input(ARGUS_SAMPLE_SHORT_MYBACKTEST,
                                                 val_col="cumulative P&L from trades")[0],
                           extract_PNLplot_input(PORTFOLIO_ARGUSEXACT_SHORT_SR_range,
+                                                val_col="cumulative P&L from trades")[0],
+                          extract_PNLplot_input(TEST_NEWLOOP_PORTFOLIO_ARGUSEXACT_SHORT_SR,
+                                                val_col="cumulative P&L from trades")[0],
+                          extract_PNLplot_input(TEST_NEWLOOP_PORTFOLIO_ARGUSEXACT_SHORT_SR_range,
                                                 val_col="cumulative P&L from trades")[0]
                           ]
     strategy_data_list = [extract_PNLplot_input(OLD_BENCHMARK_SHORT, date_col="date",
@@ -284,6 +291,10 @@ if __name__=='__main__':
                           extract_PNLplot_input(ARGUS_SAMPLE_SHORT_MYBACKTEST,
                                                 val_col="cumulative P&L from trades")[1],
                           extract_PNLplot_input(PORTFOLIO_ARGUSEXACT_SHORT_SR_range,
+                                                val_col="cumulative P&L from trades")[1],
+                          extract_PNLplot_input(TEST_NEWLOOP_PORTFOLIO_ARGUSEXACT_SHORT_SR,
+                                                val_col="cumulative P&L from trades")[1],
+                          extract_PNLplot_input(TEST_NEWLOOP_PORTFOLIO_ARGUSEXACT_SHORT_SR_range,
                                                 val_col="cumulative P&L from trades")[1]
                           ]
     strategy_label_list = ['Old_Benchmark_Short (Abbe-Signal, Abbe-Backtest)', 
@@ -291,10 +302,16 @@ if __name__=='__main__':
                            'Portfolio_ArgusExact_Short (Dex-Signal, Dex-Backtest)',
                            'Argus_Sample (Argus-Signal, Argus-Backtest)',
                            'Argus_Sample (Argus-Signal, Dex-Backtest)',
-                           'Portfolio_ArgusExact_Short_range (Dex-Signal, Dex-Backtest)'
+                           'Portfolio_ArgusExact_Short_range (Dex-Signal, Dex-Backtest)',
+                           'test_newloop_crossover',
+                           'test_newloop_range'
+                           
                            ]
-    strategy_col_list = ['r','r', 'w', 'b', '#28ebee', 'g']
-    strategy_line_list = ['solid','dashed','solid', 'solid','solid', 'dashed']
+    TEST_NEWLOOP_PORTFOLIO_ARGUSEXACT_SHORT_SR = "/home/dexter/Euler_Capital_codes/EC_tools/results/test_newloop/test_newloop_PNL_Portfolio_ArgusExact_Short_SR_crossover_.xlsx"
+    TEST_NEWLOOP_PORTFOLIO_ARGUSEXACT_SHORT_SR_range = "/home/dexter/Euler_Capital_codes/EC_tools/results/test_newloop/test_newloop_PNL_Portfolio_ArgusExact_Short_SR_range_.xlsx"
+
+    strategy_col_list = ['r','r', 'w', 'b', '#28ebee', 'g', 'yellow', 'w']
+    strategy_line_list = ['solid','dashed','solid', 'solid','solid', 'solid', 'dotted', 'dotted']
     
     # Plot different strategies cumulative PNL
     twopanel_plot([], [], [], label='',
