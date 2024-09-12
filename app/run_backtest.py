@@ -293,22 +293,23 @@ def run_backtest_portfolio_preloaded(TradeMethod,
     P1.add(USD_initial,datetime=datetime.datetime(2020,12,31))
     
     # a list of input files
+    P1 = Loop(loop_type).loop_portfolio_preloaded(P1, 
+                                                  TradeMethod,
+                                                  trade_date_table, 
+                                                  histroy_intraday_data_pkl,
+                                                  give_obj_name=give_obj_name,
+                                                  get_obj_quantity=get_obj_quantity,
+                                                  plot_or_not=plot_or_not)
 # =============================================================================
-#     P1 = Loop(loop_type).loop_portfolio_preloaded(P1, 
-#                                                   TradeMethod,
-#                                                   trade_date_table, 
-#                                                   histroy_intraday_data_pkl,
-#                                                   give_obj_name=give_obj_name,
-#                                                   get_obj_quantity=get_obj_quantity,
-#                                                   plot_or_not=plot_or_not)
+#     P1 = backtest.loop_portfolio_preloaded(P1, 
+#                                            TradeMethod,
+#                                            trade_date_table, 
+#                                            histroy_intraday_data_pkl,
+#                                            give_obj_name=give_obj_name,
+#                                            get_obj_quantity=get_obj_quantity,
+#                                            plot_or_not=plot_or_not,
+#                                            loop_method=loop_method)
 # =============================================================================
-    P1 = backtest.loop_portfolio_preloaded(P1, TradeMethod,
-                                           trade_date_table, 
-                                           histroy_intraday_data_pkl,
-                                           give_obj_name=give_obj_name,
-                                           get_obj_quantity=get_obj_quantity,
-                                           plot_or_not=plot_or_not,
-                                           loop_method="range")
     
     t2 = time.time()-t1
     print("It takes {} seconds to run the backtest".format(t2))
@@ -329,6 +330,7 @@ def run_backtest_bulk(TradeMethod,
                       open_hr_dict = OPEN_HR_DICT, 
                       close_hr_dict=CLOSE_HR_DICT,
                       loop_type: LoopType = LoopType.CROSSOVER,
+                      loop_method: str = "range",
                       save_or_not: bool = True, 
                       merge_or_not: bool = True):
             

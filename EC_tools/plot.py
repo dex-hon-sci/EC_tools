@@ -748,7 +748,7 @@ if __name__ == "__main__":
     
     symbol = 'CLc1'
 
-    date_interest = "2022-06-17"
+    date_interest = "2022-01-05"
     
     plot_minute(HISTORY_MINTUE_FILE_LOC[symbol], APC_FILE_LOC[symbol], 
                 date_interest = date_interest, title=symbol, direction="Sell",

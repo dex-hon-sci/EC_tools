@@ -261,7 +261,7 @@ class OneTradePerDay(Trade):
                                          trade_id=trade_id)
 
         pos_list = [entry_pos, exit_pos, stop_pos, close_pos]
-
+        print("pos_list", pos_list)
         return pos_list
     
     def execute_positions(self, 
@@ -374,11 +374,11 @@ class OneTradePerDay(Trade):
         # change the price for the open position
         opening_pos.price = entry_pt[1]
         
-        #print('entry_pt[1]', entry_pt[1])
-        #print('exit_pt[1]', exit_pt[1])
-        #print('stop_pt[1]', stop_pt[1])
-        #print('close_pt[1]', close_pt[1])
-        #print("After price adjustment", opening_pos, closing_pos)
+        print('entry_pt[1]', entry_pt[1])
+        print('exit_pt[1]', exit_pt[1])
+        print('stop_pt[1]', stop_pt[1])
+        print('close_pt[1]', close_pt[1])
+        print("After price adjustment", opening_pos, closing_pos)
 
         # Execute the positions
         ExecutePosition(opening_pos).fill_pos(fill_time = trade_open[0], 

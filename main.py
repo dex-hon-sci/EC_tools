@@ -148,7 +148,7 @@ def run_main(strategy_name,
 
 if __name__ == "__main__":
     #start_date = "2022-01-05"
-    #end_date = "2022-01-18"
+    #end_date = "2022-01-07"
     start_date = "2022-01-05"
     end_date = "2024-06-28"
     

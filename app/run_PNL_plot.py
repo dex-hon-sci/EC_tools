@@ -310,7 +310,7 @@ if __name__=='__main__':
     TEST_NEWLOOP_PORTFOLIO_ARGUSEXACT_SHORT_SR = "/home/dexter/Euler_Capital_codes/EC_tools/results/test_newloop/test_newloop_PNL_Portfolio_ArgusExact_Short_SR_crossover_.xlsx"
     TEST_NEWLOOP_PORTFOLIO_ARGUSEXACT_SHORT_SR_range = "/home/dexter/Euler_Capital_codes/EC_tools/results/test_newloop/test_newloop_PNL_Portfolio_ArgusExact_Short_SR_range_.xlsx"
 
-    strategy_col_list = ['r','r', 'w', 'b', '#28ebee', 'g', 'yellow', 'w']
+    strategy_col_list = ['r','r', 'w', 'b', '#28ebee', 'g', 'yellow', '#c509c8']
     strategy_line_list = ['solid','dashed','solid', 'solid','solid', 'solid', 'dotted', 'dotted']
     
     # Plot different strategies cumulative PNL

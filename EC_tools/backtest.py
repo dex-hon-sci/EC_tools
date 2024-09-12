@@ -704,6 +704,8 @@ def loop_portfolio_preloaded(portfo: Portfolio,
                     target_entry = [item['Target_Lower_Entry_Price'], item['Target_Upper_Entry_Price']]
                     target_exit = [item['Target_Lower_Exit_Price'], item['Target_Upper_Exit_Price']]
                     stop_exit = item['StopLoss_Price'] 
+                    print("Hit range trade", target_entry, target_exit, stop_exit)
+
                 else:
                     target_entry, target_exit, stop_exit = ['NA', 'NA'], ['NA','NA'], 'NA'
 
@@ -746,21 +748,20 @@ def loop_portfolio_preloaded(portfo: Portfolio,
                                               target_entry, 
                                               target_exit, 
                                               stop_exit,
-                                              open_hr=open_hr_dt, 
-                                              close_hr=close_hr_dt, 
+                                              open_hr = open_hr_dt, 
+                                              close_hr = close_hr_dt, 
                                               direction = direction)
         elif loop_method == "range":
   
-            
             # Find the appropiate range of EES and output as truncation dict
             trunc_dict = read.find_minute_EES_range(day, 
                                                     target_entry, 
                                                     target_exit, 
                                                     stop_exit,
-                                                    open_hr=open_hr_dt, 
-                                                    close_hr=close_hr_dt, 
+                                                    open_hr = open_hr_dt, 
+                                                    close_hr = close_hr_dt, 
                                                     direction = direction)
-            
+            print("trunc_dict", trunc_dict)
             # target entry/exit are first estimations of the prices using
             # the mid point of the target range. The final entry/exit prices
             # will changeas the algo find the optimal price based on the selected
@@ -785,7 +786,7 @@ def loop_portfolio_preloaded(portfo: Portfolio,
                                                        trade_id= trade_id)
                 
         # plotting mid-backtest
-        plot_in_backtest(date_interest,get_obj_name, trunc_dict, direction, 
+        plot_in_backtest(date_interest, get_obj_name, trunc_dict, direction, 
                           plot_or_not=plot_or_not)
         
     return portfo
@@ -798,8 +799,7 @@ def loop_portfolio_preloaded(portfo: Portfolio,
 
 class Loop(Protocol):
     
-    def __init__(self, 
-                 loop_type: LoopType = LoopType.CROSSOVER):
+    def __init__(self, loop_type: LoopType = LoopType.CROSSOVER) -> None:
                  
         self._loop_type = loop_type
 
@@ -997,7 +997,7 @@ class Loop(Protocol):
             target_entry, target_exit, \
             stop_exit, direction = load_EES_from_signal(trade_method, 
                                                         self._loop_type, item)
-            
+            print("Inputs targets", target_entry, target_exit, stop_exit, direction)
             # Find the truncation dict and the modified target entry and exit
             trunc_dict, \
             target_entry, target_exit, stop_exit = gen_trunc_dict(self._loop_type, 
@@ -1108,7 +1108,8 @@ class Loop(Protocol):
             target_entry, target_exit, \
             stop_exit, direction = load_EES_from_signal(trade_method, 
                                                         self._loop_type, item)
-            
+            print("Inputs targets", target_entry, target_exit, stop_exit, direction)
+
             print(i, pos_open_dt, direction, symbol)
             #print(self._loop_type,day,target_entry,target_exit, stop_exit, open_hr_dt, close_hr_dt, direction)
             # Find the truncation dict and the modified target entry and exit
@@ -1121,7 +1122,10 @@ class Loop(Protocol):
                                                                   open_hr_dt, 
                                                                   close_hr_dt, 
                                                                   direction)
-            
+            print("New", pos_open_dt, direction, target_entry, \
+                  target_exit, stop_exit)
+            print('truc_dict', trunc_dict)
+
             # Run the trade itself
             trade_open, trade_close, \
             pos, exec_pos = trade_method(portfo).run_trade(trunc_dict, 
