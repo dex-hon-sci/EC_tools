@@ -515,24 +515,19 @@ def extract_lag_data(signal_data: pd.DataFrame,
     # Find the row index of the history data first
     #row_index = history_data.index[history_data['Date'] == date].tolist()[0]
     row_index = history_data.index[history_data['Date'] == date].item()
-    #print('row_index',row_index)
     #lag_days = datetime.timedelta(days=lag_size)
     
     #lag5days = row_index-lag_days
     #lag1day = row_index - datetime.timedelta(days=1)
-    #print('row_index', row_index, row_index-lag_size, row_index-1)
-    #print('lag_size', lag_size, row_index-lag_size, row_index - datetime.timedelta(days=1))
+
     # extract exactly 5 (default) lag days array
     history_data_lag = history_data.loc[row_index-lag_size:row_index-1]
-   #history_data_lag = history_data.loc[lag5days:lag1day]
+    # history_data_lag = history_data.loc[lag5days:lag1day]
     
-    #print('history_data_lag', history_data_lag)
     # use the relevant date from history data to get signal data to ensure matching date
     window = history_data_lag['Date'].tolist()
-    #print('window',history_data_lag['Date'].tolist())
 
     # turn Timstamp into string
-    #print(window)
     #window = [str(window[i])[0:10] for i in range(lag_size)]
         
     #Store the lag signal data in a list
@@ -670,8 +665,8 @@ def find_closest_price_generic(data: pd.DataFrame,
     return target_time_dt, target_price
 
 def find_price_by_time(history_data_daily: pd.DataFrame, 
-                    history_data_minute: pd.DataFrame, 
-                    open_hr: str ='0330') -> pd.DataFrame: #tested
+                       history_data_minute: pd.DataFrame, 
+                       open_hr: str ='0330') -> pd.DataFrame: #tested
     """
     A function to search for the opening price of the day.
     If at the opening hour, there are no bid or price information, the script 
@@ -719,7 +714,7 @@ def find_price_by_time(history_data_daily: pd.DataFrame,
 
 def find_range(input_array: np.ndarray, 
                target_range: tuple[float|int] | list[float|int] | np.ndarray)\
-                -> dict:
+               -> dict:
     """
     A function that find the points' indicies given a target range. 
     It finds the points within that range .
@@ -812,7 +807,6 @@ def find_crossover(input_array: np.ndarray,
     # Negative values mean the input is lower than threshold
     delta = input_array - threshold
     # This is an array 1 unit in the past
-    #delta_lag = np.concatenate([delta, np.array([np.nan])])[1:]
     delta_lag = np.concatenate([np.array([np.nan]), delta])[:-1]
 
     # IF delta[i] > delta_lag[i], then the price rise above threshold
@@ -885,7 +879,7 @@ def find_minute_EES(histroy_data_intraday: pd.DataFrame,
         A dictionary that cantains the possible EES points and time.
 
     """
-    # This function can be made in one more layer of abstraction. Work on this later
+    # (This function can be made in one more layer of abstraction. Work on this later)
     
     # define subsample. turn the pandas series into a numpy array
     price_list = histroy_data_intraday[price_approx].to_numpy()
@@ -976,15 +970,15 @@ def find_minute_EES(histroy_data_intraday: pd.DataFrame,
     return EES_dict
 
 
-def find_minute_range(histroy_data_intraday: pd.DataFrame,
-                      target_entry_range: list[float|int] | tuple[float|int], 
-                      target_exit_range: list[float|int] | tuple[float|int], 
-                      stop_exit: float | int,
-                      open_hr: str = "0330", close_hr: str = "1930", 
-                      price_approx: str = 'Open', 
-                      time_proxy: str= 'Time',
-                      direction: str = 'Neutral',
-                      dt_scale: str = 'datetime'): # WIP
+def find_minute_EES_range(histroy_data_intraday: pd.DataFrame,
+                          target_entry_range: list[float|int] | tuple[float|int], 
+                          target_exit_range: list[float|int] | tuple[float|int], 
+                          stop_exit: float | int,
+                          open_hr: str = "0330", close_hr: str = "1930", 
+                          price_approx: str = 'Open', 
+                          time_proxy: str= 'Time',
+                          direction: str = 'Neutral',
+                          dt_scale: str = 'datetime'): # WIP
     
     # define subsample. turn the pandas series into a numpy array
     price_array = histroy_data_intraday[price_approx].to_numpy()

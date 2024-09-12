@@ -291,6 +291,7 @@ class ExecutePosition(object):
         # charge a fee if it exits
         if self.position.fee != None: #or self.position.fee > 0:
             payment_time = fill_time+ delay_time*10
+            self.position.fee['quantity'] = self.position.fee['quantity']*self.position.size
             self.position.portfolio.sub(self.position.fee, 
                                         datetime= payment_time)
 

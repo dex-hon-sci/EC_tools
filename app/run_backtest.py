@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Tue May  7 23:46:42 2024
-
-@author: dexter
-"""
 import datetime as datetime
 import time
 import pickle
@@ -28,6 +23,28 @@ from crudeoil_future_const import OPEN_HR_DICT, CLOSE_HR_DICT, \
                                   ARGUS_EXACT_SIGNAL_MODE_FILE_LOC, ARGUS_EXACT_PNL_MODE_LOC,\
                                   TEST_FILE_LOC, TEST_FILE_PNL_LOC,\
                                   DAILY_MINUTE_DATA_PKL\
+                                      
+"""
+Created on Tue May  7 23:46:42 2024
+
+@author: dexter
+
+
+Backtest Methods on Singular Asset:
+    loop_date
+    
+    loop_date_portfolio
+    
+Backtest Methods on Multiple Assets:
+    There are several method that can be used to iterate through multiple assets.
+    At the moment, there are three types:
+        
+List-based
+    
+Preload_list
+
+Concurrent
+"""
 
 
 __all__ = ['run_backtest','run_backtest_list', 
@@ -232,9 +249,9 @@ def run_backtest_portfolio_preloaded(TradeMethod,
     Parameters
     ----------
     TradeMethod : func or Trade object
-        DESCRIPTION.
+        The trademethod function/class.
     master_buysell_signals_filename : str
-        DESCRIPTION.
+        The signal table filename.
     histroy_intraday_data_pkl : TYPE
         The dictionary of the preloaded historical minute data.
     start_date : str
@@ -311,7 +328,8 @@ def run_backtest_bulk(TradeMethod,
     
         
         backtest_result = run_backtest_list(TradeMethod, 
-                                            SAVE_FILENAME_LIST, SYMBOL_LIST,
+                                            SAVE_FILENAME_LIST, 
+                                            SYMBOL_LIST,
                                             SIGNAL_FILENAME_LIST, 
                                             HISTORY_MINUTE_FILENAME_LIST,
                                             start_date, end_date,

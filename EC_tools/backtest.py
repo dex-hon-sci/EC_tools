@@ -33,17 +33,17 @@ Backtest Loop Type:
     wildly inefficient and redundant. To solve this problem, there are a 
     few Loop Types available in this module to make backtest faster
     
-        (1) FullLoop
-            Looping through every single data point. It contains the most 
-            grandnuality and details but is also the slowest (by a large margin).
-        (2) CrossoverLoop
+        (1) CrossoverLoop
             Looping over only the points of interest. Given a set of EES values.
             The loop only look at the time and price in which the price action
             breaches these threshold. This loop type contains the least details
             but is also the fastest.
-        (3) RangeLoop
+        (2) RangeLoop
             Looping over a subset of data point given a boundary of intervals
-    
+        (3) FullLoop
+            Looping through every single data point. It contains the most 
+            grandnuality and details but is also the slowest (by a large margin).
+
 Static Instruction Backtest:
     Functions in this module takes a precalculated Buy/Sell/Neutral
     signal with a predetermined target Entry, Exit, and Stop Loss (EES) level.
@@ -71,7 +71,8 @@ FILENAME_MINUTE =  "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/
 APC_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_HOc1.csv"  
 
 __all__ = ['LoopType', 'prepare_signal_interest', 'extract_intraday_minute_data', 
-           'plot_in_backtest', 'loop_date', 'loop_date_portfolio',
+           'plot_in_backtest', 'gen_trunc_dict', 'load_EES_from_signal', 
+           'loop_date', 'loop_date_portfolio',
            'loop_portfolio_preloaded', 'Loop']
 __author__="Dexter S.-H. Hon"
 
@@ -246,12 +247,51 @@ def plot_in_backtest(date_interest: str | datetime.datetime,
     
 def gen_trunc_dict(loop_type: LoopType, 
                    day: pd.DataFrame, 
-                   target_entry: float, 
-                   target_exit: float, 
+                   target_entry: float |list[float,float] |tuple(float,float), 
+                   target_exit: float |list[float,float] |tuple(float,float), 
                    stop_exit: float, 
                    open_hr: datetime.datetime, 
                    close_hr: datetime.datetime, 
-                   direction: str):
+                   direction: str) \
+                  -> tuple[dict[str,list|tuple], float, float, float]:
+    """
+    A function to choose what style of truncation dictionary to be generated.
+    All trunc_dict have the following format:
+        {"entry": [(...,...), ...], "exit": [(...,...), ...], 
+         "stop": [(...,...), ...], "open": (...,...) ,"close": (...,...)}
+    This method allows you to choose whether to generate a trunc_dict using a 
+    given set of EES value (for crossover loop) or EES range (for range loop).
+    For crossover loop, the 
+
+    Parameters
+    ----------
+    day : pd.DataFrame
+        DESCRIPTION.
+    target_entry : float
+        DESCRIPTION.
+    target_exit : float
+        DESCRIPTION.
+    stop_exit : float
+        DESCRIPTION.
+    open_hr : datetime.datetime
+        DESCRIPTION.
+    close_hr : datetime.datetime
+        DESCRIPTION.
+    direction : str
+        DESCRIPTION.
+    loop_type : LoopType
+        The loop type. The default is LoopType.CROSSOVER
+
+    Returns
+    -------
+    trunc_dict : TYPE
+        DESCRIPTION.
+    target_entry : TYPE
+        DESCRIPTION.
+    target_exit : TYPE
+        DESCRIPTION.
+
+    """
     
     if loop_type == LoopType.CROSSOVER:
         # Find the crossover points of EES
@@ -265,13 +305,14 @@ def gen_trunc_dict(loop_type: LoopType,
     elif loop_type == LoopType.RANGE:
   
         # Find the appropiate range of EES
-        trunc_dict = read.find_minute_range(day, 
-                                            target_entry, 
-                                            target_exit, 
-                                            stop_exit,
-                                            open_hr = open_hr, 
-                                            close_hr = close_hr, 
-                                            direction = direction)
+        trunc_dict = read.find_minute_EES_range(day, 
+                                                target_entry, 
+                                                target_exit, 
+                                                stop_exit,
+                                                open_hr = open_hr, 
+                                                close_hr = close_hr, 
+                                                direction = direction)
+        
         # target entry/exit are first estimations of the prices using
         # the mid point of the target range. The final entry/exit prices
         # will changeas the algo find the optimal price based on the selected
@@ -280,12 +321,16 @@ def gen_trunc_dict(loop_type: LoopType,
         target_exit_mid =  (target_exit[1] - target_exit[0])/2
         target_entry, target_exit = target_entry_mid, target_exit_mid 
         
-        return trunc_dict, target_entry, target_exit
+        return trunc_dict, target_entry, target_exit, stop_exit
     
 
 def load_EES_from_signal(trade_method, 
-                         loop_type, 
-                         item):
+                         loop_type: LoopType, 
+                         item:pd.DataFrame) \
+                         -> tuple[float|int|dict[str, float], 
+                                  float|int|dict[str, float], 
+                                  float|int|dict[str, float], 
+                                  str]:
     """
     This method load the EES values based on the given trade logic and loop
     method.
@@ -337,13 +382,18 @@ def load_EES_from_signal(trade_method,
 
     elif trade_method.__name__ == "BiDirectionalTrade":
         
-        target_entry = {'Buy': item['Q0.4'],'Sell': item['Q0.6']}
-        target_exit = {'Buy': item['Q0.6'], 'Sell': item['Q0.4']}
-        stop_exit = {'Buy': item['Q0.1'], 'Sell': item['Q0.9']}
-        
-        direction = 'Bitrade-' 
+        if loop_type == LoopType.CROSSOVER:
+            # Target_Lower_Entry_Price	Target_Upper_Entry_Price	
+            # Target_Lower_Exit_Price	Target_Upper_Exit_Price
+
+            target_entry = {'Buy': item['Q0.4'],'Sell': item['Q0.6']}
+            target_exit = {'Buy': item['Q0.6'], 'Sell': item['Q0.4']}
+            stop_exit = {'Buy': item['Q0.1'], 'Sell': item['Q0.9']}
+            
+            direction = 'Bitrade-' 
 
     return target_entry, target_exit, stop_exit, direction
+
 ###############################3
 
 def loop_date(trade_method, 
@@ -674,6 +724,7 @@ def loop_portfolio_preloaded(portfo: Portfolio,
         trade_id = i #direction + str(i)
         
         if loop_method == "crossover":
+            # Find the appropiate values of EES and output as truncation dict
             trunc_dict = read.find_minute_EES(day, 
                                               target_entry, 
                                               target_exit, 
@@ -684,14 +735,15 @@ def loop_portfolio_preloaded(portfo: Portfolio,
         elif loop_method == "range":
   
             
-            # Find the appropiate range of EES
-            trunc_dict = read.find_minute_range(day, 
-                                                target_entry, 
-                                                target_exit, 
-                                                stop_exit,
-                                                open_hr=open_hr_dt, 
-                                                close_hr=close_hr_dt, 
-                                                direction = direction)
+            # Find the appropiate range of EES and output as truncation dict
+            trunc_dict = read.find_minute_EES_range(day, 
+                                                    target_entry, 
+                                                    target_exit, 
+                                                    stop_exit,
+                                                    open_hr=open_hr_dt, 
+                                                    close_hr=close_hr_dt, 
+                                                    direction = direction)
+            
             # target entry/exit are first estimations of the prices using
             # the mid point of the target range. The final entry/exit prices
             # will changeas the algo find the optimal price based on the selected
@@ -732,9 +784,21 @@ def loop_portfolio_preloaded(portfo: Portfolio,
 
 class Loop(Protocol):
     
-    def __init__(self, loop_type = LoopType.CROSSOVER):
+    def __init__(self, 
+                 loop_type: LoopType = LoopType.CROSSOVER):
         self._loop_type = loop_type
+        self._signal_dtype = None
+        self._history_dtype = None
         
+        if self._signal_dtype == "1":
+            pass
+        elif self._signal_dtype == "2":
+            pass
+        
+        if self._history_dtype == "1":
+            pass
+        elif self._history_dtype == "2":
+            pass
         
     def loop_date(trade_method, 
                   signal_table: pd.DataFrame, 
@@ -911,21 +975,13 @@ class Loop(Protocol):
         
         """
         
-        i=0
-        for date_interest, direction, target_entry, target_exit, \
-            stop_exit, price_code in zip(signal_table['Date'], 
-                                         signal_table['direction'], 
-                                         signal_table['target entry'],
-                                         signal_table['target exit'], 
-                                         signal_table['stop exit'],
-                                         signal_table['price code']):
-                
+        for i in range(len(signal_table)):
+
             item = signal_table.iloc[i]
 
             price_code = item['Price_Code']
             date_interest = item['Date']
             get_obj_name = item['Price_Code']
-
 
             # Define the date of interest by reading TimeStamp. 
             # We may want to remake all this and make Timestamp the universal 
@@ -951,27 +1007,31 @@ class Loop(Protocol):
             stop_exit, direction = load_EES_from_signal(trade_method, 
                                                         self._loop_type, item)
             
+            # Find the truncation dict and the modified target entry and exit
             trunc_dict, \
-            target_entry, target_exit = gen_trunc_dict(self._loop_type, 
-                                                       day, 
-                                                       target_entry, 
-                                                       target_exit, 
-                                                       stop_exit, 
-                                                       open_hr_dt, 
-                                                       close_hr_dt, 
-                                                       direction)
-            print(day['Date'].iloc[0], direction, target_entry, target_exit, stop_exit)
-
+            target_entry, target_exit, stop_exit = gen_trunc_dict(self._loop_type, 
+                                                                  day, 
+                                                                  target_entry, 
+                                                                  target_exit, 
+                                                                  stop_exit, 
+                                                                  open_hr_dt, 
+                                                                  close_hr_dt, 
+                                                                  direction)
             
+            print(day['Date'].iloc[0], direction, target_entry, \
+                  target_exit, stop_exit)
+
+            # Run the trade
             trade_open, trade_close, \
             pos, exec_pos = trade_method(portfo).run_trade(trunc_dict, 
                                                            give_obj_name, 
                                                            get_obj_name, 
                                                            get_obj_quantity, 
                                                            target_entry, 
-                                                           target_exit, stop_exit, 
-                                                           open_hr=open_hr_dt, 
-                                                           close_hr=close_hr_dt, 
+                                                           target_exit, 
+                                                           stop_exit, 
+                                                           open_hr = open_hr_dt, 
+                                                           close_hr = close_hr_dt, 
                                                            direction = direction,
                                                            fee=OIL_FUTURES_FEES[price_code],
                                                            open_time = open_hr_dt,
@@ -981,7 +1041,6 @@ class Loop(Protocol):
             # plotting mid-backtest
             plot_in_backtest(date_interest, trunc_dict, direction, 
                              plot_or_not=plot_or_not)
-            i = i+1
             
         return portfo
         
@@ -989,7 +1048,7 @@ class Loop(Protocol):
                                   portfo: Portfolio, 
                                   trade_method,
                                   signal_table: pd.DataFrame, 
-                                  histroy_intraday_data_pkl, 
+                                  histroy_intraday_data_pkl: dict[str, pd.DataFrame], 
                                   loop_type = LoopType.CROSSOVER,
                                   give_obj_name: str = "USD", 
                                   get_obj_quantity: int = 1,
@@ -1022,9 +1081,6 @@ class Loop(Protocol):
             DESCRIPTION.
     
         """
-        #symbol_list = list(histroy_intraday_data_pkl.keys())
-        #tradebook = trade_method(portfo)
-        #print("TradeMethod_name", trade_method.__name__)
     
         for i in range(len(signal_table)):
             
@@ -1067,14 +1123,14 @@ class Loop(Protocol):
 
             # Find the truncation dict and the modified target entry and exit
             trunc_dict, \
-            target_entry, target_exit = gen_trunc_dict(self._loop_type, 
-                                                       day, 
-                                                       target_entry, 
-                                                       target_exit, 
-                                                       stop_exit, 
-                                                       open_hr_dt, 
-                                                       close_hr_dt, 
-                                                       direction)
+            target_entry, target_exit, stop_exit = gen_trunc_dict(self._loop_type, 
+                                                                  day, 
+                                                                  target_entry, 
+                                                                  target_exit, 
+                                                                  stop_exit, 
+                                                                  open_hr_dt, 
+                                                                  close_hr_dt, 
+                                                                  direction)
             
             # Run the trade itself
             trade_open, trade_close, \
