@@ -4,19 +4,19 @@
 Created on Wed May 29 16:50:39 2024
 
 @author: dexter
+
+
 """
 
 import datetime as datetime
 
-from EC_tools.portfolio import Asset, Portfolio
-from EC_tools.position import Position, ExecutePosition, PositionStatus
-from EC_tools.trade import Trade, OneTradePerDay
+from EC_tools.portfolio import Portfolio
+from EC_tools.position import PositionStatus
+from EC_tools.trade import OneTradePerDay
 from EC_tools.backtest import extract_intraday_minute_data, \
                               prepare_signal_interest, plot_in_backtest
 from crudeoil_future_const import DATA_FILEPATH, RESULT_FILEPATH
 import EC_tools.read as read
-
-
 
 
 FILENAME_MINUTE = DATA_FILEPATH +"/history_data/Minute/CL.001"
@@ -98,7 +98,8 @@ def onetradeperday(date_interest, direction):
     # this is the main function to be tested
     trade_open, trade_close, pos_list, exec_pos_list = \
     OneTradePerDay(P1).run_trade(EES_dict,  
-                                 give_obj_name, get_obj_name, 
+                                 give_obj_name, 
+                                 get_obj_name, 
                                  50, target_entry, 
                                  target_exit, stop_exit, 
                                  open_hr=open_hr_dt, 
@@ -109,7 +110,8 @@ def onetradeperday(date_interest, direction):
     print('2')
 
     
-    plot_in_backtest(date_interest, EES_dict, direction, plot_or_not=True)
+    plot_in_backtest(date_interest, get_obj_name,
+                     EES_dict, direction, plot_or_not=True)
 
     return P1, day, target_entry, target_exit, \
         stop_exit, open_hr_dt, close_hr_dt, EES_dict, trade_open, \
@@ -178,6 +180,7 @@ def test_onetradeperday_buy_normalexit()->None:
     assert USD_amount > 10000000
     assert CL_amount < 1
     assert len(P1.pool) == 6 #Initial fund + 4 Four exchanges + Fee = 6 entries
+    print(USD_amount, P1.pool)
     
 def test_onetradeperday_buy_stoploss() -> None:   
     give_obj_name = "USD"

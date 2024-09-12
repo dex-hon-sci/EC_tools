@@ -163,15 +163,16 @@ class PlotPricing(object):
 
 
     def plot_price(self, x,y, events, pdf, 
-                       quant_list, quant_price_list, direction="Neutral",
-                       price_chart_title = "Date", 
-                       events_lower_limit=70, events_upper_limit =78,
-                       open_hr = '0330', close_hr='1930',
-                       xlabel = "Time (minutes)",
-                       x_format = '%H:%M',
-                       bppt_x1 = [], bppt_y1 = [], 
-                       bppt_x2 = [], bppt_y2 = [], 
-                       bppt_x3 =[], bppt_y3 = []):
+                   quant_list, quant_price_list, direction="Neutral",
+                   price_chart_title = "Date", 
+                   events_lower_limit=70, events_upper_limit =78,
+                   open_hr = '0330', close_hr='1930',
+                   xlabel = "Time (minutes)",
+                   x_format = '%H:%M',
+                   bppt_x1 = [], bppt_y1 = [], 
+                   bppt_x2 = [], bppt_y2 = [], 
+                   bppt_x3 =[], bppt_y3 = [],
+                   date_interest = datetime.datetime.today()):
         """
         A function that plot the intraday minute pricing chart alongside the APC.
     
@@ -330,13 +331,14 @@ class PlotPricing(object):
         # add cross over points
         if subcomp._add_crossover_pts:
             print("Add crossover points")
-            bppt_x1 = [datetime.datetime.combine(datetime.date.today(), t.time()) 
+            bppt_x1 = [datetime.datetime.combine(date_interest, t.time()) 
                        for t in bppt_x1]
-            bppt_x2 = [datetime.datetime.combine(datetime.date.today(), t.time()) 
+            bppt_x2 = [datetime.datetime.combine(date_interest, t.time()) 
                        for t in bppt_x2]
-            bppt_x3 = [datetime.datetime.combine(datetime.date.today(), t.time()) 
+            bppt_x3 = [datetime.datetime.combine(date_interest, t.time()) 
                        for t in bppt_x3]
-
+            print("subcomp._add_crossover_pts", subcomp._add_crossover_pts,
+                  bppt_x1, bppt_y1, bppt_x2, bppt_y2, bppt_x3, bppt_y3)
             subcomp.crossover_pts(bppt_x1, bppt_y1, bppt_x2, bppt_y2, 
                                   bppt_x3, bppt_y3)
             
@@ -625,13 +627,14 @@ class SubComponents(object):
                       bppt_x2, bppt_y2, 
                       bppt_x3, bppt_y3):
         print("crossover_pts")
+        print(bppt_x1, bppt_y1, bppt_x2, bppt_y2, bppt_x3, bppt_y3)
         # crossover points set 1 
         self.ax.plot(bppt_x1, bppt_y1,'o', ms=10, c='blue')
         self.ax.plot(bppt_x2, bppt_y2,'o', ms=10, c='green')
         self.ax.plot(bppt_x3, bppt_y3,'o', ms=26, c='red')
         
     def buysellpoints(self, buy_time = "1201", buy_price =  86.05,
-                           sell_time = "1900", sell_price = 85.70):
+                            sell_time = "1900", sell_price = 85.70):
         
         return None
         
@@ -658,8 +661,8 @@ def plot_minute(filename_minute: str, signal_filename: str,
     
     #temporary solution here because to read the APC file I need to use string
     date_interest_dt = datetime.datetime(year = date_interest_year, 
-                                      month = date_interest_month , 
-                                      day = date_interest_day)
+                                         month = date_interest_month , 
+                                         day = date_interest_day)
     
     # Get the history data on the date of interest
     interest = history_data[history_data['Date']  == date_interest_dt]
@@ -668,7 +671,8 @@ def plot_minute(filename_minute: str, signal_filename: str,
     #interest = util.convert_intmin_to_time(interest)
     
     x, y = interest['Time'], interest[price_approx]
-
+    print("x,y", x,y)
+    
     #read the APC file on the relevant date
     curve = read.read_apc_data(signal_filename)
     curve = curve[curve[APC_time_str] == date_interest]
@@ -704,7 +708,7 @@ def plot_minute(filename_minute: str, signal_filename: str,
     
     
     # Then choose the subcomponents to be added
-    subcomp = SubComponents(new_axis_limit)
+    #subcomp = SubComponents(new_axis_limit)
 
     # Plot the pricing chart.
     PP = PlotPricing(axis_limit = new_axis_limit)
@@ -716,7 +720,8 @@ def plot_minute(filename_minute: str, signal_filename: str,
                        open_hr= open_hr, close_hr = close_hr,
                        bppt_x1 = bppt_x1, bppt_y1 = bppt_y1, 
                        bppt_x2 = bppt_x2, bppt_y2 = bppt_y2, 
-                       bppt_x3 = bppt_x3, bppt_y3 = bppt_y3)
+                       bppt_x3 = bppt_x3, bppt_y3 = bppt_y3,
+                       date_interest = date_interest_dt)
     
     
 if __name__ == "__main__":
