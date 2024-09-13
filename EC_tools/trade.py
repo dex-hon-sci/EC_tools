@@ -116,6 +116,9 @@ class OneTradePerDay(Trade):
     """
     def __init__(self, portfolio):
         super().__init__(portfolio)
+        self.EES_type = None
+        self.EES_para_num = 1
+        self.close_exit = True
         
     @staticmethod
     def choose_EES_values(EES_dict: dict) -> tuple[tuple, tuple, tuple, tuple]:
@@ -261,7 +264,7 @@ class OneTradePerDay(Trade):
                                          trade_id=trade_id)
 
         pos_list = [entry_pos, exit_pos, stop_pos, close_pos]
-        print("pos_list", pos_list)
+        #print("pos_list", pos_list)
         return pos_list
     
     def execute_positions(self, 
@@ -374,11 +377,11 @@ class OneTradePerDay(Trade):
         # change the price for the open position
         opening_pos.price = entry_pt[1]
         
-        print('entry_pt[1]', entry_pt[1])
-        print('exit_pt[1]', exit_pt[1])
-        print('stop_pt[1]', stop_pt[1])
-        print('close_pt[1]', close_pt[1])
-        print("After price adjustment", opening_pos, closing_pos)
+        #print('entry_pt[1]', entry_pt[1])
+        #print('exit_pt[1]', exit_pt[1])
+        #print('stop_pt[1]', stop_pt[1])
+        #print('close_pt[1]', close_pt[1])
+        #print("After price adjustment", opening_pos, closing_pos)
 
         # Execute the positions
         ExecutePosition(opening_pos).fill_pos(fill_time = trade_open[0], 
@@ -516,7 +519,7 @@ class BiDirectionalTrade(Trade):
         Same method as OneTradePerDay
 
         """
-        print(self.portfolio)
+        #print(self.portfolio)
 
         return OneTradePerDay(self._portfolio).choose_EES_values(trunc_dict)
     
@@ -560,8 +563,12 @@ class BiDirectionalTrade(Trade):
                   give_obj_name: str, 
                   get_obj_name: str, 
                   get_obj_quantity: float | int,
-                  target_entry: dict[str, float] | dict[str,list[float]|tuple[float]], 
-                  target_exit: dict[str, float] | dict[str,list[float]|tuple[float]], 
+                  target_entry: dict[str, float] | \
+                                dict[str,list[float] | \
+                                tuple[float]], 
+                  target_exit: dict[str, float] | \
+                               dict[str,list[float] | \
+                               tuple[float]], 
                   stop_exit: dict[str, float],
                   open_hr: str = "0300", 
                   close_hr: str = "2000",
@@ -646,8 +653,8 @@ class BiDirectionalTrade(Trade):
         # independently (in Parallel). Therefore, the resulting Portfolio
         # pool and position pool are not going to be sorted perfectly by 
         # entry time.
-        trade_id_buy = 'Buy' + trade_id  
-        trade_id_sell = 'Sell' + trade_id  
+        trade_id_buy = 'Buy' + str(trade_id)
+        trade_id_sell = 'Sell' + str(trade_id) 
         # Buy
         pos_list_buy = self.open_positions(give_obj_name, get_obj_name, \
                                            get_obj_quantity, 
@@ -658,10 +665,10 @@ class BiDirectionalTrade(Trade):
                                            open_time = open_time,
                                            trade_id= trade_id_buy)
             
-        trade_open_buy, trade_close_buy, pos_list_buy, exec_pos_list_buy = \
-                                        self.execute_positions(EES_dict_buy, 
-                                                               pos_list_buy,
-                                                              pos_type='Long')
+        trade_open_buy, trade_close_buy,\
+        pos_list_buy, exec_pos_list_buy = self.execute_positions(EES_dict_buy, 
+                                                                 pos_list_buy,
+                                                                 pos_type='Long')
         
         # Sell
         pos_list_sell = self.open_positions(give_obj_name, get_obj_name, \
@@ -673,10 +680,10 @@ class BiDirectionalTrade(Trade):
                                             open_time = open_time,
                                             trade_id= trade_id_sell)
 
-        trade_open_sell, trade_close_sell, pos_list_sell, exec_pos_list_sell = \
-                                        self.execute_positions(EES_dict_sell, 
-                                                               pos_list_sell,
-                                                              pos_type='Short')
+        trade_open_sell, trade_close_sell,\
+        pos_list_sell, exec_pos_list_sell = self.execute_positions(EES_dict_sell, 
+                                                                   pos_list_sell,
+                                                                   pos_type='Short')
                                         
         # Now Bundle all the data together
         EES_dict, \

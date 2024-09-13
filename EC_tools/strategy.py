@@ -151,7 +151,7 @@ class ArgusMRStrategy(Strategy):
                  history_data_lag: list, 
                  apc_curve_lag: list, 
                  price_proxy: str = 'Settle', 
-                 qunatile: list = [0.25,0.4,0.6,0.75]):
+                 quantile: list = [0.25,0.4,0.6,0.75]):
         """
         A method that generate all the data needed for the strategy. The ouput
         of this functions contain all the quantity that will be and can be used 
@@ -204,7 +204,7 @@ class ArgusMRStrategy(Strategy):
         strategy_info = {'lag_list': lag_list, 
                          'rollingaverage': rollingaverage_q}
         
-        qunatile_info = list(self._curve_today_spline(qunatile))
+        qunatile_info = list(self._curve_today_spline(quantile))
         
         return strategy_info, qunatile_info
         
@@ -401,11 +401,13 @@ class ArgusMRStrategy(Strategy):
                        history_data_lag: pd.DataFrame, 
                        apc_curve_lag: pd.DataFrame, 
                        open_price: float, 
-                       qunatile: list = [0.25,0.4,0.6,0.75],
+                       quantile: list[float] = [0.25,0.4,0.6,0.75],
                        total_lag_days: int = 2, 
                        apc_mid_Q: float = 0.5, 
-                       buy_range: tuple = ([0.25,0.4],[0.6,0.75],0.05), 
-                       sell_range: tuple = ([0.6,0.75],[0.25,0.4],0.95)):
+                       buy_range: tuple[list|tuple,float] = 
+                                   ([0.25,0.4],[0.6,0.75],0.05), 
+                       sell_range: tuple[list|tuple,float] = 
+                                   ([0.6,0.75],[0.25,0.4],0.95)):
         """
         A method to apply the strategy.
 
@@ -443,7 +445,7 @@ class ArgusMRStrategy(Strategy):
         """
         
         strategy_info, quantile_info = self.gen_data(history_data_lag, apc_curve_lag,
-                                                     qunatile = qunatile)
+                                                     quantile = quantile)
         
         direction, cond_info = self.run_cond(strategy_info, open_price,
                                              total_lag_days = total_lag_days, 

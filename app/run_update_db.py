@@ -14,7 +14,18 @@ import pandas as pd
 
 import EC_tools.read as read
 import EC_tools.utility as util
-from crudeoil_future_const import APC_FILE_LOC, CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST
+from crudeoil_future_const import APC_FILE_LOC,\
+                                  CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST,\
+                                  APC_FILE_COMPLETE_LOC,\
+                                  APC_CAT_LIST_ALL, APC_KEYWORDS_LIST_ALL, \
+                                  APC_SYMBOL_LIST_ALL,\
+                                  MONTHLY_CAT_LIST, MONTHLY_KEYWORDS_LIST, \
+                                  MONTHLY_SYMBOL_LIST,\
+                                  WEEKLY_30AVG_CAT_LIST, WEEKLY_30AVG_KEYWORDS_LIST,\
+                                  WEEKLY_30AVG_SYMBOL_LIST,\
+                                  APC_FILE_MONTHLY_LOC, APC_FILE_WEEKLY_30AVG_LOC
+
+
 
 __author__ = "Dexter S.-H. Hon"
 __all__ = ['download_latest_APC', 'download_latest_APC_fast', 
@@ -25,7 +36,7 @@ AUTH_PACK = {'username': "dexter@eulercapital.com.au",
              'password':"76tileArg56!"}
 
 DATE_PACK = {"start_date": "2021-01-01",
-        "end_date": "2024-06-18"}
+             "end_date": "2024-06-18"}
 
 ASSET_PACK = {'categories': 'Argus Nymex WTI month 1, Daily',
                'keywords': "WTI",
@@ -38,12 +49,11 @@ categories_monthly_30avg_list = [
                     'Argus Brent front month average 30-day interval, Weekly',
                     'ICE gasoil front month average 30-day interval, Weekly']
 
-categories_monthly_list = [  
-                        'Argus Nymex WTI front month average, Monthly',
-                        'Nymex Heating oil front month average, Monthly',
-                        'Nymex RBOB gasoline front month average, Monthly',
-                        'Argus Brent front month average, Monthly',
-                        'ICE gasoil front month average, Monthly']
+categories_monthly_list = ['Argus Nymex WTI front month average, Monthly',
+                           'Nymex Heating oil front month average, Monthly',
+                           'Nymex RBOB gasoline front month average, Monthly',
+                           'Argus Brent front month average, Monthly',
+                           'ICE gasoil front month average, Monthly']
 
 # checking function to see if the table is up to date
 
@@ -121,7 +131,7 @@ def download_latest_APC_fast(auth_pack: dict,
     old_data = pd.read_csv(old_filename)
     
     #Find the date of the latest entry
-    latest_entry = str(old_data['Forecast Period'].iloc[-1])
+    latest_entry = str(old_data['Forecast_Period'].iloc[-1])
     
     
     # download the latest APC from the latest_entry till today
@@ -129,13 +139,13 @@ def download_latest_APC_fast(auth_pack: dict,
     
     # for some reason I have to turn the Forecast column elements to str first 
     # to align them with the old data
-    temp['Forecast Period'] = [temp['Forecast Period'].iloc[i].\
+    temp['Forecast_Period'] = [temp['Forecast_Period'].iloc[i].\
                                       strftime("%Y-%m-%d") for 
-                                i, _ in enumerate(temp['Forecast Period'])]
+                                i, _ in enumerate(temp['Forecast_Period'])]
     
     # concandenate the old filedownload_latest_APC_list
     signal_data = pd.concat([old_data, temp], ignore_index = True)
-    signal_data.sort_values(by='Forecast Period')
+    signal_data.sort_values(by='Forecast_Period')
     
     return signal_data
 
@@ -183,7 +193,7 @@ def download_latest_APC_list(auth_pack: dict,
             
             if fast_dl == True: # Fast download. It loads old files
                 signal_data = download_latest_APC_fast(auth_pack, asset_pack, 
-                                                   filename)
+                                                       filename)
             elif fast_dl == False: # Slow download. It downlaod all data from db fresh
                 signal_data = download_latest_APC(auth_pack, asset_pack)
                 
@@ -205,7 +215,10 @@ def download_latest_Portara():
 
 
 if __name__ == "__main__": 
-    SAVE_FILENAME_LIST = list(APC_FILE_LOC.values())
+    SAVE_FILENAME_LIST = list(APC_FILE_LOC.values()) # Daily APC for 10 assets (front, second months)
+    SAVE_FILENAME_LIST_COMPLETE = list(APC_FILE_COMPLETE_LOC.values()) # Complete APC for all forecast from Argys
+    SAVE_FILENAME_LIST_MONTHLY = list(APC_FILE_MONTHLY_LOC.values()) # Monthly APC for 5 assets (front month)
+    SAVE_FILENAME_LIST_WEEKLY_30AVG = list(APC_FILE_WEEKLY_30AVG_LOC.values()) # Weekly average for 30 days interval (front month)
 # =============================================================================
 #     save_filename_list = ["/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_CLc2.csv", 
 #                      "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_HOc2.csv", 
@@ -222,8 +235,18 @@ if __name__ == "__main__":
 #     keywords_list = ["WTI","Heating", "Gasoline",'Brent', "gasoil"]
 #     symbol_list = ['CLc2', 'HOc2', 'RBc2', 'QOc2', 'QPc2']
 # =============================================================================
+
+    # fast download on the 10 main crudeoil future contracts
+    #download_latest_APC_list(AUTH_PACK, SAVE_FILENAME_LIST, CAT_LIST, 
+    #                         KEYWORDS_LIST, SYMBOL_LIST,fast_dl=True)   
     
-    
+
+    # slow download on all argus APC in their server
     download_latest_APC_list(AUTH_PACK, SAVE_FILENAME_LIST, CAT_LIST, 
-                             KEYWORDS_LIST, SYMBOL_LIST,fast_dl=True)    
-    #download_latest_APC(auth_pack, asset_pack)
+                             KEYWORDS_LIST, SYMBOL_LIST,fast_dl=False)    
+
+    download_latest_APC_list(AUTH_PACK, SAVE_FILENAME_LIST_MONTHLY, MONTHLY_CAT_LIST, 
+                             MONTHLY_KEYWORDS_LIST, MONTHLY_SYMBOL_LIST,fast_dl=False)    
+
+    download_latest_APC_list(AUTH_PACK, SAVE_FILENAME_LIST_WEEKLY_30AVG, WEEKLY_30AVG_CAT_LIST, 
+                             WEEKLY_30AVG_KEYWORDS_LIST, WEEKLY_30AVG_SYMBOL_LIST,fast_dl=False)    

@@ -88,8 +88,10 @@ def get_apc_from_server(username: str, password: str,
         apc_data = apc.getPossibilityCurves(start_date=start_date, end_date=end_date, categories=[categories])
         
         # Delete irrelavant columns
-        apc_data = apc_data.drop(columns=['PUBLICATION_DATE', 'CONTINUOUS_FORWARD', 'PRICE_UNIT', 'TIMESTAMP'])
-        apc_data.columns = ['Forecast Period'] + [i for i in apc_data.columns[1:]] # Add the term "APC" in each column
+        apc_data = apc_data.drop(columns=['PUBLICATION_DATE', 
+                                          'CONTINUOUS_FORWARD', 
+                                          'PRICE_UNIT', 'TIMESTAMP'])
+        apc_data.columns = ['Forecast_Period'] + [i for i in apc_data.columns[1:]] # Add the term "APC" in each column
 
         # If no specific symbol input, use the name of the categories
         if symbol == None:
@@ -107,7 +109,7 @@ def get_apc_from_server(username: str, password: str,
         apc_data = apc.getPossibilityCurves(start_date=start_date, end_date=end_date, categories=categories)
             
         apc_data = apc_data.drop(columns=['PUBLICATION_DATE', 'CONTINUOUS_FORWARD', 'PRICE_UNIT', 'TIMESTAMP'])
-        apc_data.columns = ['Forecast Period'] + [i for i in apc_data.columns[1:]]
+        apc_data.columns = ['Forecast_Period'] + [i for i in apc_data.columns[1:]]
         apc_data['symbol'] = None 
         
         # add new column with symbols corresponding to the keywords.
@@ -479,8 +481,8 @@ def read_reformat_openprice_data(filename: str) ->  pd.DataFrame:
 
 def read_reformat_APC_data(filename:str) -> pd.DataFrame:
     signal_data =  pd.read_csv(filename)
-    signal_data['Forecast Period'] = [datetime.datetime.strptime(x, '%Y-%m-%d')
-                            for x in signal_data['Forecast Period']]
+    signal_data['Forecast_Period'] = [datetime.datetime.strptime(x, '%Y-%m-%d')
+                            for x in signal_data['Forecast_Period']]
     #signal_data_reindex = signal_data.set_index('Forecast Period',drop=False)
     signal_data_reindex = signal_data
     return signal_data #signal_data_reindex
@@ -532,10 +534,10 @@ def extract_lag_data(signal_data: pd.DataFrame,
         
     #Store the lag signal data in a list
     #signal_data_lag = signal_data[signal_data['Forecast Period'] == window[0]]
-    signal_data_lag = signal_data[signal_data['Forecast Period'] == window[0]]
+    signal_data_lag = signal_data[signal_data['Forecast_Period'] == window[0]]
     
     for i in range(lag_size-1):
-        curve = signal_data[signal_data['Forecast Period'] == window[i+1]]
+        curve = signal_data[signal_data['Forecast_Period'] == window[i+1]]
         signal_data_lag = pd.concat([signal_data_lag, curve])
 
     return signal_data_lag, history_data_lag
@@ -1118,7 +1120,7 @@ def concat_CSVtable(filename_list: list[str],
 
 def merge_raw_data(filename_list: list[str], 
                    save_filename: str, 
-                   sort_by: str = "Forecast Period") -> pd.DataFrame:
+                   sort_by: str = "Forecast_Period") -> pd.DataFrame:
     """
     A functiob that merge a list of CSV files into one CSV file.
 
@@ -1129,7 +1131,7 @@ def merge_raw_data(filename_list: list[str],
     save_filename : str
         The filename for saving.
     sort_by : str, optional
-        The column name used in the sorting. The default is "Forecast Period".
+        The column name used in the sorting. The default is "Forecast_Period".
 
     Returns
     -------

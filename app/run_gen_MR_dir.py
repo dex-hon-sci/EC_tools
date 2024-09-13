@@ -61,6 +61,7 @@ def loop_signal(strategy: type[Strategy],
                 buy_range: tuple = ([0.25,0.4],[0.6,0.75],0.05), 
                 sell_range: tuple = ([0.6,0.75],[0.25,0.4],0.95), 
                 open_hr: str = '', close_hr: str = '',
+                quantile = [0.05,0.1,0.25,0.4,0.5,0.6,0.75,0.9,0.95],
                 asset_name: str = '', Timezone: str = "",
                 contract_symbol_condse: bool = False, 
                 loop_symbol: bool = None) -> pd.DataFrame: 
@@ -112,7 +113,7 @@ def loop_signal(strategy: type[Strategy],
 
     """
     #make bucket
-    bucket = book.make_bucket(keyword=strategy().strategy_name) # 'argus_exact_mode')#
+    bucket = book.make_bucket(keyword=strategy().strategy_name,) # 'argus_exact_mode')#
     print('Start looping signal: {}...'.format(loop_symbol))
 
     # Find the index of the start_date and end_date here.
@@ -163,10 +164,13 @@ def loop_signal(strategy: type[Strategy],
                                                                  lag_size=5)
             
             # Apply the strategy, The Strategy is variable
-            strategy_output = strategy(curve_this_date).apply_strategy(
-                                     history_data_lag5, apc_curve_lag5, price_330,
-                                     buy_range=buy_range, sell_range=sell_range,
-                                     qunatile=[0.05,0.1,0.25,0.4,0.5,0.6,0.75,0.9,0.95])
+            strategy_output = strategy(curve_this_date).\
+                                        apply_strategy(history_data_lag5, 
+                                                       apc_curve_lag5, 
+                                                       price_330,
+                                                       buy_range=buy_range, 
+                                                       sell_range=sell_range,   
+                                                       quantile = quantile)
 
             print('====================================')
             print(forecast_date, full_contract_symbol,'MR signal generated!', 
@@ -181,7 +185,7 @@ def loop_signal(strategy: type[Strategy],
             data = [forecast_date, price_code] + \
                     [strategy_output['direction']] + \
                     static_info +  strategy_output['data']
-            
+            #print("data", data, len(data))
             # Storing the data    
             bucket = book.store_to_bucket_single(data)       
         
@@ -201,6 +205,8 @@ def run_gen_MR_signals(strategy: type[Strategy],
                        buy_range: tuple = ([0.25,0.4],[0.6,0.75],0.05), 
                        sell_range: tuple = ([0.6,0.75],[0.25,0.4],0.95), 
                        open_hr: str = '', close_hr: str = '',
+                       qunatile: list[float] = [0.05,0.1,0.25,0.4,0.5,
+                                                0.6,0.75,0.9,0.95], 
                        asset_name: str = '', Timezone: str = "",
                        start_date_pushback: int = 20) -> pd.DataFrame:
     """
@@ -232,6 +238,7 @@ def run_gen_MR_signals(strategy: type[Strategy],
         The opening hour. The default is ''.
     close_hr : str, optional
         The closing hour. The default is ''.
+    qunatile : list
     asset_name : str, optional
         The asset name to be recoreded in the bookkeep object. 
         The default is ''.
@@ -300,6 +307,7 @@ def run_gen_MR_signals(strategy: type[Strategy],
                                                sell_range=sell_range,
                                                open_hr=open_hr, 
                                                close_hr=close_hr,
+                                               qunatile = qunatile,
                                                asset_name = asset_name, 
                                                Timezone= Timezone,
                                                loop_symbol = symbol)
@@ -325,6 +333,8 @@ def run_gen_MR_signals_list(strategy: type[Strategy],
                             timezone_dict: dict, 
                             buy_range: tuple = ([0.25,0.4],[0.6,0.75],0.05), 
                             sell_range: tuple =([0.6,0.75],[0.25,0.4],0.95),
+                            quantile: list[float] = [0.05,0.1,0.25,0.4,0.5,
+                                                     0.6,0.75,0.9,0.95],
                             save_or_not: bool = False) -> dict:
     """
     A method that run Mean Reversion signal generation form a list of inputs.
@@ -420,6 +430,8 @@ def run_gen_MR_signals_preloaded(strategy: type[Strategy],
                                  timezone_dict: dict,
                                  buy_range: tuple[float] = (0.4,0.6,0.1),
                                  sell_range: tuple[float] = (0.6,0.4,0.9),
+                                 quantile: list[float] = [0.05,0.1,0.25,0.4,
+                                                          0.5,0.6,0.75,0.9,0.95],
                                  save_or_not: bool = True) -> pd.DataFrame:
     """
     A method that run Mean Reversion signal generation form a preloaded 
@@ -511,6 +523,7 @@ def run_gen_MR_signals_preloaded(strategy: type[Strategy],
                                                        sell_range=sell_range,
                                                        open_hr=open_hr, 
                                                        close_hr=close_hr,
+                                                       quantile = quantile,
                                                        asset_name = symbol, 
                                                        Timezone= Timezone,
                                                        loop_symbol=symbol)
@@ -530,6 +543,8 @@ def run_gen_signal_bulk(strategy: type[Strategy],
                         timezone_dict: dict = TIMEZONE_DICT,
                         buy_range: tuple[float] = (0.4,0.6,0.1), 
                         sell_range: tuple[float] = (0.6,0.4,0.9),
+                        quantile: list[float] = [0.05,0.1,0.25,0.4,
+                                                 0.5,0.6,0.75,0.9,0.95],
                         runtype: str = 'list', 
                         master_signal_filename: str = "master_signal.csv",
                         merge_or_not: bool = True, 
@@ -598,6 +613,7 @@ def run_gen_signal_bulk(strategy: type[Strategy],
                                 open_hr_dict, close_hr_dict, 
                                 timezone_dict,
                                 buy_range = buy_range, 
+                                quantile = quantile,
                                 sell_range = sell_range,
                                 save_or_not=save_or_not)
         
@@ -619,14 +635,15 @@ def run_gen_signal_bulk(strategy: type[Strategy],
 
         # Run signal generation in a preloaded format
         run_gen_MR_signals_preloaded(strategy, save_filename_loc, 
-                                    SIGNAL_PKL, HISTORY_DAILY_PKL, 
-                                    OPENPRICE_PKL,
-                                    start_date, end_date,
-                                    open_hr_dict, close_hr_dict, 
-                                    timezone_dict,
-                                    buy_range = buy_range, 
-                                    sell_range = sell_range,
-                                    save_or_not = save_or_not)
+                                     SIGNAL_PKL, HISTORY_DAILY_PKL, 
+                                     OPENPRICE_PKL,
+                                     start_date, end_date,
+                                     open_hr_dict, close_hr_dict, 
+                                     timezone_dict,
+                                     buy_range = buy_range, 
+                                     quantile = quantile,
+                                     sell_range = sell_range,
+                                     save_or_not = save_or_not)
         if merge_or_not:
 
             MASTER_SIGNAL_FILENAME = master_signal_filename            

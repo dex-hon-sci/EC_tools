@@ -32,33 +32,35 @@ Created on Tue May  7 23:46:42 2024
 
 
 Backtest Methods on Singular Asset:
-    loop_date
-    
-    loop_date_portfolio
-    
-Backtest Methods on Multiple Assets:
-    There are several method that can be used to iterate through multiple assets.
-    At the moment, there are three types:
+    The method to run singular asset are: 
+        1) "run_backtest" that utilise loop_date and simple_trade functions. 
+        2) "run_backtest_portfolio" that utilise loop_date_portfolio and Trade 
+           class child objects. 
         
-List-based
-    
-Preload_list
+Backtest Methods on Multiple Assets:
+    There are several method that can be used to iterate through 
+    multiple assets.
+    At the moment, there are two methods:
+        1) "run_backtest_list" that uses "run_backtest" and take a list of 
+            historical data filename as inputs.
+        2) "run_backtest_portfolio_preloaded" that use a preloaded pkl files 
+            that contains the historical data in the form of pd.DataFrame
+            
+    The master function that controls which method to be used:
+        A) "run_backtest_bulk" is the master function that controls which 
+            multi-asset backtest to be used. 
+            If method = "list", the method runs "run_backtest_list",
+            If method = "preload", the method runs "run_backtest_portfolio_preloaded",
+        
 
-Concurrent
 """
 
 
 __all__ = ['run_backtest','run_backtest_list', 
-           'run_backtest_portfolio', 'run_backtest_portfolio_preloaded']
+           'run_backtest_portfolio', 'run_backtest_portfolio_preloaded',
+           'run_backtest_bulk']
 
 __author__="Dexter S.-H. Hon"
-
-
-class BacktestType(Enum): #WIP
-    BACKTEST_SINGLE = "backtest_single"
-    BACKTEST_LIST = "backtest_list"
-    BACKTEST_PORTFOLIO = "backtest_portfolio"
-    BACKTEST_PORTFOLIO_LIST = "backtest_portfolio"
 
 
 @util.time_it
@@ -68,7 +70,8 @@ def run_backtest(trade_choice,
                  start_date: datetime.datetime, 
                  end_date: datetime.datetime, 
                  open_hr: str = '0800', 
-                 close_hr: str = '1630') -> pd.DataFrame:
+                 close_hr: str = '1630',
+                 selected_directions = ["Buy", "Sell"]) -> pd.DataFrame:
     """
     
     The simplest backtest method. It uses the basic 'loop_date' to iterate 
@@ -93,6 +96,7 @@ def run_backtest(trade_choice,
         The opening hour. The default is '0800'.
     close_hr : str, optional
         The closing hour. The default is '1630'.
+    selected_directions: 
 
     Returns
     -------
@@ -106,6 +110,7 @@ def run_backtest(trade_choice,
     
     # Find the date for trading
     trade_date_table = backtest.prepare_signal_interest(filename_buysell_signals, 
+                                                        direction = selected_directions,
                                                         trim = False)
 
     start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")# datetime.datetime(2023,1,1)
@@ -135,6 +140,7 @@ def run_backtest_list(trade_choice,
                       start_date, end_date,
                       open_hr_dict = OPEN_HR_DICT, 
                       close_hr_dict = CLOSE_HR_DICT, 
+                      selected_directions = ['Buy', 'Sell'],
                       save_or_not: bool = False) -> dict:
 
     
@@ -156,7 +162,8 @@ def run_backtest_list(trade_choice,
                                         filename_buysell_signals, 
                                         start_date, end_date, 
                                         open_hr=open_hr, 
-                                        close_hr=close_hr)
+                                        close_hr=close_hr,
+                                        selected_directions = selected_directions)
             return backtest_data
                        
             
@@ -175,7 +182,8 @@ def run_backtest_portfolio(TradeMethod,
                            filename_minute: str, 
                            filename_buysell_signals: str, 
                            start_date: str, end_date: str,
-                           loop_type: LoopType = LoopType.CROSSOVER) \
+                           loop_type: LoopType = LoopType.CROSSOVER,
+                           selected_directions = ["Buy", "Sell"]) \
                            -> Portfolio:
     """
     The basic backtest method utilising the Portfolio module.
@@ -212,6 +220,7 @@ def run_backtest_portfolio(TradeMethod,
 
     # Find the date for trading, only "Buy" or "Sell" date are taken.
     trade_date_table = backtest.prepare_signal_interest(filename_buysell_signals, 
+                                                        direction = selected_directions,
                                                         trim = False)
     
     # Select for the date interval for investigation
@@ -237,15 +246,16 @@ def run_backtest_portfolio(TradeMethod,
 
     return P1
 
-#@util.pickle_save("/home/dexter/Euler_Capital_codes/EC_tools/results/test3_portfolio_nonconcurrent_1contracts_full.pkl")
 def run_backtest_portfolio_preloaded(TradeMethod,
                                      master_signals_filename: str, 
                                      histroy_intraday_data_pkl: dict,
                                      start_date: str, end_date: str,
-                                     loop_method: str = "crossover",
                                      give_obj_name: str = "USD", 
                                      get_obj_quantity: int = 1,
                                      loop_type: LoopType = LoopType.CROSSOVER,
+                                     open_hr_dict: dict = OPEN_HR_DICT, 
+                                     close_hr_dict: dict = CLOSE_HR_DICT, 
+                                     selected_directions = ["Buy", "Sell"],
                                      plot_or_not: bool = False): 
     """
     
@@ -279,7 +289,8 @@ def run_backtest_portfolio_preloaded(TradeMethod,
 
     #histroy_intraday_data_pkl = util.load_pkl(histroy_intraday_data_pkl_filename)
     # Find the date for trading, only "Buy" or "Sell" date are taken.
-    trade_date_table = backtest.prepare_signal_interest(master_signals_filename, 
+    trade_date_table = backtest.prepare_signal_interest(master_signals_filename,
+                                                        direction = selected_directions,
                                                         trim = False)
     #start_date_lag = datetime.datetime.strptime(start_date, '%Y-%m-%d') - \
     #                        datetime.timedelta(days= start_date_pushback)
@@ -299,17 +310,8 @@ def run_backtest_portfolio_preloaded(TradeMethod,
                                                   histroy_intraday_data_pkl,
                                                   give_obj_name=give_obj_name,
                                                   get_obj_quantity=get_obj_quantity,
+                                                  
                                                   plot_or_not=plot_or_not)
-# =============================================================================
-#     P1 = backtest.loop_portfolio_preloaded(P1, 
-#                                            TradeMethod,
-#                                            trade_date_table, 
-#                                            histroy_intraday_data_pkl,
-#                                            give_obj_name=give_obj_name,
-#                                            get_obj_quantity=get_obj_quantity,
-#                                            plot_or_not=plot_or_not,
-#                                            loop_method=loop_method)
-# =============================================================================
     
     t2 = time.time()-t1
     print("It takes {} seconds to run the backtest".format(t2))
@@ -328,9 +330,9 @@ def run_backtest_bulk(TradeMethod,
                       give_obj_name: str = 'USD',
                       get_obj_quantity: int = 1,
                       open_hr_dict = OPEN_HR_DICT, 
-                      close_hr_dict=CLOSE_HR_DICT,
+                      close_hr_dict = CLOSE_HR_DICT,
                       loop_type: LoopType = LoopType.CROSSOVER,
-                      loop_method: str = "range",
+                      selected_directions = ['Buy', 'Sell'],
                       save_or_not: bool = True, 
                       merge_or_not: bool = True):
             
@@ -348,7 +350,8 @@ def run_backtest_bulk(TradeMethod,
                                             HISTORY_MINUTE_FILENAME_LIST,
                                             start_date, end_date,
                                             open_hr_dict = open_hr_dict, 
-                                            close_hr_dict=close_hr_dict, 
+                                            close_hr_dict = close_hr_dict, 
+                                            selected_directions = selected_directions,
                                             save_or_not=save_or_not)
                       
         if merge_or_not:
@@ -369,7 +372,10 @@ def run_backtest_bulk(TradeMethod,
                                               start_date, end_date,
                                               loop_type = loop_type,
                                               give_obj_name=give_obj_name,
-                                              get_obj_quantity=get_obj_quantity)
+                                              get_obj_quantity=get_obj_quantity,
+                                              open_hr_dict = open_hr_dict, 
+                                              close_hr_dict = close_hr_dict, 
+                                              selected_directions = selected_directions)
         
         backtest_result = PP
         if save_or_not: # save pkl portfolio

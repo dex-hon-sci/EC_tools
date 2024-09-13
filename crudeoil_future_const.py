@@ -51,6 +51,138 @@ KEYWORDS_LIST = ["WTI","WTI","Heating", "Heating","Gasoline","Gasoline",
 
 SYMBOL_LIST = ["CLc1", "CLc2", "HOc1", "HOc2", "RBc1", "RBc2", 
                "QOc1", "QOc2", "QPc1", "QPc2"]
+
+# Monthly lists
+MONTHLY_CAT_LIST = ['Argus Nymex WTI front month average, Monthly',
+                    'Nymex Heating oil front month average, Monthly',
+                    'Nymex RBOB gasoline front month average, Monthly',
+                    'Argus Brent front month average, Monthly',
+                    'ICE gasoil front month average, Monthly']
+
+MONTHLY_KEYWORDS_LIST = ["WTI","Heating","Gasoline",
+                         'Brent', 'gasoil']
+
+MONTHLY_SYMBOL_LIST = ["CLc1_avg_M", "HOc1_avg_M", "RBc1_avg_M",
+                       "QOc1_avg_M", "QPc1_avg_M"]
+
+
+WEEKLY_30AVG_CAT_LIST = ['Argus Nymex WTI front month average 30-day interval, Weekly',
+                    'Nymex Heating oil front month average 30-day interval, Weekly',
+                    'Nymex RBOB gasoline front month average 30-day interval, Weekly',
+                    'Argus Brent front month average 30-day interval, Weekly',
+                    'ICE gasoil front month average 30-day interval, Weekly']
+
+WEEKLY_30AVG_KEYWORDS_LIST = ["WTI","Heating","Gasoline",'Brent', 'gasoil']
+
+WEEKLY_30AVG_SYMBOL_LIST = ["CLc1_avg30_W", "HOc1_avg30_W", "RBc1_avg30_W",
+                            "QOc1_avg30_W", "QPc1_avg30_W"]
+                                  
+APC_CAT_LIST_ALL = ['Argus Nymex Heating oil month 7, Daily',
+                     'Argus Nymex WTI month 8, Daily',
+                     'Argus ICE gasoil month 4, Daily',
+                     'Argus Nymex WTI month 1, Daily',
+                     'Argus Brent month 3, Daily',
+                     'Argus Nymex WTI month 3, Daily',
+                     'ICE gasoil front month average 30-day interval, Weekly',
+                     'Argus Brent month 4, Daily',
+                     'Argus Nymex RBOB Gasoline month 8, Daily',
+                     'Argus Nymex WTI month 10, Daily',
+                     'Argus Brent front month spread, Daily',
+                     'Argus Nymex WTI front month spread, Daily',
+                     'Argus Nymex WTI month 2, Daily',
+                     'ICE gasoil front month average, Monthly',
+                     'Argus Brent month 10, Daily',
+                     'Argus Nymex RBOB Gasoline month 6, Daily',
+                     'Argus Nymex Heating oil month 6, Daily',
+                     'Argus Brent front month average 30-day interval, Weekly',
+                     'Argus Brent month 7, Daily',
+                     'Argus WCS front month average, Monthly',
+                     'Argus ICE gasoil month 5, Daily',
+                     'Argus ICE gasoil month 11, Daily',
+                     'Argus Nymex Heating oil month 8, Daily',
+                     'Argus Nymex RBOB Gasoline month 4, Daily',
+                     'Argus Nymex WTI month 4, Daily',
+                     'Argus ICE gasoil month 7, Daily',
+                     'Argus Nymex RBOB Gasoline month 7, Daily',
+                     'Argus Nymex Heating oil month 11, Daily',
+                     'Argus Nymex Heating oil month 3, Daily',
+                     'Argus Nymex WTI month 9, Daily',
+                     'Argus Nymex Heating oil month 2, Daily',
+                     'Nymex RBOB gasoline front month average 30-day interval, Weekly',
+                     'Argus Nymex RBOB Gasoline month 2, Daily',
+                     'Argus Brent month 2, Daily',
+                     'Argus Nymex WTI month 12, Daily',
+                     'Argus Nymex WTI month 6, Daily',
+                     'Argus Nymex RBOB Gasoline month 9, Daily',
+                     'Argus Nymex Heating oil month 12, Daily',
+                     'Argus Nymex WTI month 7, Daily',
+                     'Argus Brent month 1, Daily',
+                     'Argus Nymex Heating oil month 1, Daily',
+                     'Argus Nymex WTI month 5, Daily',
+                     'Argus ICE gasoil month 6, Daily',
+                     'Argus Brent month 8, Daily',
+                     'Nymex Heating oil front month average, Monthly',
+                     'Nymex RBOB gasoline front month average, Monthly',
+                     'Argus ICE gasoil month 3, Daily',
+                     'Argus Nymex RBOB Gasoline month 10, Daily',
+                     'Argus Nymex RBOB Gasoline month 3, Daily',
+                     'Argus Nymex Heating oil month 5, Daily',
+                     'Argus Nymex Heating oil month 9, Daily',
+                     'Argus Brent month 11, Daily',
+                     'Argus Nymex WTI front month average 30-day interval, Weekly',
+                     'Argus Brent month 12, Daily',
+                     'Argus Brent month 5, Daily',
+                     'Argus ICE gasoil month 1, Daily',
+                     'Argus Mars front month average, Monthly',
+                     'Argus Nymex WTI month 11, Daily',
+                     'Argus Brent month 6, Daily',
+                     'Argus Brent month 9, Daily',
+                     'Nymex Heating oil front month average 30-day interval, Weekly',
+                     'Argus Nymex Heating oil month 4, Daily',
+                     'Argus WTI Houston front month average, Monthly',
+                     'Argus ICE gasoil month 10, Daily',
+                     'Argus Nymex Heating oil month 10, Daily',
+                     'Argus Nymex RBOB Gasoline month 5, Daily',
+                     'Argus Nymex RBOB Gasoline month 1, Daily',
+                     'Argus Nymex RBOB Gasoline month 12, Daily',
+                     'Argus Nymex WTI front month average, Monthly',
+                     'Argus ICE gasoil month 9, Daily',
+                     'Argus ICE gasoil month 12, Daily',
+                     'Argus Brent front month average, Monthly',
+                     'Argus ICE gasoil month 8, Daily',
+                     'Argus Nymex RBOB Gasoline month 11, Daily',
+                     'Argus ICE gasoil month 2, Daily']
+
+
+APC_KEYWORDS_LIST_ALL = ['Heating','WTI','gasoil','WTI','Brent','WTI',
+                         'gasoil','Brent','Gasoline','WTI','Brent','WTI',
+                         'WTI','gasoil','Brent','Gasoline','Heating',
+                         'Brent','Brent','WCS','gasoil','gasoil','Heating',
+                         'Gasoline','WTI','gasoil','Gasoline','Heating',
+                         'Heating','WTI','Heating','gasoline','Gasoline',
+                         'Brent','WTI','WTI','Gasoline','Heating','WTI',
+                         'Brent','Heating','WTI','gasoil','Brent','Heating',
+                         'gasoline','gasoil','Gasoline','Gasoline','Heating',
+                         'Heating','Brent','WTI','Brent','Brent','gasoil',
+                         'Mars','WTI','Brent','Brent','Heating','Heating',
+                         'WTI','gasoil','Heating','Gasoline','Gasoline',
+                         'Gasoline','WTI','gasoil','gasoil','Brent','gasoil',
+                         'Gasoline','gasoil']
+
+APC_SYMBOL_LIST_ALL = ['HOc7','CLc8','QPc4','CLc1','QOc3','CLc3','QPc1_avg30_W',
+                       'QOc4','RBc8','CLc10','QOc1','CLc1','CLc2',
+                       'QPc1_avg_M','QOc10','RBc6','HOc6','QOc1_avg30_W',
+                       'QOc7','WCSc1_avg_M', 'QPc5','QPc11','HOc8','RBc4',
+                       'CLc4','QPc7','RBc7','HOc11','HOc3','CLc9', 'HOc2',
+                       'RBc1_avg30_W','RBc2','QOc2','CLc12','CLc6','RBc9',
+                       'HOc12','CLc7','CLc1','HOc1','CLc5','QPc6','QOc8',
+                       'HOc1_avg_M','RBc1_avg_M', 'QPc3','RBc10','RB3','HOc5',
+                       'HOc9','QOc11','CLc1_avg30_W','QOc12','QOc5','QPc1',
+                       'Marsc1_avg_M','CLc11', 'QOc6','QOc9','HOc1_avg30_W',
+                       'HOc4','CLc1_Houston_avg_M','QPc10','HOc10','RBc5',
+                       'RBc1','RBc12','CLc1_avg_M','QPc9','QPc12','QOc1_avg_M',
+                       'QPc8','RBc11','QPc2']
+
 #list(HISTORY_DAILY_FILE_LOC.keys())
 
 SYMBOL_KEYWORDS_DICT = {"CLc1": "WTI", "CLc2": "WTI",
@@ -59,19 +191,40 @@ SYMBOL_KEYWORDS_DICT = {"CLc1": "WTI", "CLc2": "WTI",
                         "QOc1": "Brent", "QOc2": "Brent", 
                         "QPc1": "gasoil", "QPc2": "gasoil"}
 
-OIL_FUTURES_FEE = {'name':'USD', 'quantity':24.0, 
+OIL_FUTURES_FEE = {'name':'USD', 'quantity': 15.0, 
                    'unit':'dollars', 'asset_type': 'Cash'}
 
 def make_path_dict(folder_name: str, file_prefix: str, 
                    file_suffix: str = '.csv',  
-                   path: str = RESULT_FILEPATH):
+                   path: str = RESULT_FILEPATH,
+                   syms: list = SYMBOL_LIST): #WIP
     
     bucket = dict()
-    for sym in SYMBOL_LIST: 
+    for sym in syms: 
         file_path = Path(path) / folder_name 
-        bucket[sym] = file_path / file_prefix + sym + file_suffix
+        bucket[sym] = str(file_path / str(file_prefix + sym + file_suffix))
     return bucket
         
+APC_FILE_COMPLETE_LOC = make_path_dict(folder_name = 'APC_latest_complete',
+                                       file_prefix = "APC_latest_",
+                                       file_suffix='.csv',
+                                       path = DATA_FILEPATH,
+                                       syms=APC_SYMBOL_LIST_ALL)
+
+APC_FILE_MONTHLY_LOC = make_path_dict(folder_name = 'APC_latest_complete',
+                                       file_prefix = "APC_latest_",
+                                       file_suffix='.csv',
+                                       path = DATA_FILEPATH,
+                                       syms=MONTHLY_SYMBOL_LIST)
+
+
+APC_FILE_WEEKLY_30AVG_LOC = make_path_dict(folder_name = 'APC_latest_complete',
+                                       file_prefix = "APC_latest_",
+                                       file_suffix='.csv',
+                                       path = DATA_FILEPATH,
+                                       syms=WEEKLY_30AVG_SYMBOL_LIST)
+
+
 SIZE_DICT = {
     'CLc1': 1000.0,
     'CLc2': 1000.0,
