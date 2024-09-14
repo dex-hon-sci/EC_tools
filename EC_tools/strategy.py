@@ -647,7 +647,7 @@ class ArgusMRStrategyMode(Strategy):
 
     
     def set_EES(self, buy_range=(-0.1, 0.1, -0.45), 
-                        sell_range =(0.1, -0.1, +0.45)):
+                      sell_range =(0.1, -0.1, +0.45)):
         
         mode_quant = self._curve_today_reverse_spline(self.mode_price)
         
@@ -1116,7 +1116,133 @@ class ArgusMRStrategy_22(Strategy):
         
         return {'data': data, 'direction': direction.value}
 
+
+
+class ArgusMonthlyStrategy(Strategy):
+    def __init__(self, 
+                 curve_monthly = np.arange(0.0025, 0.9975, 0.0025),
+                 curve_today= np.arange(0.0025, 0.9975, 0.0025), 
+                 quant_list = np.arange(0.0025, 0.9975, 0.0025)):
+        
+        super().__init__()
+        self._curve_monthly = curve_monthly
+        self._curve_today = curve_today
+        self._quant_list = quant_list
+        self._curve_monthly_spline = mfunc.generic_spline(self._quant_list, 
+                                                        self._curve_monthly)
+        self._curve_today_spline = mfunc.generic_spline(self._quant_list, 
+                                                        self._curve_today)
+        
+        self._sub_buy_cond_dict = dict()
+        self._sub_sell_cond_dict = dict()
+        self.sub_cond_dict = {'Buy':[], 'Sell':[], 'Neutral': []}
+
+        self.strategy_name = 'argus_monthly'
+        
+    def flatten_sub_cond_dict(self) -> None:
+        """
+        A method that turn a sub-condition-dictionary into a 
+        condition-dictionary and pass it to the Strategy parent class.
+        
+        This function assume the sub_cond_dict is only one layer deep, i.e.
+        a structure like this: {'Buy': [[...], [...], [...]], 'Sell':...}.
+        
+        Structure like this is not allowed:  
+            {'Buy': [[...], [[...],[...]], [...]], 'Sell':...}.
+
+        Returns
+        -------
+        None.
+
+        """
+        # a method that turn a sub_cond_dict into a cond_dict assuming the 
+        # subgroups are only one layer deep.
+        
+        for key in self.sub_cond_dict:
+            lis = self.sub_cond_dict[key]
+            flatList = sum(lis, [])
+            self.cond_dict[key] = flatList
+            
+    def gen_data():
+        
+        prev_cum_avg = 0
+        prev_cum_n = 0
+        today_price = 0
+        
+        
+        today_cum_avg = (prev_cum_avg*prev_cum_n + today_price)/(prev_cum_n + 1)
+        
+    
+    def run_cond(self, data):
+        rollingaverage_q = data['rollingaverage']
+
+        lag_close_q_list = [data['lag_list'][i] for i in range(total_lag_days)]
+        mid_Q_list = [apc_mid_Q for i in range(total_lag_days)]
+        
+        # "BUY" condition
+        # (1) create a list of Boolean value for evaluating if the 
+        # total_cum_avg is within the monthly APC: Q0.1 < total_cum_avg < Q0.35
+        cond_buy_list_1 = list(map(lambda x, y, z: z < x < y, [], [],[]))
+        
+        cond_buy_list_2 = [(lag1q < 0.25)]
+        # (2) rolling 5 days average lower than the median apc 
+        cond_buy_list_3 = [(rollingaverage_q < 0.4)]
+        
+        # "SELL" condition
+        # total_cum_avg is within the monthly APC: Q0.65 < total_cum_avg < Q0.9
+
+        cond_sell_list_1 = list(map(lambda x, y, z:z < x < y, [], [],[]))
+        # daily APC 
+        cond_sell_list_2 = [(lag1q > 0.75)]
+        # (3) price at today's opening hour below the 0.9 quantile of today's apc
+        cond_sell_list_3 = [(rollingaverage_q <= 0.6)]
+        
+        # "Entry condition"
+        check_entry_buy = (q0_10 < today_cum_avg < q0_35) # Buy
+        check_entry_sell = (q0_65 < today_cum_avg < q0_90) # Sell
+        # Exit condition
+        check_exit_buy = (q0_50 < today_cum_avg < q0_90) # Buy
+        check_exit_sell = (q0_10 < today_cum_avg < q0_50) # Sell
+        
+        # Stoploss
+        check_stoploss_buy = (today_cum_avg < q0_05)
+        check_stoploss_sell = (today_cum_avg > q0_95)
+    
+    def set_EES(self, data):
+        
+        prev_cum_avg = data["prev_cum_avg"]
+        prev_cum_n = data["prev_cum_n"]
+        
+        q0_05  = self._curve_monthly_spline(0.05)
+        q0_10  = self._curve_monthly_spline(0.10)
+        q0_35  = self._curve_monthly_spline(0.35)
+        q0_65  = self._curve_monthly_spline(0.65)
+        q0_90  = self._curve_monthly_spline(0.90)
+        q0_95  = self._curve_monthly_spline(0.95)
+        
+        buy_target_lower_entry = q0_10*(prev_cum_n + 1) - prev_cum_avg*prev_cum_n
+        buy_target_upper_entry = q0_35*(prev_cum_n + 1) - prev_cum_avg*prev_cum_n
+        
+        sell_target_lower_entry = q0_65*(prev_cum_n + 1) - prev_cum_avg*prev_cum_n
+        sell_target_upper_entry = q0_90*(prev_cum_n + 1) - prev_cum_avg*prev_cum_n
+        
+        buy_stoploss_exit = q0_05*(prev_cum_n + 1) - prev_cum_avg * prev_cum_n
+        sell_stoploss_exit = q0_95*(prev_cum_n + 1) - prev_cum_avg * prev_cum_n
+        
+        
+        return
+
+
+        
+    def apply_strategy():
+        pass
+
+
+
+
+
 MR_STRATEGIES_0 = {"argus_exact": ArgusMRStrategy,
-                   "argus_exact_mode": ArgusMRStrategyMode}
+                   "argus_exact_mode": ArgusMRStrategyMode,
+                   'argus_monthly': ArgusMonthlyStrategy}
 # condition_lib = {'NCONS': [(lambda x, y: x < y)],
 #                  'NROLL': []} 

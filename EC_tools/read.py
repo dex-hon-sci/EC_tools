@@ -85,7 +85,9 @@ def get_apc_from_server(username: str, password: str,
     if type(categories) is str: # if the asset name input is a string, pull only one 
 
         # This retrieve the apc from the server
-        apc_data = apc.getPossibilityCurves(start_date=start_date, end_date=end_date, categories=[categories])
+        apc_data = apc.getPossibilityCurves(start_date=start_date, 
+                                            end_date=end_date, 
+                                            categories=[categories])
         
         # Delete irrelavant columns
         apc_data = apc_data.drop(columns=['PUBLICATION_DATE', 
@@ -108,7 +110,9 @@ def get_apc_from_server(username: str, password: str,
         
         apc_data = apc.getPossibilityCurves(start_date=start_date, end_date=end_date, categories=categories)
             
-        apc_data = apc_data.drop(columns=['PUBLICATION_DATE', 'CONTINUOUS_FORWARD', 'PRICE_UNIT', 'TIMESTAMP'])
+        apc_data = apc_data.drop(columns=['PUBLICATION_DATE', 
+                                          'CONTINUOUS_FORWARD', 
+                                          'PRICE_UNIT', 'TIMESTAMP'])
         apc_data.columns = ['Forecast_Period'] + [i for i in apc_data.columns[1:]]
         apc_data['symbol'] = None 
         

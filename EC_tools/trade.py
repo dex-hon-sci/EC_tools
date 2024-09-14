@@ -14,7 +14,7 @@ import datetime as datetime
 
 import numpy as np
 import pandas as pd
-
+from EC_tools.portfolio import Portfolio
 from EC_tools.position import Position, ExecutePosition
 import EC_tools.read as read
 import EC_tools.utility as util
@@ -28,9 +28,40 @@ class Trade(Protocol):
     Parent class for all trading strategy. Universal functions are written here.
     
     """
-    def  __init__(self, portfolio):
-        self._portfolio = portfolio
+    def  __init__(self, portfolio: Portfolio, 
+                 close_exit_or_not: bool = True, 
+                 save_only_exec_pos: bool = False,
+                 auto_upload_all: bool = False):
         
+        self._portfolio = portfolio
+        self._close_exit_or_not = close_exit_or_not
+        self._save_only_exec_pos = save_only_exec_pos
+        self._auto_upload_all = auto_upload_all
+            
+    @property
+    def close_exit_or_not(self):
+        return self._close_exit_or_not
+    
+    @property
+    def save_only_exec_pos(self):
+        return self._save_only_exec_pos
+    
+    @property
+    def auto_upload_all(self):
+        return self._auto_upload_all
+    
+    @close_exit_or_not.setter
+    def close_exit_or_not(self, bool_val: bool) -> None:
+        self._close_exit_or_not = bool_val
+        
+    @save_only_exec_pos.setter
+    def save_only_exec_pos(self, bool_val: bool) -> None:
+        self._save_only_exec_pos = bool_val
+        
+    @auto_upload_all.setter
+    def auto_upload_all(self, bool_val: bool):
+        self._auto_upload_all = bool_val
+    
     def add_position(self, 
                      give_obj_name: str, 
                      get_obj_name: str, 
@@ -74,6 +105,9 @@ class Trade(Protocol):
         give_obj_unit = ASSET_DICT[give_obj_name]['unit']
         give_obj_type = ASSET_DICT[give_obj_name]['asset_type']
         
+        if self._auto_upload_all:
+            get_obj_quantity = self._portfolio._remainder_dict[get_obj_name]
+        
         # get_obj, asset
         get_obj = {'name': get_obj_name, 
                    'quantity': get_obj_quantity, 
@@ -86,6 +120,7 @@ class Trade(Protocol):
                     'unit': give_obj_unit, 
                     'asset_type': give_obj_type, 
                     'misc':{}}
+        
         #print("before add fee", fee, get_obj_quantity)
         if type(fee) == dict:
             new_fee = fee.copy()
@@ -116,10 +151,7 @@ class OneTradePerDay(Trade):
     """
     def __init__(self, portfolio):
         super().__init__(portfolio)
-        self.EES_type = None
-        self.EES_para_num = 1
-        self.close_exit = True
-        
+
     @staticmethod
     def choose_EES_values(EES_dict: dict) -> tuple[tuple, tuple, tuple, tuple]:
         """
@@ -700,6 +732,417 @@ class BiDirectionalTrade(Trade):
         return EES_dict, trade_open, trade_close, pos_dict, exec_pos_dict
 
     
+class OneTradePerDay_2(Trade):
+    """
+    A class that perform one trade per day, the simplest form of trading.
+    
+    Four possible outcomes:
+    1) Find the earliest entry point in the price action chart, 
+    2) exit the position  as soon as the price it the target entry. 
+    3) If the price hit the stop loss first, exit at stop loass. 
+    4) If netiher the target exit nor the stop loss is hit, exit the trade 
+        at the closing hour.
+        
+    """
+    def __init__(self, portfolio):
+        
+        super().__init__(portfolio)
+        self.EES_type = None
+        self.EES_para_num = 1
+
+    @staticmethod
+    def choose_EES_values(EES_dict: dict) -> tuple[tuple, tuple, tuple, tuple]:
+        """
+        A method to find the appropiate EES values of the day. 
+        In the case of one trade per day, we only search for the earliest exit
+        and stop loss price after entry price was hit.
+        
+        You may supply either a EES_dict from 
+        
+        Parameters
+        ----------
+        EES_dict : dict
+            A dictionary for all possible EES values.
+
+        Returns
+        -------
+        entry_pt : tuple
+            The time and price of the entry moment.
+        exit_pt : tuple
+            The time and price of the exit moment.
+        stop_pt : tuple
+            The time and price of the stop loss moment.
+        close_pt : tuple
+            The time and price of the close hour exit moment.
+
+
+        """
+        # A method that search for correct EES points from a EES_dict
+        
+        # initialise
+        entry_pt, exit_pt = (np.nan,np.nan), (np.nan,np.nan)
+        stop_pt, close_pt = (np.nan,np.nan), (np.nan,np.nan)
+        
+        earliest_exit, earliest_stop = exit_pt, stop_pt
+        
+        # closr_pt always exist so we do it outside of the switch cases
+        close_pt = EES_dict['close']
+
+        # To get the correct EES and close time and price
+        if len(EES_dict['entry']) == 0: # entry price not hit. No trade that day.
+            pass
+        else:
+            # choose the entry point
+            entry_pt = EES_dict['entry'][0]
+            
+            if len(EES_dict['exit']) > 0:
+                # Find exit point candidates
+                for i, exit_cand in enumerate(EES_dict['exit']):  
+                    if exit_cand[0] > entry_pt[0]:
+                        earliest_exit = exit_cand
+                        #print('earliest_exit', earliest_exit)
+                        break
+
+            if len(EES_dict['stop']) > 0:
+                # Finde stop loss point candidates
+                for i, stop_cand in enumerate(EES_dict['stop']):
+                    if stop_cand[0] > entry_pt[0]:
+                        earliest_stop = stop_cand
+                        #print('earliest_stop', earliest_stop)
+                        break
+            
+            # put in the new exit and stop
+            exit_pt = earliest_exit
+            stop_pt = earliest_stop
+
+        return entry_pt, exit_pt, stop_pt, close_pt
+    
+    def open_positions(self, 
+                       give_obj_name: str, 
+                       get_obj_name: str, 
+                       get_obj_quantity: int | float, 
+                       EES_target_list: list, 
+                       pos_type: str,
+                       size: int | float = 1, 
+                       fee: dict = None, 
+                       open_time: datetime.datetime = datetime.datetime.now(),
+                       trade_id: int = 0)\
+                       -> list[Position]:
+        """
+        A method to open the entry, exit, stop, and close positions.
+
+        Parameters
+        ----------
+        give_obj_name : str
+            The name of the give object.
+        get_obj_name : str
+            The name of the get object.
+        get_obj_quantity : float
+            The quantity of the get object.
+        EES_target_list : list
+            A list of target EES values [entry_price, exit_price, 
+                                         stop_price, close_price].
+        pos_type : str
+            The type of position to be opened.
+
+        Returns
+        -------
+        pos_dict : dict
+            The position list: [entry_pos, exit_pos, stop_pos, close_pos].
+
+        """
+        if pos_type == 'Long':
+            pos_type1 = 'Long-Buy'
+            pos_type2 = 'Long-Sell'
+
+        elif pos_type == 'Short':
+            pos_type1 = 'Short-Borrow'
+            pos_type2 = 'Short-Buyback'
+            
+        # a method that execute the one trade per day based on the cases of the EES
+        entry_price, exit_price = EES_target_list[0], EES_target_list[1]
+        stop_price, close_price = EES_target_list[2], EES_target_list[3]
+        
+        #### Collapse all these into an add_position function
+        # Make positions for initial price estimation
+        entry_pos = super().add_position(give_obj_name, get_obj_name, 
+                                         get_obj_quantity, entry_price, 
+                                         size = size, fee = None, 
+                                         pos_type = pos_type1,
+                                         open_time=open_time,
+                                         trade_id=trade_id)
+
+        exit_pos = super().add_position(give_obj_name, get_obj_name, 
+                                        get_obj_quantity, exit_price, 
+                                        size = size, fee = fee, 
+                                        pos_type = pos_type2,
+                                        open_time=open_time,
+                                        trade_id=trade_id)
+
+        stop_pos = super().add_position(give_obj_name, get_obj_name, 
+                                        get_obj_quantity, stop_price, 
+                                        size = size, fee = fee, 
+                                        pos_type = pos_type2,
+                                        open_time=open_time,
+                                        trade_id=trade_id)
+        
+        # immediately cancel the position if we don't allow auto
+        pos_dict = dict()
+        
+        if self._close_exit_or_not == True: 
+            pos_dict['entry_pos'] = entry_pos
+            pos_dict['exit_pos'] = exit_pos
+            pos_dict['stop_pos'] = stop_pos
+            
+            # pos_list = [entry_pos, exit_pos, stop_pos]
+        else: 
+            close_pos = super().add_position(give_obj_name, get_obj_name, 
+                                             get_obj_quantity, close_price,
+                                             size = size, fee = fee, 
+                                             pos_type = pos_type2,
+                                             open_time=open_time,
+                                             trade_id=trade_id)
+            pos_dict['close_pos'] = close_pos
+
+            
+        #print("pos_list", pos_list)
+        return pos_dict
+    
+    def execute_positions(self, 
+                          trunc_dict: dict, 
+                          pos_dict: dict, 
+                          pos_type: str = "Long"):
+        """
+        A method that execute the a list posiiton given a EES_dict.
+        It search the EES_dict the find the appropiate entry, exit, stop loss,
+        and close time for the trade.
+
+        Parameters
+        ----------
+        trunc_dict : dict
+            A truncation dictionary for all possible EES values.
+        pos_dict : dict
+            The position list: [entry_pos, exit_pos, stop_pos, close_pos].
+        pos_type : str, optional
+            The type of position. The default is "Long".
+
+        Returns
+        -------
+        trade_open : 2-elements tuple 
+            The trade open time and price
+        trade_close : 2-elements tuple 
+            The trade close time and price
+        pos_list : list
+            The position list: [entry_pos, exit_pos, stop_pos, close_pos].
+        exec_pos_list : list
+            The [opening_pos, closing_pos] .
+
+        """
+        if pos_type == 'Long':
+            pos_type1 = 'Long-Buy'
+            pos_type2 = 'Long-Sell'
+
+        elif pos_type == 'Short':
+            pos_type1 = 'Short-Borrow'
+            pos_type2 = 'Short-Buyback'
+            
+        # Search for the appropiate time for entry, exit, stop loss,
+        # and close time for the trade                                    
+        entry_pt, exit_pt, stop_pt, close_pt = self.choose_EES_values(trunc_dict)
+
+        # initialise trade_open and trade_close time and prices
+        trade_open, trade_close = (np.nan,np.nan), (np.nan,np.nan)
+        opening_pos, closing_pos = None, None
+        
+        # pack the outputs objects into lists
+        exec_pos_dict = dict()
+        # pack the outputs objects into dict
+        exec_pos_dict['opening_pos'] = opening_pos
+        exec_pos_dict['closing_pos'] = closing_pos
+        
+        # Run diagnosis to decide which outcome it is for the day
+        # Case 1: No trade because entry is not hit
+        if entry_pt == (np.nan,np.nan):
+            #print("No trade.")
+            # Cancel all order positions in a loop
+            for pos in pos_dict.values():
+                ExecutePosition(pos).cancel_pos(void_time=close_pt[0])
+
+            #ExecutePosition(entry_pos).cancel_pos(void_time=close_pt[0])
+            #ExecutePosition(exit_pos).cancel_pos(void_time=close_pt[0])
+            #ExecutePosition(stop_pos).cancel_pos(void_time=close_pt[0])
+            #ExecutePosition(close_pos).cancel_pos(void_time=close_pt[0])   
+            
+            return trade_open, trade_close, pos_dict, exec_pos_dict
+            
+        # Case 2: An exit is hit, normal exit
+        elif entry_pt and exit_pt != (np.nan,np.nan):
+            #print("Noraml exit.")
+            trade_open, trade_close = entry_pt, exit_pt
+            opening_pos, closing_pos = pos_dict['entry_pos'], pos_dict['exit_pos']
+            #print("Before price adjustment", opening_pos, closing_pos)
+
+            # change the closing price
+            closing_pos.price = round(exit_pt[1],9)
+            
+            # Cancel all order positions
+            ExecutePosition(pos_dict['stop_pos']).cancel_pos(void_time = 
+                                                             trade_close[0])
+            
+            if not super()._close_exit_or_not: 
+                ExecutePosition(pos_dict['close_pos']).cancel_pos(void_time = 
+                                                                  trade_close[0])  
+
+            
+        # Case 3: stop loss
+        elif exit_pt== (np.nan,np.nan) and stop_pt != (np.nan,np.nan):
+            #print('Stop loss.')
+            trade_open, trade_close = entry_pt, stop_pt
+            opening_pos, closing_pos = pos_dict['entry_pos'], pos_dict['stop_pos']
+            #print("Before price adjustment", opening_pos, closing_pos)
+
+            # change the closing price
+            closing_pos.price = round(stop_pt[1],9)
+            
+            # Cancel all order positions
+            ExecutePosition(pos_dict['exit_pos']).cancel_pos(void_time = 
+                                                             trade_close[0])
+            
+            if not super().close_exit_or_not: 
+                ExecutePosition(pos_dict['close_pos']).cancel_pos(void_time = 
+                                                                  trade_close[0])  
+            
+       # Case 4: Neither an exit or stop loss is hit, exit position at close time
+        elif exit_pt== (np.nan,np.nan) and stop_pt == (np.nan,np.nan) and\
+             not super().close_exit_or_not:
+            #print("Sell at close.")
+            trade_open, trade_close = entry_pt, close_pt
+            opening_pos, closing_pos = pos_dict['entry_pos'], pos_dict['close_pos']
+            #print("Before price adjustment", opening_pos, closing_pos)
+
+            # change the closing price
+            closing_pos.price = round(close_pt[1],9)
+            
+            # Cancel all order positions
+            ExecutePosition(pos_dict['stop_pos']).cancel_pos(void_time=
+                                                             trade_close[0])
+            ExecutePosition(pos_dict['exit_pos']).cancel_pos(void_time=
+                                                             trade_close[0])
+        
+        # change the price for the open position *Very Important
+        opening_pos.price = entry_pt[1]
+        
+        #print('entry_pt[1]', entry_pt[1])
+        #print('exit_pt[1]', exit_pt[1])
+        #print('stop_pt[1]', stop_pt[1])
+        #print('close_pt[1]', close_pt[1])
+        #print("After price adjustment", opening_pos, closing_pos)
+
+        # Execute the positions
+        ExecutePosition(opening_pos).fill_pos(fill_time = trade_open[0], 
+                                              pos_type=pos_type1)
+        
+        ExecutePosition(closing_pos).fill_pos(fill_time = trade_close[0], 
+                                              pos_type=pos_type2)
+        
+        # Choose whether to save all positions or just to filled ones.
+        if super().save_only_exec_pos:
+            key_pos_dict = exec_pos_dict
+        elif not super().save_only_exec_pos:
+            key_pos_dict = pos_dict
+            
+        for pos in key_pos_dict.values(): # Add position in the position book
+            self._portfolio._position_pool.append(copy.copy(pos))
+
+        return trade_open, trade_close, pos_dict, exec_pos_dict
+    
+    def run_trade(self, 
+                  trunc_dict: dict, #day: pd.DataFrame, 
+                  give_obj_name: str, 
+                  get_obj_name: str, 
+                  get_obj_quantity: float | int,
+                  target_entry: float, 
+                  target_exit: float, 
+                  stop_exit: float,
+                  open_hr: str = "0300", 
+                  close_hr: str = "2000", 
+                  direction: str = "Buy",
+                  fee: dict =  OIL_FUTURES_FEE,
+                  open_time: datetime.datetime = None,
+                  trade_id: int = 0) -> \
+                  tuple[tuple, tuple, list, list]: 
+        """
+
+        Note that run_trade method is agnoistic to the loop type, i.e.,
+        You can use LoopType.CROSSOVER, LoopType.RANGE, or LoopType.FULL
+
+        Parameters
+        ----------
+        trunc_dict : dict
+            Truncation dictionary. It contains the relevant points selected 
+            by some given EES values or EES ranges.
+            This assume you are running a crossover or range loop.
+        give_obj_name : str
+            The name of the give_obj, e.g. 'USD'.
+        get_obj_name : str
+            The name of the get_obj, e.g. 'CLc1'.
+        get_obj_quantity : int or float
+            The quanity of get_obj you wish to order.
+        target_entry : float
+            The target entry time and price.
+        target_exit : float
+            The exit entry time and price.
+        stop_exit : float
+            The stop loss time and price.
+        open_hr : str
+            The opening hour of the trade
+        close_hr : str
+            The closing hour of the trade
+        direction : str
+            The default is "Buy"
+
+        Returns
+        -------
+        EES_dict, trade_open, trade_close, pos_list, exec_pos_list
+
+        """
+        
+        #Find the minute that the price crosses the EES values
+        # Input the position type
+        if direction == 'Buy':
+            pos_type= 'Long'
+        elif direction == 'Sell':
+            pos_type = 'Short'
+            
+        # Note that this is not the EES_dict object from find_minute_EES.
+        # This is just an initial estimation of the EES values for the 
+        # open_position function in the begining of the day. As the positions
+        # are executed, the prices will change according to the data.
+        EES_target_list = [target_entry, target_exit, 
+                           stop_exit, trunc_dict['close'][1]] 
+        
+        # run the trade via position module
+        pos_list = self.open_positions(give_obj_name,
+                                       get_obj_name, 
+                                       get_obj_quantity, 
+                                       EES_target_list, 
+                                       pos_type=pos_type, 
+                                       size=SIZE_DICT[get_obj_name],
+                                       fee=fee, 
+                                       open_time = open_time,
+                                       trade_id= trade_id)
+
+        # Execute the positions. As the function is ran, it chooses the 
+        # appropiate EES values based on the choose_EES_values method of 
+        # this class
+        trade_open, trade_close, \
+        pos_dict, exec_pos_dict = self.execute_positions(trunc_dict, pos_list,
+                                                         pos_type = pos_type)
+
+        # the search function for entry and exit time should be completely 
+        # sepearate to the trading actions
+        return trade_open, trade_close, pos_dict, exec_pos_dict            
+
 # =============================================================================
 # class MultiTradePerDay(Trade): # WIP
 #     """

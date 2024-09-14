@@ -7,7 +7,6 @@ Created on Tue Aug 20 11:36:29 2024
 """
 import numpy as np
 import pandas as pd
-
 import EC_tools.math_func as mfunc
 
 class GenHistoryStratData(object):

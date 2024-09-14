@@ -242,8 +242,8 @@ if __name__ == "__main__":
     
 
     # slow download on all argus APC in their server
-    download_latest_APC_list(AUTH_PACK, SAVE_FILENAME_LIST, CAT_LIST, 
-                             KEYWORDS_LIST, SYMBOL_LIST,fast_dl=False)    
+    #download_latest_APC_list(AUTH_PACK, SAVE_FILENAME_LIST, CAT_LIST, 
+    #                         KEYWORDS_LIST, SYMBOL_LIST,fast_dl=False)    
 
     download_latest_APC_list(AUTH_PACK, SAVE_FILENAME_LIST_MONTHLY, MONTHLY_CAT_LIST, 
                              MONTHLY_KEYWORDS_LIST, MONTHLY_SYMBOL_LIST,fast_dl=False)    
