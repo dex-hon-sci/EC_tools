@@ -612,7 +612,8 @@ class Loop(Protocol):
 
             # Run the trade
             trade_open, trade_close, \
-            pos, exec_pos = trade_method(portfo).run_trade(trunc_dict, 
+            pos, exec_pos = trade_method(portfo, trade_id =i).\
+                                                 run_trade(trunc_dict, 
                                                            give_obj_name, 
                                                            get_obj_name, 
                                                            get_obj_quantity, 
@@ -623,8 +624,7 @@ class Loop(Protocol):
                                                            close_hr = close_hr_dt, 
                                                            direction = direction,
                                                            fee=OIL_FUTURES_FEES[price_code],
-                                                           open_time = open_hr_dt,
-                                                           trade_id = i)
+                                                           open_time = open_hr_dt)
           
     
             # plotting mid-backtest
@@ -725,7 +725,8 @@ class Loop(Protocol):
 
             # Run the trade itself
             trade_open, trade_close, \
-            pos, exec_pos = trade_method(portfo).run_trade(trunc_dict, 
+            pos, exec_pos = trade_method(portfo, trade_id = trade_id).\
+                                                 run_trade(trunc_dict, 
                                                            give_obj_name, 
                                                            get_obj_name, 
                                                            get_obj_quantity, 
@@ -736,8 +737,7 @@ class Loop(Protocol):
                                                            close_hr=close_hr_dt, 
                                                            direction = direction,
                                                            fee=OIL_FUTURES_FEES[symbol],
-                                                           open_time= pos_open_dt,
-                                                           trade_id= trade_id)
+                                                           open_time= pos_open_dt)
                     
             # plotting mid-backtest
             plot_in_backtest(date_interest,get_obj_name, trunc_dict, direction, 

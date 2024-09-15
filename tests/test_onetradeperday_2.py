@@ -808,7 +808,8 @@ def test_onetradeperday_sell_normalexit_autounload()->None:
         
     print("exec_pos_dict", exec_pos_dict)
     print(exec_pos_dict['closing_pos'].get_obj['quantity'])
-
+    print("P1.pool",P1.pool)
+    print("P1.master_table", P1.master_table)
     assert USD_amount > 10000000
     assert len(P1.pool) == 9
     assert debt_amount < 1e-5

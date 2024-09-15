@@ -147,8 +147,9 @@ class OneTradePerDay(Trade):
         at the closing hour.
         
     """
-    def __init__(self, portfolio):
+    def __init__(self, portfolio, trade_id: int = 0):
         super().__init__(portfolio)
+        self.trade_id = trade_id
 
     @staticmethod
     def choose_EES_values(EES_dict: dict) -> tuple[tuple, tuple, tuple, tuple]:
@@ -225,8 +226,7 @@ class OneTradePerDay(Trade):
                        pos_type: str,
                        size: int | float = 1, 
                        fee: dict = None, 
-                       open_time: datetime.datetime = datetime.datetime.now(),
-                       trade_id: int = 0)\
+                       open_time: datetime.datetime = datetime.datetime.now())\
                        -> list[Position]:
         """
         A method to open the entry, exit, stop, and close positions.
@@ -270,28 +270,28 @@ class OneTradePerDay(Trade):
                                          size = size, fee = None, 
                                          pos_type = pos_type1,
                                          open_time=open_time,
-                                         trade_id=trade_id)
+                                         trade_id=self.trade_id)
 
         exit_pos = super().add_position(give_obj_name, get_obj_name, 
                                         get_obj_quantity, exit_price, 
                                         size = size, fee = fee, 
                                         pos_type = pos_type2,
                                         open_time=open_time,
-                                        trade_id=trade_id)
+                                        trade_id=self.trade_id)
 
         stop_pos = super().add_position(give_obj_name, get_obj_name, 
                                         get_obj_quantity, stop_price, 
                                         size = size, fee = fee, 
                                         pos_type = pos_type2,
                                         open_time=open_time,
-                                        trade_id=trade_id)
+                                        trade_id=self.trade_id)
         
         close_pos = super().add_position(give_obj_name, get_obj_name, 
                                          get_obj_quantity, close_price,
                                          size = size, fee = fee, 
                                          pos_type = pos_type2,
                                          open_time=open_time,
-                                         trade_id=trade_id)
+                                         trade_id=self.trade_id)
 
         pos_list = [entry_pos, exit_pos, stop_pos, close_pos]
         #print("pos_list", pos_list)
@@ -444,8 +444,7 @@ class OneTradePerDay(Trade):
                   close_hr: str = "2000", 
                   direction: str = "Buy",
                   fee: dict =  OIL_FUTURES_FEE,
-                  open_time: datetime.datetime = None,
-                  trade_id: int = 0) -> \
+                  open_time: datetime.datetime = None) -> \
                   tuple[tuple, tuple, list, list]: 
         """
 
@@ -506,7 +505,7 @@ class OneTradePerDay(Trade):
                                        size=SIZE_DICT[get_obj_name],
                                        fee=fee, 
                                        open_time = open_time,
-                                       trade_id= trade_id)
+                                       trade_id= self.trade_id)
 
         # Execute the positions. As the function is ran, it chooses the 
         # appropiate EES values based on the choose_EES_values method of 
@@ -742,12 +741,13 @@ class OneTradePerDay_2(Trade):
         at the closing hour.
         
     """
-    def __init__(self, portfolio):
+    def __init__(self, portfolio, trade_id):
         
         super().__init__(portfolio)
+        self.trade_id= trade_id
         self.EES_type = None
         self.EES_para_num = 1
-
+        
     @staticmethod
     def choose_EES_values(EES_dict: dict) -> tuple[tuple, tuple, tuple, tuple]:
         """
@@ -823,8 +823,8 @@ class OneTradePerDay_2(Trade):
                        pos_type: str,
                        size: int | float = 1, 
                        fee: dict = None, 
-                       open_time: datetime.datetime = datetime.datetime.now(),
-                       trade_id: int = 0)\
+                       open_time: datetime.datetime = datetime.datetime.now()
+                       )\
                        -> list[Position]:
         """
         A method to open the entry, exit, stop, and close positions.
@@ -868,21 +868,21 @@ class OneTradePerDay_2(Trade):
                                          size = size, fee = None, 
                                          pos_type = pos_type1,
                                          open_time=open_time,
-                                         trade_id=trade_id)
+                                         trade_id=self.trade_id)
 
         exit_pos = super().add_position(give_obj_name, get_obj_name, 
                                         get_obj_quantity, exit_price, 
                                         size = size, fee = fee, 
                                         pos_type = pos_type2,
                                         open_time=open_time,
-                                        trade_id=trade_id)
+                                        trade_id=self.trade_id)
 
         stop_pos = super().add_position(give_obj_name, get_obj_name, 
                                         get_obj_quantity, stop_price, 
                                         size = size, fee = fee, 
                                         pos_type = pos_type2,
                                         open_time=open_time,
-                                        trade_id=trade_id)
+                                        trade_id=self.trade_id)
         
         # immediately cancel the position if we don't allow auto
         pos_dict = dict()
@@ -896,11 +896,26 @@ class OneTradePerDay_2(Trade):
                                              size = size, fee = fee, 
                                              pos_type = pos_type2,
                                              open_time=open_time,
-                                             trade_id=trade_id)
+                                             trade_id=self.trade_id)
             pos_dict['close_pos'] = close_pos
 
             
-        print("pos_dict", pos_dict)
+        # Extra positions for unload all, special treatement for Shorting extra 
+        # assets
+        if self.auto_unload_all==True and entry_pos.pos_type=="Short-Borrow":
+            new_quantity = self._portfolio._remainder_dict[get_obj_name]
+            extra_pos_enter = self.add_position(give_obj_name, get_obj_name, 
+                                                new_quantity, 
+                                                target_price = entry_price, 
+                                                size=size,
+                                                pos_type='Long-Sell',
+                                                open_time=open_time)
+            extra_pos_exit = self.add_position(give_obj_name, get_obj_name, 
+                                               new_quantity, 
+                                               target_price = entry_price, size=size,
+                                               pos_type='Long-Buy',
+                                               open_time=open_time)
+
         return pos_dict
     
     def execute_positions(self, 
@@ -1028,40 +1043,61 @@ class OneTradePerDay_2(Trade):
                 # change the closing price
                 closing_pos.price = round(close_pt[1],9)
 
-                
-        # change the price for the open position *Very Important
-        opening_pos.price = entry_pt[1]
-        
-        #print('entry_pt[1]', entry_pt[1])
-        #print('exit_pt[1]', exit_pt[1])
-        #print('stop_pt[1]', stop_pt[1])
-        #print('close_pt[1]', close_pt[1])
-        #print("After price adjustment", opening_pos, closing_pos)
+        get_obj_name = opening_pos.get_obj['name']
 
-        # Execute the open position
+# =============================================================================
+#         if opening_pos!= None:
+#             # change the price for the open position *Very Important
+#             opening_pos.price = entry_pt[1]
+#             
+#             if self.auto_unload_all==True and opening_pos.pos_type=="Short-Borrow":
+#                 print("Short-Borrow", "Autounload")
+#                 print("Before changing quantity", opening_pos.get_obj['quantity'], self._portfolio._remainder_dict[get_obj_name])
+#                 new_quantity = self._portfolio._remainder_dict[get_obj_name] + opening_pos.get_obj['quantity']
+#                 opening_pos.get_obj['quantity'] = new_quantity
+#                 closing_pos.get_obj['quantity'] = new_quantity
+#                 print("After changing quantity", opening_pos.get_obj['quantity'])
+#                 print("After changing quantity", closing_pos.get_obj['quantity'])
+# 
+#             #print('entry_pt[1]', entry_pt[1])
+#             #print('exit_pt[1]', exit_pt[1])
+#             #print('stop_pt[1]', stop_pt[1])
+#             #print('close_pt[1]', close_pt[1])
+#             #print("After price adjustment", opening_pos, closing_pos)
+#         
+#             # Execute the open position
+#             ExecutePosition(opening_pos).fill_pos(fill_time = trade_open[0], 
+#                                                   pos_type=pos_type1)
+#             exec_pos_dict['opening_pos'] = opening_pos
+# =============================================================================
+
+        opening_pos.price = entry_pt[1]
         ExecutePosition(opening_pos).fill_pos(fill_time = trade_open[0], 
                                               pos_type=pos_type1)
         exec_pos_dict['opening_pos'] = opening_pos
-
+         
 
         # Execute the closing position
         if closing_pos != None:
-            if self.auto_unload_all==True: #self._portfolio._remainder_dict[get_obj_name] > 0:
+            if self.auto_unload_all==True and closing_pos.pos_type=="Long-Sell": #self._portfolio._remainder_dict[get_obj_name] > 0:
                 # If auto_unload_all is enabled, change the trading amount into all
                 # the asset in the remainder dict. Note that because debt objects are
                 # denoted in negative value, this trade method does not allow 
                 # trading beyond your debt.
-                get_obj_name = opening_pos.get_obj['name']
                 print("Before changing quantity",self._portfolio._remainder_dict[get_obj_name])
                 closing_pos.get_obj['quantity'] = self._portfolio._remainder_dict[get_obj_name]
                 
                 
+            print("closing_pos_testest_Before",closing_pos)
+            print("closing_pos_testest",pos_dict['exit_pos'])
             ExecutePosition(closing_pos).fill_pos(fill_time = trade_close[0], 
                                                   pos_type=pos_type2)
         
             exec_pos_dict['closing_pos'] = closing_pos
             
-            
+            print("closing_pos_testest_After",closing_pos)
+            print("closing_pos_testest",pos_dict['exit_pos'])
+
         
         # Choose whether to save all positions or just to filled ones.
         if self.save_only_exec_pos:
@@ -1086,8 +1122,7 @@ class OneTradePerDay_2(Trade):
                   close_hr: str = "2000", 
                   direction: str = "Buy",
                   fee: dict =  OIL_FUTURES_FEE,
-                  open_time: datetime.datetime = None,
-                  trade_id: int = 0) -> \
+                  open_time: datetime.datetime = None) -> \
                   tuple[tuple, tuple, list, list]: 
         """
 
@@ -1140,7 +1175,7 @@ class OneTradePerDay_2(Trade):
                            stop_exit, trunc_dict['close'][1]] 
         
         # run the trade via position module
-        pos_list = self.open_positions(give_obj_name,
+        pos_dict = self.open_positions(give_obj_name,
                                        get_obj_name, 
                                        get_obj_quantity, 
                                        EES_target_list, 
@@ -1148,13 +1183,13 @@ class OneTradePerDay_2(Trade):
                                        size=SIZE_DICT[get_obj_name],
                                        fee=fee, 
                                        open_time = open_time,
-                                       trade_id= trade_id)
+                                       trade_id= self.trade_id)
 
         # Execute the positions. As the function is ran, it chooses the 
         # appropiate EES values based on the choose_EES_values method of 
         # this class
         trade_open, trade_close, \
-        pos_dict, exec_pos_dict = self.execute_positions(trunc_dict, pos_list,
+        pos_dict, exec_pos_dict = self.execute_positions(trunc_dict, pos_dict,
                                                          pos_type = pos_type)
 
         # the search function for entry and exit time should be completely 
