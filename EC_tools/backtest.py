@@ -67,8 +67,6 @@ Preload_list
 Concurrent
  
 """
-FILENAME_MINUTE =  "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/HO.001"
-APC_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_HOc1.csv"  
 
 __all__ = ['LoopType', 'prepare_signal_interest', 'extract_intraday_minute_data', 
            'plot_in_backtest', 'gen_trunc_dict', 'load_EES_from_signal', 
@@ -136,11 +134,10 @@ def prepare_signal_interest(filename_buysell_signals: str,
 
 
     # make a column with Timestamp as its content
-    signal_interest['Date'] =  [datetime.datetime(
-                                                year = int(str(x)[0:4]), 
-                                              month=int(str(x)[5:7]), 
-                                              day = int(str(x)[8:])) 
-                            for x in signal_interest['Date']]
+    signal_interest['Date'] =  [datetime.datetime(year = int(str(x)[0:4]), 
+                                                  month=int(str(x)[5:7]), 
+                                                  day = int(str(x)[8:])) 
+                                 for x in signal_interest['Date']]
     # sort the table by Date
     signal_interest.sort_values(by='Date', inplace=True)
 

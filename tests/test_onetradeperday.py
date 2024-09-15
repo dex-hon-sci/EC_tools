@@ -125,9 +125,10 @@ def onetradeperday(date_interest, direction):
 # test Sell case, 1) no trade, normal exit, stop loss, close case
 
 date_interest_no_entry_buy = "2023-12-29" # no entry test case (Buy) Done
-date_interest_close_exit_buy = "2024-04-30" #  sell at close case (Buy) Done
-date_interest_stop_loss_buy = "2021-08-04" # stop loss test case (Buy) Done
 date_interest_normal_exit_buy = "2021-04-01" #  normal exit case (Buy) Done
+date_interest_stop_loss_buy = "2021-08-04" # stop loss test case (Buy) Done
+date_interest_close_exit_buy = "2022-11-18" #  sell at close case (Buy) Done
+
 
     
 def test_onetradeperday_buy_noentry() -> None:   

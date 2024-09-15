@@ -31,12 +31,12 @@ class Trade(Protocol):
     def  __init__(self, portfolio: Portfolio, 
                  close_exit_or_not: bool = True, 
                  save_only_exec_pos: bool = False,
-                 auto_upload_all: bool = False):
+                 auto_unload_all: bool = False):
         
         self._portfolio = portfolio
         self._close_exit_or_not = close_exit_or_not
         self._save_only_exec_pos = save_only_exec_pos
-        self._auto_upload_all = auto_upload_all
+        self._auto_unload_all = auto_unload_all
             
     @property
     def close_exit_or_not(self):
@@ -47,8 +47,8 @@ class Trade(Protocol):
         return self._save_only_exec_pos
     
     @property
-    def auto_upload_all(self):
-        return self._auto_upload_all
+    def auto_unload_all(self):
+        return self._auto_unload_all
     
     @close_exit_or_not.setter
     def close_exit_or_not(self, bool_val: bool) -> None:
@@ -58,9 +58,9 @@ class Trade(Protocol):
     def save_only_exec_pos(self, bool_val: bool) -> None:
         self._save_only_exec_pos = bool_val
         
-    @auto_upload_all.setter
-    def auto_upload_all(self, bool_val: bool):
-        self._auto_upload_all = bool_val
+    @auto_unload_all.setter
+    def auto_unload_all(self, bool_val: bool):
+        self._auto_unload_all = bool_val
     
     def add_position(self, 
                      give_obj_name: str, 
@@ -105,9 +105,6 @@ class Trade(Protocol):
         give_obj_unit = ASSET_DICT[give_obj_name]['unit']
         give_obj_type = ASSET_DICT[give_obj_name]['asset_type']
         
-        if self._auto_upload_all:
-            get_obj_quantity = self._portfolio._remainder_dict[get_obj_name]
-        
         # get_obj, asset
         get_obj = {'name': get_obj_name, 
                    'quantity': get_obj_quantity, 
@@ -127,6 +124,7 @@ class Trade(Protocol):
             new_fee['quantity'] = fee['quantity']*get_obj_quantity
         elif fee == None:
             new_fee = None
+            
         # Create a position
         pos = Position(give_obj, get_obj, target_price, 
                        portfolio= self._portfolio, size = size,
@@ -888,14 +886,11 @@ class OneTradePerDay_2(Trade):
         
         # immediately cancel the position if we don't allow auto
         pos_dict = dict()
-        
-        if self._close_exit_or_not == True: 
-            pos_dict['entry_pos'] = entry_pos
-            pos_dict['exit_pos'] = exit_pos
-            pos_dict['stop_pos'] = stop_pos
+        pos_dict['entry_pos'] = entry_pos
+        pos_dict['exit_pos'] = exit_pos
+        pos_dict['stop_pos'] = stop_pos
             
-            # pos_list = [entry_pos, exit_pos, stop_pos]
-        else: 
+        if self.close_exit_or_not == True: 
             close_pos = super().add_position(give_obj_name, get_obj_name, 
                                              get_obj_quantity, close_price,
                                              size = size, fee = fee, 
@@ -905,7 +900,7 @@ class OneTradePerDay_2(Trade):
             pos_dict['close_pos'] = close_pos
 
             
-        #print("pos_list", pos_list)
+        print("pos_dict", pos_dict)
         return pos_dict
     
     def execute_positions(self, 
@@ -949,7 +944,7 @@ class OneTradePerDay_2(Trade):
         # Search for the appropiate time for entry, exit, stop loss,
         # and close time for the trade                                    
         entry_pt, exit_pt, stop_pt, close_pt = self.choose_EES_values(trunc_dict)
-
+        print("entry_pt, exit_pt, stop_pt, close_pt", entry_pt, exit_pt, stop_pt, close_pt)
         # initialise trade_open and trade_close time and prices
         trade_open, trade_close = (np.nan,np.nan), (np.nan,np.nan)
         opening_pos, closing_pos = None, None
@@ -977,9 +972,10 @@ class OneTradePerDay_2(Trade):
             
         # Case 2: An exit is hit, normal exit
         elif entry_pt and exit_pt != (np.nan,np.nan):
-            #print("Noraml exit.")
+            print("Noraml exit.")
             trade_open, trade_close = entry_pt, exit_pt
             opening_pos, closing_pos = pos_dict['entry_pos'], pos_dict['exit_pos']
+            print("opening_pos, closing_pos", opening_pos, closing_pos)
             #print("Before price adjustment", opening_pos, closing_pos)
 
             # change the closing price
@@ -989,7 +985,7 @@ class OneTradePerDay_2(Trade):
             ExecutePosition(pos_dict['stop_pos']).cancel_pos(void_time = 
                                                              trade_close[0])
             
-            if not super()._close_exit_or_not: 
+            if self.close_exit_or_not: 
                 ExecutePosition(pos_dict['close_pos']).cancel_pos(void_time = 
                                                                   trade_close[0])  
 
@@ -1008,27 +1004,31 @@ class OneTradePerDay_2(Trade):
             ExecutePosition(pos_dict['exit_pos']).cancel_pos(void_time = 
                                                              trade_close[0])
             
-            if not super().close_exit_or_not: 
+            if self.close_exit_or_not: 
                 ExecutePosition(pos_dict['close_pos']).cancel_pos(void_time = 
                                                                   trade_close[0])  
             
        # Case 4: Neither an exit or stop loss is hit, exit position at close time
-        elif exit_pt== (np.nan,np.nan) and stop_pt == (np.nan,np.nan) and\
-             not super().close_exit_or_not:
+        elif exit_pt== (np.nan,np.nan) and stop_pt == (np.nan,np.nan):
             #print("Sell at close.")
-            trade_open, trade_close = entry_pt, close_pt
-            opening_pos, closing_pos = pos_dict['entry_pos'], pos_dict['close_pos']
+            trade_open = entry_pt
+            opening_pos = pos_dict['entry_pos']
             #print("Before price adjustment", opening_pos, closing_pos)
 
-            # change the closing price
-            closing_pos.price = round(close_pt[1],9)
             
             # Cancel all order positions
             ExecutePosition(pos_dict['stop_pos']).cancel_pos(void_time=
                                                              trade_close[0])
             ExecutePosition(pos_dict['exit_pos']).cancel_pos(void_time=
                                                              trade_close[0])
-        
+            if self.close_exit_or_not:
+                trade_close = close_pt
+                closing_pos = pos_dict['close_pos']
+                
+                # change the closing price
+                closing_pos.price = round(close_pt[1],9)
+
+                
         # change the price for the open position *Very Important
         opening_pos.price = entry_pt[1]
         
@@ -1038,17 +1038,35 @@ class OneTradePerDay_2(Trade):
         #print('close_pt[1]', close_pt[1])
         #print("After price adjustment", opening_pos, closing_pos)
 
-        # Execute the positions
+        # Execute the open position
         ExecutePosition(opening_pos).fill_pos(fill_time = trade_open[0], 
                                               pos_type=pos_type1)
+        exec_pos_dict['opening_pos'] = opening_pos
+
+
+        # Execute the closing position
+        if closing_pos != None:
+            if self.auto_unload_all==True: #self._portfolio._remainder_dict[get_obj_name] > 0:
+                # If auto_unload_all is enabled, change the trading amount into all
+                # the asset in the remainder dict. Note that because debt objects are
+                # denoted in negative value, this trade method does not allow 
+                # trading beyond your debt.
+                get_obj_name = opening_pos.get_obj['name']
+                print("Before changing quantity",self._portfolio._remainder_dict[get_obj_name])
+                closing_pos.get_obj['quantity'] = self._portfolio._remainder_dict[get_obj_name]
+                
+                
+            ExecutePosition(closing_pos).fill_pos(fill_time = trade_close[0], 
+                                                  pos_type=pos_type2)
         
-        ExecutePosition(closing_pos).fill_pos(fill_time = trade_close[0], 
-                                              pos_type=pos_type2)
+            exec_pos_dict['closing_pos'] = closing_pos
+            
+            
         
         # Choose whether to save all positions or just to filled ones.
-        if super().save_only_exec_pos:
+        if self.save_only_exec_pos:
             key_pos_dict = exec_pos_dict
-        elif not super().save_only_exec_pos:
+        else:
             key_pos_dict = pos_dict
             
         for pos in key_pos_dict.values(): # Add position in the position book

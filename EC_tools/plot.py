@@ -645,7 +645,7 @@ def plot_minute(filename_minute: str, signal_filename: str,
                 direction: str = "Buy", 
                 open_hr: str = '0330', 
                 close_hr: str = '1930',
-                APC_time_str: str = 'Forecast Period', 
+                APC_time_str: str = 'Forecast_Period', 
                 title: str ="",
                 bppt_x1 =[], bppt_y1 = [], 
                 bppt_x2 =[], bppt_y2 = [], 
@@ -748,8 +748,8 @@ if __name__ == "__main__":
     
     symbol = 'CLc1'
 
-    date_interest = "2022-01-05"
+    date_interest = "2024-06-04"
     
     plot_minute(HISTORY_MINTUE_FILE_LOC[symbol], APC_FILE_LOC[symbol], 
-                date_interest = date_interest, title=symbol, direction="Sell",
+                date_interest = date_interest, title=symbol, direction="Buy",
                 open_hr= OPEN_HR_DICT[symbol] , close_hr = CLOSE_HR_DICT[symbol])
