@@ -194,8 +194,8 @@ def run_backtest_portfolio(TradeMethod,
 
     Parameters
     ----------
-    TradeMethod : TYPE
-        DESCRIPTION.
+    TradeMethod : Trade object
+        The main trade class object that operate the backtest.
     filename_minute : str
         The filename of the historical minute data.
     filename_buysell_signals : str
@@ -207,8 +207,8 @@ def run_backtest_portfolio(TradeMethod,
 
     Returns
     -------
-    P1 : TYPE
-        DESCRIPTION.
+    P1 : Portfolio object
+        The resulting Portfolio.
 
     """
     # Turn the start and end date from str to datetime.datetime

@@ -741,10 +741,20 @@ class OneTradePerDay_2(Trade):
         at the closing hour.
         
     """
-    def __init__(self, portfolio, trade_id):
+    def __init__(self, 
+                 portfolio: Portfolio, 
+                 trade_id: int=0):
         
         super().__init__(portfolio)
-        self.trade_id= trade_id
+        self.trade_id = trade_id
+        self.pos_dict = dict()
+        self.exec_pos_dict = dict()
+        self.extra_pos_dict = dict()
+        self.exec_extra_pos_dict = dict()
+
+        self.key_pos_dict = None
+        self.extra_key_pos_dict = None
+        
         self.EES_type = None
         self.EES_para_num = 1
         
@@ -884,11 +894,10 @@ class OneTradePerDay_2(Trade):
                                         open_time=open_time,
                                         trade_id=self.trade_id)
         
-        # immediately cancel the position if we don't allow auto
-        pos_dict = dict()
-        pos_dict['entry_pos'] = entry_pos
-        pos_dict['exit_pos'] = exit_pos
-        pos_dict['stop_pos'] = stop_pos
+        # Store the positions in the position dictionary pos_dict
+        self.pos_dict['entry_pos'] = entry_pos
+        self.pos_dict['exit_pos'] = exit_pos
+        self.pos_dict['stop_pos'] = stop_pos
             
         if self.close_exit_or_not == True: 
             close_pos = super().add_position(give_obj_name, get_obj_name, 
@@ -897,31 +906,102 @@ class OneTradePerDay_2(Trade):
                                              pos_type = pos_type2,
                                              open_time=open_time,
                                              trade_id=self.trade_id)
-            pos_dict['close_pos'] = close_pos
+            self.pos_dict['close_pos'] = close_pos
+
+        return self.pos_dict
+    
+    def choose_positions(self, 
+                         trunc_dict: dict, 
+                         pos_dict: dict, 
+                         exec_pos_dict: dict):
+        
+        entry_pt, exit_pt, stop_pt, close_pt = self.choose_EES_values(trunc_dict)
+
+        # initialise trade_open and trade_close time and prices
+        trade_open, trade_close = (np.nan,np.nan), (np.nan,np.nan)
+        opening_pos, closing_pos = None, None
+        
+        # pack the outputs objects into dict
+        exec_pos_dict['opening_pos'] = opening_pos
+        exec_pos_dict['closing_pos'] = closing_pos
+        
+        # Run diagnosis to decide which outcome it is for the day
+        # Case 1: No trade because entry is not hit
+        if entry_pt == (np.nan,np.nan):
+            #print("No trade.")
+            # Cancel all order positions in a loop
+            for pos in pos_dict.values():
+                ExecutePosition(pos).cancel_pos(void_time=close_pt[0])
+            
+            return trade_open, trade_close, pos_dict, exec_pos_dict
+            
+        # Case 2: An exit is hit, normal exit
+        elif entry_pt and exit_pt != (np.nan,np.nan):
+            #print("Noraml exit.")
+            trade_open, trade_close = entry_pt, exit_pt
+            opening_pos, closing_pos = pos_dict['entry_pos'], pos_dict['exit_pos']
+
+            # change the closing price
+            closing_pos.price = round(exit_pt[1],9)
+            
+            # Cancel all order positions
+            ExecutePosition(pos_dict['stop_pos']).cancel_pos(void_time = 
+                                                                  trade_close[0])
+            
+            if self.close_exit_or_not: 
+                ExecutePosition(pos_dict['close_pos']).cancel_pos(void_time = 
+                                                                       trade_close[0])  
+
+        # Case 3: stop loss
+        elif exit_pt== (np.nan,np.nan) and stop_pt != (np.nan,np.nan):
+            #print('Stop loss.')
+            trade_open, trade_close = entry_pt, stop_pt
+            opening_pos, closing_pos = pos_dict['entry_pos'], pos_dict['stop_pos']
+            #print("Before price adjustment", opening_pos, closing_pos)
+
+            # change the closing price
+            closing_pos.price = round(stop_pt[1],9)
+            
+            # Cancel all order positions
+            ExecutePosition(pos_dict['exit_pos']).cancel_pos(void_time = 
+                                                                  trade_close[0])
+            
+            if self.close_exit_or_not: 
+                ExecutePosition(pos_dict['close_pos']).cancel_pos(void_time = 
+                                                                       trade_close[0])  
+            
+        # Case 4: Neither an exit or stop loss is hit, exit position at close time
+        elif exit_pt== (np.nan,np.nan) and stop_pt == (np.nan,np.nan):
+            #print("Sell at close.")
+            trade_open = entry_pt
+            opening_pos = pos_dict['entry_pos']
+            #print("Before price adjustment", opening_pos, closing_pos)
 
             
-        # Extra positions for unload all, special treatement for Shorting extra 
-        # assets
-        if self.auto_unload_all==True and entry_pos.pos_type=="Short-Borrow":
-            new_quantity = self._portfolio._remainder_dict[get_obj_name]
-            extra_pos_enter = self.add_position(give_obj_name, get_obj_name, 
-                                                new_quantity, 
-                                                target_price = entry_price, 
-                                                size=size,
-                                                pos_type='Long-Sell',
-                                                open_time=open_time)
-            extra_pos_exit = self.add_position(give_obj_name, get_obj_name, 
-                                               new_quantity, 
-                                               target_price = entry_price, size=size,
-                                               pos_type='Long-Buy',
-                                               open_time=open_time)
+            # Cancel all order positions
+            ExecutePosition(pos_dict['stop_pos']).cancel_pos(void_time=
+                                                                  trade_close[0])
+            ExecutePosition(pos_dict['exit_pos']).cancel_pos(void_time=
+                                                                  trade_close[0])
+            if self.close_exit_or_not:
+                trade_close = close_pt
+                closing_pos = pos_dict['close_pos']
+                
+                # change the closing price
+                closing_pos.price = round(close_pt[1],9)
+                
+        # pack the outputs objects into dict
+        exec_pos_dict['opening_pos'] = opening_pos
+        exec_pos_dict['closing_pos'] = closing_pos
+        
+        return trade_open, trade_close, pos_dict, exec_pos_dict
 
-        return pos_dict
     
     def execute_positions(self, 
                           trunc_dict: dict, 
                           pos_dict: dict, 
                           pos_type: str = "Long"):
+                          
         """
         A method that execute the a list posiiton given a EES_dict.
         It search the EES_dict the find the appropiate entry, exit, stop loss,
@@ -955,7 +1035,7 @@ class OneTradePerDay_2(Trade):
         elif pos_type == 'Short':
             pos_type1 = 'Short-Borrow'
             pos_type2 = 'Short-Buyback'
-            
+
         # Search for the appropiate time for entry, exit, stop loss,
         # and close time for the trade                                    
         entry_pt, exit_pt, stop_pt, close_pt = self.choose_EES_values(trunc_dict)
@@ -964,18 +1044,16 @@ class OneTradePerDay_2(Trade):
         trade_open, trade_close = (np.nan,np.nan), (np.nan,np.nan)
         opening_pos, closing_pos = None, None
         
-        # pack the outputs objects into lists
-        exec_pos_dict = dict()
         # pack the outputs objects into dict
-        exec_pos_dict['opening_pos'] = opening_pos
-        exec_pos_dict['closing_pos'] = closing_pos
+        self.exec_pos_dict['opening_pos'] = opening_pos
+        self.exec_pos_dict['closing_pos'] = closing_pos
         
         # Run diagnosis to decide which outcome it is for the day
         # Case 1: No trade because entry is not hit
         if entry_pt == (np.nan,np.nan):
             #print("No trade.")
             # Cancel all order positions in a loop
-            for pos in pos_dict.values():
+            for pos in self.pos_dict.values():
                 ExecutePosition(pos).cancel_pos(void_time=close_pt[0])
 
             #ExecutePosition(entry_pos).cancel_pos(void_time=close_pt[0])
@@ -983,13 +1061,13 @@ class OneTradePerDay_2(Trade):
             #ExecutePosition(stop_pos).cancel_pos(void_time=close_pt[0])
             #ExecutePosition(close_pos).cancel_pos(void_time=close_pt[0])   
             
-            return trade_open, trade_close, pos_dict, exec_pos_dict
+            return trade_open, trade_close, self.pos_dict, self.exec_pos_dict
             
         # Case 2: An exit is hit, normal exit
         elif entry_pt and exit_pt != (np.nan,np.nan):
             print("Noraml exit.")
             trade_open, trade_close = entry_pt, exit_pt
-            opening_pos, closing_pos = pos_dict['entry_pos'], pos_dict['exit_pos']
+            opening_pos, closing_pos = self.pos_dict['entry_pos'], self.pos_dict['exit_pos']
             print("opening_pos, closing_pos", opening_pos, closing_pos)
             #print("Before price adjustment", opening_pos, closing_pos)
 
@@ -997,53 +1075,51 @@ class OneTradePerDay_2(Trade):
             closing_pos.price = round(exit_pt[1],9)
             
             # Cancel all order positions
-            ExecutePosition(pos_dict['stop_pos']).cancel_pos(void_time = 
-                                                             trade_close[0])
+            ExecutePosition(self.pos_dict['stop_pos']).cancel_pos(void_time = 
+                                                                  trade_close[0])
             
             if self.close_exit_or_not: 
-                ExecutePosition(pos_dict['close_pos']).cancel_pos(void_time = 
-                                                                  trade_close[0])  
+                ExecutePosition(self.pos_dict['close_pos']).cancel_pos(void_time = 
+                                                                       trade_close[0])  
 
             
         # Case 3: stop loss
         elif exit_pt== (np.nan,np.nan) and stop_pt != (np.nan,np.nan):
             #print('Stop loss.')
             trade_open, trade_close = entry_pt, stop_pt
-            opening_pos, closing_pos = pos_dict['entry_pos'], pos_dict['stop_pos']
+            opening_pos, closing_pos = self.pos_dict['entry_pos'], self.pos_dict['stop_pos']
             #print("Before price adjustment", opening_pos, closing_pos)
 
             # change the closing price
             closing_pos.price = round(stop_pt[1],9)
             
             # Cancel all order positions
-            ExecutePosition(pos_dict['exit_pos']).cancel_pos(void_time = 
-                                                             trade_close[0])
+            ExecutePosition(self.pos_dict['exit_pos']).cancel_pos(void_time = 
+                                                                  trade_close[0])
             
             if self.close_exit_or_not: 
-                ExecutePosition(pos_dict['close_pos']).cancel_pos(void_time = 
-                                                                  trade_close[0])  
+                ExecutePosition(self.pos_dict['close_pos']).cancel_pos(void_time = 
+                                                                       trade_close[0])  
             
        # Case 4: Neither an exit or stop loss is hit, exit position at close time
         elif exit_pt== (np.nan,np.nan) and stop_pt == (np.nan,np.nan):
             #print("Sell at close.")
             trade_open = entry_pt
-            opening_pos = pos_dict['entry_pos']
+            opening_pos = self.pos_dict['entry_pos']
             #print("Before price adjustment", opening_pos, closing_pos)
 
             
             # Cancel all order positions
-            ExecutePosition(pos_dict['stop_pos']).cancel_pos(void_time=
-                                                             trade_close[0])
-            ExecutePosition(pos_dict['exit_pos']).cancel_pos(void_time=
-                                                             trade_close[0])
+            ExecutePosition(self.pos_dict['stop_pos']).cancel_pos(void_time=
+                                                                  trade_close[0])
+            ExecutePosition(self.pos_dict['exit_pos']).cancel_pos(void_time=
+                                                                  trade_close[0])
             if self.close_exit_or_not:
                 trade_close = close_pt
-                closing_pos = pos_dict['close_pos']
+                closing_pos = self.pos_dict['close_pos']
                 
                 # change the closing price
                 closing_pos.price = round(close_pt[1],9)
-
-        get_obj_name = opening_pos.get_obj['name']
 
 # =============================================================================
 #         if opening_pos!= None:
@@ -1071,45 +1147,121 @@ class OneTradePerDay_2(Trade):
 #             exec_pos_dict['opening_pos'] = opening_pos
 # =============================================================================
 
+        # Execute the open position
         opening_pos.price = entry_pt[1]
         ExecutePosition(opening_pos).fill_pos(fill_time = trade_open[0], 
                                               pos_type=pos_type1)
-        exec_pos_dict['opening_pos'] = opening_pos
+        #Store the executed opening_pos to a dict
+        self.exec_pos_dict['opening_pos'] = opening_pos
          
 
         # Execute the closing position
         if closing_pos != None:
-            if self.auto_unload_all==True and closing_pos.pos_type=="Long-Sell": #self._portfolio._remainder_dict[get_obj_name] > 0:
-                # If auto_unload_all is enabled, change the trading amount into all
-                # the asset in the remainder dict. Note that because debt objects are
-                # denoted in negative value, this trade method does not allow 
-                # trading beyond your debt.
-                print("Before changing quantity",self._portfolio._remainder_dict[get_obj_name])
-                closing_pos.get_obj['quantity'] = self._portfolio._remainder_dict[get_obj_name]
-                
-                
-            print("closing_pos_testest_Before",closing_pos)
-            print("closing_pos_testest",pos_dict['exit_pos'])
+# =============================================================================
+#             if self.auto_unload_all==True and closing_pos.pos_type=="Long-Sell": #self._portfolio._remainder_dict[get_obj_name] > 0:
+#                 # If auto_unload_all is enabled, change the trading amount into all
+#                 # the asset in the remainder dict. Note that because debt objects are
+#                 # denoted in negative value, this trade method does not allow 
+#                 # trading beyond your debt.
+#                 print("Before changing quantity",self._portfolio._remainder_dict[get_obj_name])
+#                 closing_pos.get_obj['quantity'] = self._portfolio._remainder_dict[get_obj_name]
+# =============================================================================
+            #print("closing_pos_testest_Before",closing_pos)
+            #print("closing_pos_testest",self.pos_dict['exit_pos'])
             ExecutePosition(closing_pos).fill_pos(fill_time = trade_close[0], 
                                                   pos_type=pos_type2)
         
-            exec_pos_dict['closing_pos'] = closing_pos
+            self.exec_pos_dict['closing_pos'] = closing_pos
             
-            print("closing_pos_testest_After",closing_pos)
-            print("closing_pos_testest",pos_dict['exit_pos'])
+            ##print("closing_pos_testest_After",closing_pos)
+            #print("closing_pos_testest",pos_dict['exit_pos'])
 
         
         # Choose whether to save all positions or just to filled ones.
         if self.save_only_exec_pos:
-            key_pos_dict = exec_pos_dict
+            self.key_pos_dict = self.exec_pos_dict
         else:
-            key_pos_dict = pos_dict
+            self.key_pos_dict = self.pos_dict
             
-        for pos in key_pos_dict.values(): # Add position in the position book
+        for pos in self.key_pos_dict.values(): # Add position in the position book
             self._portfolio._position_pool.append(copy.copy(pos))
 
-        return trade_open, trade_close, pos_dict, exec_pos_dict
+        return trade_open, trade_close, self.pos_dict, self.exec_pos_dict
     
+    def execute_extra_positions(self, 
+                                trunc_dict: dict, 
+                                extra_pos_dict: dict, 
+                                extra_pos_type: str = "Long"):
+        # This method does not require entry because we already have something
+        # Assume you already have some thing in the Portfolio and want to unload them
+        # The function of execute_extra_positions is connected to execute_positions
+        # If the conditions of execute_positions is triggered, and if auto_unload_all
+        # is turned on, this function will unload
+        if extra_pos_type == 'Long':
+            # For extra position, Long-Buy is omitted, this variable does not matter
+            pos_type1 = 'Long-Buy' 
+            # Only Long-Sell is done to unload existing assets
+            pos_type2 = 'Long-Sell'
+
+        elif extra_pos_type == 'Short':
+            # For extra position in Short, the first action is to sell your 
+            # extra assets, thus it is a 'Long-Sell'
+            pos_type1 = 'Long-Sell' 
+            # The second action is to Buyback. But because there is no debt 
+            # involved, it is a 'Long-Buy', instead of 'Short-Buyback'
+            pos_type2 = 'Long-Buy' #
+
+
+        # load all data from trunc_dict and choose opening_pos and closing_pos
+        trade_open, trade_close, \
+        self.extra_pos_dict, self.extra_exec_pos_dict = self.choose_positions(
+                                                            trunc_dict, 
+                                                            self.extra_pos_dict, 
+                                                            self.extra_exec_pos_dict)
+
+        # For regular 'Long', the entry position is cancelled
+        if extra_pos_type == 'Long':
+            # cancel the open position
+            self.extra_exec_pos_dict['opening_pos'].price = trade_open[1]
+            ExecutePosition(self.extra_exec_pos_dict['opening_pos']).cancel_pos(\
+                                                    fill_time = trade_open[0], 
+                                                    pos_type = pos_type1)            
+        elif extra_pos_type == 'Short':
+            # Execute the open position
+            self.extra_exec_pos_dict['opening_pos'].price = trade_open[1]
+            ExecutePosition(self.extra_exec_pos_dict['opening_pos']).fill_pos(\
+                                                    fill_time = trade_open[0], 
+                                                    pos_type = pos_type1)
+            
+        
+        # define the closing position and execute it if we set it to auto close
+        if self.extra_exec_pos_dict['closing_pos'] != None and \
+           extra_pos_type == 'Long':
+            
+            # Execute the closing position
+            ExecutePosition(self.extra_exec_pos_dict['closing_pos']).fill_pos(
+                                                    fill_time = trade_close[0], 
+                                                    pos_type = pos_type2)
+        
+            
+        elif self.extra_exec_pos_dict['closing_pos'] != None and \
+             extra_pos_type == 'Short':
+            ExecutePosition(self.extra_exec_pos_dict['closing_pos']).fill_pos(
+                                                    fill_time = trade_close[0], 
+                                                    pos_type = pos_type2)
+
+        
+        # Choose whether to save all positions or just to filled ones.
+        if self.save_only_exec_pos:
+            self.extra_key_pos_dict = self.extra_exec_pos_dict
+        else:
+            self.extra_key_pos_dict = self.extra_pos_dict
+            
+        for pos in self.key_pos_dict.values(): # Add position in the position book
+            self._portfolio._position_pool.append(copy.copy(pos))
+
+        return trade_open, trade_close, self.extra_pos_dict, self.extra_exec_pos_dict 
+
     def run_trade(self, 
                   trunc_dict: dict, #day: pd.DataFrame, 
                   give_obj_name: str, 
@@ -1182,19 +1334,38 @@ class OneTradePerDay_2(Trade):
                                        pos_type=pos_type, 
                                        size=SIZE_DICT[get_obj_name],
                                        fee=fee, 
-                                       open_time = open_time,
-                                       trade_id= self.trade_id)
-
+                                       open_time = open_time
+                                       )
+        
+        if self.auto_unload_all==True: 
+            extra_quantity = self._portfolio._remainder_dict[get_obj_name] 
+            extra_pos_dict = self.open_positions(give_obj_name,
+                                                 get_obj_name, 
+                                                 extra_quantity, 
+                                                 EES_target_list, 
+                                                 pos_type=pos_type, 
+                                                 size=SIZE_DICT[get_obj_name],
+                                                 fee=fee, 
+                                                 open_time = open_time)
+            
         # Execute the positions. As the function is ran, it chooses the 
         # appropiate EES values based on the choose_EES_values method of 
         # this class
         trade_open, trade_close, \
-        pos_dict, exec_pos_dict = self.execute_positions(trunc_dict, pos_dict,
+        pos_dict, exec_pos_dict = self.execute_positions(trunc_dict, self.pos_dict,
                                                          pos_type = pos_type)
-
+        
+        if self.auto_unload_all==True: 
+            extra_trade_open, extra_trade_close, \
+            extra_pos_dict, extra_exec_pos_dict = self.execute_extra_positions(\
+                                                                trunc_dict, 
+                                                                self.extra_pos_dict,
+                                                                pos_type =\
+                                                                pos_type)
+                
         # the search function for entry and exit time should be completely 
         # sepearate to the trading actions
-        return trade_open, trade_close, pos_dict, exec_pos_dict            
+        return trade_open, trade_close, self.pos_dict, self.exec_pos_dict           
 
 # =============================================================================
 # class MultiTradePerDay(Trade): # WIP

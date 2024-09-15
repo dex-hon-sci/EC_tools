@@ -816,7 +816,7 @@ def test_onetradeperday_sell_normalexit_autounload()->None:
     assert CL_amount < 1e-5
     assert exec_pos_dict['closing_pos'].get_obj['quantity'] ==75
 
-test_onetradeperday_sell_normalexit_autounload()
+#test_onetradeperday_sell_normalexit_autounload()
 
 def test_onetradeperday_sell_stoploss_autounload() -> None:   
     give_obj_name = "USD"
