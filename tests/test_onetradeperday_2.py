@@ -111,7 +111,7 @@ def onetradeperday(date_interest, direction,
                                     target_entry, target_exit, stop_exit,
                                     open_hr=open_hr_dt, close_hr=close_hr_dt, 
                                     direction = direction)
-    print(EES_dict)
+    #print(EES_dict)
     print('1')
     #print('day', day, read.find_crossover(day['Open'].to_numpy(), stop_exit))
     #print(target_entry, target_exit, stop_exit)
@@ -125,8 +125,10 @@ def onetradeperday(date_interest, direction,
                                             T.run_trade(EES_dict,  
                                                         give_obj_name, 
                                                         get_obj_name, 
-                                                        50, target_entry, 
-                                                        target_exit, stop_exit, 
+                                                        50, 
+                                                        target_entry, 
+                                                        target_exit, 
+                                                        stop_exit, 
                                                         open_hr=open_hr_dt, 
                                                         close_hr=close_hr_dt,
                                                         direction = direction)
@@ -262,7 +264,7 @@ def test_onetradeperday_buy_closeexit() -> None:
     assert CL_amount < 1
     assert len(P1.pool) == 6
   
-#test_onetradeperday_buy_noentry() 
+test_onetradeperday_buy_noentry() 
 #test_onetradeperday_buy_normalexit()
 #test_onetradeperday_buy_stoploss()
 ############################################################################
@@ -681,11 +683,11 @@ def test_onetradeperday_buy_normalexit_autounload() -> None:
                                 ]['quantity'].iloc[0]
 
     print(USD_amount, P1.pool, P1.master_table)
-
-    assert exec_pos_dict['closing_pos'].get_obj['quantity'] ==75
-    assert USD_amount > 10000000
+    print(len(P1.pool))
+    assert exec_pos_dict['closing_pos'].get_obj['quantity'] == 50
+    assert USD_amount > 10000000 + 25*pos_dict['entry_pos']._price*1000
     assert CL_amount < 1
-    assert len(P1.pool) == 7 #Initial fund + 4 Four exchanges + Fee = 7 entries
+    assert len(P1.pool) == 10 #Initial fund (2) + 4 Four exchanges + Fee + 2 extra + Fee = 10 entries
     
 
 def test_onetradeperday_buy_stoploss_autounload() -> None:   
@@ -712,10 +714,10 @@ def test_onetradeperday_buy_stoploss_autounload() -> None:
                                  ]['quantity'].iloc[0]
     CL_amount = P1.master_table[P1.master_table['name'] == get_obj_name\
                                 ]['quantity'].iloc[0]
-        
-    assert USD_amount < 10000000
+    print(USD_amount, P1.pool, P1.master_table)
+    assert USD_amount < 10000000 + 25*pos_dict['entry_pos']._price*1000
     assert CL_amount < 1
-    assert len(P1.pool) == 7
+    assert len(P1.pool) == 10
     
 
 def test_onetradeperday_buy_closeexit_autounload() -> None:   
@@ -744,7 +746,7 @@ def test_onetradeperday_buy_closeexit_autounload() -> None:
                                 ]['quantity'].iloc[0]
         
     assert CL_amount < 1e-5
-    assert len(P1.pool) == 7
+    assert len(P1.pool) == 10
     
 #test_onetradeperday_buy_noentry_autounload()    
 #test_onetradeperday_buy_normalexit_autounload()
@@ -777,7 +779,7 @@ def test_onetradeperday_sell_noentry_autounload() -> None:
         
     #print(P1.pool)
     assert USD_amount == 10000000
-    assert len(P1.pool) == 1
+    assert len(P1.pool) == 2
 
 def test_onetradeperday_sell_normalexit_autounload()->None:
     # Setting up the trade itself. First load the parameters
@@ -810,13 +812,17 @@ def test_onetradeperday_sell_normalexit_autounload()->None:
     print(exec_pos_dict['closing_pos'].get_obj['quantity'])
     print("P1.pool",P1.pool)
     print("P1.master_table", P1.master_table)
+    # =============================================================================
+    for PP in P1.position_pool:
+        print(PP)
+    # =============================================================================
+
     assert USD_amount > 10000000
-    assert len(P1.pool) == 9
+    assert len(P1.pool) == 11 # 2 initial Fund + 6 action in Short + Fee + 2 extra execution
     assert debt_amount < 1e-5
     assert CL_amount < 1e-5
-    assert exec_pos_dict['closing_pos'].get_obj['quantity'] ==75
+    assert exec_pos_dict['closing_pos'].get_obj['quantity'] ==50
 
-#test_onetradeperday_sell_normalexit_autounload()
 
 def test_onetradeperday_sell_stoploss_autounload() -> None:   
     give_obj_name = "USD"
@@ -846,8 +852,8 @@ def test_onetradeperday_sell_stoploss_autounload() -> None:
                                     ]['quantity'].iloc[0]
     #print(P1.pool, CL_amount)
     #print(P1.master_table)
-    assert USD_amount < 10000000
-    assert len(P1.pool) == 8
+    assert USD_amount < 10000000 + 25*pos_dict['entry_pos']._price*1000
+    assert len(P1.pool) == 11
     assert debt_amount < 1e-5
     assert CL_amount < 1e-5
     
@@ -878,5 +884,7 @@ def test_onetradeperday_sell_closeexit_autounload() -> None:
                                    ]['quantity'].iloc[0]     
     print("P1.pool", P1.pool, P1.master_table)
     assert CL_amount < 1e-5
-    assert len(P1.pool) == 5
-    assert debt_amount == -50
+    assert len(P1.pool) == 11
+    assert debt_amount< 1e-5
+    
+test_onetradeperday_sell_closeexit_autounload()
