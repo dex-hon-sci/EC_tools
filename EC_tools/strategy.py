@@ -1079,8 +1079,8 @@ class ArgusMRStrategy_22(Strategy):
         strategy_info, quantile_info = self.gen_data(history_data_lag, apc_curve_lag,
                                                      qunatile = qunatile)
         
-        open_price_quant = mfunc.find_quant( self._curve_today,
-                                             self._quant_list, open_price)
+        open_price_quant = mfunc.find_quant(self._curve_today,
+                                            self._quant_list, open_price)
         
         direction, cond_info = self.run_cond(strategy_info, open_price_quant,
                                              total_lag_days = total_lag_days, 
@@ -1163,17 +1163,48 @@ class ArgusMonthlyStrategy(Strategy):
             flatList = sum(lis, [])
             self.cond_dict[key] = flatList
             
-    def gen_data():
+    def gen_data(self, 
+                 history_data_lag: list, 
+                 apc_curve_lag: list, 
+                 price_proxy: str = 'Settle', 
+                 qunatile: list = [0.25,0.4,0.6,0.75]):
         
-        prev_cum_avg = 0
-        prev_cum_n = 0
+        #prev_cum_avg = 0
+        #prev_cum_n = 0
         today_price = 0
         
         
         today_cum_avg = (prev_cum_avg*prev_cum_n + today_price)/(prev_cum_n + 1)
         
+        lag_price = history_data_lag[price_proxy]
+        
+        lag_list = [mfunc.find_quant(apc_curve_lag.iloc[i].to_numpy()[1:-1], 
+                                     self._quant_list, lag_price.iloc[i]) for 
+                                    i in range(len(apc_curve_lag))]
+        lag_list.reverse()
+        # Note that the list goes like this [lag1q,lag2q,...]
+        
+        prev_cum_avg = np.average(lag_list)
+        prev_cum_n = len(lag_list)
+        
+        # calculate the rolling average
+        rollingaverage_q = np.average(lag_list)
+        
+
+        strategy_info = {'lag_list': lag_list, 
+                         'rollingaverage': rollingaverage_q}
+        
+        qunatile_info = list(self._curve_today_spline(qunatile))
+        
+        return strategy_info, qunatile_info
     
-    def run_cond(self, data):
+    def run_cond(self,
+                 data: dict, 
+                 open_price: float, 
+                 total_lag_days: int = 2, 
+                 apc_mid_Q: float = 0.5):
+        
+        lag1q = data['lag1q']
         rollingaverage_q = data['rollingaverage']
 
         lag_close_q_list = [data['lag_list'][i] for i in range(total_lag_days)]
@@ -1184,17 +1215,18 @@ class ArgusMonthlyStrategy(Strategy):
         # total_cum_avg is within the monthly APC: Q0.1 < total_cum_avg < Q0.35
         cond_buy_list_1 = list(map(lambda x, y, z: z < x < y, [], [],[]))
         
+        # (2) The lag1q for the day before has to be lower than the entry lower bound
+        # (2) rolling 5 days average lower than the daily apc entry upper bound
         cond_buy_list_2 = [(lag1q < 0.25)]
-        # (2) rolling 5 days average lower than the median apc 
         cond_buy_list_3 = [(rollingaverage_q < 0.4)]
         
         # "SELL" condition
+        # (1) create a list of Boolean value for evaluating if the 
         # total_cum_avg is within the monthly APC: Q0.65 < total_cum_avg < Q0.9
-
         cond_sell_list_1 = list(map(lambda x, y, z:z < x < y, [], [],[]))
-        # daily APC 
+        # (2) price at today's opening hour below the 0.9 quantile of today's apc
+        # (2) rolling 5 days average higher than the daily apc entry upper bound
         cond_sell_list_2 = [(lag1q > 0.75)]
-        # (3) price at today's opening hour below the 0.9 quantile of today's apc
         cond_sell_list_3 = [(rollingaverage_q <= 0.6)]
         
         # "Entry condition"
@@ -1216,6 +1248,7 @@ class ArgusMonthlyStrategy(Strategy):
         q0_05  = self._curve_monthly_spline(0.05)
         q0_10  = self._curve_monthly_spline(0.10)
         q0_35  = self._curve_monthly_spline(0.35)
+        q0_50  = self._curve_monthly_spline(0.50)
         q0_65  = self._curve_monthly_spline(0.65)
         q0_90  = self._curve_monthly_spline(0.90)
         q0_95  = self._curve_monthly_spline(0.95)
@@ -1230,12 +1263,89 @@ class ArgusMonthlyStrategy(Strategy):
         sell_stoploss_exit = q0_95*(prev_cum_n + 1) - prev_cum_avg * prev_cum_n
         
         
-        return
+        if self.direction == SignalStatus.BUY:
+            # (A) Entry region at price < APC p=0.4 and 
+            entry_price = [float(self._curve_today_spline(buy_target_lower_entry)), 
+                           float(self._curve_today_spline(buy_target_upper_entry))]
+            # (B) Exit price
+            exit_price = [float(self._curve_today_spline(q0_50)), 
+                          float(self._curve_today_spline(q0_90))] 
+            # (C) Stop loss at APC p=0.1
+            stop_loss = float(self._curve_today_spline(buy_stoploss_exit))
+
+            
+        elif self.direction == SignalStatus.SELL:
+            # (A) Entry region at price > APC p=0.6 and 
+            entry_price = [float(self._curve_today_spline(sell_target_lower_entry)), 
+                           float(self._curve_today_spline(sell_target_upper_entry))]
+            # (B) Exit price
+            exit_price = [float(self._curve_today_spline(q0_10)), 
+                          float(self._curve_today_spline(q0_50))]
+            # (C) Stop loss at APC p=0.9
+            stop_loss = float(self._curve_today_spline(sell_stoploss_exit))
+            
+        elif self.direction == SignalStatus.NEUTRAL:
+            entry_price = ["NA", "NA"]
+            exit_price = ["NA", "NA"]
+            stop_loss = "NA"
+        else:
+            raise Exception(
+                'Unaccepted input, condition needs to be either Buy, \
+                    Sell, or Neutral.')
+            
+        return entry_price, exit_price, stop_loss
+    
 
 
         
-    def apply_strategy():
-        pass
+    def apply_strategy(self, history_data_lag: list, 
+                       apc_curve_lag: list, 
+                       open_price: float, 
+                       qunatile: list = [0.25,0.4,0.6,0.75],
+                       total_lag_days: int = 2, 
+                       apc_mid_Q: float = 0.5, 
+                       buy_range: tuple = ([0.25,0.4],[0.6,0.75],0.05), 
+                       sell_range: tuple = ([0.6,0.75],[0.25,0.4],0.95)):
+        strategy_info, quantile_info = self.gen_data(history_data_lag, apc_curve_lag,
+                                                     qunatile = qunatile)
+        
+        open_price_quant = mfunc.find_quant(self._curve_today,
+                                            self._quant_list, open_price)
+        
+        direction, cond_info = self.run_cond(strategy_info, open_price_quant,
+                                             total_lag_days = total_lag_days, 
+                                             apc_mid_Q = apc_mid_Q)
+                                             
+        
+        entry_price, exit_price, stop_loss = self.set_EES(buy_range=buy_range, 
+                                                          sell_range=sell_range)
+
+        if direction == SignalStatus.BUY:
+            entry_price_val, exit_price_val = entry_price[1], exit_price[0]
+        elif direction == SignalStatus.SELL:
+            entry_price_val, exit_price_val = entry_price[0], exit_price[1]
+        elif direction == SignalStatus.NEUTRAL:
+            entry_price_val, exit_price_val = entry_price[0], exit_price[0]
+            
+        # Bookkeeping area
+        EES = [entry_price[0], entry_price[1], 
+               exit_price[0], exit_price[1], 
+               stop_loss]
+        EES_val = [entry_price_val, exit_price_val, stop_loss]
+        
+        # Turn strategy_info from dict to list
+        strategy_info_list = strategy_info['lag_list'] + [strategy_info['rollingaverage']]
+        
+        # put all the data in a singular list. This is to be added in the 
+        # data list in the loop
+        #print(EES+ cond_info, strategy_info_list, quantile_info, [self.strategy_name])
+        #print(type(EES+ cond_info), type(strategy_info_list), type(quantile_info), type([self.strategy_name]))
+        
+        data =  EES + cond_info + strategy_info_list + \
+                quantile_info + EES_val + [self.strategy_name]
+        
+        return {'data': data, 'direction': direction.value}
+
 
 
 
