@@ -20,6 +20,8 @@ DAILY_MINUTE_DATA_PKL = DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_full.p
 DAILY_APC_PKL = DATA_FILEPATH +"/pkl_vault/crudeoil_future_APC_full.pkl"
 DAILY_OPENPRICE_PKL = DATA_FILEPATH +'/pkl_vault/crudeoil_future_openprice_full.pkl'
 
+MONTHLY_APC_PKL = DATA_FILEPATH +"/pkl_vault/crudeoil_future_Monthly_APC_full.pkl"
+
 # Define the contracts of interest
 ASSET_DICT = {"USD": {"unit":'dollars', "asset_type":'Cash'},
               "AUD": {"unit":'dollars',"asset_type":'Cash'},
@@ -67,10 +69,10 @@ MONTHLY_SYMBOL_LIST = ["CLc1_avg_M", "HOc1_avg_M", "RBc1_avg_M",
 
 
 WEEKLY_30AVG_CAT_LIST = ['Argus Nymex WTI front month average 30-day interval, Weekly',
-                    'Nymex Heating oil front month average 30-day interval, Weekly',
-                    'Nymex RBOB gasoline front month average 30-day interval, Weekly',
-                    'Argus Brent front month average 30-day interval, Weekly',
-                    'ICE gasoil front month average 30-day interval, Weekly']
+                         'Nymex Heating oil front month average 30-day interval, Weekly',
+                         'Nymex RBOB gasoline front month average 30-day interval, Weekly',
+                         'Argus Brent front month average 30-day interval, Weekly',
+                         'ICE gasoil front month average 30-day interval, Weekly']
 
 WEEKLY_30AVG_KEYWORDS_LIST = ["WTI","Heating","Gasoline",'Brent', 'gasoil']
 

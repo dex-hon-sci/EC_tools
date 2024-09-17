@@ -90,10 +90,10 @@ def get_apc_from_server(username: str, password: str,
                                             categories=[categories])
         
         # Delete irrelavant columns
-        apc_data = apc_data.drop(columns=['PUBLICATION_DATE', 
-                                          'CONTINUOUS_FORWARD', 
-                                          'PRICE_UNIT', 'TIMESTAMP'])
-        apc_data.columns = ['Forecast_Period'] + [i for i in apc_data.columns[1:]] # Add the term "APC" in each column
+        #apc_data = apc_data.drop(columns=['PUBLICATION_DATE', 
+        #                                  'CONTINUOUS_FORWARD', 
+        #                                  'PRICE_UNIT', 'TIMESTAMP'])
+        #apc_data.columns = ['Forecast_Period'] + [i for i in apc_data.columns[1:]] # Add the term "APC" in each column
 
         # If no specific symbol input, use the name of the categories
         if symbol == None:
@@ -108,12 +108,14 @@ def get_apc_from_server(username: str, password: str,
         
     elif type(categories) is list: # if the asset name input is a list, pull a list of APC
         
-        apc_data = apc.getPossibilityCurves(start_date=start_date, end_date=end_date, categories=categories)
+        apc_data = apc.getPossibilityCurves(start_date=start_date, 
+                                            end_date=end_date, 
+                                            categories=categories)
             
-        apc_data = apc_data.drop(columns=['PUBLICATION_DATE', 
-                                          'CONTINUOUS_FORWARD', 
-                                          'PRICE_UNIT', 'TIMESTAMP'])
-        apc_data.columns = ['Forecast_Period'] + [i for i in apc_data.columns[1:]]
+        #apc_data = apc_data.drop(columns=['PUBLICATION_DATE', 
+        #                                  'CONTINUOUS_FORWARD', 
+        #                                  'PRICE_UNIT', 'TIMESTAMP'])
+        #apc_data.columns = ['Forecast_Period'] + [i for i in apc_data.columns[1:]]
         apc_data['symbol'] = None 
         
         # add new column with symbols corresponding to the keywords.
@@ -122,7 +124,7 @@ def get_apc_from_server(username: str, password: str,
             apc_data['symbol'] = np.where(apc_data['CATEGORY'].apply(lambda x: i in x), c, apc_data['symbol'])
     
     # Drop the Category column
-    apc_data = apc_data.drop(columns=['CATEGORY'])
+    #apc_data = apc_data.drop(columns=['CATEGORY'])
 
     return apc_data
 

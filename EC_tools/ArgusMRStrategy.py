@@ -437,9 +437,11 @@ class ArgusMRStrategyMode(Strategy):
             flatList = sum(lis, [])
             self.cond_dict[key] = flatList
     
-    def gen_data(self, history_data_lag, apc_curve_lag, 
-                            price_proxy = 'Settle', 
-                            quantile_delta = [-0.1, 0.0, +0.1]):
+    def gen_data(self, 
+                 history_data_lag, 
+                 apc_curve_lag, 
+                 price_proxy = 'Settle', 
+                 quantile_delta = [-0.1, 0.0, +0.1]):
         
         lag_price = history_data_lag[price_proxy]
         lag_list = [mfunc.find_quant(apc_curve_lag.iloc[i].to_numpy()[1:-1], 

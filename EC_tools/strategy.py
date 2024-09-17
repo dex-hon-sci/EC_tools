@@ -1348,9 +1348,6 @@ class ArgusMonthlyStrategy(Strategy):
 
 
 
-
-
-
 MR_STRATEGIES_0 = {"argus_exact": ArgusMRStrategy,
                    "argus_exact_mode": ArgusMRStrategyMode,
                    'argus_monthly': ArgusMonthlyStrategy}

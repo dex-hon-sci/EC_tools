@@ -166,7 +166,7 @@ def test_MRStrategyArgus_set_EES(Test, EES_answer_tuple)->None:
     
     entry_price, exit_price, stop_loss = MR.set_EES(
                                 buy_range=([0.25,0.4],[0.6,0.75],0.05), 
-                            sell_range =([0.6,0.75],[0.25,0.4],0.95))
+                                sell_range =([0.6,0.75],[0.25,0.4],0.95))
     
     #Correct answers
     entry_price_answer = EES_answer_tuple[0]
