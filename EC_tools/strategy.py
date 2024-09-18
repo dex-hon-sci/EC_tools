@@ -1201,7 +1201,7 @@ class ArgusMonthlyStrategy(Strategy):
     
     def run_cond(self,
                  data: dict, 
-                 open_price: float, 
+                 today_cum_avg: float, 
                  total_lag_days: int = 2, 
                  apc_mid_Q: float = 0.5):
         

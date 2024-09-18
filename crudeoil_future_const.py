@@ -23,6 +23,9 @@ DAILY_OPENPRICE_PKL = DATA_FILEPATH +'/pkl_vault/crudeoil_future_openprice_full.
 MONTHLY_APC_PKL = DATA_FILEPATH +"/pkl_vault/crudeoil_future_Monthly_APC_full.pkl"
 WEEKLY_30AVG_APC_PKL = DATA_FILEPATH +"/pkl_vault/crudeoil_future_Weekly_30AVG_APC_full.pkl"
 
+DAILY_CUMAVG_MONTH = DATA_FILEPATH +"/pkl_vault/crudeoil_future_daily_cumavg_full.pkl"
+MINUTE_CUMAVG_MONTH = DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_cumavg_full.pkl"
+
 # Define the contracts of interest
 ASSET_DICT = {"USD": {"unit":'dollars', "asset_type":'Cash'},
               "AUD": {"unit":'dollars',"asset_type":'Cash'},
@@ -430,6 +433,18 @@ OPEN_PRICE_FILE_LOC = {
     "QOc2": DATA_FILEPATH + "/history_data/open_price/QO_d01_op.day",
     "QPc1": DATA_FILEPATH + "/history_data/open_price/QP_op.day",
     "QPc2": DATA_FILEPATH + "/history_data/open_price/QP_d01_op.day"}
+
+HISTORY_DAILY_CUMAVG_IN_MONTH = make_path_dict(folder_name = 'history_data/daily_cumavg_month',
+                                               file_prefix = "",
+                                               file_suffix='_daily_cumavg_month.csv',
+                                               path = DATA_FILEPATH,
+                                               syms=SYMBOL_LIST)
+
+HISTORY_MINUTE_CUMAVG_IN_MONTH = make_path_dict(folder_name = 'history_data/minute_cumavg_month',
+                                               file_prefix = "",
+                                               file_suffix='_minute_cumavg_month.csv',
+                                               path = DATA_FILEPATH,
+                                               syms=SYMBOL_LIST)
 
 ARGUS_BENCHMARK_SIGNAL_FILE_LOC = {
     'CLc1': RESULT_FILEPATH + '/benchmark_signals/benchmark_signal_CLc1_full.csv',

@@ -1336,37 +1336,38 @@ def cal_cumavg(history_daily_data: pd.DataFrame,
 def cal_cumavg_minute(history_minute_data: pd.DataFrame,
                       cumavg_price_data: pd.DataFrame, 
                       price_proxy: str = 'Settle'):
-    
-
-    dates = history_minute_data['Date'][0:3600]
-    times = history_minute_data['Time'][0:3600]
-    prices = history_minute_data[price_proxy][0:3600]
-    
+    # A method that calculate the cumulative average
+    print("Len", len(history_minute_data['Date']))
+    dates = history_minute_data['Date'][0:5000]
+    times = history_minute_data['Time'][0:5000]
+    prices = history_minute_data[price_proxy][0:5000]
+    print("dtp", dates[dates==datetime.datetime(2016,1,7)].iloc[0])
     today_cum_avg_data = []
+    count = 0
     for date, time, price in zip(dates, times, prices):
-        
-        
+       # str, pandas timestamp
+       print(type(cumavg_price_data['Date'].iloc[0]), type(date))
        cumavg_data_today  = cumavg_price_data[cumavg_price_data['Date'] == date]
-       
        prev_cum_n = cumavg_data_today['prev_cum_n']
        prev_cum_avg = cumavg_data_today['cumavg_price']
-       print('prev_cum_n, prev_cum_avg', date,
-             prev_cum_n, prev_cum_avg)
-
+       #print('prev_cum_n, prev_cum_avg', date, prev_cum_n, prev_cum_avg)
        if len(prev_cum_n) == 0 and len(prev_cum_avg) ==0:
+           #print("Null", count)
            prev_cum_n, prev_cum_avg = np.nan, np.nan
            today_cum_avg = np.nan
        elif len(prev_cum_n) == 1 and len(prev_cum_avg) ==1:
            prev_cum_n, prev_cum_avg = prev_cum_n.item(), prev_cum_avg.item()
            today_cum_avg = (prev_cum_avg*prev_cum_n + price) / (prev_cum_n + 1)
+           print(prev_cum_n, prev_cum_avg, today_cum_avg, count)
 
        else:
            raise Exception("There is a misalignment! A mismatch between \
                            prev_cum_n and prev_cum_avg.")
                            
-       print("today_cum_avg", today_cum_avg)
+       #print("today_cum_avg", today_cum_avg)
 
        today_cum_avg_data.append((date, time, price, today_cum_avg))
+       count = count + 1
         
     today_cum_avg_data = pd.DataFrame(today_cum_avg_data, columns=['Date', 
                                                                    'Time', 

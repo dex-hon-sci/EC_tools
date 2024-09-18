@@ -12,7 +12,7 @@ of the back-test workflow will be less time consuming.
 """
 import json
 import pickle
-
+import pandas as pd
 from crudeoil_future_const import SYMBOL_LIST, HISTORY_DAILY_FILE_LOC,\
                                   HISTORY_MINTUE_FILE_LOC, APC_FILE_LOC,\
                                   ARGUS_BENCHMARK_SIGNAL_FILE_LOC,\
@@ -20,7 +20,12 @@ from crudeoil_future_const import SYMBOL_LIST, HISTORY_DAILY_FILE_LOC,\
                                   DAILY_DATA_PKL, DAILY_MINUTE_DATA_PKL,\
                                   DAILY_APC_PKL, DAILY_OPENPRICE_PKL,\
                                   APC_FILE_MONTHLY_LOC, APC_FILE_WEEKLY_30AVG_LOC,\
-                                  MONTHLY_APC_PKL, WEEKLY_30AVG_APC_PKL
+                                  MONTHLY_APC_PKL, WEEKLY_30AVG_APC_PKL,\
+                                  HISTORY_DAILY_CUMAVG_IN_MONTH,\
+                                  HISTORY_MINUTE_CUMAVG_IN_MONTH,\
+                                  DAILY_CUMAVG_MONTH, MINUTE_CUMAVG_MONTH
+
+
 import EC_tools.read as read
 import EC_tools.utility as util
 
@@ -68,7 +73,38 @@ def create_open_price_list(history_daily_file_loc: dict,
         
     print("Open price data created.")
     
+def create_cumavg_list(history_daily_file_loc: dict, 
+                       symbol_list=SYMBOL_LIST):
+    
+    for symbol in symbol_list:
+        history_daily_file = read.read_reformat_Portara_daily_data(
+                                        history_daily_file_loc[symbol])
+        @util.save_csv(HISTORY_DAILY_CUMAVG_IN_MONTH[symbol],save_or_not=True)
+        def cal_cumavg_indi():
+            cumavg_price_data = read.cal_cumavg(history_daily_file)
+            return cumavg_price_data
+        cal_cumavg_indi()
+    print('Daily Cumulative average within each month is calculated.')
+ 
+def create_minute_cumavg_list(history_minute_file_loc: dict,
+                              cumavg_price_file_loc: dict,
+                              symbol_list=SYMBOL_LIST):
+    for symbol in symbol_list:
+        print(symbol)
+        history_daily_file = read.read_reformat_Portara_minute_data(
+                                        history_minute_file_loc[symbol])
+        cumavg_price_file = pd.read_csv(cumavg_price_file_loc[symbol])
+        
+        @util.save_csv(HISTORY_MINUTE_CUMAVG_IN_MONTH[symbol], save_or_not=True)
+        def cal_minute_cumavg_indi():
+            cumavg_price_data = read.cal_cumavg_minute(history_daily_file, 
+                                                       cumavg_price_file)
+            return cumavg_price_data
+        cal_minute_cumavg_indi()
+        
+    print('Minute Cumulative average within each month is calculated.')
 
+        
 # =============================================================================
 # @util.time_it    
 # def load_pkl(filename): # test function
@@ -116,6 +152,14 @@ def run_preprocess() -> None:
     #create_aggegrate_pkl(APC_FILE_WEEKLY_30AVG_LOC, read.read_reformat_APC_data,
     #                     save_filename = WEEKLY_30AVG_APC_PKL,
     #                     symbol_list = SHORT_SYMBOL_LIST)
+
+    #create_cumavg_list(HISTORY_DAILY_FILE_LOC)
+    #create_aggegrate_pkl(HISTORY_DAILY_CUMAVG_IN_MONTH, pd.read_csv,
+    #                     save_filename = DAILY_CUMAVG_MONTH)
+    
+    create_minute_cumavg_list(HISTORY_MINTUE_FILE_LOC, HISTORY_DAILY_CUMAVG_IN_MONTH)
+    create_aggegrate_pkl(HISTORY_MINUTE_CUMAVG_IN_MONTH, pd.read_csv,
+                         save_filename = MINUTE_CUMAVG_MONTH)
 
 if __name__ == "__main__":
     print(SYMBOL_LIST)
