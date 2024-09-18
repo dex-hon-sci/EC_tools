@@ -22,6 +22,7 @@ import EC_tools.math_func as mfunc
 __all__ = ["SignalStatus", "Strategy"]
 __author__="Dexter S.-H. Hon"
 
+APC_LENGTH = len(np.arange(0.0025, 0.9975, 0.0025))
 
 class SignalStatus(Enum):
     """
@@ -191,7 +192,7 @@ class ArgusMRStrategy(Strategy):
                               
         lag_price = history_data_lag[price_proxy]
         
-        lag_list = [mfunc.find_quant(apc_curve_lag.iloc[i].to_numpy()[1:-1], 
+        lag_list = [mfunc.find_quant(apc_curve_lag.iloc[i].to_numpy()[-1-APC_LENGTH:-1], 
                                      self._quant_list, lag_price.iloc[i]) for 
                                     i in range(len(apc_curve_lag))]
         lag_list.reverse()
@@ -542,7 +543,7 @@ class ArgusMRStrategyMode(Strategy):
                             quantile_delta = [-0.1, 0.0, +0.1]):
         
         lag_price = history_data_lag[price_proxy]
-        lag_list = [mfunc.find_quant(apc_curve_lag.iloc[i].to_numpy()[1:-1], 
+        lag_list = [mfunc.find_quant(apc_curve_lag.iloc[i].to_numpy()[-1-APC_LENGTH:-1], 
                                      self._quant_list, lag_price.iloc[i]) for 
                                     i in range(len(apc_curve_lag))]
         lag_list.reverse()
@@ -552,7 +553,7 @@ class ArgusMRStrategyMode(Strategy):
         
         # turn the APC (cdf) to pdf in a list
         lag_pdf_list = [mfunc.cal_pdf(self._quant_list, 
-                                      apc_curve_lag.iloc[i].to_numpy()[1:-1]) 
+                                      apc_curve_lag.iloc[i].to_numpy()[-1-APC_LENGTH:-1]) 
                                             for i in range(len(apc_curve_lag))]
         # Calculate the price of the mode in these apc
         mode_Q_list = [mfunc.find_pdf_quant(lag_pdf_list[i][0], lag_pdf_list[i][1])
@@ -828,7 +829,7 @@ class ArgusMRStrategy_22(Strategy):
                               
         lag_price = history_data_lag[price_proxy]
         
-        lag_list = [mfunc.find_quant(apc_curve_lag.iloc[i].to_numpy()[1:-1], 
+        lag_list = [mfunc.find_quant(apc_curve_lag.iloc[i].to_numpy()[-1-APC_LENGTH:-1], 
                                      self._quant_list, lag_price.iloc[i]) for 
                                     i in range(len(apc_curve_lag))]
         lag_list.reverse()
@@ -1178,7 +1179,7 @@ class ArgusMonthlyStrategy(Strategy):
         
         lag_price = history_data_lag[price_proxy]
         
-        lag_list = [mfunc.find_quant(apc_curve_lag.iloc[i].to_numpy()[1:-1], 
+        lag_list = [mfunc.find_quant(apc_curve_lag.iloc[i].to_numpy()[-1-APC_LENGTH:-1], 
                                      self._quant_list, lag_price.iloc[i]) for 
                                     i in range(len(apc_curve_lag))]
         lag_list.reverse()

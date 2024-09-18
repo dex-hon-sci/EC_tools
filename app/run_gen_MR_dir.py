@@ -18,7 +18,7 @@ import pandas as pd
 import numpy as np
 
 # EC_tools imports
-from EC_tools.strategy import ArgusMRStrategy, ArgusMRStrategyMode, Strategy
+from EC_tools.strategy import ArgusMRStrategy, ArgusMRStrategyMode, Strategy, APC_LENGTH
 import EC_tools.read as read
 import EC_tools.utility as util
 from EC_tools.bookkeep import Bookkeep
@@ -127,7 +127,7 @@ def loop_signal(strategy: type[Strategy],
         this_symbol = history_data["symbol"][i]
                 
         # cross reference the APC list to get the APC of this date and symbol
-        APCs_this_date = signal_data[(signal_data['Forecast_Period']==this_date)]
+        APCs_this_date = signal_data[(signal_data['PERIOD']==this_date)]
 #                                  & (APCs_dat['symbol']== this_symbol)] #<-- here add a condition matching the symbols
         
         if len(APCs_this_date) == 0:
@@ -135,10 +135,10 @@ def loop_signal(strategy: type[Strategy],
                                           format(this_symbol, this_date.date()))
         else:
             #print(this_date, this_symbol, APCs_this_date['Forecast Period'].iloc[0])
-            forecast_date = APCs_this_date['Forecast_Period'].to_list()[0] 
+            forecast_date = APCs_this_date['PERIOD'].to_list()[0] 
                         
             # This is the APC number only
-            curve_this_date = APCs_this_date.to_numpy()[0][1:-1]
+            curve_this_date = APCs_this_date.to_numpy()[0][-1-APC_LENGTH:-1]
     
             # create input for bookkepping
             price_code = APCs_this_date['symbol'].to_list()[0]
@@ -287,8 +287,8 @@ def run_gen_MR_signals(strategy: type[Strategy],
     end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
 
     # Define a small window of interest
-    APCs_dat = signal_data[(signal_data['Forecast_Period'] >= start_date_lag) & 
-                                      (signal_data['Forecast_Period'] <= end_date)]
+    APCs_dat = signal_data[(signal_data['PERIOD'] >= start_date_lag) & 
+                                      (signal_data['PERIOD'] <= end_date)]
     
     portara_dat = history_data_daily[(history_data_daily['Date'] >= start_date_lag) & 
                                       (history_data_daily['Date'] <= end_date)]

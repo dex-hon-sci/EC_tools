@@ -24,8 +24,7 @@ import EC_tools.math_func as mfunc
 import EC_tools.utility as util
 
 from crudeoil_future_const import HISTORY_MINTUE_FILE_LOC, APC_FILE_LOC, \
-                                  OPEN_HR_DICT, CLOSE_HR_DICT
-
+                                  OPEN_HR_DICT, CLOSE_HR_DICT, APC_LENGTH
 color_dict_light_mode = {'data_col':'k','bg_col':'white', 'col':'g'}
 color_dict_dark_mode = {'data_col':'white','bg_col':'k', 'col':'g'}
 
@@ -680,9 +679,9 @@ def plot_minute(filename_minute: str, signal_filename: str,
     # Calculate the pdf from the cdf for plotting
     quant0 = np.arange(0.0025, 0.9975, 0.0025)
 
-    even_spaced_prices, pdf = mfunc.cal_pdf(quant0, curve.to_numpy()[0][1:-1])
+    even_spaced_prices, pdf = mfunc.cal_pdf(quant0, curve.to_numpy()[0][-1-APC_LENGTH:-1])
     #print("find_quant", mfunc.find_quant(curve.to_numpy()[0][1:-1], quant0, 97.9366))
-    print(len(curve.to_numpy()[0][1:-1]), len(pdf))
+    print(len(curve.to_numpy()[0][-1-APC_LENGTH:-1]), len(pdf))
     # Define the quantile list of interest based on a strategy
     # The lists are for marking the lines only. 
     #quant_list=['q0.05','q0.4','q0.5','q0.6','q0.95']

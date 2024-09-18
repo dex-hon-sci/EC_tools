@@ -485,10 +485,10 @@ def read_reformat_openprice_data(filename: str) ->  pd.DataFrame:
     return openprice_data #openprice_data_reindex
 
 
-def read_reformat_APC_data(filename:str) -> pd.DataFrame:
+def read_reformat_APC_data(filename:str, time_proxy = 'PERIOD') -> pd.DataFrame:
     signal_data =  pd.read_csv(filename)
-    signal_data['Forecast_Period'] = [datetime.datetime.strptime(x, '%Y-%m-%d')
-                            for x in signal_data['Forecast_Period']]
+    signal_data[time_proxy] = [datetime.datetime.strptime(x, '%Y-%m-%d')
+                            for x in signal_data[time_proxy]]
     #signal_data_reindex = signal_data.set_index('Forecast Period',drop=False)
     signal_data_reindex = signal_data
     return signal_data #signal_data_reindex
@@ -496,7 +496,9 @@ def read_reformat_APC_data(filename:str) -> pd.DataFrame:
 #tested
 def extract_lag_data(signal_data: pd.DataFrame, 
                      history_data: pd.DataFrame, 
-                     date:str, lag_size:int = 5) -> \
+                     date:str, 
+                     lag_size:int = 5,
+                     time_proxy = "PERIOD") -> \
                      tuple[pd.DataFrame, pd.DataFrame]:
     """
     Extract the Lag data based on a given date.
@@ -540,10 +542,10 @@ def extract_lag_data(signal_data: pd.DataFrame,
         
     #Store the lag signal data in a list
     #signal_data_lag = signal_data[signal_data['Forecast Period'] == window[0]]
-    signal_data_lag = signal_data[signal_data['Forecast_Period'] == window[0]]
+    signal_data_lag = signal_data[signal_data[time_proxy] == window[0]]
     
     for i in range(lag_size-1):
-        curve = signal_data[signal_data['Forecast_Period'] == window[i+1]]
+        curve = signal_data[signal_data[time_proxy] == window[i+1]]
         signal_data_lag = pd.concat([signal_data_lag, curve])
 
     return signal_data_lag, history_data_lag
@@ -1126,9 +1128,9 @@ def concat_CSVtable(filename_list: list[str],
 
 def merge_raw_data(filename_list: list[str], 
                    save_filename: str, 
-                   sort_by: str = "Forecast_Period") -> pd.DataFrame:
+                   sort_by: str = "PERIOD") -> pd.DataFrame:
     """
-    A functiob that merge a list of CSV files into one CSV file.
+    A function that merges a list of CSV files into one CSV file.
 
     Parameters
     ----------
@@ -1137,7 +1139,7 @@ def merge_raw_data(filename_list: list[str],
     save_filename : str
         The filename for saving.
     sort_by : str, optional
-        The column name used in the sorting. The default is "Forecast_Period".
+        The column name used in the sorting. The default is "PERIOD".
 
     Returns
     -------
@@ -1290,3 +1292,89 @@ def group_trade(position_pool: list,
 # =============================================================================
 # #%% Construction Area
 # =============================================================================
+# input a month settlement data, output the cumulative average of each month
+def cal_cumavg(history_daily_data: pd.DataFrame,
+               time_proxy='Date',
+               price_proxy="Settle"):
+    # Calculate the cumulative average by months
+    
+    # Inputs
+    times = history_daily_data[time_proxy].to_list()
+    prices = history_daily_data[price_proxy].to_list()
+    
+    # Initialise container
+    #val_bucket, time_bucket, N_bucket = [],[], []
+    cumavg_price_data = []
+    # Check what month does this belong to
+    # Start the loop
+    
+    month_tracker = times[0].month #use the first element as the starting month
+    cum_avg_tracker, N = 0, 0
+    for time, price in zip(times,prices):
+        
+        if time.month == month_tracker:
+            cum_avg_tracker = cum_avg_tracker*(N/(N+1)) + price/(N+1)
+            N = N + 1
+        # During the switch of month, change the total days to 1 and the cumavg 
+        # to the current price.
+        elif time.month != month_tracker: 
+            cum_avg_tracker = price
+            N = 1
+            month_tracker = time.month
+
+        ##time_bucket.append(time)
+        #val_bucket.append(cum_avg_tracker)
+        #N_bucket.append(N)
+        
+        cumavg_price_data.append((time, cum_avg_tracker , N))
+        
+    cumavg_price_data = pd.DataFrame(cumavg_price_data, columns=[time_proxy, 
+                                                                 'cumavg_price', 
+                                                                 'prev_cum_n'])
+    return cumavg_price_data
+
+def cal_cumavg_minute(history_minute_data: pd.DataFrame,
+                      cumavg_price_data: pd.DataFrame, 
+                      price_proxy: str = 'Settle'):
+    
+
+    dates = history_minute_data['Date'][0:3600]
+    times = history_minute_data['Time'][0:3600]
+    prices = history_minute_data[price_proxy][0:3600]
+    
+    today_cum_avg_data = []
+    for date, time, price in zip(dates, times, prices):
+        
+        
+       cumavg_data_today  = cumavg_price_data[cumavg_price_data['Date'] == date]
+       
+       prev_cum_n = cumavg_data_today['prev_cum_n']
+       prev_cum_avg = cumavg_data_today['cumavg_price']
+       print('prev_cum_n, prev_cum_avg', date,
+             prev_cum_n, prev_cum_avg)
+
+       if len(prev_cum_n) == 0 and len(prev_cum_avg) ==0:
+           prev_cum_n, prev_cum_avg = np.nan, np.nan
+           today_cum_avg = np.nan
+       elif len(prev_cum_n) == 1 and len(prev_cum_avg) ==1:
+           prev_cum_n, prev_cum_avg = prev_cum_n.item(), prev_cum_avg.item()
+           today_cum_avg = (prev_cum_avg*prev_cum_n + price) / (prev_cum_n + 1)
+
+       else:
+           raise Exception("There is a misalignment! A mismatch between \
+                           prev_cum_n and prev_cum_avg.")
+                           
+       print("today_cum_avg", today_cum_avg)
+
+       today_cum_avg_data.append((date, time, price, today_cum_avg))
+        
+    today_cum_avg_data = pd.DataFrame(today_cum_avg_data, columns=['Date', 
+                                                                   'Time', 
+                                                                   price_proxy,
+                                                                   'today_cum_avg'])
+    return today_cum_avg_data
+    
+
+# I: prev_cum_avg, prev_cum_n, minute_data; O:
+# today_cum_avg
+# Make a list of today_cum_avg base on minute by minute

@@ -15,9 +15,9 @@ from EC_tools.strategy import ArgusMRStrategy, SignalStatus, ArgusMRStrategyMode
 import EC_tools.read as read
 import EC_tools.math_func as mfunc
 from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, \
-                                APC_FILE_LOC, HISTORY_DAILY_FILE_LOC,\
-                                    HISTORY_MINTUE_FILE_LOC, TIMEZONE_DICT,\
-                                        OPEN_HR_DICT, CLOSE_HR_DICT
+                                  APC_FILE_LOC, HISTORY_DAILY_FILE_LOC,\
+                                  HISTORY_MINTUE_FILE_LOC, TIMEZONE_DICT,\
+                                  OPEN_HR_DICT, CLOSE_HR_DICT,APC_LENGTH
                                         
 from tests.test_strategy import SingleRun
 
@@ -35,15 +35,15 @@ def gen_data_Answer(Test):
     # Calculate the correct answer
     quant_list = np.arange(0.0025, 0.9975, 0.0025)
     
-    lag5 = mfunc.find_quant(apc_curve_lag5.iloc[0].to_numpy()[1:-1], 
+    lag5 = mfunc.find_quant(apc_curve_lag5.iloc[0].to_numpy()[-1-APC_LENGTH:-1], 
                             quant_list, history_data_lag5['Settle'].iloc[0])
-    lag4 = mfunc.find_quant(apc_curve_lag5.iloc[1].to_numpy()[1:-1], 
+    lag4 = mfunc.find_quant(apc_curve_lag5.iloc[1].to_numpy()[-1-APC_LENGTH:-1], 
                             quant_list, history_data_lag5['Settle'].iloc[1])
-    lag3 = mfunc.find_quant(apc_curve_lag5.iloc[2].to_numpy()[1:-1], 
+    lag3 = mfunc.find_quant(apc_curve_lag5.iloc[2].to_numpy()[-1-APC_LENGTH:-1], 
                             quant_list, history_data_lag5['Settle'].iloc[2])
-    lag2 = mfunc.find_quant(apc_curve_lag5.iloc[3].to_numpy()[1:-1], 
+    lag2 = mfunc.find_quant(apc_curve_lag5.iloc[3].to_numpy()[-1-APC_LENGTH:-1], 
                             quant_list, history_data_lag5['Settle'].iloc[3])
-    lag1 = mfunc.find_quant(apc_curve_lag5.iloc[4].to_numpy()[1:-1], 
+    lag1 = mfunc.find_quant(apc_curve_lag5.iloc[4].to_numpy()[-1-APC_LENGTH:-1], 
                             quant_list, history_data_lag5['Settle'].iloc[4])
     
     rolling_avg_lag_answer = np.average([lag5,lag4,lag3,lag2,lag1])
@@ -52,11 +52,11 @@ def gen_data_Answer(Test):
     
     # The answers for the quantile of the mode
     # Find the pdf from cdf
-    lag5_pdf = mfunc.cal_pdf(quant_list, apc_curve_lag5.iloc[0].to_numpy()[1:-1]) 
-    lag4_pdf = mfunc.cal_pdf(quant_list, apc_curve_lag5.iloc[1].to_numpy()[1:-1]) 
-    lag3_pdf = mfunc.cal_pdf(quant_list, apc_curve_lag5.iloc[2].to_numpy()[1:-1]) 
-    lag2_pdf = mfunc.cal_pdf(quant_list, apc_curve_lag5.iloc[3].to_numpy()[1:-1]) 
-    lag1_pdf = mfunc.cal_pdf(quant_list, apc_curve_lag5.iloc[4].to_numpy()[1:-1]) 
+    lag5_pdf = mfunc.cal_pdf(quant_list, apc_curve_lag5.iloc[0].to_numpy()[-1-APC_LENGTH:-1]) 
+    lag4_pdf = mfunc.cal_pdf(quant_list, apc_curve_lag5.iloc[1].to_numpy()[-1-APC_LENGTH:-1]) 
+    lag3_pdf = mfunc.cal_pdf(quant_list, apc_curve_lag5.iloc[2].to_numpy()[-1-APC_LENGTH:-1]) 
+    lag2_pdf = mfunc.cal_pdf(quant_list, apc_curve_lag5.iloc[3].to_numpy()[-1-APC_LENGTH:-1]) 
+    lag1_pdf = mfunc.cal_pdf(quant_list, apc_curve_lag5.iloc[4].to_numpy()[-1-APC_LENGTH:-1]) 
     
     # Calculate the price of the mode in these apc
     mode_Q_lag5 = mfunc.find_pdf_quant(lag5_pdf[0], lag5_pdf[1], func=max)

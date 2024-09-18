@@ -5,7 +5,7 @@ Created on Sun Jun 23 09:00:12 2024
 
 @author: dexter
 """
-
+import numpy as np
 from dotenv import load_dotenv 
 import os
 from pathlib import Path
@@ -21,6 +21,7 @@ DAILY_APC_PKL = DATA_FILEPATH +"/pkl_vault/crudeoil_future_APC_full.pkl"
 DAILY_OPENPRICE_PKL = DATA_FILEPATH +'/pkl_vault/crudeoil_future_openprice_full.pkl'
 
 MONTHLY_APC_PKL = DATA_FILEPATH +"/pkl_vault/crudeoil_future_Monthly_APC_full.pkl"
+WEEKLY_30AVG_APC_PKL = DATA_FILEPATH +"/pkl_vault/crudeoil_future_Weekly_30AVG_APC_full.pkl"
 
 # Define the contracts of interest
 ASSET_DICT = {"USD": {"unit":'dollars', "asset_type":'Cash'},
@@ -184,6 +185,7 @@ APC_SYMBOL_LIST_ALL = ['HOc7','CLc8','QPc4','CLc1','QOc3','CLc3','QPc1_avg30_W',
                        'HOc4','CLc1_Houston_avg_M','QPc10','HOc10','RBc5',
                        'RBc1','RBc12','CLc1_avg_M','QPc9','QPc12','QOc1_avg_M',
                        'QPc8','RBc11','QPc2']
+APC_LENGTH = len(np.arange(0.0025, 0.9975, 0.0025))
 
 #list(HISTORY_DAILY_FILE_LOC.keys())
 
@@ -214,17 +216,17 @@ APC_FILE_COMPLETE_LOC = make_path_dict(folder_name = 'APC_latest_complete',
                                        syms=APC_SYMBOL_LIST_ALL)
 
 APC_FILE_MONTHLY_LOC = make_path_dict(folder_name = 'APC_latest_complete',
-                                       file_prefix = "APC_latest_",
-                                       file_suffix='.csv',
-                                       path = DATA_FILEPATH,
-                                       syms=MONTHLY_SYMBOL_LIST)
+                                      file_prefix = "APC_latest_",
+                                      file_suffix='_avg_M.csv',
+                                      path = DATA_FILEPATH,
+                                      syms=SYMBOL_LIST)
 
 
 APC_FILE_WEEKLY_30AVG_LOC = make_path_dict(folder_name = 'APC_latest_complete',
-                                       file_prefix = "APC_latest_",
-                                       file_suffix='.csv',
-                                       path = DATA_FILEPATH,
-                                       syms=WEEKLY_30AVG_SYMBOL_LIST)
+                                           file_prefix = "APC_latest_",
+                                           file_suffix='_avg30_W.csv',
+                                           path = DATA_FILEPATH,
+                                           syms=SYMBOL_LIST)
 
 
 SIZE_DICT = {

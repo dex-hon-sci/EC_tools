@@ -101,7 +101,8 @@ def download_latest_APC(auth_pack: dict,
 
 def download_latest_APC_fast(auth_pack: dict, 
                              asset_pack: dict, 
-                             old_filename: str) -> pd.DataFrame: #tested
+                             old_filename: str,
+                             time_proxy = "PERIOD") -> pd.DataFrame: #tested
     """
     A method to download the latest APC based on the existing APC file in 
     the data directory. 
@@ -131,7 +132,7 @@ def download_latest_APC_fast(auth_pack: dict,
     old_data = pd.read_csv(old_filename)
     
     #Find the date of the latest entry
-    latest_entry = str(old_data['Forecast_Period'].iloc[-1])
+    latest_entry = str(old_data[time_proxy].iloc[-1])
     
     
     # download the latest APC from the latest_entry till today
@@ -139,13 +140,13 @@ def download_latest_APC_fast(auth_pack: dict,
     
     # for some reason I have to turn the Forecast column elements to str first 
     # to align them with the old data
-    temp['Forecast_Period'] = [temp['Forecast_Period'].iloc[i].\
+    temp[time_proxy] = [temp[time_proxy].iloc[i].\
                                       strftime("%Y-%m-%d") for 
-                                i, _ in enumerate(temp['Forecast_Period'])]
+                                i, _ in enumerate(temp[time_proxy])]
     
     # concandenate the old filedownload_latest_APC_list
     signal_data = pd.concat([old_data, temp], ignore_index = True)
-    signal_data.sort_values(by='Forecast_Period')
+    signal_data.sort_values(by=time_proxy)
     
     return signal_data
 

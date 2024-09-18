@@ -15,7 +15,7 @@ import pandas as pd
 import numpy as np
 
 # EC_tools imports
-from EC_tools.strategy import ArgusMRStrategy, ArgusMRStrategyMode, Strategy
+from EC_tools.strategy import ArgusMRStrategy, ArgusMRStrategyMode, Strategy, APC_LENGTH
 import EC_tools.read as read
 import EC_tools.utility as util
 from EC_tools.bookkeep import Bookkeep
@@ -111,20 +111,20 @@ def loop_signal(strategy: type[Strategy],
         this_symbol = history_data["symbol"][i]
                 
         # cross reference the APC list to get the APC of this date and symbol
-        APCs_this_date = signal_daily_data[(signal_daily_data['Forecast_Period']==this_date)]
+        APCs_this_date = signal_daily_data[(signal_daily_data['PERIOD']==this_date)]
 #                                  & (APCs_dat['symbol']== this_symbol)] #<-- here add a condition matching the symbols
-        APCs_this_week = signal_daily_data[(signal_monthly_data['Forecast_Period']==this_date)]
+        APCs_this_week = signal_daily_data[(signal_monthly_data['PERIOD']==this_date)]
         
         if len(APCs_this_date) == 0:
             print("APC data of {} from the date {} is missing".\
                                           format(this_symbol, this_date.date()))
         else:
             #print(this_date, this_symbol, APCs_this_date['Forecast Period'].iloc[0])
-            forecast_date = APCs_this_date['Forecast_Period'].to_list()[0] 
+            forecast_date = APCs_this_date['PERIOD'].to_list()[0] 
                         
             # This is the APC number only
-            daily_APC = APCs_this_date.to_numpy()[0][1:-1]
-            monthly_APC = APCs_this_week.to_numpy()[0][1:-1]
+            daily_APC = APCs_this_date.to_numpy()[0][-1-APC_LENGTH:-1]
+            monthly_APC = APCs_this_week.to_numpy()[0][-1-APC_LENGTH:-1]
             # create input for bookkepping
             price_code = APCs_this_date['symbol'].to_list()[0]
             

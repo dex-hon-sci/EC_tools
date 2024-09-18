@@ -14,7 +14,8 @@ from tests.test_strategy import SingleRun
 from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, \
                                   APC_FILE_LOC, HISTORY_DAILY_FILE_LOC,\
                                   HISTORY_MINTUE_FILE_LOC, TIMEZONE_DICT,\
-                                  OPEN_HR_DICT, CLOSE_HR_DICT, DATA_FILEPATH
+                                  OPEN_HR_DICT, CLOSE_HR_DICT, DATA_FILEPATH,\
+                                  APC_LENGTH
 """
 Created on Sun Jul 14 05:03:16 2024
 
@@ -41,16 +42,17 @@ def gen_data_Answer(Test):
     quant_list = np.arange(0.0025, 0.9975, 0.0025)
     qunatile_info_answer = mfunc.generic_spline(
         quant_list, Test.curve_this_date)([0.25,0.4,0.6,0.75])
-    
-    lag5 = mfunc.find_quant(apc_curve_lag5.iloc[0].to_numpy()[1:-1], 
+     
+
+    lag5 = mfunc.find_quant(apc_curve_lag5.iloc[0].to_numpy()[-1-APC_LENGTH:-1], 
                             quant_list, history_data_lag5['Settle'].iloc[0])
-    lag4 = mfunc.find_quant(apc_curve_lag5.iloc[1].to_numpy()[1:-1], 
+    lag4 = mfunc.find_quant(apc_curve_lag5.iloc[1].to_numpy()[-1-APC_LENGTH:-1], 
                             quant_list, history_data_lag5['Settle'].iloc[1])
-    lag3 = mfunc.find_quant(apc_curve_lag5.iloc[2].to_numpy()[1:-1], 
+    lag3 = mfunc.find_quant(apc_curve_lag5.iloc[2].to_numpy()[-1-APC_LENGTH:-1], 
                             quant_list, history_data_lag5['Settle'].iloc[2])
-    lag2 = mfunc.find_quant(apc_curve_lag5.iloc[3].to_numpy()[1:-1], 
+    lag2 = mfunc.find_quant(apc_curve_lag5.iloc[3].to_numpy()[-1-APC_LENGTH:-1], 
                             quant_list, history_data_lag5['Settle'].iloc[3])
-    lag1 = mfunc.find_quant(apc_curve_lag5.iloc[4].to_numpy()[1:-1], 
+    lag1 = mfunc.find_quant(apc_curve_lag5.iloc[4].to_numpy()[-1-APC_LENGTH:-1], 
                             quant_list, history_data_lag5['Settle'].iloc[4])
     
     rolling_avg_lag_answer = np.average([lag5,lag4,lag3,lag2,lag1])
@@ -58,7 +60,8 @@ def gen_data_Answer(Test):
     strategy_info_answer = [lag1,lag2,lag3,lag4,lag5]
     return qunatile_info_answer, strategy_info_answer, rolling_avg_lag_answer
 
-def set_EES_Answer(Test, range_tuple = ([0.25,0.4], [0.6,0.75], 0.95)):
+def set_EES_Answer(Test, 
+                   range_tuple: tuple = ([0.25,0.4], [0.6,0.75], 0.95)):
     #Test = SingleRun(date)
 
     quant_list = np.arange(0.0025, 0.9975, 0.0025)
@@ -105,7 +108,7 @@ NeutralTest =  SingleRun(NEUTRAL_DATE_STR)
                          [(BuyTest, BuyAnswer['answer_tuple']), 
                           (SellTest, SellAnswer['answer_tuple']),
                           (NeutralTest, NeutralAnswer['answer_tuple'])]) 
-def test_MRStrategyArgus_gen_data(Test, answer_tuple)->None:
+def test_MRStrategyArgus_gen_data(Test, answer_tuple: tuple)->None:
     # Test the gen data function for Argus MR Strategy
     apc_curve_lag5, history_data_lag5 = read.extract_lag_data(Test.signal_data, 
                                                               Test.history_data_daily, 
