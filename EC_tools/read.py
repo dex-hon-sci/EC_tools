@@ -826,7 +826,6 @@ def find_crossover(input_array: np.ndarray,
         threshold = np.array(threshold)
     elif type(threshold) == np.ndarray and len(threshold) == len(input_array):
         pass
-    
     # The difference between the input value and the threshold number
     # Positive values mean the input is higher than threshold
     # Negative values mean the input is lower than threshold
@@ -1322,26 +1321,32 @@ def cal_cumavg(history_daily_data: pd.DataFrame,
     cumavg_price_data = []
     # Check what month does this belong to
     # Start the loop
-    
+    cumavg_price_data.append((times[0], np.nan , np.nan))
+
     month_tracker = times[0].month #use the first element as the starting month
     cum_avg_tracker, N = 0, 0
-    for time, price in zip(times,prices):
+    for time, price in zip(times[1:],prices[1:]):
         
         if time.month == month_tracker:
             cum_avg_tracker = cum_avg_tracker*(N/(N+1)) + price/(N+1)
+            
+            cumavg_price_data.append((time, cum_avg_tracker , N))
+            
             N = N + 1
         # During the switch of month, change the total days to 1 and the cumavg 
         # to the current price.
         elif time.month != month_tracker: 
+            cumavg_price_data.append((time, cum_avg_tracker , N))
+
             cum_avg_tracker = price
-            N = 1
+            N = 0
             month_tracker = time.month
 
         ##time_bucket.append(time)
         #val_bucket.append(cum_avg_tracker)
         #N_bucket.append(N)
         
-        cumavg_price_data.append((time, cum_avg_tracker , N))
+        #cumavg_price_data.append((time, cum_avg_tracker , N))
         
     cumavg_price_data = pd.DataFrame(cumavg_price_data, columns=[time_proxy, 
                                                                  'cumavg_price', 

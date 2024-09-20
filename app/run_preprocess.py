@@ -153,13 +153,13 @@ def run_preprocess() -> None:
     #                     save_filename = WEEKLY_30AVG_APC_PKL,
     #                     symbol_list = SHORT_SYMBOL_LIST)
 
-    #create_cumavg_list(HISTORY_DAILY_FILE_LOC)
+    create_cumavg_list(HISTORY_DAILY_FILE_LOC)
     create_aggegrate_pkl(HISTORY_DAILY_CUMAVG_IN_MONTH, read.read_reformat_generic,
                          save_filename = DAILY_CUMAVG_MONTH)
     
     #create_minute_cumavg_list(HISTORY_MINTUE_FILE_LOC, HISTORY_DAILY_CUMAVG_IN_MONTH)
-    create_aggegrate_pkl(HISTORY_MINUTE_CUMAVG_IN_MONTH, read.read_reformat_generic,
-                         save_filename = MINUTE_CUMAVG_MONTH)
+    #create_aggegrate_pkl(HISTORY_MINUTE_CUMAVG_IN_MONTH, read.read_reformat_generic,
+    #                     save_filename = MINUTE_CUMAVG_MONTH)
 
 if __name__ == "__main__":
     print(SYMBOL_LIST)

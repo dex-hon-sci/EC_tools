@@ -1132,7 +1132,7 @@ class ArgusMonthlyStrategy(Strategy):
         self._curve_today = curve_today
         self._quant_list = quant_list
         self._curve_monthly_spline = mfunc.generic_spline(self._quant_list, 
-                                                        self._curve_monthly)
+                                                          self._curve_monthly)
         self._curve_today_spline = mfunc.generic_spline(self._quant_list, 
                                                         self._curve_today)
         
@@ -1179,7 +1179,7 @@ class ArgusMonthlyStrategy(Strategy):
         
         lag_list = [mfunc.find_quant(apc_curve_lag.iloc[i].to_numpy()[-1-APC_LENGTH:-1], 
                                      self._quant_list, lag_price.iloc[i]) for 
-                                    i in range(len(apc_curve_lag))]
+                                     i in range(len(apc_curve_lag))]
         lag_list.reverse()
         # Note that the list goes like this [lag1q,lag2q,...]
 
@@ -1224,29 +1224,40 @@ class ArgusMonthlyStrategy(Strategy):
         # "BUY" condition
         # (1) create a list of Boolean value for evaluating if the 
         # total_cum_avg is within the monthly APC: Q0.1 < total_cum_avg < Q0.35
-        cond_buy_list_1 = list(map(lambda x, y, z: z < x < y, 
-                                   [quant_price_entry_lower_buy], 
-                                   [daily_cumavg], 
+        cond_buy_list_1 = list(map(lambda x, low, up: low < x < up, 
+                                   [daily_cumavg],
+                                   [quant_price_entry_lower_buy],
                                    [quant_price_entry_upper_buy]))
-        
+        print("condition 1 Buy")
+        print(quant_price_entry_lower_buy,'<', daily_cumavg, '<', quant_price_entry_upper_buy, cond_buy_list_1)
         # (2) The lag1q for the day before has to be lower than the entry lower bound
         # (2) rolling 5 days average lower than the daily apc entry upper bound
         cond_buy_list_2 = [(lag1q < 0.25)]
+        print("condition 2 Buy")
+        print(lag1q, '<', 0.25, lag1q < 0.25)
         cond_buy_list_3 = [(rollingaverage_q < 0.4)]
+        print("condition 3 Buy")
+        print(rollingaverage_q, '<', 0.4, rollingaverage_q < 0.4)
+
         
         # "SELL" condition
         # (1) create a list of Boolean value for evaluating if the 
         # total_cum_avg is within the monthly APC: Q0.65 < total_cum_avg < Q0.9
-        cond_sell_list_1 = list(map(lambda x, y, z: z < x < y, 
-                                    [quant_price_entry_lower_sell], 
+        cond_sell_list_1 = list(map(lambda x, low, up: low < x < up, 
                                     [daily_cumavg], 
+                                    [quant_price_entry_lower_sell], 
                                     [quant_price_entry_upper_sell]))
+        print("condition 1 Sell")
+        print(quant_price_entry_lower_sell, '<', daily_cumavg, '<', quant_price_entry_upper_sell, cond_sell_list_1)
         # (2) price at today's opening hour below the 0.9 quantile of today's apc
         # (2) rolling 5 days average higher than the daily apc entry upper bound
         cond_sell_list_2 = [(lag1q > 0.75)]
-        cond_sell_list_3 = [(rollingaverage_q <= 0.6)]
-        
-        
+        print("condition 2 Sell")
+        print(lag1q, '>', 0.75, lag1q > 0.75)
+        cond_sell_list_3 = [(rollingaverage_q > 0.6)]
+        print("condition 3 Sell")
+        print(rollingaverage_q, '>', 0.6, rollingaverage_q > 0.6)
+
         # save the condtion boolean value to the sub-condition dictionary
         self._sub_buy_cond_dict = {'NCUM_CONS': [cond_buy_list_1],
                                    'NCONS': [cond_buy_list_2],	
@@ -1320,7 +1331,6 @@ class ArgusMonthlyStrategy(Strategy):
         prev_cum_avg = data["daily_cumavg"]
         prev_cum_n = data["prev_cum_n"]
         
-        print("buy_range[0][0]", buy_range[0])
         # A list of quantile price for buy and sell range
         quant_price_entry_lower_buy = self._curve_monthly_spline(buy_range[0][0])
         quant_price_entry_upper_buy = self._curve_monthly_spline(buy_range[0][1])
@@ -1396,7 +1406,6 @@ class ArgusMonthlyStrategy(Strategy):
             
         return entry_price, exit_price, stop_loss
     
-
 
         
     def apply_strategy(self, 

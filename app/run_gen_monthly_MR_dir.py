@@ -33,7 +33,8 @@ from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, \
                                   ARGUS_EXACT_SIGNAL_MODE_FILE_LOC,\
                                   RESULT_FILEPATH, DATA_FILEPATH, \
                                   TEST_FILE_LOC, TEST_FILE_LOC_SHORT,\
-                                  WEEKLY_30AVG_APC_PKL, DAILY_CUMAVG_MONTH
+                                  WEEKLY_30AVG_APC_PKL, DAILY_CUMAVG_MONTH,\
+                                      MONTHLY_APC_PKL
 
 __author__="Dexter S.-H. Hon"
 
@@ -135,21 +136,23 @@ def loop_signal(strategy: type[Strategy],
         ####PAY ATTENTION TO HOW TO SELECT FOR THE RIGHT MONTHLY APC.. WIP
         ## USE TWO POINTERS
         #APCs_this_week = signal_monthly_data[(signal_monthly_data['PERIOD'] <= this_date)]
-        print((this_date))
         if this_date >= signal_monthly_data['PUBLICATION_DATE'].iloc[month_curve_index]\
             and this_date < signal_monthly_data['PUBLICATION_DATE'].iloc[month_curve_index+1]:
                 
                 APCs_this_week = signal_monthly_data.iloc[month_curve_index]
+                
         elif this_date >= signal_daily_data['PUBLICATION_DATE'].iloc[month_curve_index+1]:
             month_curve_index = month_curve_index +1
             APCs_this_week = signal_monthly_data.iloc[month_curve_index]
             
-            
+        print("this_date", this_date)
+        print('Publication date', signal_monthly_data['PUBLICATION_DATE'].iloc[month_curve_index]) 
+        print('period', signal_monthly_data['PERIOD'].iloc[month_curve_index])
         #if this_date > signal_daily_data['PERIOD'].iloc[month_curve_index]:
         #    month_curve_index = month_curve_index +1 
         #    APCs_this_week = signal_monthly_data.iloc[month_curve_index]
         
-        print("APCs_this_week", APCs_this_week)
+        #print("APCs_this_week", APCs_this_week)
         
         
         ################################################################
@@ -182,6 +185,7 @@ def loop_signal(strategy: type[Strategy],
                                             ['prev_cum_n'].item()                         
                                             # 'cumavg_price', 
                                             #'prev_cum_n'])
+                                            
             # The conidtions to decide whether we trim the full_contract_symbol
             # CLA2024J or CL24J
             if contract_symbol_condse == True:
@@ -244,10 +248,15 @@ def run_gen_MR_signals_preloaded_monthly(strategy: type[Strategy],
                                          open_hr_dict: dict, 
                                          close_hr_dict: dict, 
                                          timezone_dict: dict,
-                                         buy_range: tuple = ([0.10,0.35],[0.50,0.90],0.05), 
-                                         sell_range: tuple = ([0.65,0.90],[0.10,0.50],0.95),
-                                         quantile: list[float] = [0.05,0.1,0.25,0.4,
-                                                              0.5,0.6,0.75,0.9,0.95],
+                                         buy_range: tuple = ([0.10,0.35],
+                                                             [0.50,0.90],0.05), 
+                                         sell_range: tuple = ([0.65,0.90],
+                                                              [0.10,0.50],0.95),
+                                         quantile: list[float] = [0.05,0.1,
+                                                                  0.25,0.4,
+                                                                  0.5,0.6,
+                                                                  0.75,0.9,
+                                                                  0.95],
                                          save_or_not: bool = True) -> pd.DataFrame:
     """
     A method that run Mean Reversion signal generation form a preloaded 
@@ -323,7 +332,7 @@ def run_gen_MR_signals_preloaded_monthly(strategy: type[Strategy],
             
             # Prepare monthly APC file ** Crucial step in making the whole sctip works
             signal_monthly_file = signal_monthly_file[
-                                    signal_monthly_file['CONTINUOUS_FORWARD'] == 1]
+                                    signal_monthly_file['CONTINUOUS_FORWARD'] == 2]
            
             # input 2, Portara history file.
             history_daily_file = history_daily_pkl[symbol]
@@ -367,11 +376,11 @@ if __name__ == "__main__":
     #end_date = "2024-06-17"
     SIGNAL_PKL = util.load_pkl(DATA_FILEPATH+"/pkl_vault/crudeoil_future_APC_full.pkl")
     HISTORY_DAILY_PKL = util.load_pkl(DATA_FILEPATH+"/pkl_vault/crudeoil_future_daily_full.pkl")
-    MONTHLY_SIGNAL_PKL = util.load_pkl(WEEKLY_30AVG_APC_PKL)
+    MONTHLY_SIGNAL_PKL = util.load_pkl(MONTHLY_APC_PKL)
     CUMAVG = util.load_pkl(DAILY_CUMAVG_MONTH)
     
     start_date = "2021-01-11"
-    end_date = "2021-12-10"
+    end_date = "2024-08-12"
     
     strategy_name = 'argus_monthly'
     strategy = ArgusMonthlyStrategy

@@ -757,17 +757,18 @@ class PortfolioLog(Portfolio):
 
     def render_tradebook(self,
                           save_or_not: bool = True):
-
-        position_pool = self.portfolio.position_pool
-        book = Bookkeep(bucket_type='backtest')
-
+        
         custom_list0 = ['Trade_ID', 'Direction', 'Commodity', 'Price_Code',
                         'Entry_Date', 'Entry_Datetime', 'Entry_Price',
                         'Exit_Date', 'Exit_Datetime', 'Exit_Price',
                         'Trade_Return', 'Trade_Return_Fraction']
+
+        position_pool = self.portfolio.position_pool
+        book = Bookkeep(bucket_type='backtest', custom_keywords_list=custom_list0)
+
         #, 'Scaled_Return']  # , 'Risk_Reward_Ratio', 'strategy_name']
 
-        trade_PNL = book.make_bucket(custom_keywords_list=custom_list0)
+        trade_PNL = book.make_bucket()
 
         def select_func_fill(x): return position_pool[x].status.value == 'Filled'
         

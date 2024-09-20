@@ -504,8 +504,8 @@ class OneTradePerDay(Trade):
                                        pos_type=pos_type, 
                                        size=SIZE_DICT[get_obj_name],
                                        fee=fee, 
-                                       open_time = open_time,
-                                       trade_id= self.trade_id)
+                                       open_time = open_time)
+                                       #trade_id= self.trade_id)
 
         # Execute the positions. As the function is ran, it chooses the 
         # appropiate EES values based on the choose_EES_values method of 

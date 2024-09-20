@@ -710,8 +710,8 @@ class Loop(Protocol):
                                                         self._loop_type, item)
 
             print(i, pos_open_dt, direction, symbol)
-            print(self._loop_type, day, target_entry,
-                  target_exit, stop_exit, open_hr_dt, close_hr_dt, direction)
+            #print(self._loop_type, day, target_entry,
+            #      target_exit, stop_exit, open_hr_dt, close_hr_dt, direction)
             # Find the truncation dict and the modified target entry and exit
             trunc_dict, \
             target_entry, target_exit, stop_exit = gen_trunc_dict(self._loop_type, 
