@@ -754,6 +754,14 @@ TEST_FILE_LOC = {
     'QPc2': RESULT_FILEPATH + '/test_results/test_QPc2_full.csv'
 }
 
+TEST_FILE_LOC_SHORT = {
+    'CLc1': RESULT_FILEPATH + '/test_results/test_CLc1_full.csv',
+    'HOc1': RESULT_FILEPATH + '/test_results/test_HOc1_full.csv',
+    'RBc1': RESULT_FILEPATH + '/test_results/test_RBc1_full.csv',
+    'QOc1': RESULT_FILEPATH + '/test_results/test_QOc1_full.csv',
+    'QPc1': RESULT_FILEPATH + '/test_results/test_QPc1_full.csv'
+}
+
 TEST_FILE_PNL_LOC = {
     'CLc1': RESULT_FILEPATH + '/test_results/test_PNL_CLc1_full.csv',
     'CLc2': RESULT_FILEPATH + '/test_results/test_PNL_CLc2_full.csv',

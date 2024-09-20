@@ -484,11 +484,26 @@ def read_reformat_openprice_data(filename: str) ->  pd.DataFrame:
     #print(openprice_data_reindex)
     return openprice_data #openprice_data_reindex
 
+def read_reformat_generic(filename:str, time_proxies: list[str] =['Date']):
+    data = pd.read_csv(filename)
+    for time_proxy in time_proxies:
+        data[time_proxy] = [datetime.datetime.strptime(x, '%Y-%m-%d')
+                                   for x in data[time_proxy]]
+    return data
 
-def read_reformat_APC_data(filename:str, time_proxy = 'PERIOD') -> pd.DataFrame:
+def read_reformat_APC_data(filename: str, 
+                           time_proxies: list[str] = 
+                           ['PUBLICATION_DATE', 'PERIOD']) -> pd.DataFrame:
     signal_data =  pd.read_csv(filename)
-    signal_data[time_proxy] = [datetime.datetime.strptime(x, '%Y-%m-%d')
-                            for x in signal_data[time_proxy]]
+    
+    if type(time_proxies) == str:
+        time_proxies = [time_proxies]
+    
+    for time_proxy in time_proxies:
+        signal_data[time_proxy] = [datetime.datetime.strptime(x, '%Y-%m-%d')
+                                   for x in signal_data[time_proxy]]
+    #signal_data[time_proxy_2] = [datetime.datetime.strptime(x, '%Y-%m-%d')
+    #                            for x in signal_data[time_proxy_2]]
     #signal_data_reindex = signal_data.set_index('Forecast Period',drop=False)
     signal_data_reindex = signal_data
     return signal_data #signal_data_reindex
@@ -1337,17 +1352,20 @@ def cal_cumavg_minute(history_minute_data: pd.DataFrame,
                       cumavg_price_data: pd.DataFrame, 
                       price_proxy: str = 'Settle'):
     # A method that calculate the cumulative average
-    print("Len", len(history_minute_data['Date']))
-    dates = history_minute_data['Date'][0:5000]
-    times = history_minute_data['Time'][0:5000]
-    prices = history_minute_data[price_proxy][0:5000]
-    print("dtp", dates[dates==datetime.datetime(2016,1,7)].iloc[0])
+    #print("Len", len(history_minute_data['Date']))
+    dates = history_minute_data['Date']#[0:5000]
+    times = history_minute_data['Time']#[0:5000]
+    prices = history_minute_data[price_proxy]#[0:5000]
+    #print("dtp", dates[dates==datetime.datetime(2016,1,7)].iloc[0])
     today_cum_avg_data = []
     count = 0
     for date, time, price in zip(dates, times, prices):
        # str, pandas timestamp
-       print(type(cumavg_price_data['Date'].iloc[0]), type(date))
-       cumavg_data_today  = cumavg_price_data[cumavg_price_data['Date'] == date]
+       date_str = date.strftime("%Y-%m-%d")
+       
+       #print(type(cumavg_price_data['Date'].iloc[0]), type(date_str))
+       cumavg_data_today  = cumavg_price_data[cumavg_price_data['Date'] == date_str]
+       #print("cumavg_data_today", cumavg_data_today)
        prev_cum_n = cumavg_data_today['prev_cum_n']
        prev_cum_avg = cumavg_data_today['cumavg_price']
        #print('prev_cum_n, prev_cum_avg', date, prev_cum_n, prev_cum_avg)
@@ -1358,7 +1376,7 @@ def cal_cumavg_minute(history_minute_data: pd.DataFrame,
        elif len(prev_cum_n) == 1 and len(prev_cum_avg) ==1:
            prev_cum_n, prev_cum_avg = prev_cum_n.item(), prev_cum_avg.item()
            today_cum_avg = (prev_cum_avg*prev_cum_n + price) / (prev_cum_n + 1)
-           print(prev_cum_n, prev_cum_avg, today_cum_avg, count)
+           #print("item", prev_cum_n, prev_cum_avg, today_cum_avg, count)
 
        else:
            raise Exception("There is a misalignment! A mismatch between \
@@ -1375,6 +1393,53 @@ def cal_cumavg_minute(history_minute_data: pd.DataFrame,
                                                                    'today_cum_avg'])
     return today_cum_avg_data
     
+
+def cal_cumavg_minute_2(history_minute_data: pd.DataFrame,
+                        cumavg_price_data: pd.DataFrame, 
+                        price_proxy: str = 'Settle'):
+    # A method that calculate the cumulative average
+    # change this to the daily cumaverage using the whole day instead of just the point
+    #print("Len", len(history_minute_data['Date']))
+    dates = history_minute_data['Date']#[0:5000]
+    times = history_minute_data['Time']#[0:5000]
+    prices = history_minute_data[price_proxy]#[0:5000]
+    #print("dtp", dates[dates==datetime.datetime(2016,1,7)].iloc[0])
+    today_cum_avg_data = []
+    count = 0
+    for date, time, price in zip(dates, times, prices):
+       # str, pandas timestamp
+       date_str = date.strftime("%Y-%m-%d")
+       
+       #print(type(cumavg_price_data['Date'].iloc[0]), type(date_str))
+       cumavg_data_today  = cumavg_price_data[cumavg_price_data['Date'] == date_str]
+       #print("cumavg_data_today", cumavg_data_today)
+       prev_cum_n = cumavg_data_today['prev_cum_n']
+       prev_cum_avg = cumavg_data_today['cumavg_price']
+       #print('prev_cum_n, prev_cum_avg', date, prev_cum_n, prev_cum_avg)
+       if len(prev_cum_n) == 0 and len(prev_cum_avg) ==0:
+           #print("Null", count)
+           prev_cum_n, prev_cum_avg = np.nan, np.nan
+           today_cum_avg = np.nan
+       elif len(prev_cum_n) == 1 and len(prev_cum_avg) ==1:
+           prev_cum_n, prev_cum_avg = prev_cum_n.item(), prev_cum_avg.item()
+           today_cum_avg = (prev_cum_avg*prev_cum_n + price) / (prev_cum_n + 1)
+           print("item", prev_cum_n, prev_cum_avg, today_cum_avg, count)
+
+       else:
+           raise Exception("There is a misalignment! A mismatch between \
+                           prev_cum_n and prev_cum_avg.")
+                           
+       #print("today_cum_avg", today_cum_avg)
+
+       today_cum_avg_data.append((date, time, price, today_cum_avg))
+       count = count + 1
+        
+    today_cum_avg_data = pd.DataFrame(today_cum_avg_data, columns=['Date', 
+                                                                   'Time', 
+                                                                   price_proxy,
+                                                                   'today_cum_avg'])
+    return today_cum_avg_data
+
 
 # I: prev_cum_avg, prev_cum_n, minute_data; O:
 # today_cum_avg

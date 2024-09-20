@@ -144,7 +144,7 @@ def run_preprocess() -> None:
     #create_open_price_list(HISTORY_DAILY_FILE_LOC, HISTORY_MINTUE_FILE_LOC)
     #create_aggegrate_pkl(OPEN_PRICE_FILE_LOC, read.read_reformat_openprice_data,
     #                     save_filename = DAILY_OPENPRICE_PKL)
-    #SHORT_SYMBOL_LIST = ["CLc1", "HOc1", "RBc1", "QOc1", "QPc1"]
+    SHORT_SYMBOL_LIST = ["CLc1", "HOc1", "RBc1", "QOc1", "QPc1"]
     # make monthly APC pkl
     #create_aggegrate_pkl(APC_FILE_MONTHLY_LOC, read.read_reformat_APC_data,
     #                     save_filename = MONTHLY_APC_PKL,
@@ -154,11 +154,11 @@ def run_preprocess() -> None:
     #                     symbol_list = SHORT_SYMBOL_LIST)
 
     #create_cumavg_list(HISTORY_DAILY_FILE_LOC)
-    #create_aggegrate_pkl(HISTORY_DAILY_CUMAVG_IN_MONTH, pd.read_csv,
-    #                     save_filename = DAILY_CUMAVG_MONTH)
+    create_aggegrate_pkl(HISTORY_DAILY_CUMAVG_IN_MONTH, read.read_reformat_generic,
+                         save_filename = DAILY_CUMAVG_MONTH)
     
-    create_minute_cumavg_list(HISTORY_MINTUE_FILE_LOC, HISTORY_DAILY_CUMAVG_IN_MONTH)
-    create_aggegrate_pkl(HISTORY_MINUTE_CUMAVG_IN_MONTH, pd.read_csv,
+    #create_minute_cumavg_list(HISTORY_MINTUE_FILE_LOC, HISTORY_DAILY_CUMAVG_IN_MONTH)
+    create_aggegrate_pkl(HISTORY_MINUTE_CUMAVG_IN_MONTH, read.read_reformat_generic,
                          save_filename = MINUTE_CUMAVG_MONTH)
 
 if __name__ == "__main__":

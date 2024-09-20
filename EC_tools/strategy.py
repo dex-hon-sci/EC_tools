@@ -19,7 +19,9 @@ from enum import Enum, auto
 
 import EC_tools.math_func as mfunc
 
-__all__ = ["SignalStatus", "Strategy"]
+__all__ = ["SignalStatus", "Strategy",
+           "ArgusMRStrategy","ArgusMRStrategyMode",
+           "ArgusMonthlyStrategy"]
 __author__="Dexter S.-H. Hon"
 
 APC_LENGTH = len(np.arange(0.0025, 0.9975, 0.0025))
@@ -1165,17 +1167,13 @@ class ArgusMonthlyStrategy(Strategy):
             self.cond_dict[key] = flatList
             
     def gen_data(self, 
+                 daily_cumavg: float, 
+                 prev_cum_n: float,
                  history_data_lag: list, 
                  apc_curve_lag: list, 
                  price_proxy: str = 'Settle', 
-                 qunatile: list = [0.25,0.4,0.6,0.75]):
+                 quantile: list = [0.05,0.10,0.35,0.50,0.65,0.90,0.95]):
         
-        #prev_cum_avg = 0
-        #prev_cum_n = 0
-        today_price = 0
-        
-        
-        today_cum_avg = (prev_cum_avg*prev_cum_n + today_price)/(prev_cum_n + 1)
         
         lag_price = history_data_lag[price_proxy]
         
@@ -1184,37 +1182,52 @@ class ArgusMonthlyStrategy(Strategy):
                                     i in range(len(apc_curve_lag))]
         lag_list.reverse()
         # Note that the list goes like this [lag1q,lag2q,...]
-        
-        prev_cum_avg = np.average(lag_list)
-        prev_cum_n = len(lag_list)
-        
+
         # calculate the rolling average
         rollingaverage_q = np.average(lag_list)
         
 
-        strategy_info = {'lag_list': lag_list, 
+        strategy_info = {"daily_cumavg": daily_cumavg, 
+                         "prev_cum_n": prev_cum_n,
+                         'lag_list': lag_list, 
                          'rollingaverage': rollingaverage_q}
         
-        qunatile_info = list(self._curve_today_spline(qunatile))
+        quantile_info = list(self._curve_today_spline(quantile))
         
-        return strategy_info, qunatile_info
+        return strategy_info, quantile_info
     
     def run_cond(self,
                  data: dict, 
-                 today_cum_avg: float, 
                  total_lag_days: int = 2, 
-                 apc_mid_Q: float = 0.5):
+                 apc_range_trigger_buy: list = [0.10, 0.35],
+                 apc_range_trigger_sell: list = [0.65, 0.90]):
         
-        lag1q = data['lag1q']
+        lag1q = data['lag_list'][0]
         rollingaverage_q = data['rollingaverage']
+        
+        daily_cumavg = data["daily_cumavg"]
+        prev_cum_n = data[ "prev_cum_n"]                 
 
         lag_close_q_list = [data['lag_list'][i] for i in range(total_lag_days)]
-        mid_Q_list = [apc_mid_Q for i in range(total_lag_days)]
+        #mid_Q_list = [apc_mid_Q for i in range(total_lag_days)]
         
+        quant_price_entry_lower_buy = self._curve_monthly_spline(
+                                        apc_range_trigger_buy[0])
+        quant_price_entry_upper_buy = self._curve_monthly_spline(
+                                        apc_range_trigger_buy[1])
+
+        quant_price_entry_lower_sell = self._curve_monthly_spline(
+                                        apc_range_trigger_sell[0])
+        quant_price_entry_upper_sell = self._curve_monthly_spline(
+                                        apc_range_trigger_sell[1])
+
         # "BUY" condition
         # (1) create a list of Boolean value for evaluating if the 
         # total_cum_avg is within the monthly APC: Q0.1 < total_cum_avg < Q0.35
-        cond_buy_list_1 = list(map(lambda x, y, z: z < x < y, [], [],[]))
+        cond_buy_list_1 = list(map(lambda x, y, z: z < x < y, 
+                                   [quant_price_entry_lower_buy], 
+                                   [daily_cumavg], 
+                                   [quant_price_entry_upper_buy]))
         
         # (2) The lag1q for the day before has to be lower than the entry lower bound
         # (2) rolling 5 days average lower than the daily apc entry upper bound
@@ -1224,66 +1237,153 @@ class ArgusMonthlyStrategy(Strategy):
         # "SELL" condition
         # (1) create a list of Boolean value for evaluating if the 
         # total_cum_avg is within the monthly APC: Q0.65 < total_cum_avg < Q0.9
-        cond_sell_list_1 = list(map(lambda x, y, z:z < x < y, [], [],[]))
+        cond_sell_list_1 = list(map(lambda x, y, z: z < x < y, 
+                                    [quant_price_entry_lower_sell], 
+                                    [daily_cumavg], 
+                                    [quant_price_entry_upper_sell]))
         # (2) price at today's opening hour below the 0.9 quantile of today's apc
         # (2) rolling 5 days average higher than the daily apc entry upper bound
         cond_sell_list_2 = [(lag1q > 0.75)]
         cond_sell_list_3 = [(rollingaverage_q <= 0.6)]
         
-        # "Entry condition"
-        check_entry_buy = (q0_10 < today_cum_avg < q0_35) # Buy
-        check_entry_sell = (q0_65 < today_cum_avg < q0_90) # Sell
-        # Exit condition
-        check_exit_buy = (q0_50 < today_cum_avg < q0_90) # Buy
-        check_exit_sell = (q0_10 < today_cum_avg < q0_50) # Sell
         
-        # Stoploss
-        check_stoploss_buy = (today_cum_avg < q0_05)
-        check_stoploss_sell = (today_cum_avg > q0_95)
+        # save the condtion boolean value to the sub-condition dictionary
+        self._sub_buy_cond_dict = {'NCUM_CONS': [cond_buy_list_1],
+                                   'NCONS': [cond_buy_list_2],	
+                                   'NROLL': [cond_buy_list_3]}
+        self._sub_sell_cond_dict = {'NCUM_CONS': [cond_sell_list_1],
+                                    'NCONS': [cond_sell_list_2],	
+                                    'NROLL': [cond_sell_list_3]}
+        
+        # Store all sub-conditions into 
+        self.sub_cond_dict = {'Buy':[sum(self._sub_buy_cond_dict[key],[]) 
+                                for key in self._sub_buy_cond_dict], 
+                              'Sell':[sum(self._sub_sell_cond_dict[key],[]) 
+                                for key in self._sub_buy_cond_dict]}
+        
+        # flatten the sub-conditoion list and sotre them in the condition list
+        self.flatten_sub_cond_dict()
+
+        # Create the condtion info for bookkeeping
+        NCUM_CONS, NCONS, NROLL = len(self._sub_buy_cond_dict['NCUM_CONS']), \
+                                  len(self._sub_buy_cond_dict['NCONS'][0]), \
+                                  len(data['lag_list'])
+                                        
+        # Find the Boolean value for each buy conditions subgroup
+        sub_buy_1 = all(self._sub_buy_cond_dict['NCUM_CONS'][0])
+        sub_buy_2 = all(self._sub_buy_cond_dict['NCONS'][0])
+        sub_buy_3 = all(self._sub_buy_cond_dict['NROLL'][0])
+        # Find the Boolean value for each Sell conditions subgroup
+        sub_sell_1 = all(self._sub_sell_cond_dict['NCUM_CONS'][0])
+        sub_sell_2 = all(self._sub_sell_cond_dict['NCONS'][0])
+        sub_sell_3 = all(self._sub_sell_cond_dict['NROLL'][0])
+                
+        # Construct condtion dictionaray for each condition
+        cond_dict_1 = {'Buy': sub_buy_1, 'Sell': sub_sell_1, 
+                       'Neutral': not(sub_buy_1 ^ sub_sell_1)}
+        cond_dict_2 = {'Buy': sub_buy_2, 'Sell': sub_sell_2, 
+                       'Neutral': not(sub_buy_2 ^ sub_sell_2)}
+        cond_dict_3 = {'Buy': sub_buy_3, 'Sell': sub_sell_3, 
+                       'Neutral': not(sub_buy_3 ^ sub_sell_3)}
+        
+        # Degine the name for the Buy/Sell action for each condition subgroups
+        Signal_NCUM_CONS  = [key for key in cond_dict_1 if cond_dict_1[key] == True][0]
+        Signal_NCONS  = [key for key in cond_dict_2 if cond_dict_2[key] == True][0]
+        Signal_NROLL  = [key for key in cond_dict_3 if cond_dict_3[key] == True][0]
+
+        # Put the condition info in a list
+        cond_info = [NCUM_CONS, NCONS,	NROLL, 
+                     Signal_NCUM_CONS, Signal_NCONS, Signal_NROLL]
+        
+        return self.direction, cond_info
+        
+# =============================================================================
+#         # "Entry condition" These information are for the backtests
+#         check_entry_buy = (q0_10 < today_cum_avg < q0_35) # Buy
+#         check_entry_sell = (q0_65 < today_cum_avg < q0_90) # Sell
+#         # Exit condition
+#         check_exit_buy = (q0_50 < today_cum_avg < q0_90) # Buy
+#         check_exit_sell = (q0_10 < today_cum_avg < q0_50) # Sell
+#         
+#         # Stoploss
+#         check_stoploss_buy = (today_cum_avg < q0_05)
+#         check_stoploss_sell = (today_cum_avg > q0_95)
+# =============================================================================
     
-    def set_EES(self, data):
+    def set_EES(self, 
+                data: dict,                
+                buy_range: tuple = ([0.10,0.35],[0.50,0.90],0.05), 
+                sell_range: tuple = ([0.65,0.90],[0.10,0.50],0.95)):
+        # buy_range = ([lower_bound_entry, upper_bound_entry], 
+        #              [lower_bound_exit, upper_bound_exit], stoploss)
         
-        prev_cum_avg = data["prev_cum_avg"]
+        prev_cum_avg = data["daily_cumavg"]
         prev_cum_n = data["prev_cum_n"]
         
-        q0_05  = self._curve_monthly_spline(0.05)
-        q0_10  = self._curve_monthly_spline(0.10)
-        q0_35  = self._curve_monthly_spline(0.35)
-        q0_50  = self._curve_monthly_spline(0.50)
-        q0_65  = self._curve_monthly_spline(0.65)
-        q0_90  = self._curve_monthly_spline(0.90)
-        q0_95  = self._curve_monthly_spline(0.95)
+        print("buy_range[0][0]", buy_range[0])
+        # A list of quantile price for buy and sell range
+        quant_price_entry_lower_buy = self._curve_monthly_spline(buy_range[0][0])
+        quant_price_entry_upper_buy = self._curve_monthly_spline(buy_range[0][1])
         
-        buy_target_lower_entry = q0_10*(prev_cum_n + 1) - prev_cum_avg*prev_cum_n
-        buy_target_upper_entry = q0_35*(prev_cum_n + 1) - prev_cum_avg*prev_cum_n
+        quant_price_exit_lower_buy = self._curve_monthly_spline(buy_range[1][0])
+        quant_price_exit_upper_buy = self._curve_monthly_spline(buy_range[1][1])
+
+        quant_price_entry_lower_sell = self._curve_monthly_spline(sell_range[0][0])
+        quant_price_entry_upper_sell = self._curve_monthly_spline(sell_range[0][1])
         
-        sell_target_lower_entry = q0_65*(prev_cum_n + 1) - prev_cum_avg*prev_cum_n
-        sell_target_upper_entry = q0_90*(prev_cum_n + 1) - prev_cum_avg*prev_cum_n
+        quant_price_exit_lower_sell = self._curve_monthly_spline(sell_range[1][0])
+        quant_price_exit_upper_sell = self._curve_monthly_spline(sell_range[1][1])
+
+        quant_price_stoploss_buy = self._curve_monthly_spline(buy_range[2])
+        quant_price_stoploss_sell = self._curve_monthly_spline(sell_range[2])
         
-        buy_stoploss_exit = q0_05*(prev_cum_n + 1) - prev_cum_avg * prev_cum_n
-        sell_stoploss_exit = q0_95*(prev_cum_n + 1) - prev_cum_avg * prev_cum_n
+        # The actual price target
+        # "Buy" target entry range
+        buy_target_lower_entry = quant_price_entry_lower_buy*(prev_cum_n + 1) - \
+                                 prev_cum_avg*prev_cum_n
+        buy_target_upper_entry = quant_price_entry_upper_buy*(prev_cum_n + 1) - \
+                                 prev_cum_avg*prev_cum_n
+        # "Buy" target exit range
+        buy_target_lower_exit = quant_price_exit_lower_buy*(prev_cum_n + 1) - \
+                                 prev_cum_avg*prev_cum_n
+        buy_target_upper_exit = quant_price_exit_upper_buy*(prev_cum_n + 1) - \
+                                 prev_cum_avg*prev_cum_n
+        # "Buy" target stoploss 
+        buy_stoploss_exit = quant_price_stoploss_buy*(prev_cum_n + 1) - \
+                            prev_cum_avg * prev_cum_n
+        # "Sell" target entry range
+        sell_target_lower_entry = quant_price_entry_lower_sell*(prev_cum_n + 1) - \
+                                  prev_cum_avg*prev_cum_n
+        sell_target_upper_entry = quant_price_entry_upper_sell*(prev_cum_n + 1) - \
+                                  prev_cum_avg*prev_cum_n
+        
+        # "Sell" target exit range
+        sell_target_lower_exit = quant_price_exit_lower_sell*(prev_cum_n + 1) - \
+                                  prev_cum_avg*prev_cum_n
+        sell_target_upper_exit = quant_price_exit_upper_sell*(prev_cum_n + 1) - \
+                                  prev_cum_avg*prev_cum_n
+                                  
+        # "Sell" target Stoploss           
+        sell_stoploss_exit = quant_price_stoploss_sell*(prev_cum_n + 1) - \
+                             prev_cum_avg * prev_cum_n
         
         
         if self.direction == SignalStatus.BUY:
             # (A) Entry region at price < APC p=0.4 and 
-            entry_price = [float(self._curve_today_spline(buy_target_lower_entry)), 
-                           float(self._curve_today_spline(buy_target_upper_entry))]
+            entry_price = [buy_target_lower_entry, buy_target_upper_entry]
             # (B) Exit price
-            exit_price = [float(self._curve_today_spline(q0_50)), 
-                          float(self._curve_today_spline(q0_90))] 
+            exit_price = [buy_target_lower_exit, buy_target_upper_exit] 
             # (C) Stop loss at APC p=0.1
-            stop_loss = float(self._curve_today_spline(buy_stoploss_exit))
+            stop_loss = buy_stoploss_exit
 
             
         elif self.direction == SignalStatus.SELL:
             # (A) Entry region at price > APC p=0.6 and 
-            entry_price = [float(self._curve_today_spline(sell_target_lower_entry)), 
-                           float(self._curve_today_spline(sell_target_upper_entry))]
+            entry_price = [sell_target_lower_entry, sell_target_upper_entry]
             # (B) Exit price
-            exit_price = [float(self._curve_today_spline(q0_10)), 
-                          float(self._curve_today_spline(q0_50))]
+            exit_price = [sell_target_lower_exit, sell_target_upper_exit]
             # (C) Stop loss at APC p=0.9
-            stop_loss = float(self._curve_today_spline(sell_stoploss_exit))
+            stop_loss = sell_stoploss_exit
             
         elif self.direction == SignalStatus.NEUTRAL:
             entry_price = ["NA", "NA"]
@@ -1299,26 +1399,32 @@ class ArgusMonthlyStrategy(Strategy):
 
 
         
-    def apply_strategy(self, history_data_lag: list, 
+    def apply_strategy(self, 
+                       history_data_lag: list, 
                        apc_curve_lag: list, 
-                       open_price: float, 
-                       qunatile: list = [0.25,0.4,0.6,0.75],
-                       total_lag_days: int = 2, 
-                       apc_mid_Q: float = 0.5, 
-                       buy_range: tuple = ([0.25,0.4],[0.6,0.75],0.05), 
-                       sell_range: tuple = ([0.6,0.75],[0.25,0.4],0.95)):
-        strategy_info, quantile_info = self.gen_data(history_data_lag, apc_curve_lag,
-                                                     qunatile = qunatile)
+                       daily_cumavg: float, 
+                       prev_cum_n: float,
+                       quantile: list = [0.05,0.10,0.35,0.50,0.65,0.90,0.95],
+                       total_lag_days: int = 1, 
+                       buy_range: tuple = ([0.10,0.35],[0.50,0.90],0.05), 
+                       sell_range: tuple = ([0.65,0.90],[0.10,0.50],0.95)):
         
-        open_price_quant = mfunc.find_quant(self._curve_today,
-                                            self._quant_list, open_price)
+
+        strategy_info, quantile_info = self.gen_data(daily_cumavg, 
+                                                     prev_cum_n,
+                                                     history_data_lag, 
+                                                     apc_curve_lag,
+                                                     quantile = quantile)
         
-        direction, cond_info = self.run_cond(strategy_info, open_price_quant,
-                                             total_lag_days = total_lag_days, 
-                                             apc_mid_Q = apc_mid_Q)
+        #open_price_quant = mfunc.find_quant(self._curve_today,
+        #                                    self._quant_list, open_price)
+        
+        direction, cond_info = self.run_cond(strategy_info,
+                                             total_lag_days = total_lag_days)
                                              
         
-        entry_price, exit_price, stop_loss = self.set_EES(buy_range=buy_range, 
+        entry_price, exit_price, stop_loss = self.set_EES(strategy_info,
+                                                          buy_range=buy_range, 
                                                           sell_range=sell_range)
 
         if direction == SignalStatus.BUY:
@@ -1352,5 +1458,3 @@ class ArgusMonthlyStrategy(Strategy):
 MR_STRATEGIES_0 = {"argus_exact": ArgusMRStrategy,
                    "argus_exact_mode": ArgusMRStrategyMode,
                    'argus_monthly': ArgusMonthlyStrategy}
-# condition_lib = {'NCONS': [(lambda x, y: x < y)],
-#                  'NROLL': []} 

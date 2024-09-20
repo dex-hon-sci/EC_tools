@@ -116,7 +116,8 @@ class Bookkeep(object):
             "argus_exact": argus_exact_format,
             "argus_exact_amb": argus_exact_amb_format,
             "argus_exact_mode": argus_exact_mode_format,
-            "argus_exact_roll3":argus_exact_roll3_format
+            "argus_exact_roll3":argus_exact_roll3_format,
+            "None": dict()
                    }
     
     BACKTEST_PNL_COL_DICT = {
@@ -124,12 +125,15 @@ class Bookkeep(object):
             "mode": benchmark_PNL,
             "argus_exact": argus_PNL,
             "argus_exact_amb": argus_PNL,
-            "argus_exact_mode": argus_PNL
-
+            "argus_exact_mode": argus_PNL,
+            "None": dict()
                     }
     
-    def __init__(self, bucket_type = 'backtest'):
+    def __init__(self, 
+                 bucket_type: str = 'backtest', 
+                 custom_keywords_list: list = []):
         self.bucket =  dict() # the main bucket for book-keeping.
+        self.custom_keywords_list = custom_keywords_list
         
         # choose which column dictionary to be called.
         if bucket_type =='mr_signals':
@@ -138,12 +142,11 @@ class Bookkeep(object):
             self.bucket_dict = self.BACKTEST_PNL_COL_DICT
 
     def make_bucket(self, 
-                    keyword: str='benchmark',
-                    custom_keywords_list: list = []):
+                    keyword: str='benchmark'):
         # simple method to make a bucket given some keywords
-        if len(custom_keywords_list) != 0:
-            bucket_keys = custom_keywords_list
-        elif len(custom_keywords_list) == 0:
+        if len(self.custom_keywords_list) != 0:
+            bucket_keys = self.custom_keywords_list
+        elif len(self.custom_keywords_list) == 0:
             bucket_keys = self.bucket_dict[keyword]
             
         for i in bucket_keys:
