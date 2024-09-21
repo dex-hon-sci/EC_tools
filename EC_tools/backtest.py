@@ -196,12 +196,11 @@ def extract_intraday_minute_data(histroy_intraday_data: pd.DataFrame,
     return histroy_intraday_data
 
 
-def extract_month_minute_data(histroy_intraday_data: pd.DataFrame, 
-                                 date_interest: str, 
-                                 open_hr: str = '0330', 
-                                 close_hr: str = '1900') -> pd.DataFrame:
+def extract_month_minute_data(histroy_data: pd.DataFrame, 
+                              date_interest: str, 
+                              open_hr: str = '0330', 
+                              close_hr: str = '1900') -> pd.DataFrame: # tested
     # convert the string hour and minute input to datetime.time object
-    
     if type(open_hr) == str:
         open_hr_str, open_min_str = open_hr[-4:-2], open_hr[-2:]
         open_hr =  datetime.time(hour = int(open_hr_str), minute = int(open_min_str))
@@ -214,19 +213,26 @@ def extract_month_minute_data(histroy_intraday_data: pd.DataFrame,
     elif type(close_hr) == datetime.time:
         pass
 
-    date_interest = pd.to_datetime(date_interest, format= '%Y-%m-%d')
-    duration = date_interest.days_in_month
-    # Given a date of interest, and read-in the intraday data.
-    histroy_intraday_data = histroy_intraday_data[
-                                histroy_intraday_data['Date'].month   date_interest]
+    # Each month has different duration
+    duration = pd.to_datetime(date_interest, format= '%Y-%m-%d').days_in_month
     
-    # isolate the region of interest between the opening hour and the closing hour
-    histroy_intraday_data = histroy_intraday_data[
-                                            histroy_intraday_data['Time'] > open_hr]
-    histroy_intraday_data = histroy_intraday_data[
-                                            histroy_intraday_data['Time'] < close_hr]
+    # Convert date_interest from str to datetime
+    date_interest = datetime.datetime.strptime(date_interest, '%Y-%m-%d')
+    
+    # Find the starting date and ending date of a particular month
+    month_start = datetime.datetime(date_interest.year, date_interest.month, 1)
+    month_end = datetime.datetime(date_interest.year, date_interest.month, duration)
+    
+    # Four selection crtieria in total, ser
+    # Given a date of interest, and read-in the intraday data.
+    histroy_data = histroy_data[histroy_data['Date']>=month_start]
+    histroy_data = histroy_data[histroy_data['Date']<=month_end]
 
-    return histroy_intraday_data
+    # isolate the region of interest between the opening hour and the closing hour
+    histroy_data = histroy_data[histroy_data['Time'] > open_hr]
+    histroy_data = histroy_data[histroy_data['Time'] < close_hr]
+
+    return histroy_data
 
 
 def plot_in_backtest(date_interest: str | datetime.datetime, 
@@ -370,7 +376,7 @@ def gen_trunc_dict_long(loop_type: LoopType,
                         
     if loop_type == LoopType.CROSSOVER:
         # Find the crossover points of EES
-        trunc_dict = read.find_minute_EES(day, 
+        trunc_dict = read.find_minute_EES_long(day, 
                                           target_entry, 
                                           target_exit, 
                                           stop_exit,
@@ -653,9 +659,6 @@ class Loop(Protocol):
             # Define the date of interest by reading TimeStamp. 
             # We may want to remake all this and make Timestamp the universal 
             # parameter when dealing with time
-            month = extract_month_minute_data(histroy_intraday_data, date_interest,
-                                              open_hr=open_hr, close_hr=close_hr)
-            
             day = extract_intraday_minute_data(histroy_intraday_data, date_interest, 
                                                open_hr=open_hr, close_hr=close_hr)
             
@@ -831,6 +834,7 @@ class Loop(Protocol):
                                   trade_method,
                                   signal_table: pd.DataFrame, 
                                   histroy_intraday_data_pkl: dict[str, pd.DataFrame], 
+                                  histroy_minute_cumavg_data_pkl: dict[str, pd.DataFrame], 
                                   give_obj_name: str = "USD", 
                                   get_obj_quantity: int = 1,
                                   open_hr_dict: dict = OPEN_HR_DICT, 
@@ -864,7 +868,17 @@ class Loop(Protocol):
             DESCRIPTION.
     
         """
-    
+        first_entry = signal_table.iloc[0]
+        
+        first_symbol = first_entry['Price_Code']
+        month = extract_month_minute_data(histroy_intraday_data_pkl[first_symbol],
+                                          first_entry['Date'],
+                                          open_hr=open_hr_dict[first_symbol], 
+                                          close_hr=close_hr_dict[first_symbol])
+        
+        # Initialise month_tracker using the first entry
+        month_tracker = first_entry['Date'].month
+
         for i in range(len(signal_table)):
             
             # setup trade inputs ###########
@@ -877,11 +891,26 @@ class Loop(Protocol):
             open_hr = open_hr_dict[symbol]
             close_hr = close_hr_dict[symbol]
             histroy_intraday_data = histroy_intraday_data_pkl[symbol]
+            histroy_minute_cumavg_data_pkl = histroy_minute_cumavg_data_pkl[symbol]
+            
+            current_month = date_interest.date    
+            
+            if current_month!= month_tracker:
+                # If the current month is not the same as the tracker, we
+                # load the data from the next month and update the tracker
+                month = extract_month_minute_data(histroy_intraday_data, 
+                                                  date_interest,
+                                                  open_hr=open_hr, 
+                                                  close_hr=close_hr)
+                month_tracker = current_month
+            
             
             day = extract_intraday_minute_data(histroy_intraday_data, 
                                                date_interest, 
                                                open_hr=open_hr, 
                                                close_hr=close_hr)
+            
+            print("month", month, 'day',day)
             
             open_hr_dt, open_price = read.find_closest_price(day,
                                                              target_hr= open_hr,
@@ -907,14 +936,15 @@ class Loop(Protocol):
             #      target_exit, stop_exit, open_hr_dt, close_hr_dt, direction)
             # Find the truncation dict and the modified target entry and exit
             trunc_dict, \
-            target_entry, target_exit, stop_exit = gen_trunc_dict(self._loop_type, 
-                                                                  day, 
-                                                                  target_entry, 
-                                                                  target_exit, 
-                                                                  stop_exit, 
-                                                                  open_hr_dt, 
-                                                                  close_hr_dt, 
-                                                                  direction)
+            target_entry, target_exit, stop_exit = gen_trunc_dict_long(
+                                                                self._loop_type, 
+                                                                month, 
+                                                                target_entry, 
+                                                                target_exit, 
+                                                                stop_exit, 
+                                                                open_hr_dt, 
+                                                                close_hr_dt, 
+                                                                direction)
 
             # Run the trade itself
             trade_open, trade_close, \

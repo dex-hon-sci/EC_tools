@@ -10,7 +10,7 @@ import EC_tools.read as read
 import EC_tools.backtest as backtest
 import EC_tools.utility as util
 from EC_tools.backtest import LoopType, Loop
-from EC_tools.trade import OneTradePerDay
+from EC_tools.trade import OneTradePerDay, MultiTradePerMonth
 from EC_tools.simple_trade import onetrade_simple
 from EC_tools.portfolio import Asset, Portfolio
 from crudeoil_future_const import OPEN_HR_DICT, CLOSE_HR_DICT, \
@@ -23,7 +23,7 @@ from crudeoil_future_const import OPEN_HR_DICT, CLOSE_HR_DICT, \
                                   ARGUS_EXACT_SIGNAL_AMB3_FILE_LOC, ARGUS_EXACT_PNL_AMB3_LOC,\
                                   ARGUS_EXACT_SIGNAL_MODE_FILE_LOC, ARGUS_EXACT_PNL_MODE_LOC,\
                                   TEST_FILE_LOC, TEST_FILE_PNL_LOC,\
-                                  DAILY_MINUTE_DATA_PKL\
+                                  DAILY_MINUTE_DATA_PKL, MINUTE_CUMAVG_MONTH_PKL\
                                       
 """
 Created on Tue May  7 23:46:42 2024
@@ -322,6 +322,7 @@ def run_backtest_portfolio_preloaded(TradeMethod,
 def run_backtest_portfolio_monthly(TradeMethod,                                     
                                    master_signals_filename: str, 
                                    histroy_intraday_data_pkl: dict,
+                                   histroy_minute_cumavg_data_pkl: dict[str, pd.DataFrame], 
                                    start_date: str, end_date: str,
                                    give_obj_name: str = "USD", 
                                    get_obj_quantity: int = 1,
@@ -345,14 +346,18 @@ def run_backtest_portfolio_monthly(TradeMethod,
     USD_initial = {'name':"USD", 'quantity': 10_000_000, 'unit':"dollars", 
                    'asset_type': "Cash", 'misc':{}} # initial fund
     P1.add(USD_initial,datetime=datetime.datetime(2020,12,31))
+    
     P1 = Loop(loop_type).loop_portfolio_preloaded_long(P1, 
-                                                  TradeMethod,
-                                                  trade_date_table, 
-                                                  histroy_intraday_data_pkl,
-                                                  give_obj_name=give_obj_name,
-                                                  get_obj_quantity=get_obj_quantity,
-                                                  plot_or_not=plot_or_not)
+                                                       TradeMethod,
+                                                       trade_date_table, 
+                                                       histroy_intraday_data_pkl,
+                                                       histroy_minute_cumavg_data_pkl,
+                                                       give_obj_name=give_obj_name,
+                                                       get_obj_quantity=get_obj_quantity,
+                                                       plot_or_not=plot_or_not)
     t2 = time.time()-t1
+    print("It takes {} seconds to run the backtest".format(t2))
+
     return P1
 
     
@@ -446,8 +451,12 @@ if __name__ == "__main__":
 #     FILEPATH = "/home/dexter/Euler_Capital_codes/EC_tools/results/"
 #     MASTER_PNL_FILENAME = FILEPATH+'argus_exact_PNL_amb3_full.csv'
 # =============================================================================
-    MASTER_SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/Argus_sample/Argus_sample_signals_2.csv"
-    MASTER_PNL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/Argus_sample_PNL_with_mybacktest_ShortShort.pkl"
+    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + "/monthly_test/test_master_signal.csv"
+    MASTER_PNL_FILENAME = RESULT_FILEPATH + "/monthly_test/test_PNL.pkl"
+    
+    HISTORY_MINUTE_PKL = util.load_pkl(DAILY_MINUTE_DATA_PKL)
+    HISTORY_MINUTE_CUMAVG_IN_MONTH_PKL = util.load_pkl(MINUTE_CUMAVG_MONTH_PKL)
+    
     
     start_date = "2022-01-05"
     end_date = "2022-01-08"
@@ -456,26 +465,39 @@ if __name__ == "__main__":
     
     #start_date = "2024-03-04"
     #end_date = "2024-06-17"
-    
-    run_backtest_bulk(OneTradePerDay, 
-                      TEST_FILE_LOC, TEST_FILE_PNL_LOC, 
-                      start_date, end_date, 
-                      method = "preload", 
-                      master_signal_filename = MASTER_SIGNAL_FILENAME,
-                      master_pnl_filename= MASTER_PNL_FILENAME,
-                      give_obj_name = 'USD',
-                      get_obj_quantity = 1,
-                      open_hr_dict = OPEN_HR_DICT, 
-                      close_hr_dict= CLOSE_HR_DICT,
-                      loop_type = LoopType.CROSSOVER,
-                      save_or_not=True, 
-                      merge_or_not=True)
+    run_backtest_portfolio_monthly(MultiTradePerMonth,                                     
+                                    MASTER_SIGNAL_FILENAME, 
+                                    HISTORY_MINUTE_PKL,
+                                    HISTORY_MINUTE_CUMAVG_IN_MONTH_PKL, 
+                                    start_date, end_date,
+                                    give_obj_name ="USD", 
+                                    get_obj_quantity = 1,
+                                    loop_type = LoopType.CROSSOVER,
+                                    open_hr_dict = OPEN_HR_DICT, 
+                                    close_hr_dict = CLOSE_HR_DICT, 
+                                    selected_directions = ["Buy", "Sell"],
+                                    plot_or_not = False)
+# =============================================================================
+#     run_backtest_bulk(OneTradePerDay, 
+#                       TEST_FILE_LOC, TEST_FILE_PNL_LOC, 
+#                       start_date, end_date, 
+#                       method = "preload", 
+#                       master_signal_filename = MASTER_SIGNAL_FILENAME,
+#                       master_pnl_filename= MASTER_PNL_FILENAME,
+#                       give_obj_name = 'USD',
+#                       get_obj_quantity = 1,
+#                       open_hr_dict = OPEN_HR_DICT, 
+#                       close_hr_dict= CLOSE_HR_DICT,
+#                       loop_type = LoopType.CROSSOVER,
+#                       save_or_not=True, 
+#                       merge_or_not=True)
+# =============================================================================
     
     from EC_tools.portfolio import PortfolioLog
     
     P = read.open_portfolio(MASTER_PNL_FILENAME)
     PL = PortfolioLog(P)
-    PL.tradebook_filename = RESULT_FILEPATH + "/consistency/Argus_sample_PNL_with_mybacktest_ShortShort.csv"
+    PL.tradebook_filename = RESULT_FILEPATH + "/monthly_test/test_PNL_tradebook.csv"
     PL.render_tradebook()
     PL.render_tradebook_xlsx()
     

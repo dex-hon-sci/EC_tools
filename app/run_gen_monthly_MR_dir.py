@@ -33,8 +33,8 @@ from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, \
                                   ARGUS_EXACT_SIGNAL_MODE_FILE_LOC,\
                                   RESULT_FILEPATH, DATA_FILEPATH, \
                                   TEST_FILE_LOC, TEST_FILE_LOC_SHORT,\
-                                  WEEKLY_30AVG_APC_PKL, DAILY_CUMAVG_MONTH,\
-                                      MONTHLY_APC_PKL
+                                  WEEKLY_30AVG_APC_PKL, DAILY_CUMAVG_MONTH_PKL,\
+                                  MONTHLY_APC_PKL
 
 __author__="Dexter S.-H. Hon"
 
@@ -377,7 +377,7 @@ if __name__ == "__main__":
     SIGNAL_PKL = util.load_pkl(DATA_FILEPATH+"/pkl_vault/crudeoil_future_APC_full.pkl")
     HISTORY_DAILY_PKL = util.load_pkl(DATA_FILEPATH+"/pkl_vault/crudeoil_future_daily_full.pkl")
     MONTHLY_SIGNAL_PKL = util.load_pkl(MONTHLY_APC_PKL)
-    CUMAVG = util.load_pkl(DAILY_CUMAVG_MONTH)
+    CUMAVG = util.load_pkl(DAILY_CUMAVG_MONTH_PKL)
     
     start_date = "2021-01-11"
     end_date = "2024-08-12"
@@ -397,3 +397,10 @@ if __name__ == "__main__":
                                          open_hr_dict = OPEN_HR_DICT, 
                                          close_hr_dict = CLOSE_HR_DICT, 
                                          timezone_dict = TIMEZONE_DICT)
+    
+    SAVE_FILENAME_LIST = list(TEST_FILE_LOC_SHORT.values())
+
+    
+    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH +'/monthly_test/test_master_signal.csv'           
+    read.merge_raw_data(SAVE_FILENAME_LIST, 
+                        MASTER_SIGNAL_FILENAME, sort_by="Date")
