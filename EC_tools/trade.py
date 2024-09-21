@@ -775,7 +775,7 @@ class OneTradePerDay_2(Trade):
     @staticmethod
     def choose_EES_values(EES_dict: dict) -> tuple[tuple, tuple, tuple, tuple]:
         """
-        A method to find the appropiate EES values of the day. 
+        A method to find the appropiate EES values of the @day. 
         In the case of one trade per day, we only search for the earliest exit
         and stop loss price after entry price was hit.
         
@@ -1250,6 +1250,96 @@ class OneTradePerDay_2(Trade):
         # sepearate to the trading actions
         return trade_open, trade_close, pos_dict, exec_pos_dict           
 
+
+class MultiTradePerMonth(Trade):
+    # This method limits trades within a month. 
+    # The closing time is dead set on the last minutes of the last trading day
+    # in a month
+    def __init__(self, 
+                 portfolio: Portfolio, 
+                 trade_id: int = 0):
+        
+        super().__init__(portfolio)
+        self.trade_id = trade_id
+        self.pos_dict = dict()
+        self.exec_pos_dict = dict()
+        self.extra_pos_dict = dict()
+        self.extra_exec_pos_dict = dict()
+
+
+        self.active_pos_dict = dict()
+        self.key_pos_dict = None
+        self.extra_key_pos_dict = None
+        
+
+    def store_to_position_pool(self, 
+                               key_dict: dict, 
+                               pos_dict: dict,
+                               exec_pos_dict: dict) -> None:
+        # Choose whether to save all positions or just to filled ones.
+        if self.save_only_exec_pos:
+            key_dict = exec_pos_dict
+        else:
+            key_dict = pos_dict
+            
+         # Add position in the position book
+        for pos in list(key_dict.values()):
+            self._portfolio._position_pool.append(copy.copy(pos))
+            
+            
+    @staticmethod
+    def choose_EES_values(EES_dict: dict) -> tuple[tuple, tuple, tuple, tuple]:
+        ...
+        # Find close price at the end of the month
+        
+    def open_positions(self, 
+                       give_obj_name: str, 
+                       get_obj_name: str, 
+                       get_obj_quantity: int | float, 
+                       EES_target_list: list, 
+                       pos_type: str,
+                       pos_dict: dict,
+                       size: int | float = 1, 
+                       fee: dict = None, 
+                       open_time: datetime.datetime = datetime.datetime.now())\
+                       -> list[Position]: 
+        ...
+        
+    def choose_positions(self, 
+                         trunc_dict: dict, 
+                         pos_dict: dict, 
+                         exec_pos_dict: dict):
+        ...
+        
+        
+    def execute_positions(self, 
+                          trunc_dict: dict, 
+                          pos_type: str = "Long"):
+        ...
+        
+        
+    def execute_extra_positions(self, 
+                                trunc_dict: dict, 
+                                extra_pos_type: str = "Long"):
+        ...
+        
+    def run_trade(self, 
+                  trunc_dict: dict, #day: pd.DataFrame, 
+                  give_obj_name: str, 
+                  get_obj_name: str, 
+                  get_obj_quantity: float | int,
+                  target_entry: float, 
+                  target_exit: float, 
+                  stop_exit: float,
+                  open_hr: str = "0300", 
+                  close_hr: str = "2000", 
+                  direction: str = "Buy",
+                  fee: dict =  OIL_FUTURES_FEE,
+                  open_time: datetime.datetime = None) -> \
+                  tuple[tuple, tuple, list, list]: 
+                           
+                           
+        ...
 # =============================================================================
 # class MultiTradePerDay(Trade): # WIP
 #     """

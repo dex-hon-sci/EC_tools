@@ -195,6 +195,40 @@ def extract_intraday_minute_data(histroy_intraday_data: pd.DataFrame,
 
     return histroy_intraday_data
 
+
+def extract_month_minute_data(histroy_intraday_data: pd.DataFrame, 
+                                 date_interest: str, 
+                                 open_hr: str = '0330', 
+                                 close_hr: str = '1900') -> pd.DataFrame:
+    # convert the string hour and minute input to datetime.time object
+    
+    if type(open_hr) == str:
+        open_hr_str, open_min_str = open_hr[-4:-2], open_hr[-2:]
+        open_hr =  datetime.time(hour = int(open_hr_str), minute = int(open_min_str))
+    elif type(open_hr) == datetime.time:
+        pass
+    
+    if type(close_hr) == str:
+        close_hr_str, close_min_str = close_hr[-4:-2], close_hr[-2:]
+        close_hr =  datetime.time(hour = int(close_hr_str), minute = int(close_min_str))
+    elif type(close_hr) == datetime.time:
+        pass
+
+    date_interest = pd.to_datetime(date_interest, format= '%Y-%m-%d')
+    duration = date_interest.days_in_month
+    # Given a date of interest, and read-in the intraday data.
+    histroy_intraday_data = histroy_intraday_data[
+                                histroy_intraday_data['Date'].month   date_interest]
+    
+    # isolate the region of interest between the opening hour and the closing hour
+    histroy_intraday_data = histroy_intraday_data[
+                                            histroy_intraday_data['Time'] > open_hr]
+    histroy_intraday_data = histroy_intraday_data[
+                                            histroy_intraday_data['Time'] < close_hr]
+
+    return histroy_intraday_data
+
+
 def plot_in_backtest(date_interest: str | datetime.datetime, 
                      asset_name: str,
                      EES_dict:dict, 
@@ -321,6 +355,49 @@ def gen_trunc_dict(loop_type: LoopType,
         
     return trunc_dict, target_entry, target_exit, stop_exit
     
+
+def gen_trunc_dict_long(loop_type: LoopType, 
+                     day: pd.DataFrame, 
+                     target_entry: float |list[float,float] | 
+                                   tuple[float, float] | dict[str,float],
+                     target_exit: float |list[float,float] | 
+                                  tuple[float, float] | dict[str,float],
+                     stop_exit: float, 
+                     open_hr: datetime.datetime, 
+                     close_hr: datetime.datetime, 
+                     direction: str) \
+                    -> tuple[dict[str,list|tuple], float, float, float]:
+                        
+    if loop_type == LoopType.CROSSOVER:
+        # Find the crossover points of EES
+        trunc_dict = read.find_minute_EES(day, 
+                                          target_entry, 
+                                          target_exit, 
+                                          stop_exit,
+                                          open_hr = open_hr, 
+                                          close_hr = close_hr, 
+                                          direction = direction)
+    elif loop_type == LoopType.RANGE:
+  
+        # Find the appropiate range of EES
+        trunc_dict = read.find_minute_EES_range(day, 
+                                                target_entry, 
+                                                target_exit, 
+                                                stop_exit,
+                                                open_hr = open_hr, 
+                                                close_hr = close_hr, 
+                                                direction = direction)
+        
+        # target entry/exit are first estimations of the prices using
+        # the mid point of the target range. The final entry/exit prices
+        # will changeas the algo find the optimal price based on the selected
+        # trade logic
+        target_entry_mid = (target_entry[1] - target_entry[0])/2
+        target_exit_mid =  (target_exit[1] - target_exit[0])/2
+        target_entry, target_exit = target_entry_mid, target_exit_mid 
+        
+    return trunc_dict, target_entry, target_exit, stop_exit
+
 
 def load_EES_from_signal(trade_method, 
                          loop_type: LoopType, 
@@ -576,6 +653,9 @@ class Loop(Protocol):
             # Define the date of interest by reading TimeStamp. 
             # We may want to remake all this and make Timestamp the universal 
             # parameter when dealing with time
+            month = extract_month_minute_data(histroy_intraday_data, date_interest,
+                                              open_hr=open_hr, close_hr=close_hr)
+            
             day = extract_intraday_minute_data(histroy_intraday_data, date_interest, 
                                                open_hr=open_hr, close_hr=close_hr)
             
@@ -745,6 +825,118 @@ class Loop(Protocol):
 
         return portfo
     
+    
+    def loop_portfolio_preloaded_long(self, 
+                                  portfo: Portfolio, 
+                                  trade_method,
+                                  signal_table: pd.DataFrame, 
+                                  histroy_intraday_data_pkl: dict[str, pd.DataFrame], 
+                                  give_obj_name: str = "USD", 
+                                  get_obj_quantity: int = 1,
+                                  open_hr_dict: dict = OPEN_HR_DICT, 
+                                  close_hr_dict: dict = CLOSE_HR_DICT, 
+                                  plot_or_not: bool = False):
+        """
+        A method that utilise one portfolio to run multi-asset backtest using 
+        preloaded data with multiple assets.
+    
+    
+        Parameters
+        ----------
+        portfo : Portfolio
+            DESCRIPTION.
+        trade_method : TYPE
+            DESCRIPTION.
+        signal_table : pd.DataFrame
+            DESCRIPTION.
+        histroy_intraday_data_pkl : TYPE
+            DESCRIPTION.
+        give_obj_name : str, optional
+            DESCRIPTION. The default is "USD".
+        get_obj_quantity : int, optional
+            DESCRIPTION. The default is 1.
+        plot_or_not : bool, optional
+            DESCRIPTION. The default is False.
+    
+        Returns
+        -------
+        portfo : TYPE
+            DESCRIPTION.
+    
+        """
+    
+        for i in range(len(signal_table)):
+            
+            # setup trade inputs ###########
+            item = signal_table.iloc[i]
+                    
+            symbol = item['Price_Code']
+            date_interest = item['Date']
+            get_obj_name = item['Price_Code']
+    
+            open_hr = open_hr_dict[symbol]
+            close_hr = close_hr_dict[symbol]
+            histroy_intraday_data = histroy_intraday_data_pkl[symbol]
+            
+            day = extract_intraday_minute_data(histroy_intraday_data, 
+                                               date_interest, 
+                                               open_hr=open_hr, 
+                                               close_hr=close_hr)
+            
+            open_hr_dt, open_price = read.find_closest_price(day,
+                                                             target_hr= open_hr,
+                                                             direction='forward')
+            
+            close_hr_dt, close_price = read.find_closest_price(day,
+                                                               target_hr= close_hr,
+                                                               direction='backward')
+                
+            # The time to open all positions
+            pos_open_dt = datetime.datetime.combine(date_interest.date(), open_hr_dt)
+            
+            
+            # Setup trade ##########
+            trade_id = i #direction + str(i)
+            
+            target_entry, target_exit, \
+            stop_exit, direction = load_EES_from_signal(trade_method, 
+                                                        self._loop_type, item)
+
+            print(i, pos_open_dt, direction, symbol)
+            #print(self._loop_type, day, target_entry,
+            #      target_exit, stop_exit, open_hr_dt, close_hr_dt, direction)
+            # Find the truncation dict and the modified target entry and exit
+            trunc_dict, \
+            target_entry, target_exit, stop_exit = gen_trunc_dict(self._loop_type, 
+                                                                  day, 
+                                                                  target_entry, 
+                                                                  target_exit, 
+                                                                  stop_exit, 
+                                                                  open_hr_dt, 
+                                                                  close_hr_dt, 
+                                                                  direction)
+
+            # Run the trade itself
+            trade_open, trade_close, \
+            pos, exec_pos = trade_method(portfo, trade_id = trade_id).\
+                                                 run_trade(trunc_dict, 
+                                                           give_obj_name, 
+                                                           get_obj_name, 
+                                                           get_obj_quantity, 
+                                                           target_entry, 
+                                                           target_exit, 
+                                                           stop_exit, 
+                                                           open_hr = open_hr_dt, 
+                                                           close_hr=close_hr_dt, 
+                                                           direction = direction,
+                                                           fee=OIL_FUTURES_FEES[symbol],
+                                                           open_time= pos_open_dt)
+                    
+            # plotting mid-backtest
+            plot_in_backtest(date_interest,get_obj_name, trunc_dict, direction, 
+                             plot_or_not=plot_or_not)
+
+        return portfo
 
 
 # =============================================================================

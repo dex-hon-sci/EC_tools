@@ -246,6 +246,8 @@ def run_backtest_portfolio(TradeMethod,
 
     return P1
 
+
+
 def run_backtest_portfolio_preloaded(TradeMethod,
                                      master_signals_filename: str, 
                                      histroy_intraday_data_pkl: dict,
@@ -310,12 +312,47 @@ def run_backtest_portfolio_preloaded(TradeMethod,
                                                   histroy_intraday_data_pkl,
                                                   give_obj_name=give_obj_name,
                                                   get_obj_quantity=get_obj_quantity,
-                                                  
                                                   plot_or_not=plot_or_not)
     
     t2 = time.time()-t1
     print("It takes {} seconds to run the backtest".format(t2))
 
+    return P1
+
+def run_backtest_portfolio_monthly(TradeMethod,                                     
+                                   master_signals_filename: str, 
+                                   histroy_intraday_data_pkl: dict,
+                                   start_date: str, end_date: str,
+                                   give_obj_name: str = "USD", 
+                                   get_obj_quantity: int = 1,
+                                   loop_type: LoopType = LoopType.CROSSOVER,
+                                   open_hr_dict: dict = OPEN_HR_DICT, 
+                                   close_hr_dict: dict = CLOSE_HR_DICT, 
+                                   selected_directions = ["Buy", "Sell"],
+                                   plot_or_not: bool = False):
+    t1 = time.time()
+    start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
+    end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
+    # Find the date for trading, only "Buy" or "Sell" date are taken.
+    trade_date_table = backtest.prepare_signal_interest(master_signals_filename,
+                                                        direction = selected_directions,
+                                                        trim = False)
+    trade_date_table = trade_date_table[(trade_date_table['Date'] >= start_date) & 
+                                        (trade_date_table['Date'] <= end_date)]
+    
+    # Initialise Portfolio
+    P1 = Portfolio()
+    USD_initial = {'name':"USD", 'quantity': 10_000_000, 'unit':"dollars", 
+                   'asset_type': "Cash", 'misc':{}} # initial fund
+    P1.add(USD_initial,datetime=datetime.datetime(2020,12,31))
+    P1 = Loop(loop_type).loop_portfolio_preloaded_long(P1, 
+                                                  TradeMethod,
+                                                  trade_date_table, 
+                                                  histroy_intraday_data_pkl,
+                                                  give_obj_name=give_obj_name,
+                                                  get_obj_quantity=get_obj_quantity,
+                                                  plot_or_not=plot_or_not)
+    t2 = time.time()-t1
     return P1
 
     

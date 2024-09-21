@@ -1446,6 +1446,156 @@ def cal_cumavg_minute_2(history_minute_data: pd.DataFrame,
     return today_cum_avg_data
 
 
+def find_minute_EES_long(histroy_data_intraday: pd.DataFrame, 
+                         target_entry: float, target_exit: float, stop_exit: float,
+                         open_hr: str = "0330", close_hr: str = "1930", 
+                         price_approx: str = 'Open', 
+                         time_proxy: str= 'Time',
+                         direction: str = 'Neutral',
+                         close_trade_hr: str = '1925', 
+                         dt_scale: str = 'datetime') -> dict:
+    """
+    Set the EES value given a time-series of minute intraday data.
+    This function is the key for crossover loops in the backtest
+
+    Parameters
+    ----------
+    histroy_data_intraday : dataframe
+        The histort intraday minute data. This assume the file contains the 
+        ohlc value of the day
+    target_entry : float 
+        target entry price.
+    target_exit : float
+        target exit price.
+    stop_exit : float
+        target stop loss price.
+    open_hr : str, optional
+        The opening hour of trade in military time format. 
+        The default is "0330".
+    close_hr : str, optional
+        The closing hour of trade in military time format. 
+        The default is "1930".
+    price_approx : str, optional
+        The price approximator. The default uses the opening price of each 
+        minute as the price indicator. It calls in the 'Open' column in the 
+        history intradday minute dataframe
+        The default is 'Open'.
+    time_prox: 
+        The time proxy. This function assume the input time data come fomr the 
+        'Time' column of the dataframe. 
+        The default is 'Time'.
+    direction : str, optional
+        Trade direction. Either "Buy", "Sell", or "Neutral".
+        The default is 'Neutral'.
+    close_trade_hr : str, optional
+        The final minute to finish off the trade in military time format. 
+        The default is '1925'.
+    dt_scale :
+
+    Raises
+    ------
+    ValueError
+        Direction data can only be either "Buy", "Sell", or "Neutral".
+
+    Returns
+    -------
+    EES_dict : dict
+        A dictionary that cantains the possible EES points and time.
+
+    """
+    # (This function can be made in one more layer of abstraction. Work on this later)
+    
+    # define subsample. turn the pandas series into a numpy array
+    price_list = histroy_data_intraday[price_approx].to_numpy()
+    time_list = histroy_data_intraday[time_proxy].to_numpy()
+    
+    # read in date list
+    date_list = histroy_data_intraday['Date'].to_numpy() 
+    # Temporary solution. Can be made using two to three time layer
+
+    # make datetime list
+    datetime_list = np.array([datetime.datetime.combine(pd.to_datetime(d).date(), t) \
+                              for d, t in zip(date_list,time_list)])
+    
+    if dt_scale == "time":
+        time_proxy_list = time_list
+    elif dt_scale == 'date':
+        time_proxy_list = date_list
+    elif dt_scale == 'datetime':
+        time_proxy_list = datetime_list
+        
+    # Find the crossover indices
+    entry_pt_dict = find_crossover(price_list, target_entry)
+    exit_pt_dict = find_crossover(price_list, target_exit)
+    stop_pt_dict = find_crossover(price_list, stop_exit)
+    
+    if direction == "Neitral":
+        #print("Neutral day")
+        # for 'Neutral' action, all info are empty
+        entry_pts, entry_times = [], []
+        exit_pts, exit_times = [], []
+        stop_pts, stop_times = [], []
+    
+    elif direction == "Buy":
+        #print("Finding Buy points.")
+        # for 'Buy' action EES sequence is drop,rise,drop
+        entry_pts = price_list[entry_pt_dict['drop'][0]]
+        entry_times = time_proxy_list[entry_pt_dict['drop'][0]]
+            
+        exit_pts = price_list[exit_pt_dict['rise'][0]]
+        exit_times = time_proxy_list[exit_pt_dict['rise'][0]]
+        
+        stop_pts = price_list[stop_pt_dict['drop'][0]]
+        stop_times = time_proxy_list[stop_pt_dict['drop'][0]]
+            
+    elif direction == "Sell":
+        #print("Finding Sell points.")
+        # for 'Sell' action EES sequence is rise,drop,rise
+        entry_pts = price_list[entry_pt_dict['rise'][0]]
+        entry_times = time_proxy_list[entry_pt_dict['rise'][0]]
+            
+        exit_pts = price_list[exit_pt_dict['drop'][0]]
+        exit_times = time_proxy_list[exit_pt_dict['drop'][0]]
+        
+        stop_pts = price_list[stop_pt_dict['rise'][0]]
+        stop_times = time_proxy_list[stop_pt_dict['rise'][0]]
+    else:
+        raise ValueError('Direction has to be either Buy, Sell, or Neutral.')
+    
+    # Define the opening/closing time and closing price. 
+    # Here we choose 19:25 for final trade
+    open_hr_str = open_hr.strftime("%H%M")
+    close_hr_str = close_hr.strftime("%H%M")
+
+    ## Find the closest price and datettime instead of having it at exactly the open time
+    open_date_new, open_pt = find_closest_price(histroy_data_intraday, 
+                                                  target_hr = open_hr_str, 
+                                                  direction = 'forward')
+    open_date = date_list[np.where(time_list==open_date_new)[0]][0]
+    open_datetime = datetime.datetime.combine(pd.to_datetime(open_date).date(), 
+                                               open_date_new)
+
+    # Find the closest price and datettime instead of having it at exactly the close time
+    close_date_new, close_pt = find_closest_price(histroy_data_intraday, 
+                                                  target_hr = close_hr_str, 
+                                                  direction = 'backward')
+    close_date = date_list[np.where(time_list==close_date_new)[0]][0]
+    close_datetime = datetime.datetime.combine(pd.to_datetime(close_date).date(), 
+                                               close_date_new)
+
+    # storage
+    EES_dict = {'entry': list(zip(entry_times,entry_pts)),
+                'exit': list(zip(exit_times,exit_pts)),
+                'stop': list(zip(stop_times,stop_pts)),
+                'open': tuple((open_datetime, open_pt)),
+                'close': tuple((close_datetime, close_pt))}
+
+    #print('EES_dict', EES_dict['close'])
+    return EES_dict
+
+
+
+
 # I: prev_cum_avg, prev_cum_n, minute_data; O:
 # today_cum_avg
 # Make a list of today_cum_avg base on minute by minute
