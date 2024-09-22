@@ -7,19 +7,41 @@ Created on Wed Aug  7 19:30:06 2024
 """
 import datetime as datetime
 
-from crudeoil_future_const import APC_FILE_LOC, DATA_FILEPATH, SYMBOL_LIST
+from crudeoil_future_const import APC_FILE_LOC, DATA_FILEPATH, SYMBOL_LIST, \
+                                  MONTHLY_APC_PKL, SYMBOL_LIST_SHORT
 import EC_tools.utility as util
 from run_PNL_plot import twopanel_plot
 
 
-APC_PKL_FILENAME = DATA_FILEPATH + '/pkl_vault/crudeoil_future_APC_full.pkl' 
+#APC_PKL_FILENAME = DATA_FILEPATH + '/pkl_vault/crudeoil_future_APC_full.pkl' 
+APC_PKL_FILENAME = MONTHLY_APC_PKL
 APC_quantile_label_list = ['0.1','0.4','0.5','0.6','0.9']
 
 apc_pkl = util.load_pkl(APC_PKL_FILENAME)
 
-
 HISTORY_DAY_PKL_FILENAME = DATA_FILEPATH + '/pkl_vault/crudeoil_future_daily_full.pkl' 
 history_pkl = util.load_pkl(HISTORY_DAY_PKL_FILENAME)
+
+def pre_select_apc(apc_pkl):
+    """
+    A function that preselect a subset of the APC file.
+    It returns a reduced version of the apc. The methid is mainly for selecting
+    for the monthly APC with a given
+
+    """
+    temp = dict()
+    for key in apc_pkl:
+        df = apc_pkl[key] 
+        df = df[df['CONTINUOUS_FORWARD'] == 1]
+        temp[key] = df
+    
+    apc_pkl = temp
+        
+    return apc_pkl
+
+apc_pkl = pre_select_apc(apc_pkl)
+
+#####
 
 def make_apc_asset_dict(symbol, APC_quantile_label_list):
     """
@@ -70,7 +92,7 @@ def find_delta(apc_interest, history_interest, symbol):
     # Daily settlement price list
     history_interest_close_list = history_interest['Settle'].to_list()
 
-    apc_date = [apc_interest['Forecast Period'].iloc[i]
+    apc_date = [apc_interest['PERIOD'].iloc[i]
                     for i in range(len(apc_interest))]
         
     delta_list = list()
@@ -91,7 +113,8 @@ def find_delta(apc_interest, history_interest, symbol):
 
 
 
-apc_dict = make_apc_dict(SYMBOL_LIST)
+#apc_dict = make_apc_dict(SYMBOL_LIST)
+apc_dict = make_apc_dict(SYMBOL_LIST_SHORT)
 
 
 def plot_all_apc_price(symbol_list, col_list, start_date, end_date):
@@ -99,11 +122,11 @@ def plot_all_apc_price(symbol_list, col_list, start_date, end_date):
 
     for i, symbol in enumerate(symbol_list):
         # make the date list for this asset
-        apc_interest = apc_pkl[symbol][(apc_pkl[symbol]['Forecast Period'] >= start_date) & 
-                                       (apc_pkl[symbol]['Forecast Period'] <= end_date)]
+        apc_interest = apc_pkl[symbol][(apc_pkl[symbol]['PERIOD'] >= start_date) & 
+                                       (apc_pkl[symbol]['PERIOD'] <= end_date)]
         
         
-        apc_date = [apc_interest['Forecast Period'].iloc[i]
+        apc_date = [apc_interest['PERIOD'].iloc[i]
                     for i in range(len(apc_interest))]
         
         
@@ -140,11 +163,11 @@ def plot_all_apc_price_OHLC(symbol_list, col_list, start_date, end_date):
 
     for i, symbol in enumerate(symbol_list):
         # make the date list for this asset
-        apc_interest = apc_pkl[symbol][(apc_pkl[symbol]['Forecast Period'] >= start_date) & 
-                                       (apc_pkl[symbol]['Forecast Period'] <= end_date)]
+        apc_interest = apc_pkl[symbol][(apc_pkl[symbol]['PERIOD'] >= start_date) & 
+                                       (apc_pkl[symbol]['PERIOD'] <= end_date)]
         
         
-        apc_date = [apc_interest['Forecast Period'].iloc[i]
+        apc_date = [apc_interest['PERIOD'].iloc[i]
                     for i in range(len(apc_interest))]
         
         
@@ -191,6 +214,6 @@ if __name__=='__main__':
 
         
     #plot_all_apc_price(SYMBOL_LIST, COL_LIST, start_date, end_date)    
-    
-    
-    plot_all_apc_price_OHLC(SYMBOL_LIST, COL_LIST, start_date, end_date)
+    plot_all_apc_price(SYMBOL_LIST_SHORT, COL_LIST, start_date, end_date)    
+
+    #plot_all_apc_price_OHLC(SYMBOL_LIST, COL_LIST, start_date, end_date)

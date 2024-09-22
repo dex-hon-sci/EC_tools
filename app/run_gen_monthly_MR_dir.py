@@ -332,7 +332,7 @@ def run_gen_MR_signals_preloaded_monthly(strategy: type[Strategy],
             
             # Prepare monthly APC file ** Crucial step in making the whole sctip works
             signal_monthly_file = signal_monthly_file[
-                                    signal_monthly_file['CONTINUOUS_FORWARD'] == 2]
+                                    signal_monthly_file['CONTINUOUS_FORWARD'] == 1]
            
             # input 2, Portara history file.
             history_daily_file = history_daily_pkl[symbol]

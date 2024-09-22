@@ -24,10 +24,12 @@ Created on Sun Jul 14 05:03:16 2024
 """
 
                                         
-SIGNAL = DATA_FILEPATH +"/APC_latest/APC_latest_CLc1.csv"
-HISTORY_DAILY = DATA_FILEPATH + "/history_data/Day/CL.day"
-HISTORY_MINUTE = DATA_FILEPATH +"/history_data/Minute/CL.001"
-
+# =============================================================================
+# SIGNAL = DATA_FILEPATH +"/APC_latest/APC_latest_CLc1.csv"
+# HISTORY_DAILY = DATA_FILEPATH + "/history_data/Day/CL.day"
+# HISTORY_MINUTE = DATA_FILEPATH +"/history_data/Minute/CL.001"
+# 
+# =============================================================================
 BUY_DATE_STR = "2021-03-02" #Buy date
 SELL_DATE_STR = "2022-02-22" #Sell date
 NEUTRAL_DATE_STR = "2021-01-27" #Neutral date

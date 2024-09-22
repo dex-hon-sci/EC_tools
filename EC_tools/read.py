@@ -420,7 +420,8 @@ def read_reformat_Portara_daily_data(filename: str,
 
 #tested
 def read_reformat_Portara_minute_data(filename: str,  
-                                      add_col_data: dict = {}) -> \
+                                      add_col_data: dict = {},
+                                      time_to_datetime = False) -> \
                                       pd.DataFrame:
     """
     Reformat the Portara minute data in a format readable by the scripts.
@@ -450,9 +451,15 @@ def read_reformat_Portara_minute_data(filename: str,
     # convert the format 1330 (int) to 13:30 (datetime.time) obejct
     intmin = history_data['Time']
     bucket = util.convert_intmin_to_time(intmin) #, label='Time')
-    
+
     history_data['Time'] = bucket
     
+# =============================================================================
+#     if time_to_datetime:
+#         history_data['Time'] = [datetime.datetime.strptime(t, '%H%M') 
+#                                 for t in history_data['Time']]
+#     
+# =============================================================================
     #history_data_reindex = history_data.set_index('Date',drop=False)
     history_data_reindex = history_data
 
@@ -484,11 +491,18 @@ def read_reformat_openprice_data(filename: str) ->  pd.DataFrame:
     #print(openprice_data_reindex)
     return openprice_data #openprice_data_reindex
 
-def read_reformat_generic(filename:str, time_proxies: list[str] =['Date']):
+def read_reformat_dateNtime(filename:str, 
+                            time_proxies: list[str] =['Date', 'Time'], 
+                            str_formats: list[str]=['%Y-%m-%d', '%H:%M:%S']):
     data = pd.read_csv(filename)
-    for time_proxy in time_proxies:
-        data[time_proxy] = [datetime.datetime.strptime(x, '%Y-%m-%d')
-                                   for x in data[time_proxy]]
+    bucket_1 = [datetime.datetime.strptime(x, str_formats[0]).date()
+                               for x in data[time_proxies[0]]]
+    bucket_2 = [datetime.datetime.strptime(x, str_formats[1]).time()
+                               for x in data[time_proxies[1]]]
+    data[time_proxies[0]] = bucket_1
+    data[time_proxies[1]] = bucket_2
+    
+    print(data[time_proxies[0]], data[time_proxies[1]])
     return data
 
 def read_reformat_APC_data(filename: str, 
@@ -569,6 +583,8 @@ def extract_lag_data(signal_data: pd.DataFrame,
 def find_closest_price(day_minute_data: pd.DataFrame, 
                        target_hr: str ='0330', 
                        direction: str ='forward', 
+                       price_proxy: str = 'Open',
+                       time_proxy: str = 'Time',
                        step: int = 1, 
                        search_time: int = 1000) -> \
                        tuple[datetime.datetime, float]:    
@@ -607,18 +623,88 @@ def find_closest_price(day_minute_data: pd.DataFrame,
     target_hr_dt= datetime.time(hour=int(target_hr[0:2]),minute=int(target_hr[2:4]))
     
     #initial estimation of the target price
+    target_price = day_minute_data[day_minute_data[time_proxy] == target_hr_dt][price_proxy]
+    #loop through the next 30 minutes to find the opening price    
+    for i in range(search_time):    
+        if len(target_price) == 0:
+            delta = datetime.timedelta(minutes = step)
+            
+            # Note that the datetime.datetime.today() is a place holder, it does  
+            # not affect the target_hr_dt vatriables.
+            target_hr_dt = (datetime.datetime.combine(datetime.datetime.today(), 
+                            target_hr_dt) + delta).time()
+            #print(i, target_hr_dt)
+
+            target_price = day_minute_data[day_minute_data[time_proxy] == target_hr_dt][price_proxy]
+            
+    target_price = [float(target_price.iloc[0])] # make sure that this is float
+            
+    return target_hr_dt, target_price[0]
+
+
+def find_closest_price_datetime(day_minute_data: pd.DataFrame, 
+                                target_date: datetime.datetime,
+                                target_hr: str ='0330', 
+                                direction: str ='forward', 
+                                step: int = 1, 
+                                search_time: int = 1000) -> \
+                                tuple[datetime.datetime, float]:    
+    """
+    A method to find the closest price next to a traget date and hour
+
+    Parameters
+    ----------
+    day_minute_data : DataFrame
+        The minute pricing data.
+    target_hr : str, optional
+        The target hour for the search. The default is '0330'.
+    direction : dtr, optional
+        To search the list either 'backward' or 'forward'. 
+        The default is 'forward'.
+    step : int, optional
+        The step size of the search. The default is 1.
+    search_time : int, optional
+        The total minutes (steps) of the search. The default is 1000.
+
+    Returns
+    -------
+    target_hr_dt : datetime.datetime
+        The datetime of the closest hour to the target.
+    float
+        The target price.
+
+    """
+    # If the input is forward, the loop search forward a unit of minute (step)
+    if direction == 'forward':
+        step = 1.* step
+    # If the input is backward, the loop search back a unit of minute (step)
+    elif direction == 'backward':
+        step = -1* step
+        
+    target_hr_dt= datetime.time(hour=int(target_hr[0:2]),minute=int(target_hr[2:4]))
+    
+    day_minute_data = day_minute_data[day_minute_data['Date'] == target_date]
+
+    #initial estimation of the target price
     target_price = day_minute_data[day_minute_data['Time'] == target_hr_dt]['Open']
     #loop through the next 30 minutes to find the opening price    
     for i in range(search_time):    
         if len(target_price) == 0:
             delta = datetime.timedelta(minutes = step)
+            
+            # Note that the datetime.datetime.today() is a place holder, it does  
+            # not affect the target_hr_dt vatriables.
             target_hr_dt = (datetime.datetime.combine(datetime.datetime.today(), 
                             target_hr_dt) + delta).time()
+            #print(i, target_hr_dt)
+
             target_price = day_minute_data[day_minute_data['Time'] == target_hr_dt]['Open']
             
     target_price = [float(target_price.iloc[0])] # make sure that this is float
             
     return target_hr_dt, target_price[0]
+
+
 
 def find_closest_price_date(data: pd.DataFrame, 
                             target_time: str ='2024-01-03', 
@@ -849,7 +935,7 @@ def find_crossover(input_array: np.ndarray,
 def find_minute_EES(histroy_data_intraday: pd.DataFrame, 
                     target_entry: float, target_exit: float, stop_exit: float,
                     open_hr: str = "0330", close_hr: str = "1930", 
-                    price_approx: str = 'Open', 
+                    price_proxy: str = 'Open', 
                     time_proxy: str= 'Time',
                     direction: str = 'Neutral',
                     close_trade_hr: str = '1925', 
@@ -875,7 +961,7 @@ def find_minute_EES(histroy_data_intraday: pd.DataFrame,
     close_hr : str, optional
         The closing hour of trade in military time format. 
         The default is "1930".
-    price_approx : str, optional
+    price_proxy : str, optional
         The price approximator. The default uses the opening price of each 
         minute as the price indicator. It calls in the 'Open' column in the 
         history intradday minute dataframe
@@ -906,9 +992,10 @@ def find_minute_EES(histroy_data_intraday: pd.DataFrame,
     # (This function can be made in one more layer of abstraction. Work on this later)
     
     # define subsample. turn the pandas series into a numpy array
-    price_list = histroy_data_intraday[price_approx].to_numpy()
+    price_list = histroy_data_intraday[price_proxy].to_numpy()
     time_list = histroy_data_intraday[time_proxy].to_numpy()
     
+    #print("time_list", time_list[0], type(time_list[0]))
     # read in date list
     date_list = histroy_data_intraday['Date'].to_numpy() 
     # Temporary solution. Can be made using two to three time layer
@@ -970,7 +1057,10 @@ def find_minute_EES(histroy_data_intraday: pd.DataFrame,
     ## Find the closest price and datettime instead of having it at exactly the open time
     open_date_new, open_pt = find_closest_price(histroy_data_intraday, 
                                                   target_hr = open_hr_str, 
-                                                  direction = 'forward')
+                                                  direction = 'forward',
+                                                  price_proxy = price_proxy,
+                                                  time_proxy = time_proxy)
+    
     open_date = date_list[np.where(time_list==open_date_new)[0]][0]
     open_datetime = datetime.datetime.combine(pd.to_datetime(open_date).date(), 
                                                open_date_new)
@@ -978,7 +1068,11 @@ def find_minute_EES(histroy_data_intraday: pd.DataFrame,
     # Find the closest price and datettime instead of having it at exactly the close time
     close_date_new, close_pt = find_closest_price(histroy_data_intraday, 
                                                   target_hr = close_hr_str, 
-                                                  direction = 'backward')
+                                                  direction = 'backward',
+                                                  price_proxy = price_proxy,
+                                                  time_proxy = time_proxy)
+
+    
     close_date = date_list[np.where(time_list==close_date_new)[0]][0]
     close_datetime = datetime.datetime.combine(pd.to_datetime(close_date).date(), 
                                                close_date_new)
@@ -1401,7 +1495,7 @@ def cal_cumavg_minute(history_minute_data: pd.DataFrame,
 
 def cal_cumavg_minute_2(history_minute_data: pd.DataFrame,
                         cumavg_price_data: pd.DataFrame, 
-                        price_proxy: str = 'Settle'):
+                        price_proxy: str = 'Settle'): #WIP
     # A method that calculate the cumulative average
     # change this to the daily cumaverage using the whole day instead of just the point
     #print("Len", len(history_minute_data['Date']))
@@ -1571,16 +1665,20 @@ def find_minute_EES_long(histroy_data_intraday: pd.DataFrame,
     open_date_new, open_pt = find_closest_price(histroy_data_intraday, 
                                                   target_hr = open_hr_str, 
                                                   direction = 'forward')
-    open_date = date_list[np.where(time_list==open_date_new)[0]][0]
-    open_datetime = datetime.datetime.combine(pd.to_datetime(open_date).date(), 
+    
+    #open_date = date_list[np.where(time_list==open_date_new)[0]][0]
+    open_date = datetime_list[0]
+    open_datetime = datetime.datetime.combine(open_date.date(), 
                                                open_date_new)
 
     # Find the closest price and datettime instead of having it at exactly the close time
     close_date_new, close_pt = find_closest_price(histroy_data_intraday, 
                                                   target_hr = close_hr_str, 
                                                   direction = 'backward')
-    close_date = date_list[np.where(time_list==close_date_new)[0]][0]
-    close_datetime = datetime.datetime.combine(pd.to_datetime(close_date).date(), 
+    
+    #close_date = date_list[np.where(time_list==close_date_new)[0]][0]
+    close_date = datetime_list[-1]
+    close_datetime = datetime.datetime.combine(close_date.date(), 
                                                close_date_new)
 
     # storage
@@ -1593,7 +1691,8 @@ def find_minute_EES_long(histroy_data_intraday: pd.DataFrame,
     #print('EES_dict', EES_dict['close'])
     return EES_dict
 
-
+def find_minute_EES_range_long():
+    pass
 
 
 # I: prev_cum_avg, prev_cum_n, minute_data; O:

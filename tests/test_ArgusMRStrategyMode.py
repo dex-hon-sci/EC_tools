@@ -190,7 +190,7 @@ def test_MRStrategyArgus_rund_cond(Test, signal_status, cond_list)->None:
         ArgusMRStrategyMode(Test.curve_this_date).gen_data(history_data_lag5, 
                                                        apc_curve_lag5)
     
-    MR = MRStrategyArgus(Test.curve_this_date)
+    MR = ArgusMRStrategyMode(Test.curve_this_date)
     direction, cond_info = MR.run_cond(strategy_info, Test.open_price, 
                                            total_lag_days = 2)
     

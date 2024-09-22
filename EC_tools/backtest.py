@@ -212,25 +212,28 @@ def extract_month_minute_data(histroy_data: pd.DataFrame,
         close_hr =  datetime.time(hour = int(close_hr_str), minute = int(close_min_str))
     elif type(close_hr) == datetime.time:
         pass
-
+    #date_interest_2 = date_interest
     # Each month has different duration
-    duration = pd.to_datetime(date_interest, format= '%Y-%m-%d').days_in_month
+    #duration = pd.to_datetime(date_interest_2, format= '%Y-%m-%d').days_in_month
+    duration = date_interest.days_in_month
     
     # Convert date_interest from str to datetime
-    date_interest = datetime.datetime.strptime(date_interest, '%Y-%m-%d')
+    #date_interest = datetime.datetime.strptime(date_interest, '%Y-%m-%d')
     
     # Find the starting date and ending date of a particular month
     month_start = datetime.datetime(date_interest.year, date_interest.month, 1)
     month_end = datetime.datetime(date_interest.year, date_interest.month, duration)
     
+    print('month_start,month_end', month_start,month_end)
     # Four selection crtieria in total, ser
     # Given a date of interest, and read-in the intraday data.
     histroy_data = histroy_data[histroy_data['Date']>=month_start]
     histroy_data = histroy_data[histroy_data['Date']<=month_end]
-
+    print(histroy_data)
     # isolate the region of interest between the opening hour and the closing hour
     histroy_data = histroy_data[histroy_data['Time'] > open_hr]
     histroy_data = histroy_data[histroy_data['Time'] < close_hr]
+    print(histroy_data)
 
     return histroy_data
 
@@ -363,7 +366,7 @@ def gen_trunc_dict(loop_type: LoopType,
     
 
 def gen_trunc_dict_long(loop_type: LoopType, 
-                     day: pd.DataFrame, 
+                     data: pd.DataFrame, 
                      target_entry: float |list[float,float] | 
                                    tuple[float, float] | dict[str,float],
                      target_exit: float |list[float,float] | 
@@ -376,22 +379,24 @@ def gen_trunc_dict_long(loop_type: LoopType,
                         
     if loop_type == LoopType.CROSSOVER:
         # Find the crossover points of EES
-        trunc_dict = read.find_minute_EES_long(day, 
+        trunc_dict = read.find_minute_EES(data, 
                                           target_entry, 
                                           target_exit, 
                                           stop_exit,
                                           open_hr = open_hr, 
                                           close_hr = close_hr, 
+                                          price_proxy = 'today_cum_avg',
                                           direction = direction)
     elif loop_type == LoopType.RANGE:
   
         # Find the appropiate range of EES
-        trunc_dict = read.find_minute_EES_range(day, 
+        trunc_dict = read.find_minute_EES_range(data, 
                                                 target_entry, 
                                                 target_exit, 
                                                 stop_exit,
                                                 open_hr = open_hr, 
                                                 close_hr = close_hr, 
+                                                price_approx = 'today_cum_avg',
                                                 direction = direction)
         
         # target entry/exit are first estimations of the prices using
@@ -437,7 +442,10 @@ def load_EES_from_signal(trade_method,
         DESCRIPTION.
 
     """
-    if trade_method.__name__ == "OneTradePerDay":
+    if trade_method.__name__ == "OneTradePerDay" or \
+        trade_method.__name__ == "OneTradePerDay_2" or\
+        trade_method.__name__ == "MultiTradePerMonth":
+            
         direction = item['Direction'] 
         
         if loop_type == LoopType.CROSSOVER:
@@ -472,6 +480,7 @@ def load_EES_from_signal(trade_method,
             stop_exit = {'Buy': item['Q0.1'], 'Sell': item['Q0.9']}
             
             direction = 'Bitrade-' 
+            
 
     return target_entry, target_exit, stop_exit, direction
      
@@ -868,6 +877,8 @@ class Loop(Protocol):
             DESCRIPTION.
     
         """
+        
+        #print('histroy_minute_cumavg_data_pkl', histroy_minute_cumavg_data_pkl)
         first_entry = signal_table.iloc[0]
         
         first_symbol = first_entry['Price_Code']
@@ -876,51 +887,65 @@ class Loop(Protocol):
                                           open_hr=open_hr_dict[first_symbol], 
                                           close_hr=close_hr_dict[first_symbol])
         
+        
+        #histroy_minute_cumavg_data = histroy_minute_cumavg_data_pkl[symbol]
+
+        #print("signal_table", signal_table)
         # Initialise month_tracker using the first entry
         month_tracker = first_entry['Date'].month
 
         for i in range(len(signal_table)):
-            
             # setup trade inputs ###########
             item = signal_table.iloc[i]
                     
+            #print(item)
             symbol = item['Price_Code']
             date_interest = item['Date']
             get_obj_name = item['Price_Code']
-    
+            print(i, symbol)
+
             open_hr = open_hr_dict[symbol]
             close_hr = close_hr_dict[symbol]
             histroy_intraday_data = histroy_intraday_data_pkl[symbol]
-            histroy_minute_cumavg_data_pkl = histroy_minute_cumavg_data_pkl[symbol]
+            histroy_minute_cumavg_data = histroy_minute_cumavg_data_pkl[symbol]
             
-            current_month = date_interest.date    
+
+            current_month = date_interest.month    
+            print(current_month , date_interest.month)
             
             if current_month!= month_tracker:
                 # If the current month is not the same as the tracker, we
                 # load the data from the next month and update the tracker
+
+                month_tracker = current_month
+                
                 month = extract_month_minute_data(histroy_intraday_data, 
                                                   date_interest,
                                                   open_hr=open_hr, 
                                                   close_hr=close_hr)
-                month_tracker = current_month
             
+# =============================================================================
+#             day = extract_intraday_minute_data(histroy_intraday_data, 
+#                                                date_interest, 
+#                                                open_hr=open_hr, 
+#                                                close_hr=close_hr)
+# =============================================================================
             
-            day = extract_intraday_minute_data(histroy_intraday_data, 
-                                               date_interest, 
-                                               open_hr=open_hr, 
-                                               close_hr=close_hr)
+            #print("month", month, 'day',day)
+            first_date, last_date = month['Date'].iloc[0], month['Date'].iloc[-1]
+            open_hr_dt, open_price = read.find_closest_price_datetime(month,
+                                                                      first_date,
+                                                                      target_hr= open_hr,
+                                                                      direction='forward')
             
-            print("month", month, 'day',day)
-            
-            open_hr_dt, open_price = read.find_closest_price(day,
-                                                             target_hr= open_hr,
-                                                             direction='forward')
-            
-            close_hr_dt, close_price = read.find_closest_price(day,
-                                                               target_hr= close_hr,
-                                                               direction='backward')
+            close_hr_dt, close_price = read.find_closest_price_datetime(month,
+                                                                        last_date,
+                                                                        target_hr= close_hr,
+                                                                        direction='backward')
                 
             # The time to open all positions
+            # This may not be straightly accurate but this varaible is only 
+            # for record keeping. it is similar to the real value
             pos_open_dt = datetime.datetime.combine(date_interest.date(), open_hr_dt)
             
             
@@ -938,14 +963,15 @@ class Loop(Protocol):
             trunc_dict, \
             target_entry, target_exit, stop_exit = gen_trunc_dict_long(
                                                                 self._loop_type, 
-                                                                month, 
+                                                                histroy_minute_cumavg_data, 
                                                                 target_entry, 
                                                                 target_exit, 
                                                                 stop_exit, 
                                                                 open_hr_dt, 
                                                                 close_hr_dt, 
                                                                 direction)
-
+            print("trunc_dict", trunc_dict)
+            print(target_entry, target_exit, stop_exit)
             # Run the trade itself
             trade_open, trade_close, \
             pos, exec_pos = trade_method(portfo, trade_id = trade_id).\

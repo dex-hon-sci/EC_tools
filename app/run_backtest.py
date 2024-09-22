@@ -341,6 +341,8 @@ def run_backtest_portfolio_monthly(TradeMethod,
     trade_date_table = trade_date_table[(trade_date_table['Date'] >= start_date) & 
                                         (trade_date_table['Date'] <= end_date)]
     
+    
+    print(trade_date_table)
     # Initialise Portfolio
     P1 = Portfolio()
     USD_initial = {'name':"USD", 'quantity': 10_000_000, 'unit':"dollars", 
@@ -458,13 +460,14 @@ if __name__ == "__main__":
     HISTORY_MINUTE_CUMAVG_IN_MONTH_PKL = util.load_pkl(MINUTE_CUMAVG_MONTH_PKL)
     
     
-    start_date = "2022-01-05"
-    end_date = "2022-01-08"
+    start_date = "2022-01-01"
+    end_date = "2022-01-15"
 
     #end_date = "2024-06-28"
     
     #start_date = "2024-03-04"
     #end_date = "2024-06-17"
+    backtest_result = \
     run_backtest_portfolio_monthly(MultiTradePerMonth,                                     
                                     MASTER_SIGNAL_FILENAME, 
                                     HISTORY_MINUTE_PKL,
@@ -477,6 +480,10 @@ if __name__ == "__main__":
                                     close_hr_dict = CLOSE_HR_DICT, 
                                     selected_directions = ["Buy", "Sell"],
                                     plot_or_not = False)
+    
+    file = open(MASTER_SIGNAL_FILENAME, 'wb')
+    pickle.dump(backtest_result, file)
+
 # =============================================================================
 #     run_backtest_bulk(OneTradePerDay, 
 #                       TEST_FILE_LOC, TEST_FILE_PNL_LOC, 

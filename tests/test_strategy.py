@@ -7,12 +7,19 @@ Created on Fri May 31 03:27:22 2024
 """
 import datetime as datetime
 import EC_tools.read as read
+import EC_tools.utility as util
 from EC_tools.strategy import SignalStatus
-from crudeoil_future_const import DATA_FILEPATH
+from crudeoil_future_const import DATA_FILEPATH, \
+                                  DAILY_DATA_PKL, DAILY_MINUTE_DATA_PKL, \
+                                  DAILY_APC_PKL
 
 SIGNAL = DATA_FILEPATH + "/APC_latest/APC_latest_CLc1.csv"
 HISTORY_DAILY = DATA_FILEPATH + "/history_data/Day/CL.day"
 HISTORY_MINUTE = DATA_FILEPATH + "/history_data/Minute/CL.001"
+
+SIGNAL = util.load_pkl(DAILY_APC_PKL)
+HISTORY_DAILY = util.load_pkl(DAILY_DATA_PKL)
+HISTORY_MINUTE = util.load_pkl(DAILY_MINUTE_DATA_PKL)
 
 class SingleRun():
     """
@@ -28,12 +35,15 @@ class SingleRun():
         self.this_date = datetime.datetime.strptime(date_str, '%Y-%m-%d')
         # The reading part takes the longest time: 13 seconds. The loop itself takes 
         # input 1, APC. Load the master table in memory and test multple strategies   
-        self.signal_data =  read.read_reformat_APC_data(signal_filename)
+        #self.signal_data = read.read_reformat_APC_data(signal_filename)
+        self.signal_data = signal_filename[symbol]
         
         # input 2, Portara history file.
         # start_date2 is a temporary solution 
-        self.history_data_daily = read.read_reformat_Portara_daily_data(filename_daily)
-        self.history_data_minute = read.read_reformat_Portara_minute_data(filename_minute)
+        #self.history_data_daily = read.read_reformat_Portara_daily_data(filename_daily)
+        #self.history_data_minute = read.read_reformat_Portara_minute_data(filename_minute)
+        self.history_data_daily = filename_daily[symbol]
+        self.history_data_minute = filename_minute[symbol]
         
         # Add a symbol column
         self.history_data_daily['symbol'] = [symbol for i in range(len(self.history_data_daily))]
