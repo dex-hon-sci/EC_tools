@@ -319,6 +319,7 @@ def run_backtest_portfolio_preloaded(TradeMethod,
 
     return P1
 
+#@util.load_pkl(RESULT_FILEPATH + "/monthly_test/test_PNL.pkl")
 def run_backtest_portfolio_monthly(TradeMethod,                                     
                                    master_signals_filename: str, 
                                    histroy_intraday_data_pkl: dict,
@@ -425,7 +426,10 @@ def run_backtest_bulk(TradeMethod,
         if save_or_not: # save pkl portfolio
             file = open(master_pnl_filename, 'wb')
             pickle.dump(PP, file)
-        
+            
+            #my_pkl = pickle.load(output)
+            #print("File:{} is loaded.".format(filename))
+            #output.close()
     
     return backtest_result
 
@@ -461,7 +465,7 @@ if __name__ == "__main__":
     
     
     start_date = "2022-01-01"
-    end_date = "2022-01-15"
+    end_date = "2022-01-30"
 
     #end_date = "2024-06-28"
     
@@ -481,8 +485,12 @@ if __name__ == "__main__":
                                     selected_directions = ["Buy", "Sell"],
                                     plot_or_not = False)
     
+    print(backtest_result.master_table)
+    
     file = open(MASTER_SIGNAL_FILENAME, 'wb')
     pickle.dump(backtest_result, file)
+    #output = open(MASTER_PNL_FILENAME, 'wb')
+    #my_pkl = pickle.load(output)
 
 # =============================================================================
 #     run_backtest_bulk(OneTradePerDay, 

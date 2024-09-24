@@ -40,6 +40,7 @@ def pre_select_apc(apc_pkl):
     return apc_pkl
 
 apc_pkl = pre_select_apc(apc_pkl)
+print(apc_pkl)
 
 #####
 
@@ -141,7 +142,8 @@ def plot_all_apc_price(symbol_list, col_list, start_date, end_date):
         
 
         
-        delta_list = find_delta(apc_interest, history_interest, symbol)
+        #delta_list = find_delta(apc_interest, history_interest, symbol)
+        delta_list = [0 for i in range(len(history_interest['Date'].to_list()))]
 
         
         # plot the cumulative plot 
@@ -205,9 +207,12 @@ def plot_all_apc_price_OHLC(symbol_list, col_list, start_date, end_date):
 
         
 if __name__=='__main__':
-    COL_LIST = ['#62A0E1', '#62A0E1', '#EB634E', '#EB634E', 
-                '#E99938', '#E99938','#5CDE93', '#5CDE93', 
-                '#6ABBC6', '#6ABBC6']
+    #COL_LIST = ['#62A0E1', '#62A0E1', '#EB634E', '#EB634E', 
+    #            '#E99938', '#E99938','#5CDE93', '#5CDE93', 
+    #            '#6ABBC6', '#6ABBC6']
+    COL_LIST = ['#62A0E1', '#EB634E',  
+                '#E99938','#5CDE93', 
+                '#6ABBC6']
     
     start_date = datetime.datetime.strptime("2021-01-11", '%Y-%m-%d')
     end_date = datetime.datetime.strptime('2024-06-17', '%Y-%m-%d')

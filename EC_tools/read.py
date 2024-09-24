@@ -495,7 +495,7 @@ def read_reformat_dateNtime(filename:str,
                             time_proxies: list[str] =['Date', 'Time'], 
                             str_formats: list[str]=['%Y-%m-%d', '%H:%M:%S']):
     data = pd.read_csv(filename)
-    bucket_1 = [datetime.datetime.strptime(x, str_formats[0]).date()
+    bucket_1 = [datetime.datetime.strptime(x, str_formats[0])
                                for x in data[time_proxies[0]]]
     bucket_2 = [datetime.datetime.strptime(x, str_formats[1]).time()
                                for x in data[time_proxies[1]]]
@@ -641,11 +641,14 @@ def find_closest_price(day_minute_data: pd.DataFrame,
             
     return target_hr_dt, target_price[0]
 
-
+@util.time_it
 def find_closest_price_datetime(day_minute_data: pd.DataFrame, 
                                 target_date: datetime.datetime,
                                 target_hr: str ='0330', 
                                 direction: str ='forward', 
+                                price_proxy: str = 'Open',
+                                time_proxy: str = 'Time',
+                                date_proxy: str = 'Date',
                                 step: int = 1, 
                                 search_time: int = 1000) -> \
                                 tuple[datetime.datetime, float]:    
@@ -683,10 +686,10 @@ def find_closest_price_datetime(day_minute_data: pd.DataFrame,
         
     target_hr_dt= datetime.time(hour=int(target_hr[0:2]),minute=int(target_hr[2:4]))
     
-    day_minute_data = day_minute_data[day_minute_data['Date'] == target_date]
-
+    day_minute_data = day_minute_data[day_minute_data[date_proxy] == target_date]
+    print(target_date, day_minute_data)
     #initial estimation of the target price
-    target_price = day_minute_data[day_minute_data['Time'] == target_hr_dt]['Open']
+    target_price = day_minute_data[day_minute_data[time_proxy] == target_hr_dt][price_proxy]
     #loop through the next 30 minutes to find the opening price    
     for i in range(search_time):    
         if len(target_price) == 0:
@@ -698,8 +701,9 @@ def find_closest_price_datetime(day_minute_data: pd.DataFrame,
                             target_hr_dt) + delta).time()
             #print(i, target_hr_dt)
 
-            target_price = day_minute_data[day_minute_data['Time'] == target_hr_dt]['Open']
+            target_price = day_minute_data[day_minute_data[time_proxy] == target_hr_dt][price_proxy]
             
+    print(target_price)
     target_price = [float(target_price.iloc[0])] # make sure that this is float
             
     return target_hr_dt, target_price[0]
@@ -937,6 +941,7 @@ def find_minute_EES(histroy_data_intraday: pd.DataFrame,
                     open_hr: str = "0330", close_hr: str = "1930", 
                     price_proxy: str = 'Open', 
                     time_proxy: str= 'Time',
+                    date_proxy: str ='Date',
                     direction: str = 'Neutral',
                     close_trade_hr: str = '1925', 
                     dt_scale: str = 'datetime') -> dict:
@@ -997,7 +1002,7 @@ def find_minute_EES(histroy_data_intraday: pd.DataFrame,
     
     #print("time_list", time_list[0], type(time_list[0]))
     # read in date list
-    date_list = histroy_data_intraday['Date'].to_numpy() 
+    date_list = histroy_data_intraday[date_proxy].to_numpy() 
     # Temporary solution. Can be made using two to three time layer
 
     # make datetime list
@@ -1068,7 +1073,7 @@ def find_minute_EES(histroy_data_intraday: pd.DataFrame,
     # Find the closest price and datettime instead of having it at exactly the close time
     close_date_new, close_pt = find_closest_price(histroy_data_intraday, 
                                                   target_hr = close_hr_str, 
-                                                  direction = 'backward',
+                                                  direction = 'backward',   
                                                   price_proxy = price_proxy,
                                                   time_proxy = time_proxy)
 
@@ -1540,14 +1545,16 @@ def cal_cumavg_minute_2(history_minute_data: pd.DataFrame,
     return today_cum_avg_data
 
 
-def find_minute_EES_long(histroy_data_intraday: pd.DataFrame, 
+def find_minute_EES_long(histroy_data: pd.DataFrame, 
                          target_entry: float, target_exit: float, stop_exit: float,
                          open_hr: str = "0330", close_hr: str = "1930", 
-                         price_approx: str = 'Open', 
+                         price_proxy: str = 'Open', 
                          time_proxy: str= 'Time',
+                         date_proxy: str = 'Date',
                          direction: str = 'Neutral',
                          close_trade_hr: str = '1925', 
-                         dt_scale: str = 'datetime') -> dict:
+                         dt_scale: str = 'datetime',
+                         first_date = None, last_date = None) -> dict:
     """
     Set the EES value given a time-series of minute intraday data.
     This function is the key for crossover loops in the backtest
@@ -1598,13 +1605,18 @@ def find_minute_EES_long(histroy_data_intraday: pd.DataFrame,
 
     """
     # (This function can be made in one more layer of abstraction. Work on this later)
-    
+    if first_date == None:
+        first_date = histroy_data[date_proxy].iloc[0]
+    if last_date == None:
+        last_date = histroy_data[date_proxy].iloc[-1]
+        
+    print('first_date, last_date', first_date, last_date)
     # define subsample. turn the pandas series into a numpy array
-    price_list = histroy_data_intraday[price_approx].to_numpy()
-    time_list = histroy_data_intraday[time_proxy].to_numpy()
+    price_list = histroy_data[price_proxy].to_numpy()
+    time_list = histroy_data[time_proxy].to_numpy()
     
     # read in date list
-    date_list = histroy_data_intraday['Date'].to_numpy() 
+    date_list = histroy_data[date_proxy].to_numpy() 
     # Temporary solution. Can be made using two to three time layer
 
     # make datetime list
@@ -1657,13 +1669,17 @@ def find_minute_EES_long(histroy_data_intraday: pd.DataFrame,
         raise ValueError('Direction has to be either Buy, Sell, or Neutral.')
     
     # Define the opening/closing time and closing price. 
+    first_date_str = first_date.strftime("%y-%m-%d")
+    last_date_str = last_date.strftime("%y-%m-%d")
     # Here we choose 19:25 for final trade
     open_hr_str = open_hr.strftime("%H%M")
     close_hr_str = close_hr.strftime("%H%M")
 
     ## Find the closest price and datettime instead of having it at exactly the open time
-    open_date_new, open_pt = find_closest_price(histroy_data_intraday, 
-                                                  target_hr = open_hr_str, 
+    open_date_new, open_pt = find_closest_price_datetime(histroy_data, 
+                                                  target_date = first_date, 
+                                                  target_hr = open_hr_str,
+                                                  price_proxy=price_proxy,
                                                   direction = 'forward')
     
     #open_date = date_list[np.where(time_list==open_date_new)[0]][0]
@@ -1672,10 +1688,11 @@ def find_minute_EES_long(histroy_data_intraday: pd.DataFrame,
                                                open_date_new)
 
     # Find the closest price and datettime instead of having it at exactly the close time
-    close_date_new, close_pt = find_closest_price(histroy_data_intraday, 
-                                                  target_hr = close_hr_str, 
+    close_date_new, close_pt = find_closest_price_datetime(histroy_data, 
+                                                  target_date = last_date,
+                                                  target_hr = close_hr_str,
+                                                  price_proxy=price_proxy,
                                                   direction = 'backward')
-    
     #close_date = date_list[np.where(time_list==close_date_new)[0]][0]
     close_date = datetime_list[-1]
     close_datetime = datetime.datetime.combine(close_date.date(), 
@@ -1688,11 +1705,11 @@ def find_minute_EES_long(histroy_data_intraday: pd.DataFrame,
                 'open': tuple((open_datetime, open_pt)),
                 'close': tuple((close_datetime, close_pt))}
 
-    #print('EES_dict', EES_dict['close'])
+    print('EES_dict', EES_dict)
     return EES_dict
 
 def find_minute_EES_range_long():
-    pass
+    ...
 
 
 # I: prev_cum_avg, prev_cum_n, minute_data; O:
