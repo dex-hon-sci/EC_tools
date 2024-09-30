@@ -128,14 +128,27 @@ def get_apc_from_server(username: str, password: str,
 
     return apc_data
 
-def read_apc_data(filename):
+def read_apc_data(filename: str)->pd.DataFrame:
+    """
+    Nothing Special. Just a shorthand function to read the apc
+
+    Parameters
+    ----------
+    filename : str
+        APC CSVfilename.
+
+    Returns
+    -------
+    data : Data Frame
+        APC in dataframe.
+
+    """
     # This function should be used in conjuction with get_apc_from_server(). 
     # The data should be pulled from the server using that function
     data = pd.read_csv(filename)
 
     return data    
 
-# tested.
 def read_portara_daily_data(filename:str, symbol:str, 
                             start_date:str, end_date:str, 
                             column_select: list[str] = 
@@ -146,7 +159,8 @@ def read_portara_daily_data(filename:str, symbol:str,
     A generic function that read the Portara Data in a suitable form. 
     The function itself only read a single csv file at a time.
 
-    LEGACY function from Abbe.
+    LEGACY function from Abbe. 
+    Use the function 'read_reformat_Portara_daily_data' instead.
     
     Parameters
     ----------
@@ -208,7 +222,8 @@ def read_portara_minute_data(filename, symbol, start_date, end_date,
     A modified version of the generic Portara reading function specifically for 
     the 1 minute data.
     
-    LEGACY function from Abbe.
+    LEGACY function from Abbe. 
+    Use the function 'read_reformat_Portara_minute_data' instead.
 
     Parameters
     ----------
@@ -287,7 +302,7 @@ def merge_portara_data(table1: pd.DataFrame,
     Merging the Portara Daily and Minute table. The merger is operated on the 
     two columns: 'Date only' and 'Price Code'.
     
-    LEGACY function from Abbe.
+    LEGACY function from Abbe. Not in use at the moment.
 
     Parameters
     ----------
@@ -326,7 +341,7 @@ def portara_data_handling(portara_dat: pd.DataFrame) -> pd.DataFrame:
     """
     A function that handle Portara's data.
     
-    LEGACY function from Abbe.
+    LEGACY function from Abbe. Not in Use at the moment.
 
     Parameters
     ----------
@@ -473,6 +488,19 @@ def read_reformat_Portara_minute_data(filename: str,
     return history_data#history_data_reindex
 
 def read_reformat_openprice_data(filename: str) ->  pd.DataFrame:
+    """
+    A function that read and reformat the openprice data.
+
+    Parameters
+    ----------
+    filename : str
+        CSV filename.
+
+    Returns
+    -------
+    DataFrame
+
+    """
     openprice_data = pd.read_csv(filename)
     
     openprice_data["Date"] = [datetime.datetime(year = int(str(x)[0:4]), 
@@ -491,9 +519,30 @@ def read_reformat_openprice_data(filename: str) ->  pd.DataFrame:
     #print(openprice_data_reindex)
     return openprice_data #openprice_data_reindex
 
-def read_reformat_dateNtime(filename:str, 
+def read_reformat_dateNtime(filename: str, 
                             time_proxies: list[str] =['Date', 'Time'], 
-                            str_formats: list[str]=['%Y-%m-%d', '%H:%M:%S']):
+                            str_formats: list[str]=['%Y-%m-%d', '%H:%M:%S']) \
+                            -> pd.DataFrame:
+    """
+    Utility function that read and reformat data with multiple columns of 
+    time elements, e.g. 'Date' and 'Time'.
+
+    Parameters
+    ----------
+    filename : str
+        CSV filename.
+    time_proxies : list[str], optional
+        A list. The default is ['Date', 'Time'].
+    str_formats : list[str], optional
+        A list of str arg passing to datetime.strptime function. 
+        The default is ['%Y-%m-%d', '%H:%M:%S'].
+
+    Returns
+    -------
+    data : Data Frame
+        Result Data Frame.
+
+    """
     data = pd.read_csv(filename)
     bucket_1 = [datetime.datetime.strptime(x, str_formats[0])
                                for x in data[time_proxies[0]]]
@@ -508,6 +557,22 @@ def read_reformat_dateNtime(filename:str,
 def read_reformat_APC_data(filename: str, 
                            time_proxies: list[str] = 
                            ['PUBLICATION_DATE', 'PERIOD']) -> pd.DataFrame:
+    """
+    
+
+    Parameters
+    ----------
+    filename : str
+        DESCRIPTION.
+    time_proxies : list[str], optional
+        DESCRIPTION. The default is ['PUBLICATION_DATE', 'PERIOD'].
+
+    Returns
+    -------
+    TYPE
+        DESCRIPTION.
+
+    """
     signal_data =  pd.read_csv(filename)
     
     if type(time_proxies) == str:
@@ -709,76 +774,6 @@ def find_closest_price_datetime(day_minute_data: pd.DataFrame,
     return target_hr_dt, target_price[0]
 
 
-
-def find_closest_price_date(data: pd.DataFrame, 
-                            target_time: str ='2024-01-03', 
-                            time_proxy: str = 'Date', 
-                            price_proxy: str ='Open',
-                            direction: str = 'forward', 
-                            step: int = 1, 
-                            search_time: int = 30) -> \
-                            tuple[datetime.datetime, float]: # WIP
-    
-    # If the input is forward, the loop search forward a unit of minute (step)
-    if direction == 'forward':
-        step = 1* step
-    # If the input is backward, the loop search back a unit of minute (step)
-    elif direction == 'backward':
-        step = -1* step
-        
-    # determine whether it is in the time frame of minutes,    
-    #target_time_dt= datetime.time(hour=int(target_time[0:2]),minute=int(target_time[2:4]))
-    target_time_dt = datetime.datetime.strptime(target_time, "%Y-%m-%d")
-    
-    #initial estimation of the target price
-    target_price = data[data[time_proxy] == target_time_dt][price_proxy]
-    #loop through the next 30 days to find the opening price    
-    for i in range(search_time): 
-        if len(target_price) == 0:
-            
-            delta = datetime.timedelta(days = step)
-            
-            target_time_dt = target_time_dt + delta
-          #  print(target_time_dt)
-            target_price = data[data[time_proxy] == target_time_dt][price_proxy]
-            
-    return target_time_dt, target_price
-
-
-def find_closest_price_generic(data: pd.DataFrame, 
-                               target_time: str ='0330', 
-                               time_proxy: str = 'Time', 
-                               price_proxy: str ='Open',
-                               direction: str ='forward', 
-                               step: int = 1, 
-                               search_time: int = 1000) -> \
-                               tuple[datetime.datetime, float]: # WIP
-    
-    # If the input is forward, the loop search forward a unit of minute (step)
-    if direction == 'forward':
-        step = 1* step
-    # If the input is backward, the loop search back a unit of minute (step)
-    elif direction == 'backward':
-        step = -1* step
-        
-    # determine whether it is in the time frame of minutes,
-    target_time_dt = datetime.datetime.strftime(target_time, "%H%M")
-    
-    #initial estimation of the target price
-    target_price = data[data[time_proxy] == target_time_dt][price_proxy]
-    #loop through the next 30 minutes to find the opening price    
-    for i in range(search_time):    
-        if len(target_price) == 0:
-            
-            delta = datetime.timedelta(minutes = step)
-            
-            target_time_dt = (datetime.datetime.combine(datetime.datetime.today(), 
-                            target_time_dt) + delta).time()
-            
-            target_price = data[data[time_proxy] == target_time_dt][price_proxy]
-            
-    return target_time_dt, target_price
-
 def find_price_by_time(history_data_daily: pd.DataFrame, 
                        history_data_minute: pd.DataFrame, 
                        open_hr: str ='0330') -> pd.DataFrame: #tested
@@ -946,7 +941,8 @@ def find_minute_EES(histroy_data_intraday: pd.DataFrame,
                     close_trade_hr: str = '1925', 
                     dt_scale: str = 'datetime') -> dict:
     """
-    Set the EES value given a time-series of minute intraday data.
+    Find the points of crossover given a set of EES value in a time-series of 
+    minute intraday data.
     This function is the key for crossover loops in the backtest
 
     Parameters
@@ -992,6 +988,12 @@ def find_minute_EES(histroy_data_intraday: pd.DataFrame,
     -------
     EES_dict : dict
         A dictionary that cantains the possible EES points and time.
+        It has the following format:
+            {'entry': [(entry_times,entry_pts), ... ],
+            'exit': [(exit_times,exit_pts), ...],
+            'stop': [(stop_times,stop_pts), ... ],
+            'open': (open_datetime, open_pt),
+            'close': (close_datetime, close_pt)}
 
     """
     # (This function can be made in one more layer of abstraction. Work on this later)
@@ -1098,13 +1100,57 @@ def find_minute_EES_range(histroy_data_intraday: pd.DataFrame,
                           target_exit_range: list[float|int] | tuple[float|int], 
                           stop_exit: float | int,
                           open_hr: str = "0330", close_hr: str = "1930", 
-                          price_approx: str = 'Open', 
+                          price_proxy: str = 'Open', 
                           time_proxy: str= 'Time',
                           direction: str = 'Neutral',
-                          dt_scale: str = 'datetime'): # WIP
+                          dt_scale: str = 'datetime') -> dict[str,list|tuple]:
+    """
+    Find the points within a range of EES value in a time-series of minute 
+    intrday data.
+    This function is the key for range loop in backtesting.
+
+
+    Parameters
+    ----------
+    histroy_data_intraday : pd.DataFrame
+        The historical data.
+    target_entry_range : list[float|int] | tuple[float|int]
+        A range of entry price in the format of 
+        [lower_bound_price, upper_bound_price].
+    target_exit_range : list[float|int] | tuple[float|int]
+        A range of exit price in the format of 
+        [lower_bound_price, upper_bound_price].
+    stop_exit : float | int
+        The stop loss value.
+    open_hr : str, optional
+        The opening hour. The default is "0330".
+    close_hr : str, optional
+        The closing hour. The default is "1930".
+    price_proxy : str, optional
+        The column name for the price. The default is 'Open'.
+    time_proxy : str, optional
+        The column name for the time. The default is 'Time'.
+    direction : str, optional
+        The direction of the trade. The default is 'Neutral'.
+    dt_scale : str, optional
+        DESCRIPTION. The default is 'datetime'.
+
+    Returns
+    -------
+    range_dict : TYPE
+        A dictionary contianing the points in a day that falls within the 
+        entry and exit range, as well as points that crossover to the stoploss,
+        along with the open and close points of the day.
+        It has the following format:
+            {'entry': [(entry_times,entry_pts), ... ],
+            'exit': [(exit_times,exit_pts), ...],
+            'stop': [(stop_times,stop_pts), ... ],
+            'open': (open_datetime, open_pt),
+            'close': (close_datetime, close_pt)}
+    """
     
     # define subsample. turn the pandas series into a numpy array
-    price_array = histroy_data_intraday[price_approx].to_numpy()
+    price_array = histroy_data_intraday[price_proxy].to_numpy()
     time_array = histroy_data_intraday[time_proxy].to_numpy()
     
     # read in date list
@@ -1274,21 +1320,31 @@ def render_PNL_xlsx(listfiles: list[str],
                     exit_price_proxy: str = 'Exit_Price',
                     return_proxy: str = 'Return_Trades') -> pd.DataFrame:
     """
-    LEGACY function from Abbe.
     A function that read in the back-test result to generate an xlsx PNL file 
 
     Parameters
     ----------
     listfiles : list
-    
+        A list of filenames that to be included in the PNL report
     number_contracts_list : list
-    
+        A list of numbers of contracts to be calculated in the return and 
+        cumulative return
     suffix : str
-    
+        The suffix for the output filename. The Default is '_.xlsx'.
+    symbol_proxy: str
+        The name for the symbol column. The Default is 'Price_Code'.
+    entry_price_proxy: str
+        The name of the entry price column. The Default is 'Entry_Price'.
+    entry_date_proxy: str
+        The name of the entry date column. The Default is 'Entry_Date'.
+    exit_price_proxy: str
+        The name of the exit price column. The Default is 'Exit_Price'.
+    return_proxy: str
+        The name of the return column. The Default is 'Return_Trades'.
     Returns
     -------
     datpc : DataFrame
-        
+        The output PNL file.
     """
     for fn in listfiles: 
         
@@ -1715,3 +1771,73 @@ def find_minute_EES_range_long():
 # I: prev_cum_avg, prev_cum_n, minute_data; O:
 # today_cum_avg
 # Make a list of today_cum_avg base on minute by minute
+
+
+def find_closest_price_date(data: pd.DataFrame, 
+                            target_time: str ='2024-01-03', 
+                            time_proxy: str = 'Date', 
+                            price_proxy: str ='Open',
+                            direction: str = 'forward', 
+                            step: int = 1, 
+                            search_time: int = 30) -> \
+                            tuple[datetime.datetime, float]: # WIP
+    
+    # If the input is forward, the loop search forward a unit of minute (step)
+    if direction == 'forward':
+        step = 1* step
+    # If the input is backward, the loop search back a unit of minute (step)
+    elif direction == 'backward':
+        step = -1* step
+        
+    # determine whether it is in the time frame of minutes,    
+    #target_time_dt= datetime.time(hour=int(target_time[0:2]),minute=int(target_time[2:4]))
+    target_time_dt = datetime.datetime.strptime(target_time, "%Y-%m-%d")
+    
+    #initial estimation of the target price
+    target_price = data[data[time_proxy] == target_time_dt][price_proxy]
+    #loop through the next 30 days to find the opening price    
+    for i in range(search_time): 
+        if len(target_price) == 0:
+            
+            delta = datetime.timedelta(days = step)
+            
+            target_time_dt = target_time_dt + delta
+          #  print(target_time_dt)
+            target_price = data[data[time_proxy] == target_time_dt][price_proxy]
+            
+    return target_time_dt, target_price
+
+
+def find_closest_price_generic(data: pd.DataFrame, 
+                               target_time: str ='0330', 
+                               time_proxy: str = 'Time', 
+                               price_proxy: str ='Open',
+                               direction: str ='forward', 
+                               step: int = 1, 
+                               search_time: int = 1000) -> \
+                               tuple[datetime.datetime, float]: # WIP
+    
+    # If the input is forward, the loop search forward a unit of minute (step)
+    if direction == 'forward':
+        step = 1* step
+    # If the input is backward, the loop search back a unit of minute (step)
+    elif direction == 'backward':
+        step = -1* step
+        
+    # determine whether it is in the time frame of minutes,
+    target_time_dt = datetime.datetime.strftime(target_time, "%H%M")
+    
+    #initial estimation of the target price
+    target_price = data[data[time_proxy] == target_time_dt][price_proxy]
+    #loop through the next 30 minutes to find the opening price    
+    for i in range(search_time):    
+        if len(target_price) == 0:
+            
+            delta = datetime.timedelta(minutes = step)
+            
+            target_time_dt = (datetime.datetime.combine(datetime.datetime.today(), 
+                            target_time_dt) + delta).time()
+            
+            target_price = data[data[time_proxy] == target_time_dt][price_proxy]
+            
+    return target_time_dt, target_price
