@@ -1,0 +1,68 @@
+site_name: EC_tools Documentation
+nav:
+  - Home: index.md
+  - About: about.md
+  - Main: main.md
+  - EC_tools: 
+         - EC_tools/EC_tools.md
+         - read: EC_tools/read.md         
+         - plot: EC_tools/plot.md
+         - portfolio: EC_tools/portfolio.md
+         - position: EC_tools/position.md
+         - strategy: EC_tools/strategy.md
+         - simple_trade: EC_tools/simple_trade.md
+         - trade: EC_tools/trade.md
+         - backtest: EC_tools/backtest.md
+         - utility: EC_tools/utility.md
+  - Applications:
+         - app/app.md
+         - Run APC Study: app/run_apc_price_study.md
+         - Run Backtest: app/run_backtest.md
+         - Run Comparison Plot: app/run_comparison_plot.md
+         - Run Daily Instruction: app/run_daily_instruction.md
+         - Run Data Management: app/run_data_management.md
+         - Run Generate Monthly MR signals: app/run_gen_monthly_MR_dir.md
+         - Run Generate Daily MR signals: app/run_gen_MR_dir.md
+         - Run Plot Backtest Heatmap: app/run_plot_heatamp.md
+         - Run PNL Plots: app/run_PNL_plot.md
+         - Run Preprocess: app/run_preprocess.md
+         - Run Update DB: app/run_update_db.md
+theme: 
+  name: readthedocs
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - toc.integrate
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.annotation
+    - content.code.copy
+  language: en
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: numpy
+extra:
+  social:
+    - icon: fontawesome/brands/github-alt
+      link: https://github.com/dex-hon-sci
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - admonition
+  - pymdownx.arithmatex:
+      generic: true
+  - footnotes
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.mark
+  - attr_list
+
