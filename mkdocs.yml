@@ -4,7 +4,7 @@ nav:
   - About: about.md
   - Main: main.md
   - EC_tools: 
-         - EC_tools/EC_tools.md
+         - Introduction: EC_tools/EC_tools.md
          - read: EC_tools/read.md         
          - plot: EC_tools/plot.md
          - portfolio: EC_tools/portfolio.md
@@ -15,7 +15,7 @@ nav:
          - backtest: EC_tools/backtest.md
          - utility: EC_tools/utility.md
   - Applications:
-         - app/app.md
+         - Introduction: app/app.md
          - Run APC Study: app/run_apc_price_study.md
          - Run Backtest: app/run_backtest.md
          - Run Comparison Plot: app/run_comparison_plot.md

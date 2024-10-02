@@ -334,6 +334,44 @@ def run_backtest_portfolio_monthly(TradeMethod,
                                    close_hr_dict: dict = CLOSE_HR_DICT, 
                                    selected_directions = ["Buy", "Sell"],
                                    plot_or_not: bool = False):
+    """
+    
+
+    Parameters
+    ----------
+    TradeMethod : TYPE
+        DESCRIPTION.
+    master_signals_filename : str
+        DESCRIPTION.
+    histroy_intraday_data_pkl : dict
+        DESCRIPTION.
+    histroy_minute_cumavg_data_pkl : dict[str, pd.DataFrame]
+        DESCRIPTION.
+    start_date : str
+        DESCRIPTION.
+    end_date : str
+        DESCRIPTION.
+    give_obj_name : str, optional
+        DESCRIPTION. The default is "USD".
+    get_obj_quantity : int, optional
+        DESCRIPTION. The default is 1.
+    loop_type : LoopType, optional
+        DESCRIPTION. The default is LoopType.CROSSOVER.
+    open_hr_dict : dict, optional
+        DESCRIPTION. The default is OPEN_HR_DICT.
+    close_hr_dict : dict, optional
+        DESCRIPTION. The default is CLOSE_HR_DICT.
+    selected_directions : TYPE, optional
+        DESCRIPTION. The default is ["Buy", "Sell"].
+    plot_or_not : bool, optional
+        DESCRIPTION. The default is False.
+
+    Returns
+    -------
+    P1 : TYPE
+        DESCRIPTION.
+
+    """
     t1 = time.time()
     start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
     end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
@@ -382,6 +420,50 @@ def run_backtest_bulk(TradeMethod,
                       selected_directions = ['Buy', 'Sell'],
                       save_or_not: bool = True, 
                       merge_or_not: bool = True):
+    """
+    
+
+    Parameters
+    ----------
+    TradeMethod : TYPE
+        DESCRIPTION.
+    signal_file_loc : dict
+        DESCRIPTION.
+    save_file_loc : dict
+        DESCRIPTION.
+    start_date : str
+        DESCRIPTION.
+    end_date : str
+        DESCRIPTION.
+    method : str, optional
+        DESCRIPTION. The default is "list".
+    master_signal_filename : str, optional
+        DESCRIPTION. The default is "".
+    master_pnl_filename : str, optional
+        DESCRIPTION. The default is ''.
+    give_obj_name : str, optional
+        DESCRIPTION. The default is 'USD'.
+    get_obj_quantity : int, optional
+        DESCRIPTION. The default is 1.
+    open_hr_dict : TYPE, optional
+        DESCRIPTION. The default is OPEN_HR_DICT.
+    close_hr_dict : TYPE, optional
+        DESCRIPTION. The default is CLOSE_HR_DICT.
+    loop_type : LoopType, optional
+        DESCRIPTION. The default is LoopType.CROSSOVER.
+    selected_directions : TYPE, optional
+        DESCRIPTION. The default is ['Buy', 'Sell'].
+    save_or_not : bool, optional
+        DESCRIPTION. The default is True.
+    merge_or_not : bool, optional
+        DESCRIPTION. The default is True.
+
+    Returns
+    -------
+    backtest_result : TYPE
+        DESCRIPTION.
+
+    """
             
     if method == "list":
         SAVE_FILENAME_LIST = list(save_file_loc.values())
