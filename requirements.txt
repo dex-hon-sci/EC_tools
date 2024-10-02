@@ -6,8 +6,9 @@ on:
     tags-ignore:
       - '**' # Ignore any tags here
     branches:
+      - pure-code
       - main
-      - master
+      - temp
     #
     # Trigger when either files in the docs folder,
     # the requirements.txt file or the mkdocs.yml file
