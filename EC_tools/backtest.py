@@ -1,24 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-# import Python package
-import pandas as pd
-import numpy as np
-import datetime as datetime
-
-from typing import Protocol
-from enum import Enum
-
-# import from EC_tools
-import EC_tools.utility as util
-import EC_tools.read as read
-from EC_tools.bookkeep import Bookkeep
-import EC_tools.plot as plot
-from EC_tools.portfolio import Portfolio
-from EC_tools.trade import Trade
-from crudeoil_future_const import OPEN_HR_DICT, CLOSE_HR_DICT, OIL_FUTURES_FEES,\
-                                  HISTORY_MINTUE_FILE_LOC, APC_FILE_LOC
-
 """
 Created on Thu Apr 18 18:22:17 2024
 
@@ -61,13 +40,38 @@ Backtest Methods on Multiple Assets:
     There are several method that can be used to iterate through multiple assets.
     At the moment, there are three types:
         
-List-based
+        
+List-based (WIP)
     
-Preload_list
+Preload_list (WIP)
 
-Concurrent
+Concurrent (WIP)
  
 """
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+# import Python package
+import pandas as pd
+import numpy as np
+import datetime as datetime
+import calendar
+
+from typing import Protocol
+from enum import Enum
+
+# import from EC_tools
+import EC_tools.utility as util
+import EC_tools.read as read
+from EC_tools.bookkeep import Bookkeep
+import EC_tools.plot as plot
+from EC_tools.portfolio import Portfolio
+from EC_tools.trade import Trade
+from crudeoil_future_const import OPEN_HR_DICT, CLOSE_HR_DICT, OIL_FUTURES_FEES,\
+                                  HISTORY_MINTUE_FILE_LOC, APC_FILE_LOC
+
+
 
 __all__ = ['LoopType', 'prepare_signal_interest', 'extract_intraday_minute_data', 
            'plot_in_backtest', 'gen_trunc_dict', 'gen_trunc_dict_long',
@@ -197,11 +201,30 @@ def extract_intraday_minute_data(histroy_intraday_data: pd.DataFrame,
 
     return histroy_intraday_data
 
-import calendar
 def extract_month_minute_data(histroy_data: pd.DataFrame, 
                               date_interest: str, 
                               open_hr: str = '0330', 
                               close_hr: str = '1959') -> pd.DataFrame: # tested
+    """
+    
+
+    Parameters
+    ----------
+    histroy_data : pd.DataFrame
+        DESCRIPTION.
+    date_interest : str
+        DESCRIPTION.
+    open_hr : str, optional
+        DESCRIPTION. The default is '0330'.
+    close_hr : str, optional
+        DESCRIPTION. The default is '1959'.
+
+    Returns
+    -------
+    histroy_data : TYPE
+        DESCRIPTION.
+
+    """
     # convert the string hour and minute input to datetime.time object
     if type(open_hr) == str:
         open_hr_str, open_min_str = open_hr[-4:-2], open_hr[-2:]
@@ -244,6 +267,28 @@ def plot_in_backtest(date_interest: str | datetime.datetime,
                      EES_dict:dict, 
                      direction: str, 
                      plot_or_not: bool = False) -> None:
+    """
+    
+
+    Parameters
+    ----------
+    date_interest : str | datetime.datetime
+        DESCRIPTION.
+    asset_name : str
+        DESCRIPTION.
+    EES_dict : dict
+        DESCRIPTION.
+    direction : str
+        DESCRIPTION.
+    plot_or_not : bool, optional
+        DESCRIPTION. The default is False.
+
+    Returns
+    -------
+    None
+        DESCRIPTION.
+
+    """
     if plot_or_not == True:
         
         if isinstance(date_interest, datetime.datetime):

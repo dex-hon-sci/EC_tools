@@ -4,6 +4,10 @@
 Created on Mon May  6 08:55:17 2024
 
 @author: dexter
+
+`Portfolio` module contains the `Portfolio` class that manage your transaction
+record of your cash and asset.
+
 """
 # python import
 from dataclasses import dataclass, field

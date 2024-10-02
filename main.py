@@ -1,11 +1,11 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Created on Sat Jun 22 23:32:11 2024
 
 @author: dexter
+
+
 """
-                                
+              
 # Import EC_tools    
 from EC_tools.read import render_PNL_xlsx, open_portfolio
 import EC_tools.utility as util
@@ -49,6 +49,7 @@ from crudeoil_future_const import ARGUS_BENCHMARK_SIGNAL_AMB_FILE_LOC, \
                                   ARGUS_BENCHMARK_SIGNAL_AMB_SELL_FILE_LOC
 
 
+                  
 @util.time_it
 def load_source_data() -> tuple:
     #load the pkl 

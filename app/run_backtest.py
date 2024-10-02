@@ -1,5 +1,35 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+"""
+Created on Tue May  7 23:46:42 2024
+
+@author: dexter
+
+The run_backtest application setup and run backtest using backtest module
+
+
+Backtest Methods on Singular Asset:
+    The method to run singular asset are: 
+        1) "run_backtest" that utilise loop_date and simple_trade functions. 
+        2) "run_backtest_portfolio" that utilise loop_date_portfolio and Trade 
+           class child objects. 
+        
+Backtest Methods on Multiple Assets:
+    There are several method that can be used to iterate through 
+    multiple assets.
+    At the moment, there are two methods:
+        1) "run_backtest_list" that uses "run_backtest" and take a list of 
+            historical data filename as inputs.
+        2) "run_backtest_portfolio_preloaded" that use a preloaded pkl files 
+            that contains the historical data in the form of pd.DataFrame
+            
+    The master function that controls which method to be used:
+        -  "run_backtest_bulk" is the master function that controls which 
+            multi-asset backtest to be used. 
+            If method = "list", the method runs "run_backtest_list",
+            If method = "preload", the method runs "run_backtest_portfolio_preloaded",
+        
+
+"""
+
 import datetime as datetime
 import time
 import pickle
@@ -25,35 +55,7 @@ from crudeoil_future_const import OPEN_HR_DICT, CLOSE_HR_DICT, \
                                   TEST_FILE_LOC, TEST_FILE_PNL_LOC,\
                                   DAILY_MINUTE_DATA_PKL, MINUTE_CUMAVG_MONTH_PKL\
                                       
-"""
-Created on Tue May  7 23:46:42 2024
 
-@author: dexter
-
-
-Backtest Methods on Singular Asset:
-    The method to run singular asset are: 
-        1) "run_backtest" that utilise loop_date and simple_trade functions. 
-        2) "run_backtest_portfolio" that utilise loop_date_portfolio and Trade 
-           class child objects. 
-        
-Backtest Methods on Multiple Assets:
-    There are several method that can be used to iterate through 
-    multiple assets.
-    At the moment, there are two methods:
-        1) "run_backtest_list" that uses "run_backtest" and take a list of 
-            historical data filename as inputs.
-        2) "run_backtest_portfolio_preloaded" that use a preloaded pkl files 
-            that contains the historical data in the form of pd.DataFrame
-            
-    The master function that controls which method to be used:
-        A) "run_backtest_bulk" is the master function that controls which 
-            multi-asset backtest to be used. 
-            If method = "list", the method runs "run_backtest_list",
-            If method = "preload", the method runs "run_backtest_portfolio_preloaded",
-        
-
-"""
 
 
 __all__ = ['run_backtest','run_backtest_list', 

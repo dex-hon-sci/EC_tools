@@ -1,10 +1,17 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Created on Tue Apr  2 14:09:54 2024
 
 @author: dexter
+
+The read module contains handy functions related reading and reformating raw 
+data. It also contains some relevant function in mainpulating data or deriving 
+new information from the raw data. 
+
+
 """
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import numpy as np
 import pandas as pd
 import datetime
@@ -18,12 +25,15 @@ from crudeoil_future_const import round_turn_fees, SIZE_DICT
 # Argus API 
 from ext_codes.ArgusPossibilityCurves2 import ArgusPossibilityCurves
 
+
+
+
 __all__ = ['get_apc_from_server','read_apc_data','read_portara_daily_data', 
            'read_portara_minute_data','merge_portara_data',
            'portara_data_handling', 'extract_lag_data', 
            'read_reformat_Portara_minute_data', 'find_closest_price', 
            'find_crossover', 'find_minute_EES','open_portfolio',
-           'render_PNL_xlsx']
+           'render_PNL_xlsx', 'group_trade']
 
 __author__="Dexter S.-H. Hon"
 
@@ -540,7 +550,6 @@ def read_reformat_dateNtime(filename: str,
     Returns
     -------
     data : Data Frame
-        Result Data Frame.
 
     """
     data = pd.read_csv(filename)
@@ -558,19 +567,20 @@ def read_reformat_APC_data(filename: str,
                            time_proxies: list[str] = 
                            ['PUBLICATION_DATE', 'PERIOD']) -> pd.DataFrame:
     """
-    
+    Read and reformat APC data
 
     Parameters
     ----------
     filename : str
-        DESCRIPTION.
+        APC filename.
     time_proxies : list[str], optional
-        DESCRIPTION. The default is ['PUBLICATION_DATE', 'PERIOD'].
+        A list of time (or Date) proxy. These are the column name in the
+        DataFrame.
+        The default is ['PUBLICATION_DATE', 'PERIOD'].
 
     Returns
     -------
-    TYPE
-        DESCRIPTION.
+    DataFrame
 
     """
     signal_data =  pd.read_csv(filename)
@@ -989,9 +999,9 @@ def find_minute_EES(histroy_data_intraday: pd.DataFrame,
     EES_dict : dict
         A dictionary that cantains the possible EES points and time.
         It has the following format:
-            {'entry': [(entry_times,entry_pts), ... ],
+            {'entry': [(entry_times,entry_pts), ...],
             'exit': [(exit_times,exit_pts), ...],
-            'stop': [(stop_times,stop_pts), ... ],
+            'stop': [(stop_times,stop_pts), ...],
             'open': (open_datetime, open_pt),
             'close': (close_datetime, close_pt)}
 
@@ -1100,7 +1110,8 @@ def find_minute_EES_range(histroy_data_intraday: pd.DataFrame,
                           target_exit_range: list[float|int] | tuple[float|int], 
                           stop_exit: float | int,
                           open_hr: str = "0330", close_hr: str = "1930", 
-                          price_proxy: str = 'Open', 
+                          price_proxy: str = 'Open',
+                          date_proxy: str = 'Date',
                           time_proxy: str= 'Time',
                           direction: str = 'Neutral',
                           dt_scale: str = 'datetime') -> dict[str,list|tuple]:
@@ -1133,7 +1144,10 @@ def find_minute_EES_range(histroy_data_intraday: pd.DataFrame,
     direction : str, optional
         The direction of the trade. The default is 'Neutral'.
     dt_scale : str, optional
-        DESCRIPTION. The default is 'datetime'.
+        datetime scale. It could be either 'time', 'date', or 'datetime'.
+        It choose from either the time or date columns, or 
+        combine the two into datetime.
+        The default is 'datetime'.
 
     Returns
     -------
@@ -1142,9 +1156,9 @@ def find_minute_EES_range(histroy_data_intraday: pd.DataFrame,
         entry and exit range, as well as points that crossover to the stoploss,
         along with the open and close points of the day.
         It has the following format:
-            {'entry': [(entry_times,entry_pts), ... ],
+            {'entry': [(entry_times,entry_pts), ...],
             'exit': [(exit_times,exit_pts), ...],
-            'stop': [(stop_times,stop_pts), ... ],
+            'stop': [(stop_times,stop_pts), ...],
             'open': (open_datetime, open_pt),
             'close': (close_datetime, close_pt)}
     """
@@ -1154,7 +1168,7 @@ def find_minute_EES_range(histroy_data_intraday: pd.DataFrame,
     time_array = histroy_data_intraday[time_proxy].to_numpy()
     
     # read in date list
-    date_array = histroy_data_intraday['Date'].to_numpy() 
+    date_array = histroy_data_intraday[date_proxy].to_numpy() 
     # Temporary solution. Can be made using two to three time layer
 
     # make datetime list
@@ -1246,7 +1260,6 @@ def open_portfolio(filename: str):
     Returns
     -------
     portfo : Portfolio
-        A.
 
     """
     file = open(filename, 'rb')
@@ -1364,7 +1377,7 @@ def render_PNL_xlsx(listfiles: list[str],
                                                     0.0, dattotal['fees'])
             
             # Make columns for scaled returns
-            dattotal['scaled returns from trades'] =  dattotal[return_proxy]*\
+            dattotal['scaled returns from trades'] = dattotal[return_proxy]*\
                                                         dattotal['number barrels/gallons']\
                                                             - dattotal['fees']
             
@@ -1418,7 +1431,8 @@ def group_trade(position_pool: list,
         The position_pool list inside a portfolio object.
     select_func : Callable function, optional
         Additional functions for unique condition for grouping trade.
-        The default is type (It will return true no matter what.
+        The default is a lambda function that return True 
+        (It will return true no matter what).
         
     Returns
     -------

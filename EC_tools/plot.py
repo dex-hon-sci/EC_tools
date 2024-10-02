@@ -1,10 +1,14 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Created on Fri May 10 18:33:06 2024
 
 @author: dexter
+
+
+Intraday price plotting functions
 """
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import numpy as np
 from dataclasses import dataclass
 

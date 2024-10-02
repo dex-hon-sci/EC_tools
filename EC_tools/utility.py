@@ -5,6 +5,8 @@ Created on Thu Mar 28 22:46:34 2024
 
 @author: dexter
 
+General utility functions
+
 """
 import time
 import datetime
@@ -35,6 +37,20 @@ def random_string(length:int=16):
     return code
 
 def time_it(func):
+    """
+    Simple time it function. Use this in a decorator
+
+    Parameters
+    ----------
+    func : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    TYPE
+        DESCRIPTION.
+
+    """
     # simple timing function
     def wrapper(*args, **kwargs):
         t1 = time.time()

@@ -1,31 +1,42 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Created on Fri May 10 00:16:28 2024
 
 @author: dexter
 
-A module that control trade action. The decision making logics are all stored 
-here.
+The Trade module contains relevant classes and functions that control trade 
+actions, i.e., the trade decision logic.
+
+Trade class
+
+
+ 
 """
+
+# import base python
 from dataclasses import dataclass
 from typing import Protocol # use protocol for trade class
 import datetime as datetime
+import copy 
 
+# import  common pcakages
 import numpy as np
 import pandas as pd
+
+# import EC_tools
 from EC_tools.portfolio import Portfolio
 from EC_tools.position import Position, ExecutePosition
 import EC_tools.read as read
 import EC_tools.utility as util
 from crudeoil_future_const import OIL_FUTURES_FEE, SIZE_DICT, ASSET_DICT
 
-import copy 
-
 
 class Trade(Protocol):
     """
-    Parent class for all trading strategy. Universal functions are written here.
+    Parent class for all trading strategy. It controls the setting of a 
+    particular Trade class.
+    
+    Universal functions are written here.
+    
     
     """
     def  __init__(self, portfolio: Portfolio, 
