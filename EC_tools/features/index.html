@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>features - EC_tools Documentation</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "features";
+        var mkdocs_page_input_path = "EC_tools/features.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> EC_tools Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../about/">About</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../main/">Main</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">EC_tools</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../EC_tools/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../read/">read</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plot/">plot</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../portfolio/">portfolio</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../position/">position</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../strategy/">strategy</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../simple_trade/">simple_trade</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../trade/">trade</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../backtest/">backtest</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../utility/">utility</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Applications</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../app/app/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../app/run_apc_price_study/">Run APC Study</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../app/run_backtest/">Run Backtest</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../app/run_comparison_plot/">Run Comparison Plot</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../app/run_daily_instruction/">Run Daily Instruction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../app/run_data_management/">Run Data Management</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../app/run_gen_monthly_MR_dir/">Run Generate Monthly MR signals</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../app/run_gen_MR_dir/">Run Generate Daily MR signals</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="../../app/run_plot_heatamp.md">Run Plot Backtest Heatmap</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../app/run_PNL_plot/">Run PNL Plots</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../app/run_preprocess/">Run Preprocess</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../app/run_update_db/">Run Update DB</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">EC_tools Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">features</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="features">features</h1>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<a id="EC_tools.features"></a>
+    <div class="doc doc-contents first">
+
+        <p>Created on Tue Aug 20 11:36:29 2024</p>
+<p>@author: dexter</p>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="EC_tools.features.GenHistoryStratData" class="doc doc-heading">
+            <code>GenHistoryStratData</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code>object</code></p>
+
+
+        <p>A class that contains a collection of method that generate data for 
+strategies base on history data</p>
+
+              <details class="quote">
+                <summary>Source code in <code>EC_tools/features.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-12"> 12</a></span>
+<span class="normal"><a href="#__codelineno-0-13"> 13</a></span>
+<span class="normal"><a href="#__codelineno-0-14"> 14</a></span>
+<span class="normal"><a href="#__codelineno-0-15"> 15</a></span>
+<span class="normal"><a href="#__codelineno-0-16"> 16</a></span>
+<span class="normal"><a href="#__codelineno-0-17"> 17</a></span>
+<span class="normal"><a href="#__codelineno-0-18"> 18</a></span>
+<span class="normal"><a href="#__codelineno-0-19"> 19</a></span>
+<span class="normal"><a href="#__codelineno-0-20"> 20</a></span>
+<span class="normal"><a href="#__codelineno-0-21"> 21</a></span>
+<span class="normal"><a href="#__codelineno-0-22"> 22</a></span>
+<span class="normal"><a href="#__codelineno-0-23"> 23</a></span>
+<span class="normal"><a href="#__codelineno-0-24"> 24</a></span>
+<span class="normal"><a href="#__codelineno-0-25"> 25</a></span>
+<span class="normal"><a href="#__codelineno-0-26"> 26</a></span>
+<span class="normal"><a href="#__codelineno-0-27"> 27</a></span>
+<span class="normal"><a href="#__codelineno-0-28"> 28</a></span>
+<span class="normal"><a href="#__codelineno-0-29"> 29</a></span>
+<span class="normal"><a href="#__codelineno-0-30"> 30</a></span>
+<span class="normal"><a href="#__codelineno-0-31"> 31</a></span>
+<span class="normal"><a href="#__codelineno-0-32"> 32</a></span>
+<span class="normal"><a href="#__codelineno-0-33"> 33</a></span>
+<span class="normal"><a href="#__codelineno-0-34"> 34</a></span>
+<span class="normal"><a href="#__codelineno-0-35"> 35</a></span>
+<span class="normal"><a href="#__codelineno-0-36"> 36</a></span>
+<span class="normal"><a href="#__codelineno-0-37"> 37</a></span>
+<span class="normal"><a href="#__codelineno-0-38"> 38</a></span>
+<span class="normal"><a href="#__codelineno-0-39"> 39</a></span>
+<span class="normal"><a href="#__codelineno-0-40"> 40</a></span>
+<span class="normal"><a href="#__codelineno-0-41"> 41</a></span>
+<span class="normal"><a href="#__codelineno-0-42"> 42</a></span>
+<span class="normal"><a href="#__codelineno-0-43"> 43</a></span>
+<span class="normal"><a href="#__codelineno-0-44"> 44</a></span>
+<span class="normal"><a href="#__codelineno-0-45"> 45</a></span>
+<span class="normal"><a href="#__codelineno-0-46"> 46</a></span>
+<span class="normal"><a href="#__codelineno-0-47"> 47</a></span>
+<span class="normal"><a href="#__codelineno-0-48"> 48</a></span>
+<span class="normal"><a href="#__codelineno-0-49"> 49</a></span>
+<span class="normal"><a href="#__codelineno-0-50"> 50</a></span>
+<span class="normal"><a href="#__codelineno-0-51"> 51</a></span>
+<span class="normal"><a href="#__codelineno-0-52"> 52</a></span>
+<span class="normal"><a href="#__codelineno-0-53"> 53</a></span>
+<span class="normal"><a href="#__codelineno-0-54"> 54</a></span>
+<span class="normal"><a href="#__codelineno-0-55"> 55</a></span>
+<span class="normal"><a href="#__codelineno-0-56"> 56</a></span>
+<span class="normal"><a href="#__codelineno-0-57"> 57</a></span>
+<span class="normal"><a href="#__codelineno-0-58"> 58</a></span>
+<span class="normal"><a href="#__codelineno-0-59"> 59</a></span>
+<span class="normal"><a href="#__codelineno-0-60"> 60</a></span>
+<span class="normal"><a href="#__codelineno-0-61"> 61</a></span>
+<span class="normal"><a href="#__codelineno-0-62"> 62</a></span>
+<span class="normal"><a href="#__codelineno-0-63"> 63</a></span>
+<span class="normal"><a href="#__codelineno-0-64"> 64</a></span>
+<span class="normal"><a href="#__codelineno-0-65"> 65</a></span>
+<span class="normal"><a href="#__codelineno-0-66"> 66</a></span>
+<span class="normal"><a href="#__codelineno-0-67"> 67</a></span>
+<span class="normal"><a href="#__codelineno-0-68"> 68</a></span>
+<span class="normal"><a href="#__codelineno-0-69"> 69</a></span>
+<span class="normal"><a href="#__codelineno-0-70"> 70</a></span>
+<span class="normal"><a href="#__codelineno-0-71"> 71</a></span>
+<span class="normal"><a href="#__codelineno-0-72"> 72</a></span>
+<span class="normal"><a href="#__codelineno-0-73"> 73</a></span>
+<span class="normal"><a href="#__codelineno-0-74"> 74</a></span>
+<span class="normal"><a href="#__codelineno-0-75"> 75</a></span>
+<span class="normal"><a href="#__codelineno-0-76"> 76</a></span>
+<span class="normal"><a href="#__codelineno-0-77"> 77</a></span>
+<span class="normal"><a href="#__codelineno-0-78"> 78</a></span>
+<span class="normal"><a href="#__codelineno-0-79"> 79</a></span>
+<span class="normal"><a href="#__codelineno-0-80"> 80</a></span>
+<span class="normal"><a href="#__codelineno-0-81"> 81</a></span>
+<span class="normal"><a href="#__codelineno-0-82"> 82</a></span>
+<span class="normal"><a href="#__codelineno-0-83"> 83</a></span>
+<span class="normal"><a href="#__codelineno-0-84"> 84</a></span>
+<span class="normal"><a href="#__codelineno-0-85"> 85</a></span>
+<span class="normal"><a href="#__codelineno-0-86"> 86</a></span>
+<span class="normal"><a href="#__codelineno-0-87"> 87</a></span>
+<span class="normal"><a href="#__codelineno-0-88"> 88</a></span>
+<span class="normal"><a href="#__codelineno-0-89"> 89</a></span>
+<span class="normal"><a href="#__codelineno-0-90"> 90</a></span>
+<span class="normal"><a href="#__codelineno-0-91"> 91</a></span>
+<span class="normal"><a href="#__codelineno-0-92"> 92</a></span>
+<span class="normal"><a href="#__codelineno-0-93"> 93</a></span>
+<span class="normal"><a href="#__codelineno-0-94"> 94</a></span>
+<span class="normal"><a href="#__codelineno-0-95"> 95</a></span>
+<span class="normal"><a href="#__codelineno-0-96"> 96</a></span>
+<span class="normal"><a href="#__codelineno-0-97"> 97</a></span>
+<span class="normal"><a href="#__codelineno-0-98"> 98</a></span>
+<span class="normal"><a href="#__codelineno-0-99"> 99</a></span>
+<span class="normal"><a href="#__codelineno-0-100">100</a></span>
+<span class="normal"><a href="#__codelineno-0-101">101</a></span>
+<span class="normal"><a href="#__codelineno-0-102">102</a></span>
+<span class="normal"><a href="#__codelineno-0-103">103</a></span>
+<span class="normal"><a href="#__codelineno-0-104">104</a></span>
+<span class="normal"><a href="#__codelineno-0-105">105</a></span>
+<span class="normal"><a href="#__codelineno-0-106">106</a></span>
+<span class="normal"><a href="#__codelineno-0-107">107</a></span>
+<span class="normal"><a href="#__codelineno-0-108">108</a></span>
+<span class="normal"><a href="#__codelineno-0-109">109</a></span>
+<span class="normal"><a href="#__codelineno-0-110">110</a></span>
+<span class="normal"><a href="#__codelineno-0-111">111</a></span>
+<span class="normal"><a href="#__codelineno-0-112">112</a></span>
+<span class="normal"><a href="#__codelineno-0-113">113</a></span>
+<span class="normal"><a href="#__codelineno-0-114">114</a></span>
+<span class="normal"><a href="#__codelineno-0-115">115</a></span>
+<span class="normal"><a href="#__codelineno-0-116">116</a></span>
+<span class="normal"><a href="#__codelineno-0-117">117</a></span>
+<span class="normal"><a href="#__codelineno-0-118">118</a></span>
+<span class="normal"><a href="#__codelineno-0-119">119</a></span>
+<span class="normal"><a href="#__codelineno-0-120">120</a></span>
+<span class="normal"><a href="#__codelineno-0-121">121</a></span>
+<span class="normal"><a href="#__codelineno-0-122">122</a></span>
+<span class="normal"><a href="#__codelineno-0-123">123</a></span>
+<span class="normal"><a href="#__codelineno-0-124">124</a></span>
+<span class="normal"><a href="#__codelineno-0-125">125</a></span>
+<span class="normal"><a href="#__codelineno-0-126">126</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-12" name="__codelineno-0-12"></a><span class="k">class</span> <span class="nc">GenHistoryStratData</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14"></a><span class="sd">    A class that contains a collection of method that generate data for </span>
+<a id="__codelineno-0-15" name="__codelineno-0-15"></a><span class="sd">    strategies base on history data</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16"></a>
+<a id="__codelineno-0-17" name="__codelineno-0-17"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18"></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">history</span><span class="p">):</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_history</span> <span class="o">=</span> <span class="n">history</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20"></a>        <span class="k">return</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21"></a>
+<a id="__codelineno-0-22" name="__codelineno-0-22"></a>    <span class="k">def</span> <span class="nf">gen_lag_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+<a id="__codelineno-0-23" name="__codelineno-0-23"></a>                     <span class="n">history_data_lag</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> 
+<a id="__codelineno-0-24" name="__codelineno-0-24"></a>                     <span class="n">apc_curve_lag</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> 
+<a id="__codelineno-0-25" name="__codelineno-0-25"></a>                     <span class="n">price_proxy</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Settle&#39;</span><span class="p">,</span> 
+<a id="__codelineno-0-26" name="__codelineno-0-26"></a>                     <span class="n">qunatile</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.25</span><span class="p">,</span><span class="mf">0.4</span><span class="p">,</span><span class="mf">0.6</span><span class="p">,</span><span class="mf">0.75</span><span class="p">])</span> <span class="o">-&gt;</span>\
+<a id="__codelineno-0-27" name="__codelineno-0-27"></a>                     <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span><span class="nb">list</span><span class="p">]:</span> 
+<a id="__codelineno-0-28" name="__codelineno-0-28"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-29" name="__codelineno-0-29"></a><span class="sd">        A method that generate all the data needed for the strategy. The ouput</span>
+<a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">        of this functions contain all the quantity that will be and can be used </span>
+<a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">        in creating variation of this strategy.</span>
+<a id="__codelineno-0-32" name="__codelineno-0-32"></a>
+<a id="__codelineno-0-33" name="__codelineno-0-33"></a>
+<a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">        Parameters</span>
+<a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">        ----------</span>
+<a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">        history_data_lag : DataFrame</span>
+<a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">            The history data of the lag days.</span>
+<a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="sd">        apc_curve_lag : DataFrame</span>
+<a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="sd">            The APC curve of the lag days.</span>
+<a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="sd">        price_proxy : str, optional</span>
+<a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">            The column name to call for price approximation. </span>
+<a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">            It can be either &quot;Open&quot;, &quot;High&quot;, &quot;Low&quot;, or &quot;Settle&quot;.</span>
+<a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">            The default is &#39;Settle&#39;.</span>
+<a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="sd">        qunatile : list, optional</span>
+<a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">            1D list that contains the quantile desitred. </span>
+<a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">            This function pass it into the APC of the day and calculate the </span>
+<a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">            relevant price.</span>
+<a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">            The default is [0.25,0.4,0.6,0.75].</span>
+<a id="__codelineno-0-49" name="__codelineno-0-49"></a>
+<a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">        Returns</span>
+<a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">        -------</span>
+<a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">        strategy_info : dict</span>
+<a id="__codelineno-0-53" name="__codelineno-0-53"></a><span class="sd">            A dictionary containing two key-value pairs.</span>
+<a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="sd">            &#39;lag_list&#39; is a list of quantiles of the lag days. The size of the </span>
+<a id="__codelineno-0-55" name="__codelineno-0-55"></a><span class="sd">            list depends on the input size of history_data_lag and apc_curve_lag.</span>
+<a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="sd">            &#39;rollingaverage&#39; is the average of the quantiles in lag_list. It </span>
+<a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="sd">            contain a singular float value.</span>
+<a id="__codelineno-0-58" name="__codelineno-0-58"></a>
+<a id="__codelineno-0-59" name="__codelineno-0-59"></a><span class="sd">        qunatile_info : list</span>
+<a id="__codelineno-0-60" name="__codelineno-0-60"></a><span class="sd">            A list of prices calculating using qunatile input into the APC</span>
+<a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="sd">            of the date of interest.</span>
+<a id="__codelineno-0-62" name="__codelineno-0-62"></a>
+<a id="__codelineno-0-63" name="__codelineno-0-63"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-0-64" name="__codelineno-0-64"></a>        <span class="c1"># use the history data to call a column using either OHLC                      </span>
+<a id="__codelineno-0-65" name="__codelineno-0-65"></a>        <span class="n">lag_price</span> <span class="o">=</span> <span class="n">history_data_lag</span><span class="p">[</span><span class="n">price_proxy</span><span class="p">]</span>
+<a id="__codelineno-0-66" name="__codelineno-0-66"></a>
+<a id="__codelineno-0-67" name="__codelineno-0-67"></a>        <span class="c1"># Find the quantile number for the lag APC at the Lag Prices </span>
+<a id="__codelineno-0-68" name="__codelineno-0-68"></a>        <span class="n">lag_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">mfunc</span><span class="o">.</span><span class="n">find_quant</span><span class="p">(</span><span class="n">apc_curve_lag</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> 
+<a id="__codelineno-0-69" name="__codelineno-0-69"></a>                                     <span class="bp">self</span><span class="o">.</span><span class="n">_quant_list</span><span class="p">,</span> <span class="n">lag_price</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> 
+<a id="__codelineno-0-70" name="__codelineno-0-70"></a>                                    <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">apc_curve_lag</span><span class="p">))]</span>
+<a id="__codelineno-0-71" name="__codelineno-0-71"></a>        <span class="n">lag_list</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+<a id="__codelineno-0-72" name="__codelineno-0-72"></a>        <span class="c1"># Note that the list goes like this [lag1q,lag2q,...]</span>
+<a id="__codelineno-0-73" name="__codelineno-0-73"></a>
+<a id="__codelineno-0-74" name="__codelineno-0-74"></a>        <span class="c1"># calculate the rolling average</span>
+<a id="__codelineno-0-75" name="__codelineno-0-75"></a>        <span class="n">rollingaverage_q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">lag_list</span><span class="p">)</span>
+<a id="__codelineno-0-76" name="__codelineno-0-76"></a>
+<a id="__codelineno-0-77" name="__codelineno-0-77"></a>        <span class="c1"># Storage</span>
+<a id="__codelineno-0-78" name="__codelineno-0-78"></a>        <span class="n">strategy_info</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;lag_list&#39;</span><span class="p">:</span> <span class="n">lag_list</span><span class="p">,</span> 
+<a id="__codelineno-0-79" name="__codelineno-0-79"></a>                         <span class="s1">&#39;rollingaverage&#39;</span><span class="p">:</span> <span class="n">rollingaverage_q</span><span class="p">}</span>
+<a id="__codelineno-0-80" name="__codelineno-0-80"></a>        <span class="c1"># The price of the quantile of interest, mostly for bookkeeping</span>
+<a id="__codelineno-0-81" name="__codelineno-0-81"></a>        <span class="n">qunatile_info</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_curve_today_spline</span><span class="p">(</span><span class="n">qunatile</span><span class="p">))</span>
+<a id="__codelineno-0-82" name="__codelineno-0-82"></a>
+<a id="__codelineno-0-83" name="__codelineno-0-83"></a>        <span class="k">return</span> <span class="n">strategy_info</span><span class="p">,</span> <span class="n">qunatile_info</span>
+<a id="__codelineno-0-84" name="__codelineno-0-84"></a>
+<a id="__codelineno-0-85" name="__codelineno-0-85"></a>    <span class="k">def</span> <span class="nf">gen_lag_data_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+<a id="__codelineno-0-86" name="__codelineno-0-86"></a>                          <span class="n">history_data_lag</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> 
+<a id="__codelineno-0-87" name="__codelineno-0-87"></a>                          <span class="n">apc_curve_lag</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> 
+<a id="__codelineno-0-88" name="__codelineno-0-88"></a>                          <span class="n">price_proxy</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Settle&#39;</span><span class="p">,</span> 
+<a id="__codelineno-0-89" name="__codelineno-0-89"></a>                          <span class="n">quantile_delta</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">+</span><span class="mf">0.1</span><span class="p">])</span><span class="o">-&gt;</span>\
+<a id="__codelineno-0-90" name="__codelineno-0-90"></a>                          <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span><span class="nb">list</span><span class="p">]:</span> 
+<a id="__codelineno-0-91" name="__codelineno-0-91"></a>
+<a id="__codelineno-0-92" name="__codelineno-0-92"></a>        <span class="n">lag_price</span> <span class="o">=</span> <span class="n">history_data_lag</span><span class="p">[</span><span class="n">price_proxy</span><span class="p">]</span>
+<a id="__codelineno-0-93" name="__codelineno-0-93"></a>        <span class="n">lag_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">mfunc</span><span class="o">.</span><span class="n">find_quant</span><span class="p">(</span><span class="n">apc_curve_lag</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> 
+<a id="__codelineno-0-94" name="__codelineno-0-94"></a>                                     <span class="bp">self</span><span class="o">.</span><span class="n">_quant_list</span><span class="p">,</span> <span class="n">lag_price</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> 
+<a id="__codelineno-0-95" name="__codelineno-0-95"></a>                                    <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">apc_curve_lag</span><span class="p">))]</span>
+<a id="__codelineno-0-96" name="__codelineno-0-96"></a>        <span class="n">lag_list</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+<a id="__codelineno-0-97" name="__codelineno-0-97"></a>        <span class="c1"># Note that the list goes like this [lag1q,lag2q,...]</span>
+<a id="__codelineno-0-98" name="__codelineno-0-98"></a>        <span class="c1"># calculate the rolling average</span>
+<a id="__codelineno-0-99" name="__codelineno-0-99"></a>        <span class="n">rollingaverage_q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">lag_list</span><span class="p">)</span>
+<a id="__codelineno-0-100" name="__codelineno-0-100"></a>
+<a id="__codelineno-0-101" name="__codelineno-0-101"></a>        <span class="c1"># turn the APC (cdf) to pdf in a list</span>
+<a id="__codelineno-0-102" name="__codelineno-0-102"></a>        <span class="n">lag_pdf_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">mfunc</span><span class="o">.</span><span class="n">cal_pdf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_quant_list</span><span class="p">,</span> 
+<a id="__codelineno-0-103" name="__codelineno-0-103"></a>                                      <span class="n">apc_curve_lag</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> 
+<a id="__codelineno-0-104" name="__codelineno-0-104"></a>                                            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">apc_curve_lag</span><span class="p">))]</span>
+<a id="__codelineno-0-105" name="__codelineno-0-105"></a>        <span class="c1"># Calculate the price of the mode in these apc</span>
+<a id="__codelineno-0-106" name="__codelineno-0-106"></a>        <span class="n">mode_Q_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">mfunc</span><span class="o">.</span><span class="n">find_pdf_quant</span><span class="p">(</span><span class="n">lag_pdf_list</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">lag_pdf_list</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+<a id="__codelineno-0-107" name="__codelineno-0-107"></a>                                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">apc_curve_lag</span><span class="p">))]</span>
+<a id="__codelineno-0-108" name="__codelineno-0-108"></a>        <span class="n">mode_Q_list</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+<a id="__codelineno-0-109" name="__codelineno-0-109"></a>
+<a id="__codelineno-0-110" name="__codelineno-0-110"></a>        <span class="c1"># calculate the rolling average for the mode</span>
+<a id="__codelineno-0-111" name="__codelineno-0-111"></a>        <span class="n">rollingaverage_mode_q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">mode_Q_list</span><span class="p">)</span>
+<a id="__codelineno-0-112" name="__codelineno-0-112"></a>
+<a id="__codelineno-0-113" name="__codelineno-0-113"></a>
+<a id="__codelineno-0-114" name="__codelineno-0-114"></a>        <span class="n">strategy_info</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;lag_list&#39;</span><span class="p">:</span> <span class="n">lag_list</span><span class="p">,</span> 
+<a id="__codelineno-0-115" name="__codelineno-0-115"></a>                         <span class="s1">&#39;rollingaverage&#39;</span><span class="p">:</span> <span class="n">rollingaverage_q</span><span class="p">,</span>
+<a id="__codelineno-0-116" name="__codelineno-0-116"></a>                         <span class="s1">&#39;mode_Q_list&#39;</span><span class="p">:</span> <span class="n">mode_Q_list</span><span class="p">,</span>
+<a id="__codelineno-0-117" name="__codelineno-0-117"></a>                         <span class="s1">&#39;rollingaverage_mode&#39;</span><span class="p">:</span> <span class="n">rollingaverage_mode_q</span>
+<a id="__codelineno-0-118" name="__codelineno-0-118"></a>                         <span class="p">}</span>
+<a id="__codelineno-0-119" name="__codelineno-0-119"></a>
+<a id="__codelineno-0-120" name="__codelineno-0-120"></a>        <span class="c1"># Find the quantile in the CDF (NOT THE PDF! important) from the mode_price</span>
+<a id="__codelineno-0-121" name="__codelineno-0-121"></a>        <span class="n">quantile</span> <span class="o">=</span> <span class="p">[</span><span class="n">quant</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_curve_today_reverse_spline</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mode_price</span><span class="p">)</span> 
+<a id="__codelineno-0-122" name="__codelineno-0-122"></a>                                                <span class="k">for</span> <span class="n">quant</span> <span class="ow">in</span> <span class="n">quantile_delta</span><span class="p">]</span>
+<a id="__codelineno-0-123" name="__codelineno-0-123"></a>
+<a id="__codelineno-0-124" name="__codelineno-0-124"></a>        <span class="n">qunatile_info</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_curve_today_spline</span><span class="p">(</span><span class="n">quantile</span><span class="p">))</span>
+<a id="__codelineno-0-125" name="__codelineno-0-125"></a>
+<a id="__codelineno-0-126" name="__codelineno-0-126"></a>        <span class="k">return</span> <span class="n">strategy_info</span><span class="p">,</span> <span class="n">qunatile_info</span> 
+</code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="EC_tools.features.GenHistoryStratData.gen_lag_data" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">gen_lag_data</span><span class="p">(</span><span class="n">history_data_lag</span><span class="p">,</span> <span class="n">apc_curve_lag</span><span class="p">,</span> <span class="n">price_proxy</span><span class="o">=</span><span class="s1">&#39;Settle&#39;</span><span class="p">,</span> <span class="n">qunatile</span><span class="o">=</span><span class="p">[</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">])</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>A method that generate all the data needed for the strategy. The ouput
+of this functions contain all the quantity that will be and can be used 
+in creating variation of this strategy.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>history_data_lag</code></b>
+                  (<code>DataFrame</code>)
+              –
+              <div class="doc-md-description">
+                <p>The history data of the lag days.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>apc_curve_lag</code></b>
+                  (<code>DataFrame</code>)
+              –
+              <div class="doc-md-description">
+                <p>The APC curve of the lag days.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>price_proxy</code></b>
+                  (<code>str</code>, default:
+                      <code>&#39;Settle&#39;</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>The column name to call for price approximation. 
+It can be either "Open", "High", "Low", or "Settle".
+The default is 'Settle'.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>qunatile</code></b>
+                  (<code>list</code>, default:
+                      <code>[0.25, 0.4, 0.6, 0.75]</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>1D list that contains the quantile desitred. 
+This function pass it into the APC of the day and calculate the 
+relevant price.
+The default is [0.25,0.4,0.6,0.75].</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>strategy_info</code></b>(                  <code>dict</code>
+)              –
+              <div class="doc-md-description">
+                <p>A dictionary containing two key-value pairs.
+'lag_list' is a list of quantiles of the lag days. The size of the 
+list depends on the input size of history_data_lag and apc_curve_lag.
+'rollingaverage' is the average of the quantiles in lag_list. It 
+contain a singular float value.</p>
+              </div>
+            </li>
+            <li>
+<b><code>qunatile_info</code></b>(                  <code>list</code>
+)              –
+              <div class="doc-md-description">
+                <p>A list of prices calculating using qunatile input into the APC
+of the date of interest.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+            <details class="quote">
+              <summary>Source code in <code>EC_tools/features.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-22">22</a></span>
+<span class="normal"><a href="#__codelineno-0-23">23</a></span>
+<span class="normal"><a href="#__codelineno-0-24">24</a></span>
+<span class="normal"><a href="#__codelineno-0-25">25</a></span>
+<span class="normal"><a href="#__codelineno-0-26">26</a></span>
+<span class="normal"><a href="#__codelineno-0-27">27</a></span>
+<span class="normal"><a href="#__codelineno-0-28">28</a></span>
+<span class="normal"><a href="#__codelineno-0-29">29</a></span>
+<span class="normal"><a href="#__codelineno-0-30">30</a></span>
+<span class="normal"><a href="#__codelineno-0-31">31</a></span>
+<span class="normal"><a href="#__codelineno-0-32">32</a></span>
+<span class="normal"><a href="#__codelineno-0-33">33</a></span>
+<span class="normal"><a href="#__codelineno-0-34">34</a></span>
+<span class="normal"><a href="#__codelineno-0-35">35</a></span>
+<span class="normal"><a href="#__codelineno-0-36">36</a></span>
+<span class="normal"><a href="#__codelineno-0-37">37</a></span>
+<span class="normal"><a href="#__codelineno-0-38">38</a></span>
+<span class="normal"><a href="#__codelineno-0-39">39</a></span>
+<span class="normal"><a href="#__codelineno-0-40">40</a></span>
+<span class="normal"><a href="#__codelineno-0-41">41</a></span>
+<span class="normal"><a href="#__codelineno-0-42">42</a></span>
+<span class="normal"><a href="#__codelineno-0-43">43</a></span>
+<span class="normal"><a href="#__codelineno-0-44">44</a></span>
+<span class="normal"><a href="#__codelineno-0-45">45</a></span>
+<span class="normal"><a href="#__codelineno-0-46">46</a></span>
+<span class="normal"><a href="#__codelineno-0-47">47</a></span>
+<span class="normal"><a href="#__codelineno-0-48">48</a></span>
+<span class="normal"><a href="#__codelineno-0-49">49</a></span>
+<span class="normal"><a href="#__codelineno-0-50">50</a></span>
+<span class="normal"><a href="#__codelineno-0-51">51</a></span>
+<span class="normal"><a href="#__codelineno-0-52">52</a></span>
+<span class="normal"><a href="#__codelineno-0-53">53</a></span>
+<span class="normal"><a href="#__codelineno-0-54">54</a></span>
+<span class="normal"><a href="#__codelineno-0-55">55</a></span>
+<span class="normal"><a href="#__codelineno-0-56">56</a></span>
+<span class="normal"><a href="#__codelineno-0-57">57</a></span>
+<span class="normal"><a href="#__codelineno-0-58">58</a></span>
+<span class="normal"><a href="#__codelineno-0-59">59</a></span>
+<span class="normal"><a href="#__codelineno-0-60">60</a></span>
+<span class="normal"><a href="#__codelineno-0-61">61</a></span>
+<span class="normal"><a href="#__codelineno-0-62">62</a></span>
+<span class="normal"><a href="#__codelineno-0-63">63</a></span>
+<span class="normal"><a href="#__codelineno-0-64">64</a></span>
+<span class="normal"><a href="#__codelineno-0-65">65</a></span>
+<span class="normal"><a href="#__codelineno-0-66">66</a></span>
+<span class="normal"><a href="#__codelineno-0-67">67</a></span>
+<span class="normal"><a href="#__codelineno-0-68">68</a></span>
+<span class="normal"><a href="#__codelineno-0-69">69</a></span>
+<span class="normal"><a href="#__codelineno-0-70">70</a></span>
+<span class="normal"><a href="#__codelineno-0-71">71</a></span>
+<span class="normal"><a href="#__codelineno-0-72">72</a></span>
+<span class="normal"><a href="#__codelineno-0-73">73</a></span>
+<span class="normal"><a href="#__codelineno-0-74">74</a></span>
+<span class="normal"><a href="#__codelineno-0-75">75</a></span>
+<span class="normal"><a href="#__codelineno-0-76">76</a></span>
+<span class="normal"><a href="#__codelineno-0-77">77</a></span>
+<span class="normal"><a href="#__codelineno-0-78">78</a></span>
+<span class="normal"><a href="#__codelineno-0-79">79</a></span>
+<span class="normal"><a href="#__codelineno-0-80">80</a></span>
+<span class="normal"><a href="#__codelineno-0-81">81</a></span>
+<span class="normal"><a href="#__codelineno-0-82">82</a></span>
+<span class="normal"><a href="#__codelineno-0-83">83</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-22" name="__codelineno-0-22"></a><span class="k">def</span> <span class="nf">gen_lag_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+<a id="__codelineno-0-23" name="__codelineno-0-23"></a>                 <span class="n">history_data_lag</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> 
+<a id="__codelineno-0-24" name="__codelineno-0-24"></a>                 <span class="n">apc_curve_lag</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> 
+<a id="__codelineno-0-25" name="__codelineno-0-25"></a>                 <span class="n">price_proxy</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Settle&#39;</span><span class="p">,</span> 
+<a id="__codelineno-0-26" name="__codelineno-0-26"></a>                 <span class="n">qunatile</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.25</span><span class="p">,</span><span class="mf">0.4</span><span class="p">,</span><span class="mf">0.6</span><span class="p">,</span><span class="mf">0.75</span><span class="p">])</span> <span class="o">-&gt;</span>\
+<a id="__codelineno-0-27" name="__codelineno-0-27"></a>                 <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span><span class="nb">list</span><span class="p">]:</span> 
+<a id="__codelineno-0-28" name="__codelineno-0-28"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-29" name="__codelineno-0-29"></a><span class="sd">    A method that generate all the data needed for the strategy. The ouput</span>
+<a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">    of this functions contain all the quantity that will be and can be used </span>
+<a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">    in creating variation of this strategy.</span>
+<a id="__codelineno-0-32" name="__codelineno-0-32"></a>
+<a id="__codelineno-0-33" name="__codelineno-0-33"></a>
+<a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">    Parameters</span>
+<a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">    ----------</span>
+<a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">    history_data_lag : DataFrame</span>
+<a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">        The history data of the lag days.</span>
+<a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="sd">    apc_curve_lag : DataFrame</span>
+<a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="sd">        The APC curve of the lag days.</span>
+<a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="sd">    price_proxy : str, optional</span>
+<a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">        The column name to call for price approximation. </span>
+<a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">        It can be either &quot;Open&quot;, &quot;High&quot;, &quot;Low&quot;, or &quot;Settle&quot;.</span>
+<a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">        The default is &#39;Settle&#39;.</span>
+<a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="sd">    qunatile : list, optional</span>
+<a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">        1D list that contains the quantile desitred. </span>
+<a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">        This function pass it into the APC of the day and calculate the </span>
+<a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">        relevant price.</span>
+<a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">        The default is [0.25,0.4,0.6,0.75].</span>
+<a id="__codelineno-0-49" name="__codelineno-0-49"></a>
+<a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">    Returns</span>
+<a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">    -------</span>
+<a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">    strategy_info : dict</span>
+<a id="__codelineno-0-53" name="__codelineno-0-53"></a><span class="sd">        A dictionary containing two key-value pairs.</span>
+<a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="sd">        &#39;lag_list&#39; is a list of quantiles of the lag days. The size of the </span>
+<a id="__codelineno-0-55" name="__codelineno-0-55"></a><span class="sd">        list depends on the input size of history_data_lag and apc_curve_lag.</span>
+<a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="sd">        &#39;rollingaverage&#39; is the average of the quantiles in lag_list. It </span>
+<a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="sd">        contain a singular float value.</span>
+<a id="__codelineno-0-58" name="__codelineno-0-58"></a>
+<a id="__codelineno-0-59" name="__codelineno-0-59"></a><span class="sd">    qunatile_info : list</span>
+<a id="__codelineno-0-60" name="__codelineno-0-60"></a><span class="sd">        A list of prices calculating using qunatile input into the APC</span>
+<a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="sd">        of the date of interest.</span>
+<a id="__codelineno-0-62" name="__codelineno-0-62"></a>
+<a id="__codelineno-0-63" name="__codelineno-0-63"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-64" name="__codelineno-0-64"></a>    <span class="c1"># use the history data to call a column using either OHLC                      </span>
+<a id="__codelineno-0-65" name="__codelineno-0-65"></a>    <span class="n">lag_price</span> <span class="o">=</span> <span class="n">history_data_lag</span><span class="p">[</span><span class="n">price_proxy</span><span class="p">]</span>
+<a id="__codelineno-0-66" name="__codelineno-0-66"></a>
+<a id="__codelineno-0-67" name="__codelineno-0-67"></a>    <span class="c1"># Find the quantile number for the lag APC at the Lag Prices </span>
+<a id="__codelineno-0-68" name="__codelineno-0-68"></a>    <span class="n">lag_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">mfunc</span><span class="o">.</span><span class="n">find_quant</span><span class="p">(</span><span class="n">apc_curve_lag</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> 
+<a id="__codelineno-0-69" name="__codelineno-0-69"></a>                                 <span class="bp">self</span><span class="o">.</span><span class="n">_quant_list</span><span class="p">,</span> <span class="n">lag_price</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> 
+<a id="__codelineno-0-70" name="__codelineno-0-70"></a>                                <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">apc_curve_lag</span><span class="p">))]</span>
+<a id="__codelineno-0-71" name="__codelineno-0-71"></a>    <span class="n">lag_list</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+<a id="__codelineno-0-72" name="__codelineno-0-72"></a>    <span class="c1"># Note that the list goes like this [lag1q,lag2q,...]</span>
+<a id="__codelineno-0-73" name="__codelineno-0-73"></a>
+<a id="__codelineno-0-74" name="__codelineno-0-74"></a>    <span class="c1"># calculate the rolling average</span>
+<a id="__codelineno-0-75" name="__codelineno-0-75"></a>    <span class="n">rollingaverage_q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">lag_list</span><span class="p">)</span>
+<a id="__codelineno-0-76" name="__codelineno-0-76"></a>
+<a id="__codelineno-0-77" name="__codelineno-0-77"></a>    <span class="c1"># Storage</span>
+<a id="__codelineno-0-78" name="__codelineno-0-78"></a>    <span class="n">strategy_info</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;lag_list&#39;</span><span class="p">:</span> <span class="n">lag_list</span><span class="p">,</span> 
+<a id="__codelineno-0-79" name="__codelineno-0-79"></a>                     <span class="s1">&#39;rollingaverage&#39;</span><span class="p">:</span> <span class="n">rollingaverage_q</span><span class="p">}</span>
+<a id="__codelineno-0-80" name="__codelineno-0-80"></a>    <span class="c1"># The price of the quantile of interest, mostly for bookkeeping</span>
+<a id="__codelineno-0-81" name="__codelineno-0-81"></a>    <span class="n">qunatile_info</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_curve_today_spline</span><span class="p">(</span><span class="n">qunatile</span><span class="p">))</span>
+<a id="__codelineno-0-82" name="__codelineno-0-82"></a>
+<a id="__codelineno-0-83" name="__codelineno-0-83"></a>    <span class="k">return</span> <span class="n">strategy_info</span><span class="p">,</span> <span class="n">qunatile_info</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+  </div>
+
+    </div>
+
+</div><hr />
+              
+            </div>
+          </div><footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

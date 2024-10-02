@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Run Preprocess - EC_tools Documentation</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Run Preprocess";
+        var mkdocs_page_input_path = "app/run_preprocess.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> EC_tools Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../about/">About</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../main/">Main</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">EC_tools</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../EC_tools/EC_tools/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../EC_tools/read/">read</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../EC_tools/plot/">plot</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../EC_tools/portfolio/">portfolio</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../EC_tools/position/">position</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../EC_tools/strategy/">strategy</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../EC_tools/simple_trade/">simple_trade</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../EC_tools/trade/">trade</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../EC_tools/backtest/">backtest</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../EC_tools/utility/">utility</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Applications</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../app/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_apc_price_study/">Run APC Study</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_backtest/">Run Backtest</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_comparison_plot/">Run Comparison Plot</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_daily_instruction/">Run Daily Instruction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_data_management/">Run Data Management</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_gen_monthly_MR_dir/">Run Generate Monthly MR signals</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_gen_MR_dir/">Run Generate Daily MR signals</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="../run_plot_heatamp.md">Run Plot Backtest Heatmap</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_PNL_plot/">Run PNL Plots</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Run Preprocess</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#app.run_preprocess">run_preprocess</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#app.run_preprocess.run_preprocess">run_preprocess</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_update_db/">Run Update DB</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">EC_tools Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Applications</li>
+      <li class="breadcrumb-item active">Run Preprocess</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="run-preprocess">Run Preprocess</h1>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<a id="app.run_preprocess"></a>
+    <div class="doc doc-contents first">
+
+        <p>Created on Sun Jun 23 23:08:50 2024</p>
+<p>@author: dexter</p>
+<p>The purpose of this script is to convert data into a suitable format for
+fast processing. While this script takes a longer time to complete, the rest 
+of the back-test workflow will be less time consuming.</p>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="app.run_preprocess.run_preprocess" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">run_preprocess</span><span class="p">()</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>The main method for preprocessing. The aim of preprocessing is to create 
+aggegrate pickle files so that the runtime of signal generation and back-test
+can be reduced.</p>
+
+            <details class="quote">
+              <summary>Source code in <code>app/run_preprocess.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-138">138</a></span>
+<span class="normal"><a href="#__codelineno-0-139">139</a></span>
+<span class="normal"><a href="#__codelineno-0-140">140</a></span>
+<span class="normal"><a href="#__codelineno-0-141">141</a></span>
+<span class="normal"><a href="#__codelineno-0-142">142</a></span>
+<span class="normal"><a href="#__codelineno-0-143">143</a></span>
+<span class="normal"><a href="#__codelineno-0-144">144</a></span>
+<span class="normal"><a href="#__codelineno-0-145">145</a></span>
+<span class="normal"><a href="#__codelineno-0-146">146</a></span>
+<span class="normal"><a href="#__codelineno-0-147">147</a></span>
+<span class="normal"><a href="#__codelineno-0-148">148</a></span>
+<span class="normal"><a href="#__codelineno-0-149">149</a></span>
+<span class="normal"><a href="#__codelineno-0-150">150</a></span>
+<span class="normal"><a href="#__codelineno-0-151">151</a></span>
+<span class="normal"><a href="#__codelineno-0-152">152</a></span>
+<span class="normal"><a href="#__codelineno-0-153">153</a></span>
+<span class="normal"><a href="#__codelineno-0-154">154</a></span>
+<span class="normal"><a href="#__codelineno-0-155">155</a></span>
+<span class="normal"><a href="#__codelineno-0-156">156</a></span>
+<span class="normal"><a href="#__codelineno-0-157">157</a></span>
+<span class="normal"><a href="#__codelineno-0-158">158</a></span>
+<span class="normal"><a href="#__codelineno-0-159">159</a></span>
+<span class="normal"><a href="#__codelineno-0-160">160</a></span>
+<span class="normal"><a href="#__codelineno-0-161">161</a></span>
+<span class="normal"><a href="#__codelineno-0-162">162</a></span>
+<span class="normal"><a href="#__codelineno-0-163">163</a></span>
+<span class="normal"><a href="#__codelineno-0-164">164</a></span>
+<span class="normal"><a href="#__codelineno-0-165">165</a></span>
+<span class="normal"><a href="#__codelineno-0-166">166</a></span>
+<span class="normal"><a href="#__codelineno-0-167">167</a></span>
+<span class="normal"><a href="#__codelineno-0-168">168</a></span>
+<span class="normal"><a href="#__codelineno-0-169">169</a></span>
+<span class="normal"><a href="#__codelineno-0-170">170</a></span>
+<span class="normal"><a href="#__codelineno-0-171">171</a></span>
+<span class="normal"><a href="#__codelineno-0-172">172</a></span>
+<span class="normal"><a href="#__codelineno-0-173">173</a></span>
+<span class="normal"><a href="#__codelineno-0-174">174</a></span>
+<span class="normal"><a href="#__codelineno-0-175">175</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-138" name="__codelineno-0-138"></a><span class="k">def</span> <span class="nf">run_preprocess</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-139" name="__codelineno-0-139"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-140" name="__codelineno-0-140"></a><span class="sd">    The main method for preprocessing. The aim of preprocessing is to create </span>
+<a id="__codelineno-0-141" name="__codelineno-0-141"></a><span class="sd">    aggegrate pickle files so that the runtime of signal generation and back-test</span>
+<a id="__codelineno-0-142" name="__codelineno-0-142"></a><span class="sd">    can be reduced.</span>
+<a id="__codelineno-0-143" name="__codelineno-0-143"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-144" name="__codelineno-0-144"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;============Running Preprocessing==========&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-145" name="__codelineno-0-145"></a>
+<a id="__codelineno-0-146" name="__codelineno-0-146"></a>    <span class="c1"># load all raw data into pkl format</span>
+<a id="__codelineno-0-147" name="__codelineno-0-147"></a>    <span class="c1">#create_aggegrate_pkl(APC_FILE_LOC, read.read_reformat_APC_data,</span>
+<a id="__codelineno-0-148" name="__codelineno-0-148"></a>    <span class="c1">#                     save_filename = DAILY_APC_PKL)</span>
+<a id="__codelineno-0-149" name="__codelineno-0-149"></a>    <span class="c1">#create_aggegrate_pkl(HISTORY_DAILY_FILE_LOC, read.read_reformat_Portara_daily_data,</span>
+<a id="__codelineno-0-150" name="__codelineno-0-150"></a>    <span class="c1">#                     save_filename = DAILY_DATA_PKL)</span>
+<a id="__codelineno-0-151" name="__codelineno-0-151"></a>    <span class="c1">#create_aggegrate_pkl(HISTORY_MINTUE_FILE_LOC, read.read_reformat_Portara_minute_data,</span>
+<a id="__codelineno-0-152" name="__codelineno-0-152"></a>    <span class="c1">#                     save_filename = DAILY_MINUTE_DATA_PKL)</span>
+<a id="__codelineno-0-153" name="__codelineno-0-153"></a>
+<a id="__codelineno-0-154" name="__codelineno-0-154"></a>    <span class="c1"># calculate and load the open price data into a pkl file</span>
+<a id="__codelineno-0-155" name="__codelineno-0-155"></a>    <span class="c1">#create_open_price_list(HISTORY_DAILY_FILE_LOC, HISTORY_MINTUE_FILE_LOC)</span>
+<a id="__codelineno-0-156" name="__codelineno-0-156"></a>    <span class="c1">#create_aggegrate_pkl(OPEN_PRICE_FILE_LOC, read.read_reformat_openprice_data,</span>
+<a id="__codelineno-0-157" name="__codelineno-0-157"></a>    <span class="c1">#                     save_filename = DAILY_OPENPRICE_PKL)</span>
+<a id="__codelineno-0-158" name="__codelineno-0-158"></a>
+<a id="__codelineno-0-159" name="__codelineno-0-159"></a>    <span class="c1"># make monthly APC pkl</span>
+<a id="__codelineno-0-160" name="__codelineno-0-160"></a>    <span class="c1">#create_aggegrate_pkl(APC_FILE_MONTHLY_LOC, read.read_reformat_APC_data,</span>
+<a id="__codelineno-0-161" name="__codelineno-0-161"></a>    <span class="c1">#                     save_filename = MONTHLY_APC_PKL,</span>
+<a id="__codelineno-0-162" name="__codelineno-0-162"></a>    <span class="c1">#                     symbol_list = SYMBOL_LIST_SHORT)</span>
+<a id="__codelineno-0-163" name="__codelineno-0-163"></a>    <span class="c1">#create_aggegrate_pkl(APC_FILE_WEEKLY_30AVG_LOC, read.read_reformat_APC_data,</span>
+<a id="__codelineno-0-164" name="__codelineno-0-164"></a>    <span class="c1">#                     save_filename = WEEKLY_30AVG_APC_PKL,</span>
+<a id="__codelineno-0-165" name="__codelineno-0-165"></a>    <span class="c1">#                     symbol_list = SYMBOL_LIST_SHORT)</span>
+<a id="__codelineno-0-166" name="__codelineno-0-166"></a>
+<a id="__codelineno-0-167" name="__codelineno-0-167"></a>    <span class="c1">#create_cumavg_list(HISTORY_DAILY_FILE_LOC)</span>
+<a id="__codelineno-0-168" name="__codelineno-0-168"></a>    <span class="c1">#create_aggegrate_pkl(HISTORY_DAILY_CUMAVG_IN_MONTH, read.read_reformat_generic,</span>
+<a id="__codelineno-0-169" name="__codelineno-0-169"></a>    <span class="c1">#                     save_filename = DAILY_CUMAVG_MONTH_PKL)</span>
+<a id="__codelineno-0-170" name="__codelineno-0-170"></a>
+<a id="__codelineno-0-171" name="__codelineno-0-171"></a>    <span class="c1">#create_minute_cumavg_list(HISTORY_MINTUE_FILE_LOC, HISTORY_DAILY_CUMAVG_IN_MONTH,</span>
+<a id="__codelineno-0-172" name="__codelineno-0-172"></a>    <span class="c1">#                          )</span>
+<a id="__codelineno-0-173" name="__codelineno-0-173"></a>    <span class="n">create_aggegrate_pkl</span><span class="p">(</span><span class="n">HISTORY_MINUTE_CUMAVG_IN_MONTH</span><span class="p">,</span> 
+<a id="__codelineno-0-174" name="__codelineno-0-174"></a>                         <span class="n">read</span><span class="o">.</span><span class="n">read_reformat_dateNtime</span><span class="p">,</span>
+<a id="__codelineno-0-175" name="__codelineno-0-175"></a>                         <span class="n">save_filename</span> <span class="o">=</span> <span class="n">MINUTE_CUMAVG_MONTH_PKL</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><hr />
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../run_PNL_plot/" class="btn btn-neutral float-left" title="Run PNL Plots"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../run_update_db/" class="btn btn-neutral float-right" title="Run Update DB">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../run_PNL_plot/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../run_update_db/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

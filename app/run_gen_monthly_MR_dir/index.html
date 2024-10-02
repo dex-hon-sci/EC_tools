@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Run Generate Monthly MR signals - EC_tools Documentation</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Run Generate Monthly MR signals";
+        var mkdocs_page_input_path = "app/run_gen_monthly_MR_dir.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> EC_tools Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../about/">About</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../main/">Main</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">EC_tools</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../EC_tools/EC_tools/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../EC_tools/read/">read</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../EC_tools/plot/">plot</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../EC_tools/portfolio/">portfolio</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../EC_tools/position/">position</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../EC_tools/strategy/">strategy</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../EC_tools/simple_trade/">simple_trade</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../EC_tools/trade/">trade</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../EC_tools/backtest/">backtest</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../EC_tools/utility/">utility</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Applications</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../app/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_apc_price_study/">Run APC Study</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_backtest/">Run Backtest</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_comparison_plot/">Run Comparison Plot</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_daily_instruction/">Run Daily Instruction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_data_management/">Run Data Management</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Run Generate Monthly MR signals</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#app.run_gen_monthly_MR_dir">run_gen_monthly_MR_dir</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#app.run_gen_monthly_MR_dir.loop_signal">loop_signal</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#app.run_gen_monthly_MR_dir.run_gen_MR_signals_preloaded_monthly">run_gen_MR_signals_preloaded_monthly</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_gen_MR_dir/">Run Generate Daily MR signals</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="../run_plot_heatamp.md">Run Plot Backtest Heatmap</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_PNL_plot/">Run PNL Plots</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_preprocess/">Run Preprocess</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_update_db/">Run Update DB</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">EC_tools Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Applications</li>
+      <li class="breadcrumb-item active">Run Generate Monthly MR signals</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="run-generate-monthly-mr-signals">Run Generate Monthly MR signals</h1>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<a id="app.run_gen_monthly_MR_dir"></a>
+    <div class="doc doc-contents first">
+
+        <p>Created on Mon Sep 16 12:42:50 2024</p>
+<p>@author: dexter</p>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="app.run_gen_monthly_MR_dir.loop_signal" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">loop_signal</span><span class="p">(</span><span class="n">strategy</span><span class="p">,</span> <span class="n">book</span><span class="p">,</span> <span class="n">signal_daily_data</span><span class="p">,</span> <span class="n">signal_monthly_data</span><span class="p">,</span> <span class="n">history_data</span><span class="p">,</span> <span class="n">daily_cumavg_data</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">,</span> <span class="n">buy_range</span><span class="o">=</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.35</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">],</span> <span class="mf">0.05</span><span class="p">),</span> <span class="n">sell_range</span><span class="o">=</span><span class="p">([</span><span class="mf">0.65</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span> <span class="mf">0.95</span><span class="p">),</span> <span class="n">open_hr</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">close_hr</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">quantile</span><span class="o">=</span><span class="p">[</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">],</span> <span class="n">asset_name</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">Timezone</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">contract_symbol_condse</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">loop_symbol</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>The main loop used to generate Buy/Sell signals.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>strategy</code></b>
+                  (<code>strategy object</code>)
+              –
+              <div class="doc-md-description">
+                <p>The function of signal generation from the strategy module.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>book</code></b>
+                  (<code>bookkeep object</code>)
+              –
+              <div class="doc-md-description">
+                <p>The bookkeeping object from the bookkeep module.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>signal_data</code></b>
+                  (<code>dataframe</code>)
+              –
+              <div class="doc-md-description">
+                <p>The dataframe of the signal data, e.g.the APCs.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>history_data</code></b>
+                  (<code>dataframe</code>)
+              –
+              <div class="doc-md-description">
+                <p>The dataframe of the history daily pricing data.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>open_price_data</code></b>
+                  (<code>dataframe</code>)
+              –
+              <div class="doc-md-description">
+                <p>The dataframe of the history opening pricing data.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>start_date</code></b>
+                  (<code>datetime</code>)
+              –
+              <div class="doc-md-description">
+                <p>The starting datetime.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>end_date</code></b>
+                  (<code>datetime</code>)
+              –
+              <div class="doc-md-description">
+                <p>The ending datetime.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>buy_range</code></b>
+                  (<code>tuple</code>, default:
+                      <code>([0.1, 0.35], [0.5, 0.9], 0.05)</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>The range for buy action. The default is ([0.25,0.4],[0.6,0.75],0.05).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>sell_range</code></b>
+                  (<code>tuple</code>, default:
+                      <code>([0.65, 0.9], [0.1, 0.5], 0.95)</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>The range for sell action. The default is ([0.6,0.75],[0.25,0.4],0.95).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>open_hr</code></b>
+                  (<code>str</code>, default:
+                      <code>&#39;&#39;</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>A string for the opening hour for the loop in military format. 
+The default is ''.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>close_hr</code></b>
+                  (<code>str</code>, default:
+                      <code>&#39;&#39;</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>A string for the closing hour for the loop in military format. 
+The default is ''.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>commodity_name</code></b>
+                  (<code>str</code>)
+              –
+              <div class="doc-md-description">
+                <p>The name of the asset in our test. The default is ''.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>Timezone</code></b>
+                  (<code>str</code>, default:
+                      <code>&#39;&#39;</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>The name of the Timezone for a particular asset. The default is "".</p>
+              </div>
+            </li>
+            <li>
+              <b><code>contract_symbol_condse</code></b>
+                  (<code>bool</code>, default:
+                      <code>False</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Whether we condense the contract symbol. 
+If False, it is going to
+If True
+The default is False.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>loop_symbol</code></b>
+                  (<code>str</code>, default:
+                      <code>None</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>The name of the loop to be printed. The default is None.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code>dataframe</code>
+              –
+              <div class="doc-md-description">
+                <p>The generated signals</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+            <details class="quote">
+              <summary>Source code in <code>app/run_gen_monthly_MR_dir.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-58"> 58</a></span>
+<span class="normal"><a href="#__codelineno-0-59"> 59</a></span>
+<span class="normal"><a href="#__codelineno-0-60"> 60</a></span>
+<span class="normal"><a href="#__codelineno-0-61"> 61</a></span>
+<span class="normal"><a href="#__codelineno-0-62"> 62</a></span>
+<span class="normal"><a href="#__codelineno-0-63"> 63</a></span>
+<span class="normal"><a href="#__codelineno-0-64"> 64</a></span>
+<span class="normal"><a href="#__codelineno-0-65"> 65</a></span>
+<span class="normal"><a href="#__codelineno-0-66"> 66</a></span>
+<span class="normal"><a href="#__codelineno-0-67"> 67</a></span>
+<span class="normal"><a href="#__codelineno-0-68"> 68</a></span>
+<span class="normal"><a href="#__codelineno-0-69"> 69</a></span>
+<span class="normal"><a href="#__codelineno-0-70"> 70</a></span>
+<span class="normal"><a href="#__codelineno-0-71"> 71</a></span>
+<span class="normal"><a href="#__codelineno-0-72"> 72</a></span>
+<span class="normal"><a href="#__codelineno-0-73"> 73</a></span>
+<span class="normal"><a href="#__codelineno-0-74"> 74</a></span>
+<span class="normal"><a href="#__codelineno-0-75"> 75</a></span>
+<span class="normal"><a href="#__codelineno-0-76"> 76</a></span>
+<span class="normal"><a href="#__codelineno-0-77"> 77</a></span>
+<span class="normal"><a href="#__codelineno-0-78"> 78</a></span>
+<span class="normal"><a href="#__codelineno-0-79"> 79</a></span>
+<span class="normal"><a href="#__codelineno-0-80"> 80</a></span>
+<span class="normal"><a href="#__codelineno-0-81"> 81</a></span>
+<span class="normal"><a href="#__codelineno-0-82"> 82</a></span>
+<span class="normal"><a href="#__codelineno-0-83"> 83</a></span>
+<span class="normal"><a href="#__codelineno-0-84"> 84</a></span>
+<span class="normal"><a href="#__codelineno-0-85"> 85</a></span>
+<span class="normal"><a href="#__codelineno-0-86"> 86</a></span>
+<span class="normal"><a href="#__codelineno-0-87"> 87</a></span>
+<span class="normal"><a href="#__codelineno-0-88"> 88</a></span>
+<span class="normal"><a href="#__codelineno-0-89"> 89</a></span>
+<span class="normal"><a href="#__codelineno-0-90"> 90</a></span>
+<span class="normal"><a href="#__codelineno-0-91"> 91</a></span>
+<span class="normal"><a href="#__codelineno-0-92"> 92</a></span>
+<span class="normal"><a href="#__codelineno-0-93"> 93</a></span>
+<span class="normal"><a href="#__codelineno-0-94"> 94</a></span>
+<span class="normal"><a href="#__codelineno-0-95"> 95</a></span>
+<span class="normal"><a href="#__codelineno-0-96"> 96</a></span>
+<span class="normal"><a href="#__codelineno-0-97"> 97</a></span>
+<span class="normal"><a href="#__codelineno-0-98"> 98</a></span>
+<span class="normal"><a href="#__codelineno-0-99"> 99</a></span>
+<span class="normal"><a href="#__codelineno-0-100">100</a></span>
+<span class="normal"><a href="#__codelineno-0-101">101</a></span>
+<span class="normal"><a href="#__codelineno-0-102">102</a></span>
+<span class="normal"><a href="#__codelineno-0-103">103</a></span>
+<span class="normal"><a href="#__codelineno-0-104">104</a></span>
+<span class="normal"><a href="#__codelineno-0-105">105</a></span>
+<span class="normal"><a href="#__codelineno-0-106">106</a></span>
+<span class="normal"><a href="#__codelineno-0-107">107</a></span>
+<span class="normal"><a href="#__codelineno-0-108">108</a></span>
+<span class="normal"><a href="#__codelineno-0-109">109</a></span>
+<span class="normal"><a href="#__codelineno-0-110">110</a></span>
+<span class="normal"><a href="#__codelineno-0-111">111</a></span>
+<span class="normal"><a href="#__codelineno-0-112">112</a></span>
+<span class="normal"><a href="#__codelineno-0-113">113</a></span>
+<span class="normal"><a href="#__codelineno-0-114">114</a></span>
+<span class="normal"><a href="#__codelineno-0-115">115</a></span>
+<span class="normal"><a href="#__codelineno-0-116">116</a></span>
+<span class="normal"><a href="#__codelineno-0-117">117</a></span>
+<span class="normal"><a href="#__codelineno-0-118">118</a></span>
+<span class="normal"><a href="#__codelineno-0-119">119</a></span>
+<span class="normal"><a href="#__codelineno-0-120">120</a></span>
+<span class="normal"><a href="#__codelineno-0-121">121</a></span>
+<span class="normal"><a href="#__codelineno-0-122">122</a></span>
+<span class="normal"><a href="#__codelineno-0-123">123</a></span>
+<span class="normal"><a href="#__codelineno-0-124">124</a></span>
+<span class="normal"><a href="#__codelineno-0-125">125</a></span>
+<span class="normal"><a href="#__codelineno-0-126">126</a></span>
+<span class="normal"><a href="#__codelineno-0-127">127</a></span>
+<span class="normal"><a href="#__codelineno-0-128">128</a></span>
+<span class="normal"><a href="#__codelineno-0-129">129</a></span>
+<span class="normal"><a href="#__codelineno-0-130">130</a></span>
+<span class="normal"><a href="#__codelineno-0-131">131</a></span>
+<span class="normal"><a href="#__codelineno-0-132">132</a></span>
+<span class="normal"><a href="#__codelineno-0-133">133</a></span>
+<span class="normal"><a href="#__codelineno-0-134">134</a></span>
+<span class="normal"><a href="#__codelineno-0-135">135</a></span>
+<span class="normal"><a href="#__codelineno-0-136">136</a></span>
+<span class="normal"><a href="#__codelineno-0-137">137</a></span>
+<span class="normal"><a href="#__codelineno-0-138">138</a></span>
+<span class="normal"><a href="#__codelineno-0-139">139</a></span>
+<span class="normal"><a href="#__codelineno-0-140">140</a></span>
+<span class="normal"><a href="#__codelineno-0-141">141</a></span>
+<span class="normal"><a href="#__codelineno-0-142">142</a></span>
+<span class="normal"><a href="#__codelineno-0-143">143</a></span>
+<span class="normal"><a href="#__codelineno-0-144">144</a></span>
+<span class="normal"><a href="#__codelineno-0-145">145</a></span>
+<span class="normal"><a href="#__codelineno-0-146">146</a></span>
+<span class="normal"><a href="#__codelineno-0-147">147</a></span>
+<span class="normal"><a href="#__codelineno-0-148">148</a></span>
+<span class="normal"><a href="#__codelineno-0-149">149</a></span>
+<span class="normal"><a href="#__codelineno-0-150">150</a></span>
+<span class="normal"><a href="#__codelineno-0-151">151</a></span>
+<span class="normal"><a href="#__codelineno-0-152">152</a></span>
+<span class="normal"><a href="#__codelineno-0-153">153</a></span>
+<span class="normal"><a href="#__codelineno-0-154">154</a></span>
+<span class="normal"><a href="#__codelineno-0-155">155</a></span>
+<span class="normal"><a href="#__codelineno-0-156">156</a></span>
+<span class="normal"><a href="#__codelineno-0-157">157</a></span>
+<span class="normal"><a href="#__codelineno-0-158">158</a></span>
+<span class="normal"><a href="#__codelineno-0-159">159</a></span>
+<span class="normal"><a href="#__codelineno-0-160">160</a></span>
+<span class="normal"><a href="#__codelineno-0-161">161</a></span>
+<span class="normal"><a href="#__codelineno-0-162">162</a></span>
+<span class="normal"><a href="#__codelineno-0-163">163</a></span>
+<span class="normal"><a href="#__codelineno-0-164">164</a></span>
+<span class="normal"><a href="#__codelineno-0-165">165</a></span>
+<span class="normal"><a href="#__codelineno-0-166">166</a></span>
+<span class="normal"><a href="#__codelineno-0-167">167</a></span>
+<span class="normal"><a href="#__codelineno-0-168">168</a></span>
+<span class="normal"><a href="#__codelineno-0-169">169</a></span>
+<span class="normal"><a href="#__codelineno-0-170">170</a></span>
+<span class="normal"><a href="#__codelineno-0-171">171</a></span>
+<span class="normal"><a href="#__codelineno-0-172">172</a></span>
+<span class="normal"><a href="#__codelineno-0-173">173</a></span>
+<span class="normal"><a href="#__codelineno-0-174">174</a></span>
+<span class="normal"><a href="#__codelineno-0-175">175</a></span>
+<span class="normal"><a href="#__codelineno-0-176">176</a></span>
+<span class="normal"><a href="#__codelineno-0-177">177</a></span>
+<span class="normal"><a href="#__codelineno-0-178">178</a></span>
+<span class="normal"><a href="#__codelineno-0-179">179</a></span>
+<span class="normal"><a href="#__codelineno-0-180">180</a></span>
+<span class="normal"><a href="#__codelineno-0-181">181</a></span>
+<span class="normal"><a href="#__codelineno-0-182">182</a></span>
+<span class="normal"><a href="#__codelineno-0-183">183</a></span>
+<span class="normal"><a href="#__codelineno-0-184">184</a></span>
+<span class="normal"><a href="#__codelineno-0-185">185</a></span>
+<span class="normal"><a href="#__codelineno-0-186">186</a></span>
+<span class="normal"><a href="#__codelineno-0-187">187</a></span>
+<span class="normal"><a href="#__codelineno-0-188">188</a></span>
+<span class="normal"><a href="#__codelineno-0-189">189</a></span>
+<span class="normal"><a href="#__codelineno-0-190">190</a></span>
+<span class="normal"><a href="#__codelineno-0-191">191</a></span>
+<span class="normal"><a href="#__codelineno-0-192">192</a></span>
+<span class="normal"><a href="#__codelineno-0-193">193</a></span>
+<span class="normal"><a href="#__codelineno-0-194">194</a></span>
+<span class="normal"><a href="#__codelineno-0-195">195</a></span>
+<span class="normal"><a href="#__codelineno-0-196">196</a></span>
+<span class="normal"><a href="#__codelineno-0-197">197</a></span>
+<span class="normal"><a href="#__codelineno-0-198">198</a></span>
+<span class="normal"><a href="#__codelineno-0-199">199</a></span>
+<span class="normal"><a href="#__codelineno-0-200">200</a></span>
+<span class="normal"><a href="#__codelineno-0-201">201</a></span>
+<span class="normal"><a href="#__codelineno-0-202">202</a></span>
+<span class="normal"><a href="#__codelineno-0-203">203</a></span>
+<span class="normal"><a href="#__codelineno-0-204">204</a></span>
+<span class="normal"><a href="#__codelineno-0-205">205</a></span>
+<span class="normal"><a href="#__codelineno-0-206">206</a></span>
+<span class="normal"><a href="#__codelineno-0-207">207</a></span>
+<span class="normal"><a href="#__codelineno-0-208">208</a></span>
+<span class="normal"><a href="#__codelineno-0-209">209</a></span>
+<span class="normal"><a href="#__codelineno-0-210">210</a></span>
+<span class="normal"><a href="#__codelineno-0-211">211</a></span>
+<span class="normal"><a href="#__codelineno-0-212">212</a></span>
+<span class="normal"><a href="#__codelineno-0-213">213</a></span>
+<span class="normal"><a href="#__codelineno-0-214">214</a></span>
+<span class="normal"><a href="#__codelineno-0-215">215</a></span>
+<span class="normal"><a href="#__codelineno-0-216">216</a></span>
+<span class="normal"><a href="#__codelineno-0-217">217</a></span>
+<span class="normal"><a href="#__codelineno-0-218">218</a></span>
+<span class="normal"><a href="#__codelineno-0-219">219</a></span>
+<span class="normal"><a href="#__codelineno-0-220">220</a></span>
+<span class="normal"><a href="#__codelineno-0-221">221</a></span>
+<span class="normal"><a href="#__codelineno-0-222">222</a></span>
+<span class="normal"><a href="#__codelineno-0-223">223</a></span>
+<span class="normal"><a href="#__codelineno-0-224">224</a></span>
+<span class="normal"><a href="#__codelineno-0-225">225</a></span>
+<span class="normal"><a href="#__codelineno-0-226">226</a></span>
+<span class="normal"><a href="#__codelineno-0-227">227</a></span>
+<span class="normal"><a href="#__codelineno-0-228">228</a></span>
+<span class="normal"><a href="#__codelineno-0-229">229</a></span>
+<span class="normal"><a href="#__codelineno-0-230">230</a></span>
+<span class="normal"><a href="#__codelineno-0-231">231</a></span>
+<span class="normal"><a href="#__codelineno-0-232">232</a></span>
+<span class="normal"><a href="#__codelineno-0-233">233</a></span>
+<span class="normal"><a href="#__codelineno-0-234">234</a></span>
+<span class="normal"><a href="#__codelineno-0-235">235</a></span>
+<span class="normal"><a href="#__codelineno-0-236">236</a></span>
+<span class="normal"><a href="#__codelineno-0-237">237</a></span>
+<span class="normal"><a href="#__codelineno-0-238">238</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-58" name="__codelineno-0-58"></a><span class="k">def</span> <span class="nf">loop_signal</span><span class="p">(</span><span class="n">strategy</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Strategy</span><span class="p">],</span> 
+<a id="__codelineno-0-59" name="__codelineno-0-59"></a>                <span class="n">book</span><span class="p">:</span> <span class="n">Bookkeep</span><span class="p">,</span> 
+<a id="__codelineno-0-60" name="__codelineno-0-60"></a>                <span class="n">signal_daily_data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> 
+<a id="__codelineno-0-61" name="__codelineno-0-61"></a>                <span class="n">signal_monthly_data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> 
+<a id="__codelineno-0-62" name="__codelineno-0-62"></a>                <span class="n">history_data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> 
+<a id="__codelineno-0-63" name="__codelineno-0-63"></a>                <span class="n">daily_cumavg_data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>  
+<a id="__codelineno-0-64" name="__codelineno-0-64"></a>                <span class="n">start_date</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span> 
+<a id="__codelineno-0-65" name="__codelineno-0-65"></a>                <span class="n">end_date</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
+<a id="__codelineno-0-66" name="__codelineno-0-66"></a>                <span class="n">buy_range</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">([</span><span class="mf">0.10</span><span class="p">,</span><span class="mf">0.35</span><span class="p">],[</span><span class="mf">0.50</span><span class="p">,</span><span class="mf">0.90</span><span class="p">],</span><span class="mf">0.05</span><span class="p">),</span> 
+<a id="__codelineno-0-67" name="__codelineno-0-67"></a>                <span class="n">sell_range</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">([</span><span class="mf">0.65</span><span class="p">,</span><span class="mf">0.90</span><span class="p">],[</span><span class="mf">0.10</span><span class="p">,</span><span class="mf">0.50</span><span class="p">],</span><span class="mf">0.95</span><span class="p">),</span>
+<a id="__codelineno-0-68" name="__codelineno-0-68"></a>                <span class="n">open_hr</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">close_hr</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+<a id="__codelineno-0-69" name="__codelineno-0-69"></a>                <span class="n">quantile</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.05</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.25</span><span class="p">,</span><span class="mf">0.4</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.6</span><span class="p">,</span><span class="mf">0.75</span><span class="p">,</span><span class="mf">0.9</span><span class="p">,</span><span class="mf">0.95</span><span class="p">],</span>
+<a id="__codelineno-0-70" name="__codelineno-0-70"></a>                <span class="n">asset_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">Timezone</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-71" name="__codelineno-0-71"></a>                <span class="n">contract_symbol_condse</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> 
+<a id="__codelineno-0-72" name="__codelineno-0-72"></a>                <span class="n">loop_symbol</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span> 
+<a id="__codelineno-0-73" name="__codelineno-0-73"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-74" name="__codelineno-0-74"></a><span class="sd">    The main loop used to generate Buy/Sell signals.</span>
+<a id="__codelineno-0-75" name="__codelineno-0-75"></a>
+<a id="__codelineno-0-76" name="__codelineno-0-76"></a><span class="sd">    Parameters</span>
+<a id="__codelineno-0-77" name="__codelineno-0-77"></a><span class="sd">    ----------</span>
+<a id="__codelineno-0-78" name="__codelineno-0-78"></a><span class="sd">    strategy : strategy object</span>
+<a id="__codelineno-0-79" name="__codelineno-0-79"></a><span class="sd">        The function of signal generation from the strategy module.</span>
+<a id="__codelineno-0-80" name="__codelineno-0-80"></a><span class="sd">    book : bookkeep object</span>
+<a id="__codelineno-0-81" name="__codelineno-0-81"></a><span class="sd">        The bookkeeping object from the bookkeep module.</span>
+<a id="__codelineno-0-82" name="__codelineno-0-82"></a><span class="sd">    signal_data : dataframe</span>
+<a id="__codelineno-0-83" name="__codelineno-0-83"></a><span class="sd">        The dataframe of the signal data, e.g.the APCs.</span>
+<a id="__codelineno-0-84" name="__codelineno-0-84"></a><span class="sd">    history_data : dataframe</span>
+<a id="__codelineno-0-85" name="__codelineno-0-85"></a><span class="sd">        The dataframe of the history daily pricing data.</span>
+<a id="__codelineno-0-86" name="__codelineno-0-86"></a><span class="sd">    open_price_data : dataframe</span>
+<a id="__codelineno-0-87" name="__codelineno-0-87"></a><span class="sd">        The dataframe of the history opening pricing data.</span>
+<a id="__codelineno-0-88" name="__codelineno-0-88"></a><span class="sd">    start_date : datetime</span>
+<a id="__codelineno-0-89" name="__codelineno-0-89"></a><span class="sd">        The starting datetime.</span>
+<a id="__codelineno-0-90" name="__codelineno-0-90"></a><span class="sd">    end_date : datetime</span>
+<a id="__codelineno-0-91" name="__codelineno-0-91"></a><span class="sd">        The ending datetime.</span>
+<a id="__codelineno-0-92" name="__codelineno-0-92"></a><span class="sd">    buy_range : tuple, optional</span>
+<a id="__codelineno-0-93" name="__codelineno-0-93"></a><span class="sd">        The range for buy action. The default is ([0.25,0.4],[0.6,0.75],0.05).</span>
+<a id="__codelineno-0-94" name="__codelineno-0-94"></a><span class="sd">    sell_range : tuple, optional</span>
+<a id="__codelineno-0-95" name="__codelineno-0-95"></a><span class="sd">        The range for sell action. The default is ([0.6,0.75],[0.25,0.4],0.95).</span>
+<a id="__codelineno-0-96" name="__codelineno-0-96"></a><span class="sd">    open_hr : str, optional</span>
+<a id="__codelineno-0-97" name="__codelineno-0-97"></a><span class="sd">        A string for the opening hour for the loop in military format. </span>
+<a id="__codelineno-0-98" name="__codelineno-0-98"></a><span class="sd">        The default is &#39;&#39;.</span>
+<a id="__codelineno-0-99" name="__codelineno-0-99"></a><span class="sd">    close_hr : str, optional</span>
+<a id="__codelineno-0-100" name="__codelineno-0-100"></a><span class="sd">        A string for the closing hour for the loop in military format. </span>
+<a id="__codelineno-0-101" name="__codelineno-0-101"></a><span class="sd">        The default is &#39;&#39;.</span>
+<a id="__codelineno-0-102" name="__codelineno-0-102"></a><span class="sd">    commodity_name : str, optional</span>
+<a id="__codelineno-0-103" name="__codelineno-0-103"></a><span class="sd">        The name of the asset in our test. The default is &#39;&#39;.</span>
+<a id="__codelineno-0-104" name="__codelineno-0-104"></a><span class="sd">    Timezone : str, optional</span>
+<a id="__codelineno-0-105" name="__codelineno-0-105"></a><span class="sd">        The name of the Timezone for a particular asset. The default is &quot;&quot;.</span>
+<a id="__codelineno-0-106" name="__codelineno-0-106"></a><span class="sd">    contract_symbol_condse : bool, optional</span>
+<a id="__codelineno-0-107" name="__codelineno-0-107"></a><span class="sd">        Whether we condense the contract symbol. </span>
+<a id="__codelineno-0-108" name="__codelineno-0-108"></a><span class="sd">        If False, it is going to</span>
+<a id="__codelineno-0-109" name="__codelineno-0-109"></a><span class="sd">        If True</span>
+<a id="__codelineno-0-110" name="__codelineno-0-110"></a><span class="sd">        The default is False.</span>
+<a id="__codelineno-0-111" name="__codelineno-0-111"></a><span class="sd">    loop_symbol : str, optional</span>
+<a id="__codelineno-0-112" name="__codelineno-0-112"></a><span class="sd">        The name of the loop to be printed. The default is None.</span>
+<a id="__codelineno-0-113" name="__codelineno-0-113"></a>
+<a id="__codelineno-0-114" name="__codelineno-0-114"></a><span class="sd">    Returns</span>
+<a id="__codelineno-0-115" name="__codelineno-0-115"></a><span class="sd">    -------</span>
+<a id="__codelineno-0-116" name="__codelineno-0-116"></a><span class="sd">    dataframe</span>
+<a id="__codelineno-0-117" name="__codelineno-0-117"></a><span class="sd">        The generated signals</span>
+<a id="__codelineno-0-118" name="__codelineno-0-118"></a>
+<a id="__codelineno-0-119" name="__codelineno-0-119"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-120" name="__codelineno-0-120"></a>    <span class="c1">#make bucket</span>
+<a id="__codelineno-0-121" name="__codelineno-0-121"></a>    <span class="n">bucket</span> <span class="o">=</span> <span class="n">book</span><span class="o">.</span><span class="n">make_bucket</span><span class="p">(</span><span class="n">keyword</span><span class="o">=</span><span class="n">strategy</span><span class="p">()</span><span class="o">.</span><span class="n">strategy_name</span><span class="p">)</span> <span class="c1"># &#39;argus_exact_mode&#39;)#</span>
+<a id="__codelineno-0-122" name="__codelineno-0-122"></a>    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Start looping signal: </span><span class="si">{}</span><span class="s1">...&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loop_symbol</span><span class="p">))</span>
+<a id="__codelineno-0-123" name="__codelineno-0-123"></a>
+<a id="__codelineno-0-124" name="__codelineno-0-124"></a>    <span class="c1"># Find the index of the start_date and end_date here.</span>
+<a id="__codelineno-0-125" name="__codelineno-0-125"></a>    <span class="n">start_index</span> <span class="o">=</span> <span class="n">history_data</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">history_data</span><span class="p">[</span><span class="s1">&#39;Date&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">start_date</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>    
+<a id="__codelineno-0-126" name="__codelineno-0-126"></a>    <span class="n">end_index</span> <span class="o">=</span> <span class="n">history_data</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">history_data</span><span class="p">[</span><span class="s1">&#39;Date&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">end_date</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+<a id="__codelineno-0-127" name="__codelineno-0-127"></a>
+<a id="__codelineno-0-128" name="__codelineno-0-128"></a>    <span class="c1"># loop through every forecast date and contract symbol </span>
+<a id="__codelineno-0-129" name="__codelineno-0-129"></a>    <span class="n">month_curve_index</span> <span class="o">=</span> <span class="mi">0</span>
+<a id="__codelineno-0-130" name="__codelineno-0-130"></a>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start_index</span><span class="p">,</span><span class="n">end_index</span><span class="p">):</span> 
+<a id="__codelineno-0-131" name="__codelineno-0-131"></a>
+<a id="__codelineno-0-132" name="__codelineno-0-132"></a>        <span class="n">this_date</span> <span class="o">=</span> <span class="n">history_data</span><span class="p">[</span><span class="s2">&quot;Date&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+<a id="__codelineno-0-133" name="__codelineno-0-133"></a>        <span class="n">this_symbol</span> <span class="o">=</span> <span class="n">history_data</span><span class="p">[</span><span class="s2">&quot;symbol&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+<a id="__codelineno-0-134" name="__codelineno-0-134"></a>
+<a id="__codelineno-0-135" name="__codelineno-0-135"></a>        <span class="c1">################################################################</span>
+<a id="__codelineno-0-136" name="__codelineno-0-136"></a>        <span class="c1">####PAY ATTENTION TO HOW TO SELECT FOR THE RIGHT MONTHLY APC.. WIP</span>
+<a id="__codelineno-0-137" name="__codelineno-0-137"></a>        <span class="c1">## USE TWO POINTERS</span>
+<a id="__codelineno-0-138" name="__codelineno-0-138"></a>        <span class="c1">#APCs_this_week = signal_monthly_data[(signal_monthly_data[&#39;PERIOD&#39;] &lt;= this_date)]</span>
+<a id="__codelineno-0-139" name="__codelineno-0-139"></a>        <span class="k">if</span> <span class="n">this_date</span> <span class="o">&gt;=</span> <span class="n">signal_monthly_data</span><span class="p">[</span><span class="s1">&#39;PUBLICATION_DATE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">month_curve_index</span><span class="p">]</span>\
+<a id="__codelineno-0-140" name="__codelineno-0-140"></a>            <span class="ow">and</span> <span class="n">this_date</span> <span class="o">&lt;</span> <span class="n">signal_monthly_data</span><span class="p">[</span><span class="s1">&#39;PUBLICATION_DATE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">month_curve_index</span><span class="o">+</span><span class="mi">1</span><span class="p">]:</span>
+<a id="__codelineno-0-141" name="__codelineno-0-141"></a>
+<a id="__codelineno-0-142" name="__codelineno-0-142"></a>                <span class="n">APCs_this_week</span> <span class="o">=</span> <span class="n">signal_monthly_data</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">month_curve_index</span><span class="p">]</span>
+<a id="__codelineno-0-143" name="__codelineno-0-143"></a>
+<a id="__codelineno-0-144" name="__codelineno-0-144"></a>        <span class="k">elif</span> <span class="n">this_date</span> <span class="o">&gt;=</span> <span class="n">signal_daily_data</span><span class="p">[</span><span class="s1">&#39;PUBLICATION_DATE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">month_curve_index</span><span class="o">+</span><span class="mi">1</span><span class="p">]:</span>
+<a id="__codelineno-0-145" name="__codelineno-0-145"></a>            <span class="n">month_curve_index</span> <span class="o">=</span> <span class="n">month_curve_index</span> <span class="o">+</span><span class="mi">1</span>
+<a id="__codelineno-0-146" name="__codelineno-0-146"></a>            <span class="n">APCs_this_week</span> <span class="o">=</span> <span class="n">signal_monthly_data</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">month_curve_index</span><span class="p">]</span>
+<a id="__codelineno-0-147" name="__codelineno-0-147"></a>
+<a id="__codelineno-0-148" name="__codelineno-0-148"></a>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;this_date&quot;</span><span class="p">,</span> <span class="n">this_date</span><span class="p">)</span>
+<a id="__codelineno-0-149" name="__codelineno-0-149"></a>        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Publication date&#39;</span><span class="p">,</span> <span class="n">signal_monthly_data</span><span class="p">[</span><span class="s1">&#39;PUBLICATION_DATE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">month_curve_index</span><span class="p">])</span> 
+<a id="__codelineno-0-150" name="__codelineno-0-150"></a>        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;period&#39;</span><span class="p">,</span> <span class="n">signal_monthly_data</span><span class="p">[</span><span class="s1">&#39;PERIOD&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">month_curve_index</span><span class="p">])</span>
+<a id="__codelineno-0-151" name="__codelineno-0-151"></a>        <span class="c1">#if this_date &gt; signal_daily_data[&#39;PERIOD&#39;].iloc[month_curve_index]:</span>
+<a id="__codelineno-0-152" name="__codelineno-0-152"></a>        <span class="c1">#    month_curve_index = month_curve_index +1 </span>
+<a id="__codelineno-0-153" name="__codelineno-0-153"></a>        <span class="c1">#    APCs_this_week = signal_monthly_data.iloc[month_curve_index]</span>
+<a id="__codelineno-0-154" name="__codelineno-0-154"></a>
+<a id="__codelineno-0-155" name="__codelineno-0-155"></a>        <span class="c1">#print(&quot;APCs_this_week&quot;, APCs_this_week)</span>
+<a id="__codelineno-0-156" name="__codelineno-0-156"></a>
+<a id="__codelineno-0-157" name="__codelineno-0-157"></a>
+<a id="__codelineno-0-158" name="__codelineno-0-158"></a>        <span class="c1">################################################################</span>
+<a id="__codelineno-0-159" name="__codelineno-0-159"></a>        <span class="c1"># cross reference the APC list to get the APC of this date and symbol</span>
+<a id="__codelineno-0-160" name="__codelineno-0-160"></a>        <span class="n">APCs_this_date</span> <span class="o">=</span> <span class="n">signal_daily_data</span><span class="p">[(</span><span class="n">signal_daily_data</span><span class="p">[</span><span class="s1">&#39;PERIOD&#39;</span><span class="p">]</span><span class="o">==</span><span class="n">this_date</span><span class="p">)]</span>
+<a id="__codelineno-0-161" name="__codelineno-0-161"></a><span class="c1">#                                  &amp; (APCs_dat[&#39;symbol&#39;]== this_symbol)] #&lt;-- here add a condition matching the symbols</span>
+<a id="__codelineno-0-162" name="__codelineno-0-162"></a>
+<a id="__codelineno-0-163" name="__codelineno-0-163"></a>        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">APCs_this_date</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+<a id="__codelineno-0-164" name="__codelineno-0-164"></a>            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;APC data of </span><span class="si">{}</span><span class="s2"> from the date </span><span class="si">{}</span><span class="s2"> is missing&quot;</span><span class="o">.</span>\
+<a id="__codelineno-0-165" name="__codelineno-0-165"></a>                                          <span class="nb">format</span><span class="p">(</span><span class="n">this_symbol</span><span class="p">,</span> <span class="n">this_date</span><span class="o">.</span><span class="n">date</span><span class="p">()))</span>
+<a id="__codelineno-0-166" name="__codelineno-0-166"></a>        <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-167" name="__codelineno-0-167"></a>            <span class="c1">#print(this_date, this_symbol, APCs_this_date[&#39;Forecast Period&#39;].iloc[0])</span>
+<a id="__codelineno-0-168" name="__codelineno-0-168"></a>            <span class="n">forecast_date</span> <span class="o">=</span> <span class="n">APCs_this_date</span><span class="p">[</span><span class="s1">&#39;PERIOD&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> 
+<a id="__codelineno-0-169" name="__codelineno-0-169"></a>
+<a id="__codelineno-0-170" name="__codelineno-0-170"></a>            <span class="c1"># This is the APC number only</span>
+<a id="__codelineno-0-171" name="__codelineno-0-171"></a>            <span class="n">daily_APC</span> <span class="o">=</span> <span class="n">APCs_this_date</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="n">APC_LENGTH</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<a id="__codelineno-0-172" name="__codelineno-0-172"></a>            <span class="n">weekly_APC</span> <span class="o">=</span> <span class="n">APCs_this_week</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="n">APC_LENGTH</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<a id="__codelineno-0-173" name="__codelineno-0-173"></a>            <span class="c1">#print(&quot;daily_APC&quot;, daily_APC)</span>
+<a id="__codelineno-0-174" name="__codelineno-0-174"></a>            <span class="c1">#monthly_APC = APCs_this_week.to_numpy()[-1-APC_LENGTH:-1]</span>
+<a id="__codelineno-0-175" name="__codelineno-0-175"></a>            <span class="c1"># create input for bookkepping</span>
+<a id="__codelineno-0-176" name="__codelineno-0-176"></a>            <span class="n">price_code</span> <span class="o">=</span> <span class="n">APCs_this_date</span><span class="p">[</span><span class="s1">&#39;symbol&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-0-177" name="__codelineno-0-177"></a>
+<a id="__codelineno-0-178" name="__codelineno-0-178"></a>            <span class="c1"># find the quantile of the opening price</span>
+<a id="__codelineno-0-179" name="__codelineno-0-179"></a>            <span class="c1">#price_330 = open_price_data[open_price_data[&#39;Date&#39;]==this_date]\</span>
+<a id="__codelineno-0-180" name="__codelineno-0-180"></a>            <span class="c1">#                                                [&#39;Open Price&#39;].item()</span>
+<a id="__codelineno-0-181" name="__codelineno-0-181"></a>
+<a id="__codelineno-0-182" name="__codelineno-0-182"></a>            <span class="n">daily_cumavg</span> <span class="o">=</span> <span class="n">daily_cumavg_data</span><span class="p">[</span><span class="n">daily_cumavg_data</span><span class="p">[</span><span class="s1">&#39;Date&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">this_date</span><span class="p">]</span>\
+<a id="__codelineno-0-183" name="__codelineno-0-183"></a>                                            <span class="p">[</span><span class="s1">&#39;cumavg_price&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+<a id="__codelineno-0-184" name="__codelineno-0-184"></a>            <span class="n">prev_cum_n</span> <span class="o">=</span> <span class="n">daily_cumavg_data</span><span class="p">[</span><span class="n">daily_cumavg_data</span><span class="p">[</span><span class="s1">&#39;Date&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">this_date</span><span class="p">]</span>\
+<a id="__codelineno-0-185" name="__codelineno-0-185"></a>                                            <span class="p">[</span><span class="s1">&#39;prev_cum_n&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>                         
+<a id="__codelineno-0-186" name="__codelineno-0-186"></a>                                            <span class="c1"># &#39;cumavg_price&#39;, </span>
+<a id="__codelineno-0-187" name="__codelineno-0-187"></a>                                            <span class="c1">#&#39;prev_cum_n&#39;])</span>
+<a id="__codelineno-0-188" name="__codelineno-0-188"></a>
+<a id="__codelineno-0-189" name="__codelineno-0-189"></a>            <span class="c1"># The conidtions to decide whether we trim the full_contract_symbol</span>
+<a id="__codelineno-0-190" name="__codelineno-0-190"></a>            <span class="c1"># CLA2024J or CL24J</span>
+<a id="__codelineno-0-191" name="__codelineno-0-191"></a>            <span class="k">if</span> <span class="n">contract_symbol_condse</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+<a id="__codelineno-0-192" name="__codelineno-0-192"></a>                <span class="n">temp</span> <span class="o">=</span> <span class="n">history_data</span><span class="p">[</span><span class="s1">&#39;Contract Code&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+<a id="__codelineno-0-193" name="__codelineno-0-193"></a>                <span class="n">full_contract_symbol</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">temp</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">temp</span><span class="p">)[</span><span class="mi">5</span><span class="p">:</span><span class="mi">7</span><span class="p">]</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">temp</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<a id="__codelineno-0-194" name="__codelineno-0-194"></a>            <span class="k">elif</span> <span class="n">contract_symbol_condse</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+<a id="__codelineno-0-195" name="__codelineno-0-195"></a>                <span class="n">full_contract_symbol</span> <span class="o">=</span> <span class="n">history_data</span><span class="p">[</span><span class="s1">&#39;Contract Code&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+<a id="__codelineno-0-196" name="__codelineno-0-196"></a>
+<a id="__codelineno-0-197" name="__codelineno-0-197"></a>            <span class="c1"># Get the extracted 5 days Lag data. This is the main input to be</span>
+<a id="__codelineno-0-198" name="__codelineno-0-198"></a>            <span class="c1"># put into the Stragey function</span>
+<a id="__codelineno-0-199" name="__codelineno-0-199"></a>            <span class="n">apc_curve_lag</span><span class="p">,</span> <span class="n">history_data_lag</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">extract_lag_data</span><span class="p">(</span>\
+<a id="__codelineno-0-200" name="__codelineno-0-200"></a>                                                                 <span class="n">signal_daily_data</span><span class="p">,</span> 
+<a id="__codelineno-0-201" name="__codelineno-0-201"></a>                                                                 <span class="n">history_data</span><span class="p">,</span> 
+<a id="__codelineno-0-202" name="__codelineno-0-202"></a>                                                                 <span class="n">forecast_date</span><span class="p">,</span>
+<a id="__codelineno-0-203" name="__codelineno-0-203"></a>                                                                 <span class="n">lag_size</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<a id="__codelineno-0-204" name="__codelineno-0-204"></a>
+<a id="__codelineno-0-205" name="__codelineno-0-205"></a>            <span class="c1"># Apply the strategy, The Strategy is variable</span>
+<a id="__codelineno-0-206" name="__codelineno-0-206"></a>            <span class="n">strategy_output</span> <span class="o">=</span> <span class="n">strategy</span><span class="p">(</span><span class="n">weekly_APC</span><span class="p">,</span> <span class="n">daily_APC</span><span class="p">)</span><span class="o">.</span>\
+<a id="__codelineno-0-207" name="__codelineno-0-207"></a>                                        <span class="n">apply_strategy</span><span class="p">(</span><span class="n">history_data_lag</span><span class="p">,</span> 
+<a id="__codelineno-0-208" name="__codelineno-0-208"></a>                                                       <span class="n">apc_curve_lag</span><span class="p">,</span> 
+<a id="__codelineno-0-209" name="__codelineno-0-209"></a>                                                       <span class="n">daily_cumavg</span><span class="p">,</span>
+<a id="__codelineno-0-210" name="__codelineno-0-210"></a>                                                       <span class="n">prev_cum_n</span><span class="p">,</span>
+<a id="__codelineno-0-211" name="__codelineno-0-211"></a>                                                       <span class="n">buy_range</span><span class="o">=</span><span class="n">buy_range</span><span class="p">,</span> 
+<a id="__codelineno-0-212" name="__codelineno-0-212"></a>                                                       <span class="n">sell_range</span><span class="o">=</span><span class="n">sell_range</span><span class="p">,</span>   
+<a id="__codelineno-0-213" name="__codelineno-0-213"></a>                                                       <span class="n">quantile</span> <span class="o">=</span> <span class="n">quantile</span><span class="p">)</span>
+<a id="__codelineno-0-214" name="__codelineno-0-214"></a>
+<a id="__codelineno-0-215" name="__codelineno-0-215"></a>            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;====================================&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-216" name="__codelineno-0-216"></a>            <span class="nb">print</span><span class="p">(</span><span class="n">forecast_date</span><span class="p">,</span> <span class="n">full_contract_symbol</span><span class="p">,</span><span class="s1">&#39;MR signal generated!&#39;</span><span class="p">,</span> 
+<a id="__codelineno-0-217" name="__codelineno-0-217"></a>                   <span class="n">strategy_output</span><span class="p">[</span><span class="s1">&#39;direction&#39;</span><span class="p">],</span><span class="n">i</span><span class="p">)</span>
+<a id="__codelineno-0-218" name="__codelineno-0-218"></a>
+<a id="__codelineno-0-219" name="__codelineno-0-219"></a>
+<a id="__codelineno-0-220" name="__codelineno-0-220"></a>            <span class="c1"># make a list of data to be written into bookkeep</span>
+<a id="__codelineno-0-221" name="__codelineno-0-221"></a>            <span class="n">static_info</span> <span class="o">=</span> <span class="p">[</span><span class="n">asset_name</span><span class="p">,</span> <span class="n">full_contract_symbol</span><span class="p">,</span> \
+<a id="__codelineno-0-222" name="__codelineno-0-222"></a>                           <span class="n">Timezone</span><span class="p">,</span> <span class="n">open_hr</span><span class="p">,</span> <span class="n">close_hr</span><span class="p">]</span>
+<a id="__codelineno-0-223" name="__codelineno-0-223"></a>
+<a id="__codelineno-0-224" name="__codelineno-0-224"></a>            <span class="c1"># put all the data in a singular list</span>
+<a id="__codelineno-0-225" name="__codelineno-0-225"></a>            <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">forecast_date</span><span class="p">,</span> <span class="n">price_code</span><span class="p">]</span> <span class="o">+</span> \
+<a id="__codelineno-0-226" name="__codelineno-0-226"></a>                    <span class="p">[</span><span class="n">strategy_output</span><span class="p">[</span><span class="s1">&#39;direction&#39;</span><span class="p">]]</span> <span class="o">+</span> \
+<a id="__codelineno-0-227" name="__codelineno-0-227"></a>                    <span class="n">static_info</span> <span class="o">+</span>  <span class="n">strategy_output</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+<a id="__codelineno-0-228" name="__codelineno-0-228"></a>            <span class="c1">#print(&quot;data&quot;, data, len(data))</span>
+<a id="__codelineno-0-229" name="__codelineno-0-229"></a>            <span class="c1"># Storing the data    </span>
+<a id="__codelineno-0-230" name="__codelineno-0-230"></a>            <span class="n">bucket</span> <span class="o">=</span> <span class="n">book</span><span class="o">.</span><span class="n">store_to_bucket_single</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>       
+<a id="__codelineno-0-231" name="__codelineno-0-231"></a>
+<a id="__codelineno-0-232" name="__codelineno-0-232"></a>    <span class="n">dict_contracts_quant_signals</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">bucket</span><span class="p">)</span>
+<a id="__codelineno-0-233" name="__codelineno-0-233"></a>
+<a id="__codelineno-0-234" name="__codelineno-0-234"></a>    <span class="c1">#sort by date (the first column)</span>
+<a id="__codelineno-0-235" name="__codelineno-0-235"></a>    <span class="n">dict_contracts_quant_signals</span> <span class="o">=</span> <span class="n">dict_contracts_quant_signals</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span>
+<a id="__codelineno-0-236" name="__codelineno-0-236"></a>                                    <span class="n">dict_contracts_quant_signals</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<a id="__codelineno-0-237" name="__codelineno-0-237"></a>
+<a id="__codelineno-0-238" name="__codelineno-0-238"></a>    <span class="k">return</span> <span class="n">dict_contracts_quant_signals</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="app.run_gen_monthly_MR_dir.run_gen_MR_signals_preloaded_monthly" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">run_gen_MR_signals_preloaded_monthly</span><span class="p">(</span><span class="n">strategy</span><span class="p">,</span> <span class="n">filename_list</span><span class="p">,</span> <span class="n">signal_daily_pkl</span><span class="p">,</span> <span class="n">signal_monthly_pkl</span><span class="p">,</span> <span class="n">history_daily_pkl</span><span class="p">,</span> <span class="n">daily_cumavg_pkl</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">,</span> <span class="n">open_hr_dict</span><span class="p">,</span> <span class="n">close_hr_dict</span><span class="p">,</span> <span class="n">timezone_dict</span><span class="p">,</span> <span class="n">buy_range</span><span class="o">=</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.35</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">],</span> <span class="mf">0.05</span><span class="p">),</span> <span class="n">sell_range</span><span class="o">=</span><span class="p">([</span><span class="mf">0.65</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span> <span class="mf">0.95</span><span class="p">),</span> <span class="n">quantile</span><span class="o">=</span><span class="p">[</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">],</span> <span class="n">save_or_not</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>A method that run Mean Reversion signal generation form a preloaded 
+dictionary. The dictionary contains a key-value pairs with the asset name 
+as keys and a dataframe as value. </p>
+<p>This method depends upon the function run_gen_MR_signals to iterate over
+the input lists and calculate the signal for each assets independently.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>Strategy</code></b>
+                  (<code>strategy object</code>)
+              –
+              <div class="doc-md-description">
+                <p>The strategy function in use in generating the signal.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>filename_list</code></b>
+                  (<code>list</code>)
+              –
+              <div class="doc-md-description">
+                <p>The saved filename list.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>signal_pkl</code></b>
+                  (<code>dict</code>)
+              –
+              <div class="doc-md-description">
+                <p>A dictionary read from a pkl file that contains the signal data in 
+a dataframe as values and keywords as key.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>history_daily_pkl</code></b>
+                  (<code>dict</code>)
+              –
+              <div class="doc-md-description">
+                <p>A dictionary read from a pkl file that contains the daily historical 
+data in a dataframe as values and keywords as key.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>openprice_pkl</code></b>
+                  (<code>dict</code>)
+              –
+              <div class="doc-md-description">
+                <p>A dictionary read from a pkl file that contains the daily openning price 
+data in a dataframe as values and keywords as key..</p>
+              </div>
+            </li>
+            <li>
+              <b><code>start_date</code></b>
+                  (<code>str</code>)
+              –
+              <div class="doc-md-description">
+                <p>The starting date.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>end_date</code></b>
+                  (<code>str</code>)
+              –
+              <div class="doc-md-description">
+                <p>The ending date.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>open_hr_dict</code></b>
+                  (<code>dict</code>)
+              –
+              <div class="doc-md-description">
+                <p>A dictionary for the input opening hour strings.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>close_hr_dict</code></b>
+                  (<code>dict</code>)
+              –
+              <div class="doc-md-description">
+                <p>A dictionary for the input closing hour strings.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>timezone_dict</code></b>
+                  (<code>dict</code>)
+              –
+              <div class="doc-md-description">
+                <p>A dictionary for the Time Zone name strings.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>buy_range</code></b>
+                  (<code>tuple</code>, default:
+                      <code>([0.1, 0.35], [0.5, 0.9], 0.05)</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>The buy range in the format of (entry, exit, stop loss). 
+The default is ([0.25,0.4],[0.6,0.75],0.05).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>sell_range</code></b>
+                  (<code>tuple</code>, default:
+                      <code>([0.65, 0.9], [0.1, 0.5], 0.95)</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>The sell range in the format of (entry, exit, stop loss). 
+The default is ([0.6,0.75],[0.25,0.4],0.95).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>save_or_not</code></b>
+                  (<code>bool</code>, default:
+                      <code>True</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>A boolean value to indicate whether to save the result in a file or not. 
+The default is False.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code>dataframe</code>
+              –
+              <div class="doc-md-description">
+                <p>signal data.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+            <details class="quote">
+              <summary>Source code in <code>app/run_gen_monthly_MR_dir.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-240">240</a></span>
+<span class="normal"><a href="#__codelineno-0-241">241</a></span>
+<span class="normal"><a href="#__codelineno-0-242">242</a></span>
+<span class="normal"><a href="#__codelineno-0-243">243</a></span>
+<span class="normal"><a href="#__codelineno-0-244">244</a></span>
+<span class="normal"><a href="#__codelineno-0-245">245</a></span>
+<span class="normal"><a href="#__codelineno-0-246">246</a></span>
+<span class="normal"><a href="#__codelineno-0-247">247</a></span>
+<span class="normal"><a href="#__codelineno-0-248">248</a></span>
+<span class="normal"><a href="#__codelineno-0-249">249</a></span>
+<span class="normal"><a href="#__codelineno-0-250">250</a></span>
+<span class="normal"><a href="#__codelineno-0-251">251</a></span>
+<span class="normal"><a href="#__codelineno-0-252">252</a></span>
+<span class="normal"><a href="#__codelineno-0-253">253</a></span>
+<span class="normal"><a href="#__codelineno-0-254">254</a></span>
+<span class="normal"><a href="#__codelineno-0-255">255</a></span>
+<span class="normal"><a href="#__codelineno-0-256">256</a></span>
+<span class="normal"><a href="#__codelineno-0-257">257</a></span>
+<span class="normal"><a href="#__codelineno-0-258">258</a></span>
+<span class="normal"><a href="#__codelineno-0-259">259</a></span>
+<span class="normal"><a href="#__codelineno-0-260">260</a></span>
+<span class="normal"><a href="#__codelineno-0-261">261</a></span>
+<span class="normal"><a href="#__codelineno-0-262">262</a></span>
+<span class="normal"><a href="#__codelineno-0-263">263</a></span>
+<span class="normal"><a href="#__codelineno-0-264">264</a></span>
+<span class="normal"><a href="#__codelineno-0-265">265</a></span>
+<span class="normal"><a href="#__codelineno-0-266">266</a></span>
+<span class="normal"><a href="#__codelineno-0-267">267</a></span>
+<span class="normal"><a href="#__codelineno-0-268">268</a></span>
+<span class="normal"><a href="#__codelineno-0-269">269</a></span>
+<span class="normal"><a href="#__codelineno-0-270">270</a></span>
+<span class="normal"><a href="#__codelineno-0-271">271</a></span>
+<span class="normal"><a href="#__codelineno-0-272">272</a></span>
+<span class="normal"><a href="#__codelineno-0-273">273</a></span>
+<span class="normal"><a href="#__codelineno-0-274">274</a></span>
+<span class="normal"><a href="#__codelineno-0-275">275</a></span>
+<span class="normal"><a href="#__codelineno-0-276">276</a></span>
+<span class="normal"><a href="#__codelineno-0-277">277</a></span>
+<span class="normal"><a href="#__codelineno-0-278">278</a></span>
+<span class="normal"><a href="#__codelineno-0-279">279</a></span>
+<span class="normal"><a href="#__codelineno-0-280">280</a></span>
+<span class="normal"><a href="#__codelineno-0-281">281</a></span>
+<span class="normal"><a href="#__codelineno-0-282">282</a></span>
+<span class="normal"><a href="#__codelineno-0-283">283</a></span>
+<span class="normal"><a href="#__codelineno-0-284">284</a></span>
+<span class="normal"><a href="#__codelineno-0-285">285</a></span>
+<span class="normal"><a href="#__codelineno-0-286">286</a></span>
+<span class="normal"><a href="#__codelineno-0-287">287</a></span>
+<span class="normal"><a href="#__codelineno-0-288">288</a></span>
+<span class="normal"><a href="#__codelineno-0-289">289</a></span>
+<span class="normal"><a href="#__codelineno-0-290">290</a></span>
+<span class="normal"><a href="#__codelineno-0-291">291</a></span>
+<span class="normal"><a href="#__codelineno-0-292">292</a></span>
+<span class="normal"><a href="#__codelineno-0-293">293</a></span>
+<span class="normal"><a href="#__codelineno-0-294">294</a></span>
+<span class="normal"><a href="#__codelineno-0-295">295</a></span>
+<span class="normal"><a href="#__codelineno-0-296">296</a></span>
+<span class="normal"><a href="#__codelineno-0-297">297</a></span>
+<span class="normal"><a href="#__codelineno-0-298">298</a></span>
+<span class="normal"><a href="#__codelineno-0-299">299</a></span>
+<span class="normal"><a href="#__codelineno-0-300">300</a></span>
+<span class="normal"><a href="#__codelineno-0-301">301</a></span>
+<span class="normal"><a href="#__codelineno-0-302">302</a></span>
+<span class="normal"><a href="#__codelineno-0-303">303</a></span>
+<span class="normal"><a href="#__codelineno-0-304">304</a></span>
+<span class="normal"><a href="#__codelineno-0-305">305</a></span>
+<span class="normal"><a href="#__codelineno-0-306">306</a></span>
+<span class="normal"><a href="#__codelineno-0-307">307</a></span>
+<span class="normal"><a href="#__codelineno-0-308">308</a></span>
+<span class="normal"><a href="#__codelineno-0-309">309</a></span>
+<span class="normal"><a href="#__codelineno-0-310">310</a></span>
+<span class="normal"><a href="#__codelineno-0-311">311</a></span>
+<span class="normal"><a href="#__codelineno-0-312">312</a></span>
+<span class="normal"><a href="#__codelineno-0-313">313</a></span>
+<span class="normal"><a href="#__codelineno-0-314">314</a></span>
+<span class="normal"><a href="#__codelineno-0-315">315</a></span>
+<span class="normal"><a href="#__codelineno-0-316">316</a></span>
+<span class="normal"><a href="#__codelineno-0-317">317</a></span>
+<span class="normal"><a href="#__codelineno-0-318">318</a></span>
+<span class="normal"><a href="#__codelineno-0-319">319</a></span>
+<span class="normal"><a href="#__codelineno-0-320">320</a></span>
+<span class="normal"><a href="#__codelineno-0-321">321</a></span>
+<span class="normal"><a href="#__codelineno-0-322">322</a></span>
+<span class="normal"><a href="#__codelineno-0-323">323</a></span>
+<span class="normal"><a href="#__codelineno-0-324">324</a></span>
+<span class="normal"><a href="#__codelineno-0-325">325</a></span>
+<span class="normal"><a href="#__codelineno-0-326">326</a></span>
+<span class="normal"><a href="#__codelineno-0-327">327</a></span>
+<span class="normal"><a href="#__codelineno-0-328">328</a></span>
+<span class="normal"><a href="#__codelineno-0-329">329</a></span>
+<span class="normal"><a href="#__codelineno-0-330">330</a></span>
+<span class="normal"><a href="#__codelineno-0-331">331</a></span>
+<span class="normal"><a href="#__codelineno-0-332">332</a></span>
+<span class="normal"><a href="#__codelineno-0-333">333</a></span>
+<span class="normal"><a href="#__codelineno-0-334">334</a></span>
+<span class="normal"><a href="#__codelineno-0-335">335</a></span>
+<span class="normal"><a href="#__codelineno-0-336">336</a></span>
+<span class="normal"><a href="#__codelineno-0-337">337</a></span>
+<span class="normal"><a href="#__codelineno-0-338">338</a></span>
+<span class="normal"><a href="#__codelineno-0-339">339</a></span>
+<span class="normal"><a href="#__codelineno-0-340">340</a></span>
+<span class="normal"><a href="#__codelineno-0-341">341</a></span>
+<span class="normal"><a href="#__codelineno-0-342">342</a></span>
+<span class="normal"><a href="#__codelineno-0-343">343</a></span>
+<span class="normal"><a href="#__codelineno-0-344">344</a></span>
+<span class="normal"><a href="#__codelineno-0-345">345</a></span>
+<span class="normal"><a href="#__codelineno-0-346">346</a></span>
+<span class="normal"><a href="#__codelineno-0-347">347</a></span>
+<span class="normal"><a href="#__codelineno-0-348">348</a></span>
+<span class="normal"><a href="#__codelineno-0-349">349</a></span>
+<span class="normal"><a href="#__codelineno-0-350">350</a></span>
+<span class="normal"><a href="#__codelineno-0-351">351</a></span>
+<span class="normal"><a href="#__codelineno-0-352">352</a></span>
+<span class="normal"><a href="#__codelineno-0-353">353</a></span>
+<span class="normal"><a href="#__codelineno-0-354">354</a></span>
+<span class="normal"><a href="#__codelineno-0-355">355</a></span>
+<span class="normal"><a href="#__codelineno-0-356">356</a></span>
+<span class="normal"><a href="#__codelineno-0-357">357</a></span>
+<span class="normal"><a href="#__codelineno-0-358">358</a></span>
+<span class="normal"><a href="#__codelineno-0-359">359</a></span>
+<span class="normal"><a href="#__codelineno-0-360">360</a></span>
+<span class="normal"><a href="#__codelineno-0-361">361</a></span>
+<span class="normal"><a href="#__codelineno-0-362">362</a></span>
+<span class="normal"><a href="#__codelineno-0-363">363</a></span>
+<span class="normal"><a href="#__codelineno-0-364">364</a></span>
+<span class="normal"><a href="#__codelineno-0-365">365</a></span>
+<span class="normal"><a href="#__codelineno-0-366">366</a></span>
+<span class="normal"><a href="#__codelineno-0-367">367</a></span>
+<span class="normal"><a href="#__codelineno-0-368">368</a></span>
+<span class="normal"><a href="#__codelineno-0-369">369</a></span>
+<span class="normal"><a href="#__codelineno-0-370">370</a></span>
+<span class="normal"><a href="#__codelineno-0-371">371</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-240" name="__codelineno-0-240"></a><span class="nd">@util</span><span class="o">.</span><span class="n">time_it</span>
+<a id="__codelineno-0-241" name="__codelineno-0-241"></a><span class="k">def</span> <span class="nf">run_gen_MR_signals_preloaded_monthly</span><span class="p">(</span><span class="n">strategy</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Strategy</span><span class="p">],</span> 
+<a id="__codelineno-0-242" name="__codelineno-0-242"></a>                                         <span class="n">filename_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> 
+<a id="__codelineno-0-243" name="__codelineno-0-243"></a>                                         <span class="n">signal_daily_pkl</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> 
+<a id="__codelineno-0-244" name="__codelineno-0-244"></a>                                         <span class="n">signal_monthly_pkl</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> 
+<a id="__codelineno-0-245" name="__codelineno-0-245"></a>                                         <span class="n">history_daily_pkl</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> 
+<a id="__codelineno-0-246" name="__codelineno-0-246"></a>                                         <span class="n">daily_cumavg_pkl</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> 
+<a id="__codelineno-0-247" name="__codelineno-0-247"></a>                                         <span class="n">start_date</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">end_date</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-0-248" name="__codelineno-0-248"></a>                                         <span class="n">open_hr_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> 
+<a id="__codelineno-0-249" name="__codelineno-0-249"></a>                                         <span class="n">close_hr_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> 
+<a id="__codelineno-0-250" name="__codelineno-0-250"></a>                                         <span class="n">timezone_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+<a id="__codelineno-0-251" name="__codelineno-0-251"></a>                                         <span class="n">buy_range</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">([</span><span class="mf">0.10</span><span class="p">,</span><span class="mf">0.35</span><span class="p">],</span>
+<a id="__codelineno-0-252" name="__codelineno-0-252"></a>                                                             <span class="p">[</span><span class="mf">0.50</span><span class="p">,</span><span class="mf">0.90</span><span class="p">],</span><span class="mf">0.05</span><span class="p">),</span> 
+<a id="__codelineno-0-253" name="__codelineno-0-253"></a>                                         <span class="n">sell_range</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">([</span><span class="mf">0.65</span><span class="p">,</span><span class="mf">0.90</span><span class="p">],</span>
+<a id="__codelineno-0-254" name="__codelineno-0-254"></a>                                                              <span class="p">[</span><span class="mf">0.10</span><span class="p">,</span><span class="mf">0.50</span><span class="p">],</span><span class="mf">0.95</span><span class="p">),</span>
+<a id="__codelineno-0-255" name="__codelineno-0-255"></a>                                         <span class="n">quantile</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.05</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span>
+<a id="__codelineno-0-256" name="__codelineno-0-256"></a>                                                                  <span class="mf">0.25</span><span class="p">,</span><span class="mf">0.4</span><span class="p">,</span>
+<a id="__codelineno-0-257" name="__codelineno-0-257"></a>                                                                  <span class="mf">0.5</span><span class="p">,</span><span class="mf">0.6</span><span class="p">,</span>
+<a id="__codelineno-0-258" name="__codelineno-0-258"></a>                                                                  <span class="mf">0.75</span><span class="p">,</span><span class="mf">0.9</span><span class="p">,</span>
+<a id="__codelineno-0-259" name="__codelineno-0-259"></a>                                                                  <span class="mf">0.95</span><span class="p">],</span>
+<a id="__codelineno-0-260" name="__codelineno-0-260"></a>                                         <span class="n">save_or_not</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<a id="__codelineno-0-261" name="__codelineno-0-261"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-262" name="__codelineno-0-262"></a><span class="sd">    A method that run Mean Reversion signal generation form a preloaded </span>
+<a id="__codelineno-0-263" name="__codelineno-0-263"></a><span class="sd">    dictionary. The dictionary contains a key-value pairs with the asset name </span>
+<a id="__codelineno-0-264" name="__codelineno-0-264"></a><span class="sd">    as keys and a dataframe as value. </span>
+<a id="__codelineno-0-265" name="__codelineno-0-265"></a>
+<a id="__codelineno-0-266" name="__codelineno-0-266"></a><span class="sd">    This method depends upon the function run_gen_MR_signals to iterate over</span>
+<a id="__codelineno-0-267" name="__codelineno-0-267"></a><span class="sd">    the input lists and calculate the signal for each assets independently.</span>
+<a id="__codelineno-0-268" name="__codelineno-0-268"></a>
+<a id="__codelineno-0-269" name="__codelineno-0-269"></a><span class="sd">    Parameters</span>
+<a id="__codelineno-0-270" name="__codelineno-0-270"></a><span class="sd">    ----------</span>
+<a id="__codelineno-0-271" name="__codelineno-0-271"></a><span class="sd">    Strategy : strategy object</span>
+<a id="__codelineno-0-272" name="__codelineno-0-272"></a><span class="sd">        The strategy function in use in generating the signal.</span>
+<a id="__codelineno-0-273" name="__codelineno-0-273"></a><span class="sd">    filename_list : list</span>
+<a id="__codelineno-0-274" name="__codelineno-0-274"></a><span class="sd">        The saved filename list.</span>
+<a id="__codelineno-0-275" name="__codelineno-0-275"></a><span class="sd">    signal_pkl : dict</span>
+<a id="__codelineno-0-276" name="__codelineno-0-276"></a><span class="sd">        A dictionary read from a pkl file that contains the signal data in </span>
+<a id="__codelineno-0-277" name="__codelineno-0-277"></a><span class="sd">        a dataframe as values and keywords as key.</span>
+<a id="__codelineno-0-278" name="__codelineno-0-278"></a><span class="sd">    history_daily_pkl : dict</span>
+<a id="__codelineno-0-279" name="__codelineno-0-279"></a><span class="sd">        A dictionary read from a pkl file that contains the daily historical </span>
+<a id="__codelineno-0-280" name="__codelineno-0-280"></a><span class="sd">        data in a dataframe as values and keywords as key.</span>
+<a id="__codelineno-0-281" name="__codelineno-0-281"></a><span class="sd">    openprice_pkl : dict</span>
+<a id="__codelineno-0-282" name="__codelineno-0-282"></a><span class="sd">        A dictionary read from a pkl file that contains the daily openning price </span>
+<a id="__codelineno-0-283" name="__codelineno-0-283"></a><span class="sd">        data in a dataframe as values and keywords as key..</span>
+<a id="__codelineno-0-284" name="__codelineno-0-284"></a><span class="sd">    start_date : str</span>
+<a id="__codelineno-0-285" name="__codelineno-0-285"></a><span class="sd">        The starting date.</span>
+<a id="__codelineno-0-286" name="__codelineno-0-286"></a><span class="sd">    end_date : str</span>
+<a id="__codelineno-0-287" name="__codelineno-0-287"></a><span class="sd">        The ending date.</span>
+<a id="__codelineno-0-288" name="__codelineno-0-288"></a><span class="sd">    open_hr_dict : dict</span>
+<a id="__codelineno-0-289" name="__codelineno-0-289"></a><span class="sd">        A dictionary for the input opening hour strings.</span>
+<a id="__codelineno-0-290" name="__codelineno-0-290"></a><span class="sd">    close_hr_dict : dict</span>
+<a id="__codelineno-0-291" name="__codelineno-0-291"></a><span class="sd">        A dictionary for the input closing hour strings.</span>
+<a id="__codelineno-0-292" name="__codelineno-0-292"></a><span class="sd">    timezone_dict : dict</span>
+<a id="__codelineno-0-293" name="__codelineno-0-293"></a><span class="sd">        A dictionary for the Time Zone name strings.</span>
+<a id="__codelineno-0-294" name="__codelineno-0-294"></a><span class="sd">    buy_range : tuple, optional</span>
+<a id="__codelineno-0-295" name="__codelineno-0-295"></a><span class="sd">        The buy range in the format of (entry, exit, stop loss). </span>
+<a id="__codelineno-0-296" name="__codelineno-0-296"></a><span class="sd">        The default is ([0.25,0.4],[0.6,0.75],0.05).</span>
+<a id="__codelineno-0-297" name="__codelineno-0-297"></a><span class="sd">    sell_range : tuple, optional</span>
+<a id="__codelineno-0-298" name="__codelineno-0-298"></a><span class="sd">        The sell range in the format of (entry, exit, stop loss). </span>
+<a id="__codelineno-0-299" name="__codelineno-0-299"></a><span class="sd">        The default is ([0.6,0.75],[0.25,0.4],0.95).</span>
+<a id="__codelineno-0-300" name="__codelineno-0-300"></a><span class="sd">    save_or_not : bool, optional</span>
+<a id="__codelineno-0-301" name="__codelineno-0-301"></a><span class="sd">        A boolean value to indicate whether to save the result in a file or not. </span>
+<a id="__codelineno-0-302" name="__codelineno-0-302"></a><span class="sd">        The default is False.</span>
+<a id="__codelineno-0-303" name="__codelineno-0-303"></a>
+<a id="__codelineno-0-304" name="__codelineno-0-304"></a><span class="sd">    Returns</span>
+<a id="__codelineno-0-305" name="__codelineno-0-305"></a><span class="sd">    -------</span>
+<a id="__codelineno-0-306" name="__codelineno-0-306"></a><span class="sd">    dataframe</span>
+<a id="__codelineno-0-307" name="__codelineno-0-307"></a><span class="sd">        signal data.</span>
+<a id="__codelineno-0-308" name="__codelineno-0-308"></a>
+<a id="__codelineno-0-309" name="__codelineno-0-309"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-310" name="__codelineno-0-310"></a>
+<a id="__codelineno-0-311" name="__codelineno-0-311"></a>    <span class="c1"># run meanreversion signal generation on the basis of individual programme  </span>
+<a id="__codelineno-0-312" name="__codelineno-0-312"></a>    <span class="c1"># Loop the whole list in one go with all the contracts or Loop it one contract at a time?</span>
+<a id="__codelineno-0-313" name="__codelineno-0-313"></a>    <span class="n">master_dict</span><span class="p">,</span> <span class="n">symbol_list</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(),</span> <span class="nb">list</span><span class="p">(</span><span class="n">signal_monthly_pkl</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+<a id="__codelineno-0-314" name="__codelineno-0-314"></a>
+<a id="__codelineno-0-315" name="__codelineno-0-315"></a>
+<a id="__codelineno-0-316" name="__codelineno-0-316"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">symbol_list</span><span class="p">,</span> <span class="n">filename_list</span><span class="p">)</span>
+<a id="__codelineno-0-317" name="__codelineno-0-317"></a>    <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">symbol_list</span><span class="p">:</span>
+<a id="__codelineno-0-318" name="__codelineno-0-318"></a>        <span class="n">filename</span> <span class="o">=</span> <span class="n">filename_list</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span>
+<a id="__codelineno-0-319" name="__codelineno-0-319"></a>        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;filename&#39;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+<a id="__codelineno-0-320" name="__codelineno-0-320"></a>        <span class="c1"># The reading part takes the longest time: 13 seconds. The loop itself takes </span>
+<a id="__codelineno-0-321" name="__codelineno-0-321"></a>        <span class="c1"># input 1, APC. Load the master table in memory and test multple strategies  </span>
+<a id="__codelineno-0-322" name="__codelineno-0-322"></a>        <span class="nd">@util</span><span class="o">.</span><span class="n">save_csv</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">),</span> <span class="n">save_or_not</span><span class="o">=</span><span class="n">save_or_not</span><span class="p">)</span>
+<a id="__codelineno-0-323" name="__codelineno-0-323"></a>        <span class="k">def</span> <span class="nf">run_gen_MR_indi</span><span class="p">():</span>
+<a id="__codelineno-0-324" name="__codelineno-0-324"></a>
+<a id="__codelineno-0-325" name="__codelineno-0-325"></a>            <span class="n">book</span> <span class="o">=</span> <span class="n">Bookkeep</span><span class="p">(</span><span class="n">bucket_type</span> <span class="o">=</span> <span class="s1">&#39;None&#39;</span><span class="p">,</span> 
+<a id="__codelineno-0-326" name="__codelineno-0-326"></a>                            <span class="n">custom_keywords_list</span> <span class="o">=</span> <span class="n">MONTHLY_BOOK_COLS</span><span class="p">)</span>
+<a id="__codelineno-0-327" name="__codelineno-0-327"></a>
+<a id="__codelineno-0-328" name="__codelineno-0-328"></a>            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;symbol&quot;</span><span class="p">,</span><span class="n">symbol</span><span class="p">)</span>
+<a id="__codelineno-0-329" name="__codelineno-0-329"></a>            <span class="c1">#signal file input</span>
+<a id="__codelineno-0-330" name="__codelineno-0-330"></a>            <span class="n">signal_daily_file</span> <span class="o">=</span> <span class="n">signal_daily_pkl</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span>
+<a id="__codelineno-0-331" name="__codelineno-0-331"></a>            <span class="n">signal_monthly_file</span> <span class="o">=</span> <span class="n">signal_monthly_pkl</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span>
+<a id="__codelineno-0-332" name="__codelineno-0-332"></a>
+<a id="__codelineno-0-333" name="__codelineno-0-333"></a>            <span class="c1"># Prepare monthly APC file ** Crucial step in making the whole sctip works</span>
+<a id="__codelineno-0-334" name="__codelineno-0-334"></a>            <span class="n">signal_monthly_file</span> <span class="o">=</span> <span class="n">signal_monthly_file</span><span class="p">[</span>
+<a id="__codelineno-0-335" name="__codelineno-0-335"></a>                                    <span class="n">signal_monthly_file</span><span class="p">[</span><span class="s1">&#39;CONTINUOUS_FORWARD&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
+<a id="__codelineno-0-336" name="__codelineno-0-336"></a>
+<a id="__codelineno-0-337" name="__codelineno-0-337"></a>            <span class="c1"># input 2, Portara history file.</span>
+<a id="__codelineno-0-338" name="__codelineno-0-338"></a>            <span class="n">history_daily_file</span> <span class="o">=</span> <span class="n">history_daily_pkl</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span>
+<a id="__codelineno-0-339" name="__codelineno-0-339"></a>
+<a id="__codelineno-0-340" name="__codelineno-0-340"></a>
+<a id="__codelineno-0-341" name="__codelineno-0-341"></a>            <span class="c1">#history_minute_file = history_minute_pkl[symbol]</span>
+<a id="__codelineno-0-342" name="__codelineno-0-342"></a>
+<a id="__codelineno-0-343" name="__codelineno-0-343"></a>            <span class="c1"># Find the opening price at 03:30 UK time. If not found, </span>
+<a id="__codelineno-0-344" name="__codelineno-0-344"></a>            <span class="c1"># loop through the next 30 minutes to find the opening price</span>
+<a id="__codelineno-0-345" name="__codelineno-0-345"></a>            <span class="n">daily_cumavg_file</span> <span class="o">=</span> <span class="n">daily_cumavg_pkl</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span>
+<a id="__codelineno-0-346" name="__codelineno-0-346"></a>
+<a id="__codelineno-0-347" name="__codelineno-0-347"></a>            <span class="n">open_hr</span> <span class="o">=</span> <span class="n">open_hr_dict</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span>
+<a id="__codelineno-0-348" name="__codelineno-0-348"></a>            <span class="n">close_hr</span> <span class="o">=</span> <span class="n">close_hr_dict</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span>
+<a id="__codelineno-0-349" name="__codelineno-0-349"></a>            <span class="n">Timezone</span><span class="o">=</span> <span class="n">timezone_dict</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span>
+<a id="__codelineno-0-350" name="__codelineno-0-350"></a>
+<a id="__codelineno-0-351" name="__codelineno-0-351"></a>            <span class="c1"># The strategy will be ran in loop_signal decorator</span>
+<a id="__codelineno-0-352" name="__codelineno-0-352"></a>            <span class="n">dict_contracts_quant_signals</span> <span class="o">=</span> <span class="n">loop_signal</span><span class="p">(</span><span class="n">strategy</span><span class="p">,</span> <span class="n">book</span><span class="p">,</span> 
+<a id="__codelineno-0-353" name="__codelineno-0-353"></a>                                                       <span class="n">signal_daily_file</span><span class="p">,</span> 
+<a id="__codelineno-0-354" name="__codelineno-0-354"></a>                                                       <span class="n">signal_monthly_file</span><span class="p">,</span>
+<a id="__codelineno-0-355" name="__codelineno-0-355"></a>                                                       <span class="n">history_daily_file</span><span class="p">,</span> 
+<a id="__codelineno-0-356" name="__codelineno-0-356"></a>                                                       <span class="n">daily_cumavg_file</span><span class="p">,</span>
+<a id="__codelineno-0-357" name="__codelineno-0-357"></a>                                                       <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">,</span>
+<a id="__codelineno-0-358" name="__codelineno-0-358"></a>                                                       <span class="n">buy_range</span><span class="o">=</span><span class="n">buy_range</span><span class="p">,</span>
+<a id="__codelineno-0-359" name="__codelineno-0-359"></a>                                                       <span class="n">sell_range</span><span class="o">=</span><span class="n">sell_range</span><span class="p">,</span>
+<a id="__codelineno-0-360" name="__codelineno-0-360"></a>                                                       <span class="n">open_hr</span><span class="o">=</span><span class="n">open_hr</span><span class="p">,</span> 
+<a id="__codelineno-0-361" name="__codelineno-0-361"></a>                                                       <span class="n">close_hr</span><span class="o">=</span><span class="n">close_hr</span><span class="p">,</span>
+<a id="__codelineno-0-362" name="__codelineno-0-362"></a>                                                       <span class="n">quantile</span> <span class="o">=</span> <span class="n">quantile</span><span class="p">,</span>
+<a id="__codelineno-0-363" name="__codelineno-0-363"></a>                                                       <span class="n">asset_name</span> <span class="o">=</span> <span class="n">symbol</span><span class="p">,</span> 
+<a id="__codelineno-0-364" name="__codelineno-0-364"></a>                                                       <span class="n">Timezone</span><span class="o">=</span> <span class="n">Timezone</span><span class="p">,</span>
+<a id="__codelineno-0-365" name="__codelineno-0-365"></a>                                                       <span class="n">loop_symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">)</span>
+<a id="__codelineno-0-366" name="__codelineno-0-366"></a>            <span class="k">return</span> <span class="n">dict_contracts_quant_signals</span>
+<a id="__codelineno-0-367" name="__codelineno-0-367"></a>
+<a id="__codelineno-0-368" name="__codelineno-0-368"></a>
+<a id="__codelineno-0-369" name="__codelineno-0-369"></a>        <span class="n">master_dict</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="o">=</span> <span class="n">run_gen_MR_indi</span><span class="p">()</span>
+<a id="__codelineno-0-370" name="__codelineno-0-370"></a>
+<a id="__codelineno-0-371" name="__codelineno-0-371"></a>    <span class="k">return</span> <span class="n">master_dict</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><hr />
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../run_data_management/" class="btn btn-neutral float-left" title="Run Data Management"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../run_gen_MR_dir/" class="btn btn-neutral float-right" title="Run Generate Daily MR signals">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../run_data_management/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../run_gen_MR_dir/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

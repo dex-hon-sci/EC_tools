@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>utility - EC_tools Documentation</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "utility";
+        var mkdocs_page_input_path = "EC_tools/utility.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> EC_tools Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../about/">About</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../main/">Main</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">EC_tools</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../EC_tools/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../read/">read</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plot/">plot</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../portfolio/">portfolio</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../position/">position</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../strategy/">strategy</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../simple_trade/">simple_trade</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../trade/">trade</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../backtest/">backtest</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">utility</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#EC_tools.utility">utility</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#EC_tools.utility.random_string">random_string</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#EC_tools.utility.time_it">time_it</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Applications</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../app/app/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../app/run_apc_price_study/">Run APC Study</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../app/run_backtest/">Run Backtest</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../app/run_comparison_plot/">Run Comparison Plot</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../app/run_daily_instruction/">Run Daily Instruction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../app/run_data_management/">Run Data Management</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../app/run_gen_monthly_MR_dir/">Run Generate Monthly MR signals</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../app/run_gen_MR_dir/">Run Generate Daily MR signals</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="../../app/run_plot_heatamp.md">Run Plot Backtest Heatmap</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../app/run_PNL_plot/">Run PNL Plots</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../app/run_preprocess/">Run Preprocess</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../app/run_update_db/">Run Update DB</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">EC_tools Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">EC_tools</li>
+      <li class="breadcrumb-item active">utility</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="utility">Utility</h1>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<a id="EC_tools.utility"></a>
+    <div class="doc doc-contents first">
+
+        <p>Created on Thu Mar 28 22:46:34 2024</p>
+<p>@author: dexter</p>
+<p>General utility functions</p>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="EC_tools.utility.random_string" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">random_string</span><span class="p">(</span><span class="n">length</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Generate a random x-digits alphanumerical string</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>length</code></b>
+                  (<code>int</code>, default:
+                      <code>16</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>The number of digits.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code>Shortcode.</code>
+              –
+              <div class="doc-md-description">
+                
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+            <details class="quote">
+              <summary>Source code in <code>EC_tools/utility.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-17">17</a></span>
+<span class="normal"><a href="#__codelineno-0-18">18</a></span>
+<span class="normal"><a href="#__codelineno-0-19">19</a></span>
+<span class="normal"><a href="#__codelineno-0-20">20</a></span>
+<span class="normal"><a href="#__codelineno-0-21">21</a></span>
+<span class="normal"><a href="#__codelineno-0-22">22</a></span>
+<span class="normal"><a href="#__codelineno-0-23">23</a></span>
+<span class="normal"><a href="#__codelineno-0-24">24</a></span>
+<span class="normal"><a href="#__codelineno-0-25">25</a></span>
+<span class="normal"><a href="#__codelineno-0-26">26</a></span>
+<span class="normal"><a href="#__codelineno-0-27">27</a></span>
+<span class="normal"><a href="#__codelineno-0-28">28</a></span>
+<span class="normal"><a href="#__codelineno-0-29">29</a></span>
+<span class="normal"><a href="#__codelineno-0-30">30</a></span>
+<span class="normal"><a href="#__codelineno-0-31">31</a></span>
+<span class="normal"><a href="#__codelineno-0-32">32</a></span>
+<span class="normal"><a href="#__codelineno-0-33">33</a></span>
+<span class="normal"><a href="#__codelineno-0-34">34</a></span>
+<span class="normal"><a href="#__codelineno-0-35">35</a></span>
+<span class="normal"><a href="#__codelineno-0-36">36</a></span>
+<span class="normal"><a href="#__codelineno-0-37">37</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-17" name="__codelineno-0-17"></a><span class="k">def</span> <span class="nf">random_string</span><span class="p">(</span><span class="n">length</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="mi">16</span><span class="p">):</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19"></a><span class="sd">    Generate a random x-digits alphanumerical string</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20"></a>
+<a id="__codelineno-0-21" name="__codelineno-0-21"></a><span class="sd">    Parameters</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22"></a><span class="sd">    ----------</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23"></a><span class="sd">    length : int</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24"></a><span class="sd">        The number of digits.</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25"></a>
+<a id="__codelineno-0-26" name="__codelineno-0-26"></a><span class="sd">    Returns</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27"></a><span class="sd">    -------</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28"></a><span class="sd">    Shortcode.</span>
+<a id="__codelineno-0-29" name="__codelineno-0-29"></a>
+<a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-31" name="__codelineno-0-31"></a>    <span class="n">base</span> <span class="o">=</span> <span class="s2">&quot;0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ&quot;</span>
+<a id="__codelineno-0-32" name="__codelineno-0-32"></a>
+<a id="__codelineno-0-33" name="__codelineno-0-33"></a>    <span class="c1"># Pick a random 6 digits string from base</span>
+<a id="__codelineno-0-34" name="__codelineno-0-34"></a>    <span class="c1"># The amount to 56,800,235,584 possibilities</span>
+<a id="__codelineno-0-35" name="__codelineno-0-35"></a>    <span class="n">code</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">base</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">length</span><span class="p">)])</span>
+<a id="__codelineno-0-36" name="__codelineno-0-36"></a>
+<a id="__codelineno-0-37" name="__codelineno-0-37"></a>    <span class="k">return</span> <span class="n">code</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="EC_tools.utility.time_it" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">time_it</span><span class="p">(</span><span class="n">func</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Simple time it function. Use this in a decorator</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>func</code></b>
+                  (<code>TYPE</code>)
+              –
+              <div class="doc-md-description">
+                <p>DESCRIPTION.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code>TYPE</code>
+              –
+              <div class="doc-md-description">
+                <p>DESCRIPTION.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+            <details class="quote">
+              <summary>Source code in <code>EC_tools/utility.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-39">39</a></span>
+<span class="normal"><a href="#__codelineno-0-40">40</a></span>
+<span class="normal"><a href="#__codelineno-0-41">41</a></span>
+<span class="normal"><a href="#__codelineno-0-42">42</a></span>
+<span class="normal"><a href="#__codelineno-0-43">43</a></span>
+<span class="normal"><a href="#__codelineno-0-44">44</a></span>
+<span class="normal"><a href="#__codelineno-0-45">45</a></span>
+<span class="normal"><a href="#__codelineno-0-46">46</a></span>
+<span class="normal"><a href="#__codelineno-0-47">47</a></span>
+<span class="normal"><a href="#__codelineno-0-48">48</a></span>
+<span class="normal"><a href="#__codelineno-0-49">49</a></span>
+<span class="normal"><a href="#__codelineno-0-50">50</a></span>
+<span class="normal"><a href="#__codelineno-0-51">51</a></span>
+<span class="normal"><a href="#__codelineno-0-52">52</a></span>
+<span class="normal"><a href="#__codelineno-0-53">53</a></span>
+<span class="normal"><a href="#__codelineno-0-54">54</a></span>
+<span class="normal"><a href="#__codelineno-0-55">55</a></span>
+<span class="normal"><a href="#__codelineno-0-56">56</a></span>
+<span class="normal"><a href="#__codelineno-0-57">57</a></span>
+<span class="normal"><a href="#__codelineno-0-58">58</a></span>
+<span class="normal"><a href="#__codelineno-0-59">59</a></span>
+<span class="normal"><a href="#__codelineno-0-60">60</a></span>
+<span class="normal"><a href="#__codelineno-0-61">61</a></span>
+<span class="normal"><a href="#__codelineno-0-62">62</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="k">def</span> <span class="nf">time_it</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+<a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">    Simple time it function. Use this in a decorator</span>
+<a id="__codelineno-0-42" name="__codelineno-0-42"></a>
+<a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">    Parameters</span>
+<a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="sd">    ----------</span>
+<a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">    func : TYPE</span>
+<a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">        DESCRIPTION.</span>
+<a id="__codelineno-0-47" name="__codelineno-0-47"></a>
+<a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">    Returns</span>
+<a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">    -------</span>
+<a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">    TYPE</span>
+<a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">        DESCRIPTION.</span>
+<a id="__codelineno-0-52" name="__codelineno-0-52"></a>
+<a id="__codelineno-0-53" name="__codelineno-0-53"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-54" name="__codelineno-0-54"></a>    <span class="c1"># simple timing function</span>
+<a id="__codelineno-0-55" name="__codelineno-0-55"></a>    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<a id="__codelineno-0-56" name="__codelineno-0-56"></a>        <span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<a id="__codelineno-0-57" name="__codelineno-0-57"></a>        <span class="n">result</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<a id="__codelineno-0-58" name="__codelineno-0-58"></a>        <span class="n">t2</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">t1</span>
+<a id="__codelineno-0-59" name="__codelineno-0-59"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="si">!r}</span><span class="s2"> ran in </span><span class="si">{</span><span class="n">t2</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> seconds.&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-60" name="__codelineno-0-60"></a>        <span class="k">return</span> <span class="n">result</span>
+<a id="__codelineno-0-61" name="__codelineno-0-61"></a>
+<a id="__codelineno-0-62" name="__codelineno-0-62"></a>    <span class="k">return</span> <span class="n">wrapper</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><hr />
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../backtest/" class="btn btn-neutral float-left" title="backtest"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../../app/app/" class="btn btn-neutral float-right" title="Introduction">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../backtest/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../../app/app/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

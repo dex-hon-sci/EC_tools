@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Run APC Study - EC_tools Documentation</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Run APC Study";
+        var mkdocs_page_input_path = "app/run_apc_price_study.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> EC_tools Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../about/">About</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../main/">Main</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">EC_tools</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../EC_tools/EC_tools/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../EC_tools/read/">read</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../EC_tools/plot/">plot</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../EC_tools/portfolio/">portfolio</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../EC_tools/position/">position</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../EC_tools/strategy/">strategy</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../EC_tools/simple_trade/">simple_trade</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../EC_tools/trade/">trade</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../EC_tools/backtest/">backtest</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../EC_tools/utility/">utility</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Applications</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../app/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Run APC Study</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#app.run_apc_price_study">run_apc_price_study</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#app.run_apc_price_study.find_delta">find_delta</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#app.run_apc_price_study.make_apc_asset_dict">make_apc_asset_dict</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#app.run_apc_price_study.make_apc_dict">make_apc_dict</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#app.run_apc_price_study.pre_select_apc">pre_select_apc</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_backtest/">Run Backtest</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_comparison_plot/">Run Comparison Plot</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_daily_instruction/">Run Daily Instruction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_data_management/">Run Data Management</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_gen_monthly_MR_dir/">Run Generate Monthly MR signals</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_gen_MR_dir/">Run Generate Daily MR signals</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="../run_plot_heatamp.md">Run Plot Backtest Heatmap</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_PNL_plot/">Run PNL Plots</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_preprocess/">Run Preprocess</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_update_db/">Run Update DB</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">EC_tools Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Applications</li>
+      <li class="breadcrumb-item active">Run APC Study</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="run-apc-price-study">Run APC Price Study</h1>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<a id="app.run_apc_price_study"></a>
+    <div class="doc doc-contents first">
+
+        <p>Created on Wed Aug  7 19:30:06 2024</p>
+<p>@author: dexter</p>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="app.run_apc_price_study.find_delta" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">find_delta</span><span class="p">(</span><span class="n">apc_interest</span><span class="p">,</span> <span class="n">history_interest</span><span class="p">,</span> <span class="n">symbol</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Find the price difference in between two different list.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>apc_interest</code></b>
+                  (<code>TYPE</code>)
+              –
+              <div class="doc-md-description">
+                <p>DESCRIPTION.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>history_interest</code></b>
+                  (<code>TYPE</code>)
+              –
+              <div class="doc-md-description">
+                <p>DESCRIPTION.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>symbol</code></b>
+                  (<code>TYPE</code>)
+              –
+              <div class="doc-md-description">
+                <p>DESCRIPTION.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>delta_list</code></b>(                  <code>TYPE</code>
+)              –
+              <div class="doc-md-description">
+                <p>DESCRIPTION.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+            <details class="quote">
+              <summary>Source code in <code>app/run_apc_price_study.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-74"> 74</a></span>
+<span class="normal"><a href="#__codelineno-0-75"> 75</a></span>
+<span class="normal"><a href="#__codelineno-0-76"> 76</a></span>
+<span class="normal"><a href="#__codelineno-0-77"> 77</a></span>
+<span class="normal"><a href="#__codelineno-0-78"> 78</a></span>
+<span class="normal"><a href="#__codelineno-0-79"> 79</a></span>
+<span class="normal"><a href="#__codelineno-0-80"> 80</a></span>
+<span class="normal"><a href="#__codelineno-0-81"> 81</a></span>
+<span class="normal"><a href="#__codelineno-0-82"> 82</a></span>
+<span class="normal"><a href="#__codelineno-0-83"> 83</a></span>
+<span class="normal"><a href="#__codelineno-0-84"> 84</a></span>
+<span class="normal"><a href="#__codelineno-0-85"> 85</a></span>
+<span class="normal"><a href="#__codelineno-0-86"> 86</a></span>
+<span class="normal"><a href="#__codelineno-0-87"> 87</a></span>
+<span class="normal"><a href="#__codelineno-0-88"> 88</a></span>
+<span class="normal"><a href="#__codelineno-0-89"> 89</a></span>
+<span class="normal"><a href="#__codelineno-0-90"> 90</a></span>
+<span class="normal"><a href="#__codelineno-0-91"> 91</a></span>
+<span class="normal"><a href="#__codelineno-0-92"> 92</a></span>
+<span class="normal"><a href="#__codelineno-0-93"> 93</a></span>
+<span class="normal"><a href="#__codelineno-0-94"> 94</a></span>
+<span class="normal"><a href="#__codelineno-0-95"> 95</a></span>
+<span class="normal"><a href="#__codelineno-0-96"> 96</a></span>
+<span class="normal"><a href="#__codelineno-0-97"> 97</a></span>
+<span class="normal"><a href="#__codelineno-0-98"> 98</a></span>
+<span class="normal"><a href="#__codelineno-0-99"> 99</a></span>
+<span class="normal"><a href="#__codelineno-0-100">100</a></span>
+<span class="normal"><a href="#__codelineno-0-101">101</a></span>
+<span class="normal"><a href="#__codelineno-0-102">102</a></span>
+<span class="normal"><a href="#__codelineno-0-103">103</a></span>
+<span class="normal"><a href="#__codelineno-0-104">104</a></span>
+<span class="normal"><a href="#__codelineno-0-105">105</a></span>
+<span class="normal"><a href="#__codelineno-0-106">106</a></span>
+<span class="normal"><a href="#__codelineno-0-107">107</a></span>
+<span class="normal"><a href="#__codelineno-0-108">108</a></span>
+<span class="normal"><a href="#__codelineno-0-109">109</a></span>
+<span class="normal"><a href="#__codelineno-0-110">110</a></span>
+<span class="normal"><a href="#__codelineno-0-111">111</a></span>
+<span class="normal"><a href="#__codelineno-0-112">112</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-74" name="__codelineno-0-74"></a><span class="k">def</span> <span class="nf">find_delta</span><span class="p">(</span><span class="n">apc_interest</span><span class="p">,</span> <span class="n">history_interest</span><span class="p">,</span> <span class="n">symbol</span><span class="p">):</span>
+<a id="__codelineno-0-75" name="__codelineno-0-75"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-76" name="__codelineno-0-76"></a><span class="sd">    Find the price difference in between two different list.</span>
+<a id="__codelineno-0-77" name="__codelineno-0-77"></a>
+<a id="__codelineno-0-78" name="__codelineno-0-78"></a><span class="sd">    Parameters</span>
+<a id="__codelineno-0-79" name="__codelineno-0-79"></a><span class="sd">    ----------</span>
+<a id="__codelineno-0-80" name="__codelineno-0-80"></a><span class="sd">    apc_interest : TYPE</span>
+<a id="__codelineno-0-81" name="__codelineno-0-81"></a><span class="sd">        DESCRIPTION.</span>
+<a id="__codelineno-0-82" name="__codelineno-0-82"></a><span class="sd">    history_interest : TYPE</span>
+<a id="__codelineno-0-83" name="__codelineno-0-83"></a><span class="sd">        DESCRIPTION.</span>
+<a id="__codelineno-0-84" name="__codelineno-0-84"></a><span class="sd">    symbol : TYPE</span>
+<a id="__codelineno-0-85" name="__codelineno-0-85"></a><span class="sd">        DESCRIPTION.</span>
+<a id="__codelineno-0-86" name="__codelineno-0-86"></a>
+<a id="__codelineno-0-87" name="__codelineno-0-87"></a><span class="sd">    Returns</span>
+<a id="__codelineno-0-88" name="__codelineno-0-88"></a><span class="sd">    -------</span>
+<a id="__codelineno-0-89" name="__codelineno-0-89"></a><span class="sd">    delta_list : TYPE</span>
+<a id="__codelineno-0-90" name="__codelineno-0-90"></a><span class="sd">        DESCRIPTION.</span>
+<a id="__codelineno-0-91" name="__codelineno-0-91"></a>
+<a id="__codelineno-0-92" name="__codelineno-0-92"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-93" name="__codelineno-0-93"></a>    <span class="c1"># Daily settlement price list</span>
+<a id="__codelineno-0-94" name="__codelineno-0-94"></a>    <span class="n">history_interest_close_list</span> <span class="o">=</span> <span class="n">history_interest</span><span class="p">[</span><span class="s1">&#39;Settle&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+<a id="__codelineno-0-95" name="__codelineno-0-95"></a>
+<a id="__codelineno-0-96" name="__codelineno-0-96"></a>    <span class="n">apc_date</span> <span class="o">=</span> <span class="p">[</span><span class="n">apc_interest</span><span class="p">[</span><span class="s1">&#39;PERIOD&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+<a id="__codelineno-0-97" name="__codelineno-0-97"></a>                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">apc_interest</span><span class="p">))]</span>
+<a id="__codelineno-0-98" name="__codelineno-0-98"></a>
+<a id="__codelineno-0-99" name="__codelineno-0-99"></a>    <span class="n">delta_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+<a id="__codelineno-0-100" name="__codelineno-0-100"></a>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">history_interest_close_list</span><span class="p">)):</span>
+<a id="__codelineno-0-101" name="__codelineno-0-101"></a>        <span class="n">delta</span> <span class="o">=</span> <span class="p">(</span><span class="n">history_interest_close_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> 
+<a id="__codelineno-0-102" name="__codelineno-0-102"></a>                         <span class="n">apc_interest</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;0.5&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="n">apc_interest</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;0.5&#39;</span><span class="p">]</span>
+<a id="__codelineno-0-103" name="__codelineno-0-103"></a>        <span class="n">delta_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span>
+<a id="__codelineno-0-104" name="__codelineno-0-104"></a>
+<a id="__codelineno-0-105" name="__codelineno-0-105"></a>        <span class="k">if</span> <span class="n">history_interest</span><span class="p">[</span><span class="s1">&#39;Date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="n">apc_date</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+<a id="__codelineno-0-106" name="__codelineno-0-106"></a>            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;mismatch date&#39;</span><span class="p">,</span> <span class="n">history_interest</span><span class="p">[</span><span class="s1">&#39;Date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()[</span><span class="n">i</span><span class="p">],</span> <span class="n">apc_date</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+<a id="__codelineno-0-107" name="__codelineno-0-107"></a>            <span class="k">pass</span>
+<a id="__codelineno-0-108" name="__codelineno-0-108"></a>
+<a id="__codelineno-0-109" name="__codelineno-0-109"></a>    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">delta_list</span><span class="p">)</span>
+<a id="__codelineno-0-110" name="__codelineno-0-110"></a>    <span class="n">rms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="mi">1</span><span class="o">/</span><span class="n">N</span><span class="p">)</span><span class="o">*</span><span class="nb">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">delta_list</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+<a id="__codelineno-0-111" name="__codelineno-0-111"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="s1">&#39;Root mean square error:&#39;</span><span class="p">,</span> <span class="n">rms</span><span class="p">)</span>
+<a id="__codelineno-0-112" name="__codelineno-0-112"></a>    <span class="k">return</span> <span class="n">delta_list</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="app.run_apc_price_study.make_apc_asset_dict" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">make_apc_asset_dict</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">APC_quantile_label_list</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Make a dictionary of a single asset that contain the quantile price 
+information.</p>
+
+            <details class="quote">
+              <summary>Source code in <code>app/run_apc_price_study.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-47">47</a></span>
+<span class="normal"><a href="#__codelineno-0-48">48</a></span>
+<span class="normal"><a href="#__codelineno-0-49">49</a></span>
+<span class="normal"><a href="#__codelineno-0-50">50</a></span>
+<span class="normal"><a href="#__codelineno-0-51">51</a></span>
+<span class="normal"><a href="#__codelineno-0-52">52</a></span>
+<span class="normal"><a href="#__codelineno-0-53">53</a></span>
+<span class="normal"><a href="#__codelineno-0-54">54</a></span>
+<span class="normal"><a href="#__codelineno-0-55">55</a></span>
+<span class="normal"><a href="#__codelineno-0-56">56</a></span>
+<span class="normal"><a href="#__codelineno-0-57">57</a></span>
+<span class="normal"><a href="#__codelineno-0-58">58</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="k">def</span> <span class="nf">make_apc_asset_dict</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">APC_quantile_label_list</span><span class="p">):</span>
+<a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">    Make a dictionary of a single asset that contain the quantile price </span>
+<a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">    information.</span>
+<a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-52" name="__codelineno-0-52"></a>    <span class="n">master_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+<a id="__codelineno-0-53" name="__codelineno-0-53"></a>    <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="n">APC_quantile_label_list</span><span class="p">:</span>
+<a id="__codelineno-0-54" name="__codelineno-0-54"></a>        <span class="n">quantile_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">apc_pkl</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">num</span><span class="p">]</span> 
+<a id="__codelineno-0-55" name="__codelineno-0-55"></a>                         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">apc_pkl</span><span class="p">[</span><span class="n">symbol</span><span class="p">]))]</span>
+<a id="__codelineno-0-56" name="__codelineno-0-56"></a>        <span class="n">master_dict</span><span class="p">[</span><span class="n">num</span><span class="p">]</span> <span class="o">=</span> <span class="n">quantile_list</span>
+<a id="__codelineno-0-57" name="__codelineno-0-57"></a>
+<a id="__codelineno-0-58" name="__codelineno-0-58"></a>    <span class="k">return</span> <span class="n">master_dict</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="app.run_apc_price_study.make_apc_dict" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">make_apc_dict</span><span class="p">(</span><span class="n">symbol_list</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>A function that make a dictionary of assets, each in itself is a dicrtionary 
+containing the quantile price information</p>
+
+            <details class="quote">
+              <summary>Source code in <code>app/run_apc_price_study.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-61">61</a></span>
+<span class="normal"><a href="#__codelineno-0-62">62</a></span>
+<span class="normal"><a href="#__codelineno-0-63">63</a></span>
+<span class="normal"><a href="#__codelineno-0-64">64</a></span>
+<span class="normal"><a href="#__codelineno-0-65">65</a></span>
+<span class="normal"><a href="#__codelineno-0-66">66</a></span>
+<span class="normal"><a href="#__codelineno-0-67">67</a></span>
+<span class="normal"><a href="#__codelineno-0-68">68</a></span>
+<span class="normal"><a href="#__codelineno-0-69">69</a></span>
+<span class="normal"><a href="#__codelineno-0-70">70</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="k">def</span> <span class="nf">make_apc_dict</span><span class="p">(</span><span class="n">symbol_list</span><span class="p">):</span>
+<a id="__codelineno-0-62" name="__codelineno-0-62"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-63" name="__codelineno-0-63"></a><span class="sd">    A function that make a dictionary of assets, each in itself is a dicrtionary </span>
+<a id="__codelineno-0-64" name="__codelineno-0-64"></a><span class="sd">    containing the quantile price information</span>
+<a id="__codelineno-0-65" name="__codelineno-0-65"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-66" name="__codelineno-0-66"></a>    <span class="n">master_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+<a id="__codelineno-0-67" name="__codelineno-0-67"></a>    <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">symbol_list</span><span class="p">:</span>
+<a id="__codelineno-0-68" name="__codelineno-0-68"></a>       <span class="n">asset_dict</span> <span class="o">=</span> <span class="n">make_apc_asset_dict</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">APC_quantile_label_list</span><span class="p">)</span>
+<a id="__codelineno-0-69" name="__codelineno-0-69"></a>       <span class="n">master_dict</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="o">=</span> <span class="n">asset_dict</span>
+<a id="__codelineno-0-70" name="__codelineno-0-70"></a>    <span class="k">return</span> <span class="n">master_dict</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="app.run_apc_price_study.pre_select_apc" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">pre_select_apc</span><span class="p">(</span><span class="n">apc_pkl</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>A function that preselect a subset of the APC file.
+It returns a reduced version of the apc. The methid is mainly for selecting
+for the monthly APC with a given</p>
+
+            <details class="quote">
+              <summary>Source code in <code>app/run_apc_price_study.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-25">25</a></span>
+<span class="normal"><a href="#__codelineno-0-26">26</a></span>
+<span class="normal"><a href="#__codelineno-0-27">27</a></span>
+<span class="normal"><a href="#__codelineno-0-28">28</a></span>
+<span class="normal"><a href="#__codelineno-0-29">29</a></span>
+<span class="normal"><a href="#__codelineno-0-30">30</a></span>
+<span class="normal"><a href="#__codelineno-0-31">31</a></span>
+<span class="normal"><a href="#__codelineno-0-32">32</a></span>
+<span class="normal"><a href="#__codelineno-0-33">33</a></span>
+<span class="normal"><a href="#__codelineno-0-34">34</a></span>
+<span class="normal"><a href="#__codelineno-0-35">35</a></span>
+<span class="normal"><a href="#__codelineno-0-36">36</a></span>
+<span class="normal"><a href="#__codelineno-0-37">37</a></span>
+<span class="normal"><a href="#__codelineno-0-38">38</a></span>
+<span class="normal"><a href="#__codelineno-0-39">39</a></span>
+<span class="normal"><a href="#__codelineno-0-40">40</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-25" name="__codelineno-0-25"></a><span class="k">def</span> <span class="nf">pre_select_apc</span><span class="p">(</span><span class="n">apc_pkl</span><span class="p">):</span>
+<a id="__codelineno-0-26" name="__codelineno-0-26"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27"></a><span class="sd">    A function that preselect a subset of the APC file.</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28"></a><span class="sd">    It returns a reduced version of the apc. The methid is mainly for selecting</span>
+<a id="__codelineno-0-29" name="__codelineno-0-29"></a><span class="sd">    for the monthly APC with a given</span>
+<a id="__codelineno-0-30" name="__codelineno-0-30"></a>
+<a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-32" name="__codelineno-0-32"></a>    <span class="n">temp</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+<a id="__codelineno-0-33" name="__codelineno-0-33"></a>    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">apc_pkl</span><span class="p">:</span>
+<a id="__codelineno-0-34" name="__codelineno-0-34"></a>        <span class="n">df</span> <span class="o">=</span> <span class="n">apc_pkl</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> 
+<a id="__codelineno-0-35" name="__codelineno-0-35"></a>        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;CONTINUOUS_FORWARD&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
+<a id="__codelineno-0-36" name="__codelineno-0-36"></a>        <span class="n">temp</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span>
+<a id="__codelineno-0-37" name="__codelineno-0-37"></a>
+<a id="__codelineno-0-38" name="__codelineno-0-38"></a>    <span class="n">apc_pkl</span> <span class="o">=</span> <span class="n">temp</span>
+<a id="__codelineno-0-39" name="__codelineno-0-39"></a>
+<a id="__codelineno-0-40" name="__codelineno-0-40"></a>    <span class="k">return</span> <span class="n">apc_pkl</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><hr />
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../app/" class="btn btn-neutral float-left" title="Introduction"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../run_backtest/" class="btn btn-neutral float-right" title="Run Backtest">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../app/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../run_backtest/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
