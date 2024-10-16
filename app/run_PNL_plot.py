@@ -47,7 +47,8 @@ TEST_NEWLOOP_PORTFOLIO_ARGUSEXACT_SHORT_SR_range = "/home/dexter/Euler_Capital_c
 
 #####################
 symbol_list = ['CLc1', 'HOc1', 'RBc1', 'QOc1', 'QPc1', 'CLc2', 'HOc2', 'RBc2', 'QOc2', 'QPc2']
-label_list = ['CLc1 (x50)', 'HOc1 (x50)', 'RBc1 (x50)', 'QOc1 (x50)', 'QPc1 (x50)', 'CLc2 (x50)', 'HOc2 (x50)', 'RBc2 (x50)', 'QOc2 (x50)', 'QPc2 (x50)']
+#label_list = ['CLc1 (x50)', 'HOc1 (x50)', 'RBc1 (x50)', 'QOc1 (x50)', 'QPc1 (x50)', 'CLc2 (x50)', 'HOc2 (x50)', 'RBc2 (x50)', 'QOc2 (x50)', 'QPc2 (x50)']
+label_list = ['CLc1', 'HOc1', 'RBc1', 'QOc1', 'QPc1', 'CLc2', 'HOc2', 'RBc2', 'QOc2', 'QPc2']
 col_list = ['#62A0E1','#EB634E','#E99938','#5CDE93','#6ABBC6', '#62A0E1','#EB634E','#E99938','#5CDE93','#6ABBC6']
 line_list = ['-','-', '-','-','-', '--','--', '--','--','--']
 
@@ -136,26 +137,7 @@ def twopanel_plot(x_data: list, y1_data: list, y2_data: list,
     ax2.grid()
     
     plt.show()
-# =============================================================================
-# 
-# def cumPNL_plot(date: list, PNL: list, return_rate: list,                  
-#                sub_date_list: list = [], sub_data_list: list = [], 
-#                sub_line_list: list = [], sub_label_list: list = [], 
-#                sub_col_list: list = []):
-#     
-#     twopanel_plot(date, PNL, return_rate, 
-#                     upper_plot_ylabel = 'Cumulative return (USD)', 
-#                     lower_plot_ylabel = 'Scaled returns (USD)',
-#                     xlabel = 'Date',
-#                     line_color = 'w', 
-#                     label = 'All (x50)',
-#                     sub_date_list = sub_date_list, 
-#                     sub_data_list = sub_data_list, 
-#                     sub_line_list = sub_line_list,
-#                     sub_label_list = sub_label_list, 
-#                     sub_col_list = sub_col_list)
-# =============================================================================
-
+    
 if __name__=='__main__':
     
     # PLot PNL for the cumulative return for a specific strategy as well as 
@@ -305,11 +287,7 @@ if __name__=='__main__':
                            'Portfolio_ArgusExact_Short_range (Dex-Signal, Dex-Backtest)',
                            'test_newloop_crossover',
                            'test_newloop_range'
-                           
                            ]
-    TEST_NEWLOOP_PORTFOLIO_ARGUSEXACT_SHORT_SR = "/home/dexter/Euler_Capital_codes/EC_tools/results/test_newloop/test_newloop_PNL_Portfolio_ArgusExact_Short_SR_crossover_.xlsx"
-    TEST_NEWLOOP_PORTFOLIO_ARGUSEXACT_SHORT_SR_range = "/home/dexter/Euler_Capital_codes/EC_tools/results/test_newloop/test_newloop_PNL_Portfolio_ArgusExact_Short_SR_range_.xlsx"
-
     strategy_col_list = ['r','r', 'w', 'b', '#28ebee', 'g', 'yellow', '#c509c8']
     strategy_line_list = ['solid','dashed','solid', 'solid','solid', 'solid', 'dotted', 'dotted']
     
@@ -328,3 +306,77 @@ if __name__=='__main__':
 #         cumPNL_plot(date_list[i], data_list[i], return_list[i], label=label_list[i],
 #                 line_color = col_list[i])
 # =============================================================================
+
+argusexact_cross_P20S10_PNL = "/home/dexter/Euler_Capital_codes/EC_tools/results/routine_updates/20241007_argusexact_cross_P20S35_PNL_.xlsx"
+
+date_all_new, cumPNL_all_new = extract_PNLplot_input(argusexact_cross_P20S10_PNL, 
+                                                     date_col=date_col,
+                                                     val_col = 'cumulative P&L from trades')
+
+# Extract the trade_return of the strategy
+date_all2_new, return_all_new = extract_PNLplot_input(argusexact_cross_P20S10_PNL,
+                                              val_col='scaled returns from trades', 
+                                              date_col=date_col,
+                                              fill_or_not=False)
+
+
+# Extract the individual asset PNL and dates
+date_list_new = [extract_PNLplot_input(argusexact_cross_P20S10_PNL, 
+                                   sheet_name=symbol_list[i], \
+                                   date_col = date_col,
+                                   val_col = 'cumulative P&L from trades')[0] \
+                                   for i in range(len(symbol_list))]
+data_list_new = [extract_PNLplot_input(argusexact_cross_P20S10_PNL, 
+                                   sheet_name=symbol_list[i], 
+                                   date_col = date_col,
+                                   val_col = 'cumulative P&L from trades')[1] \
+                                   for i in range(len(symbol_list))]
+return_list_new = [extract_PNLplot_input(argusexact_cross_P20S10_PNL, 
+                                     sheet_name=symbol_list[i], 
+                                     val_col='scaled returns from trades', 
+                                     date_col = date_col,
+                                     fill_or_not=False)[1] \
+                                     for i in range(len(symbol_list))]
+
+# add the ten assets manually for validation
+date_list_new_last = date_list_new[-1]
+
+lastdate100 = date_list_new[-1][-101:-1]
+last100 = [data_list_new[i][-101:-1] for i,_ in enumerate(data_list_new)]
+
+date_list_new.append(lastdate100)
+data_list_new.append(sum(last100))
+
+label_list.append("TESTx10")
+col_list.append('w')
+line_list.append('--')
+# =============================================================================
+# strategy_date_list2 = [extract_PNLplot_input(argusexact_cross_P20S10_PNL, date_col="Entry_Date",
+#                                             val_col="cumulative P&L from trades")[0]]
+# 
+# strategy_data_list2 = [extract_PNLplot_input(argusexact_cross_P20S10_PNL, date_col="Entry_Date",
+#                                             val_col="cumulative P&L from trades")[1]]
+# 
+# strategy_label_list2 = ['argusexact_cross_P20S10_PNL (2024-10-07)'
+#                        ]
+# strategy_col_list2 = ['w']
+# strategy_line_list2 = ['solid']
+# =============================================================================
+    
+twopanel_plot(date_all_new, cumPNL_all_new, return_all_new, label='All',
+              sub_x_list=date_list_new, 
+              sub_y1_list=data_list_new,
+              sub_label_list = label_list,
+              sub_col_list = col_list, 
+              sub_line_list =line_list)
+
+# =============================================================================
+# twopanel_plot([], [], [], label='',
+#               sub_x_list=strategy_date_list2,
+#               sub_y1_list=strategy_data_list2,
+#               sub_label_list = strategy_label_list2,
+#               sub_col_list = strategy_col_list2, 
+#               sub_line_list =strategy_line_list2)
+# =============================================================================
+
+                      

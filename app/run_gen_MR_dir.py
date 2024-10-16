@@ -137,7 +137,6 @@ def loop_signal(strategy: type[Strategy],
                         
             # This is the APC number only
             curve_this_date = APCs_this_date.to_numpy()[0][-1-APC_LENGTH:-1]
-    
             # create input for bookkepping
             price_code = APCs_this_date['symbol'].to_list()[0]
             
@@ -663,7 +662,7 @@ if __name__ == "__main__":
     
     start_date = "2024-03-04"
     #start_date = "2021-01-11"
-    end_date = "2024-06-17"
+    end_date = "2024-06"
     SAVE_FILENAME_LIST = list(TEST_FILE_LOC.values())
 
     #maybe I need an unpacking function here to handle payload from json files

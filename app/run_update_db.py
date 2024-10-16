@@ -25,6 +25,15 @@ from crudeoil_future_const import APC_FILE_LOC,\
                                   WEEKLY_30AVG_SYMBOL_LIST,\
                                   APC_FILE_MONTHLY_LOC, APC_FILE_WEEKLY_30AVG_LOC
 
+import os
+from dotenv import load_dotenv 
+
+from pathlib import Path
+
+# loading local global environment file
+load_dotenv()
+ARGUS_USR = os.environ.get("ARGUS_USR")
+ARGUS_PW = os.environ.get("ARGUS_PW")
 
 
 __author__ = "Dexter S.-H. Hon"
@@ -32,8 +41,8 @@ __all__ = ['download_latest_APC', 'download_latest_APC_fast',
            'download_latest_APC_list']
 
 
-AUTH_PACK = {'username': "dexter@eulercapital.com.au",
-             'password':"76tileArg56!"}
+AUTH_PACK = {'username':ARGUS_USR,
+             'password':ARGUS_PW}
 
 DATE_PACK = {"start_date": "2021-01-01",
              "end_date": "2024-06-18"}
@@ -102,7 +111,9 @@ def download_latest_APC(auth_pack: dict,
 def download_latest_APC_fast(auth_pack: dict, 
                              asset_pack: dict, 
                              old_filename: str,
-                             time_proxy = "PERIOD") -> pd.DataFrame: #tested
+                             time_proxies: list[str] = ["PUBLICATION_DATE", 
+                                                        "PERIOD"]) \
+                             -> pd.DataFrame: #tested
     """
     A method to download the latest APC based on the existing APC file in 
     the data directory. 
@@ -120,6 +131,7 @@ def download_latest_APC_fast(auth_pack: dict,
         the asset itself.
     old_filename : str
         The name of the old APC file.
+    time_proxies: list
 
     Returns
     -------
@@ -132,21 +144,28 @@ def download_latest_APC_fast(auth_pack: dict,
     old_data = pd.read_csv(old_filename)
     
     #Find the date of the latest entry
-    latest_entry = str(old_data[time_proxy].iloc[-1])
+    latest_entry = str(old_data[time_proxies[0]].iloc[-1])
     
+    #    signal_data[time_proxy] = [datetime.datetime.strptime(x, '%Y-%m-%d')
+    #                               for x in signal_data[time_proxy]]
     
     # download the latest APC from the latest_entry till today
     temp = download_latest_APC(auth_pack, asset_pack, start_date = latest_entry)
     
+    #print('temp',temp[time_proxy] ,temp[time_proxy].iloc[0:10])
+    
     # for some reason I have to turn the Forecast column elements to str first 
     # to align them with the old data
-    temp[time_proxy] = [temp[time_proxy].iloc[i].\
-                                      strftime("%Y-%m-%d") for 
-                                i, _ in enumerate(temp[time_proxy])]
+    
+    for time_proxy in time_proxies:
+        temp[time_proxy] = [temp[time_proxy].iloc[i].\
+                                          strftime("%Y-%m-%d") for 
+                                    i, _ in enumerate(temp[time_proxy])]
     
     # concandenate the old filedownload_latest_APC_list
     signal_data = pd.concat([old_data, temp], ignore_index = True)
-    signal_data.sort_values(by=time_proxy)
+    signal_data.sort_values(by=time_proxies[0])
+    
     
     return signal_data
 
@@ -238,13 +257,13 @@ if __name__ == "__main__":
 # =============================================================================
 
     # fast download on the 10 main crudeoil future contracts
-    #download_latest_APC_list(AUTH_PACK, SAVE_FILENAME_LIST, CAT_LIST, 
-    #                         KEYWORDS_LIST, SYMBOL_LIST,fast_dl=True)   
+    download_latest_APC_list(AUTH_PACK, SAVE_FILENAME_LIST, CAT_LIST, 
+                             KEYWORDS_LIST, SYMBOL_LIST, fast_dl=True)   
     
 
-    # slow download on all argus APC in their server
-    download_latest_APC_list(AUTH_PACK, SAVE_FILENAME_LIST, CAT_LIST, 
-                             KEYWORDS_LIST, SYMBOL_LIST,fast_dl=False)    
+    # slow downloading all argus APC from their server
+    #download_latest_APC_list(AUTH_PACK, SAVE_FILENAME_LIST, CAT_LIST, 
+    #                         KEYWORDS_LIST, SYMBOL_LIST,fast_dl=False)    
 
     #download_latest_APC_list(AUTH_PACK, SAVE_FILENAME_LIST_MONTHLY, MONTHLY_CAT_LIST, 
     #                         MONTHLY_KEYWORDS_LIST, MONTHLY_SYMBOL_LIST,fast_dl=False)    
