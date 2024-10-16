@@ -584,16 +584,19 @@ def read_reformat_APC_data(filename: str,
 
     """
     signal_data =  pd.read_csv(filename)
-    
+        
     if type(time_proxies) == str:
         time_proxies = [time_proxies]
     
     for time_proxy in time_proxies:
         signal_data[time_proxy] = [datetime.datetime.strptime(x, '%Y-%m-%d')
                                    for x in signal_data[time_proxy]]
+        
     #signal_data[time_proxy_2] = [datetime.datetime.strptime(x, '%Y-%m-%d')
     #                            for x in signal_data[time_proxy_2]]
+    
     #signal_data_reindex = signal_data.set_index('Forecast Period',drop=False)
+    
     signal_data_reindex = signal_data
     return signal_data #signal_data_reindex
 
