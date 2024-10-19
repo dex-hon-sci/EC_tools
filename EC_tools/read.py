@@ -26,8 +26,6 @@ from crudeoil_future_const import round_turn_fees, SIZE_DICT
 from ext_codes.ArgusPossibilityCurves2 import ArgusPossibilityCurves
 
 
-
-
 __all__ = ['get_apc_from_server','read_apc_data','read_portara_daily_data', 
            'read_portara_minute_data','merge_portara_data',
            'portara_data_handling', 'extract_lag_data', 

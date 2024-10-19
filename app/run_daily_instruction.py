@@ -7,15 +7,20 @@ Created on Wed May 15 02:31:06 2024
 """
 import datetime as datetime
 import openpyxl
-
-from run_gen_MR_dir import run_gen_MR_signals_list, run_gen_MR_signals_preloaded_list
 import EC_tools.utility as util
+from EC_tools.strategy import ArgusMRStrategy
+from run_gen_MR_dir import run_gen_MR_signals_list, \
+                           run_gen_MR_signals_preloaded
 from crudeoil_future_const import CELL_LOC_DICT, MONTHS_TO_SYMBOLS, \
-                                     CAT_LIST, KEYWORDS_LIST, \
-                                        SYMBOL_LIST, APC_FILE_LOC, \
-                                            HISTORY_DAILY_FILE_LOC, \
-                                                HISTORY_MINTUE_FILE_LOC, \
-                                                    TEST_FILE_LOC
+                                  CAT_LIST, KEYWORDS_LIST, \
+                                  SYMBOL_LIST, APC_FILE_LOC, \
+                                  HISTORY_DAILY_FILE_LOC, \
+                                  HISTORY_MINTUE_FILE_LOC, \
+                                  TEST_FILE_LOC, \
+                                  DAILY_APC_PKL, DAILY_DATA_PKL, \
+                                  DAILY_OPENPRICE_PKL,\
+                                  OPEN_HR_DICT, CLOSE_HR_DICT, TIMEZONE_DICT
+
 
 
 CONTRACT_NUM_DICT = {'CLc1': 50, 'CLc2': 50, 
@@ -24,10 +29,10 @@ CONTRACT_NUM_DICT = {'CLc1': 50, 'CLc2': 50,
                      'QOc1': 50, 'QOc2': 50,
                      'QPc1': 50, 'QPc2': 50,}
 
-SIGNAL_PKL = util.load_pkl("crudeoil_future_APC_full.pkl")
-HISTORY_DAILY_PKL = util.load_pkl("crudeoil_future_daily_full.pkl")
+SIGNAL_PKL = util.load_pkl(DAILY_APC_PKL)
+HISTORY_DAILY_PKL = util.load_pkl(DAILY_DATA_PKL)
 #HISTORY_MINUTE_PKL = util.load_pkl("crudeoil_future_minute_full.pkl")
-OPENPRICE_PKL = util.load_pkl("crudeoil_future_openprice_full.pkl")
+OPENPRICE_PKL = util.load_pkl(DAILY_OPENPRICE_PKL)
 
 def make_new_symbol(date_interest: datetime.datetime, 
                     old_symbol: str, 
@@ -58,9 +63,12 @@ def make_new_symbol(date_interest: datetime.datetime,
 
     return new_symbol
 
+def run_MR():
+    return 
+
 @util.time_it
 def run_MR_list(start_date, end_date, 
-                MR_method=run_gen_MR_signals_preloaded_list):
+                MR_method=run_gen_MR_signals_preloaded):
     """
     Run MR stratgy in a list.
 
@@ -80,10 +88,18 @@ def run_MR_list(start_date, end_date,
 
     """
     SAVE_SIGNAL_FILENAME_LIST = TEST_FILE_LOC
-    result = MR_method(SAVE_SIGNAL_FILENAME_LIST, start_date, end_date,
-                                               SIGNAL_PKL, HISTORY_DAILY_PKL, 
-                                               OPENPRICE_PKL,
-                                               save_or_not = False)
+    
+    
+    result = MR_method(ArgusMRStrategy,
+                       SAVE_SIGNAL_FILENAME_LIST, 
+                       SIGNAL_PKL, 
+                       HISTORY_DAILY_PKL, 
+                       OPENPRICE_PKL,
+                       start_date, end_date,
+                       open_hr_dict = OPEN_HR_DICT, 
+                       close_hr_dict = CLOSE_HR_DICT, 
+                       timezone_dict = TIMEZONE_DICT,
+                       save_or_not = False)
     return result
 
 @util.time_it
@@ -127,13 +143,13 @@ def enter_new_value(workbook, date_interest: datetime.datetime,
         number_cell = cell_loc_dict[asset_name]['number']
         
         sheet_obj[direction_cell].value = signal_result_dict[asset_name].iloc\
-                                                            [-1]['direction']
+                                                            [-1]['Direction']
         sheet_obj[entry_cell].value = signal_result_dict[asset_name].iloc\
-                                                            [-1]['target entry']
+                                                            [-1]['Entry_Price']
         sheet_obj[exit_cell].value = signal_result_dict[asset_name].iloc\
-                                                            [-1]['target exit']
+                                                            [-1]['Exit_Price']
         sheet_obj[stop_cell].value = signal_result_dict[asset_name].iloc\
-                                                            [-1]['stop exit']
+                                                            [-1]['StopLoss_Price']
         sheet_obj[symbol_cell].value = make_new_symbol(date_interest,
                                                        asset_name, 
                                                        forward_unit = 
@@ -177,7 +193,7 @@ def gen_new_xlfile(xl_template_filename: str, output_filename: str,
 
     wb_obj = enter_new_value(wb_obj, date_interest, cell_loc_dict, 
                              signal_result_dict, 
-                    contract_num_dict, output_filename)
+                             contract_num_dict, output_filename)
 
     wb_obj.save(output_filename)
 
@@ -188,23 +204,23 @@ if __name__ == "__main__":
     @util.time_it
     def run_things():
         # Define the date of interest
-        date_interest = datetime.datetime(2024,5,23) #datetime.datetime.today()
+        date_interest = datetime.datetime(2023,5,23) #datetime.datetime.today()
     
         # Input and output filename
-        XL_TEMPLATE_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/template/Leigh1.xlsx"
+        XL_TEMPLATE_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/app/template/Leigh1.xlsx"
         OUTPUT_FILENAME = "./XLS_trading_sheet_MR_benchmark_{}.xlsx".format(
                                             date_interest.strftime('%Y_%m_%d'))
         
         #Define the end date as the date of interest
         END_DATE = date_interest.strftime("%Y-%m-%d")
-        
-        START_DATE = (date_interest - datetime.timedelta(days=5)).strftime("%Y-%m-%d")
+    
+        START_DATE = (date_interest - datetime.timedelta(days=4)).strftime("%Y-%m-%d")
         #START_DATE2 = (date_interest - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
         #Check and update everything
         
         # Run the strategy by list
         SIGNAL_RESULT_DICT = run_MR_list(START_DATE, END_DATE)
-    
+        print("SIGNAL_RESULT_DICT", SIGNAL_RESULT_DICT)
         # Generate the excel file
         gen_new_xlfile(XL_TEMPLATE_FILENAME, OUTPUT_FILENAME, 
                        date_interest, SIGNAL_RESULT_DICT, 

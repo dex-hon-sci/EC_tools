@@ -14,8 +14,7 @@ import pandas as pd
 
 import EC_tools.read as read
 import EC_tools.utility as util
-from crudeoil_future_const import APC_FILE_LOC,\
-                                  CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST,\
+from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST,\
                                   APC_FILE_COMPLETE_LOC,\
                                   APC_CAT_LIST_ALL, APC_KEYWORDS_LIST_ALL, \
                                   APC_SYMBOL_LIST_ALL,\
@@ -24,6 +23,10 @@ from crudeoil_future_const import APC_FILE_LOC,\
                                   WEEKLY_30AVG_CAT_LIST, WEEKLY_30AVG_KEYWORDS_LIST,\
                                   WEEKLY_30AVG_SYMBOL_LIST,\
                                   APC_FILE_MONTHLY_LOC, APC_FILE_WEEKLY_30AVG_LOC
+                                  
+from crude_file_const import DAILY_APC_PKL, DAILY_DATA_PKL, \
+                             DAILY_MINUTE_DATA_PKL, APC_FILE_LOC, \
+                             HISTORY_DAILY_FILE_LOC, HISTORY_MINTUE_FILE_LOC
 
 import os
 from dotenv import load_dotenv 
@@ -41,8 +44,8 @@ __all__ = ['download_latest_APC', 'download_latest_APC_fast',
            'download_latest_APC_list']
 
 
-AUTH_PACK = {'username':ARGUS_USR,
-             'password':ARGUS_PW}
+AUTH_PACK = {'username': ARGUS_USR,
+             'password': ARGUS_PW}
 
 DATE_PACK = {"start_date": "2021-01-01",
              "end_date": "2024-06-18"}
@@ -145,10 +148,7 @@ def download_latest_APC_fast(auth_pack: dict,
     
     #Find the date of the latest entry
     latest_entry = str(old_data[time_proxies[0]].iloc[-1])
-    
-    #    signal_data[time_proxy] = [datetime.datetime.strptime(x, '%Y-%m-%d')
-    #                               for x in signal_data[time_proxy]]
-    
+        
     # download the latest APC from the latest_entry till today
     temp = download_latest_APC(auth_pack, asset_pack, start_date = latest_entry)
     
@@ -227,12 +227,79 @@ def download_latest_APC_list(auth_pack: dict,
     return "All APC files downloaded!"
 
 
-def download_latest_Portara():
+def rolling_Portara_futures():
+    return
+
+def update_Portara_data(old_filename):
+    # CSV (Portara format)-> CSV (c1c2 Foramt)
     # WIP
     # a function to download the newest Portara data
     return None
 
+@util.time_it
+def update_pkl(old_pkl_filename: str,
+               file_loc_dict: dict,
+               time_proxies: list[str],
+               read_func):
+    
+    old_pkl = util.load_pkl(old_pkl_filename)
+    symbols = list(file_loc_dict.keys())
 
+
+    for symbol in symbols:
+        
+        old_data = old_pkl[symbol]
+    
+        print(old_data)
+        #Find the date of the latest entry
+        latest_entry = old_data[time_proxies[0]].iloc[-1]
+    
+        print(latest_entry)
+
+        # read the latest_entry till today
+        temp = read_func(file_loc_dict[symbol])
+        # select for the latest entry
+        temp = temp[temp[time_proxies[0]]>latest_entry]
+        print(temp)
+
+        new_data = pd.concat([old_data, temp], ignore_index = True)
+        new_data.sort_values(by=time_proxies[0])
+
+        print(new_data[-21:-1])
+            
+        #Store them in the pkl
+        #old_pkl[symbol] = new_data
+    return
+
+def build_db():
+    return
+
+def main():
+    # RUn update
+    # First check if the old source data exists
+    
+    # Second update the source data
+        # update APC,
+        # update Portara
+    download_latest_APC_list(AUTH_PACK, list(APC_FILE_LOC.values()), CAT_LIST, 
+                             KEYWORDS_LIST, SYMBOL_LIST, fast_dl=False)   
+    # Roll Portara data
+    
+    # Third update the pkl data
+        # update Portara
+    # Update APC pkl
+    update_pkl(DAILY_APC_PKL, APC_FILE_LOC, ["PERIOD"], 
+               read.read_reformat_APC_data)
+    # Update Portara Daily data (crudeoil futures) pkl
+    update_pkl(DAILY_DATA_PKL, HISTORY_DAILY_FILE_LOC, ["Date"], 
+               read.read_reformat_Portara_daily_data)
+    # Update Portara Intraday minute data (crudeoil futures) pkl
+    update_pkl(DAILY_MINUTE_DATA_PKL, HISTORY_MINTUE_FILE_LOC, ["Date"], 
+               read.read_reformat_Portara_minute_data)
+    
+    
+    # Fourth update the data base
+    return
 
 if __name__ == "__main__": 
     SAVE_FILENAME_LIST = list(APC_FILE_LOC.values()) # Daily APC for 10 assets (front, second months)
@@ -258,7 +325,7 @@ if __name__ == "__main__":
 
     # fast download on the 10 main crudeoil future contracts
     download_latest_APC_list(AUTH_PACK, SAVE_FILENAME_LIST, CAT_LIST, 
-                             KEYWORDS_LIST, SYMBOL_LIST, fast_dl=True)   
+                             KEYWORDS_LIST, SYMBOL_LIST, fast_dl=False)   
     
 
     # slow downloading all argus APC from their server

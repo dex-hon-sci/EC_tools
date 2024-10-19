@@ -113,7 +113,9 @@ def loop_signal(strategy: type[Strategy],
     #make bucket
     bucket = book.make_bucket(keyword=strategy().strategy_name,) # 'argus_exact_mode')#
     print('Start looping signal: {}...'.format(loop_symbol))
-
+    print('Start and end',
+          history_data.index[history_data['Date'] == start_date],
+          history_data.index[history_data['Date'] == end_date])
     # Find the index of the start_date and end_date here.
     start_index = history_data.index[history_data['Date'] == start_date].item()    
     end_index = history_data.index[history_data['Date'] == end_date].item()
@@ -425,8 +427,8 @@ def run_gen_MR_signals_preloaded(strategy: type[Strategy],
                                  open_hr_dict: dict, 
                                  close_hr_dict: dict, 
                                  timezone_dict: dict,
-                                 buy_range: tuple[float] = (0.4,0.6,0.1),
-                                 sell_range: tuple[float] = (0.6,0.4,0.9),
+                                 buy_range: tuple[float] = ([0.2,0.25],[0.75,0.8],0.1),
+                                 sell_range: tuple[float] = ([0.75,0.8],[0.2,0.25],0.9),
                                  quantile: list[float] = [0.05,0.1,0.25,0.4,
                                                           0.5,0.6,0.75,0.9,0.95],
                                  save_or_not: bool = True) -> pd.DataFrame:
