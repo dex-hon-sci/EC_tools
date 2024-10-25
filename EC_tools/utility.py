@@ -175,7 +175,7 @@ def list_to_datetime(x): # set the array of x axis to datetime format
     return x
 
 #tested
-def convert_intmin_to_time(intmin)->list:
+def convert_intmin_to_time(intmin: list)->list:
     # A function that convert elements in the time column in a dataframe from 
     # 0330 to datetime.time(hour=3,minute=30)
 
@@ -198,6 +198,22 @@ def convert_intmin_to_time(intmin)->list:
         time  = datetime.time(hour = int(hr_str), minute = int(min_str))
         bucket.append(time)
   
+    return bucket
+
+
+def convert_date_to_int(dates: list) -> list: #tested
+    
+    # bucket for storage.
+    bucket = []
+    for date in dates:
+        
+        year = date.year* 1e4
+        month = date.month* 1e2
+        day = date.day
+        
+        condense = int(year+month+day)
+        
+        bucket.append(condense)
     return bucket
 
 # Convert file from CSV to HDF5, npy? Npy might be faster, WIP

@@ -404,6 +404,11 @@ def portara_data_handling(portara_dat: pd.DataFrame) -> pd.DataFrame:
 
 #tested
 def read_reformat_Portara_daily_data(filename: str, 
+                                     col_format: list = ['Date', 'Open', 
+                                                         'High', 'Low', 
+                                                         'Settle', 'Volume', 
+                                                         'OpenInterest', 
+                                                         'Contract Code'],
                                      add_col_data: dict = {}) -> \
                                      pd.DataFrame:
     """
@@ -422,8 +427,7 @@ def read_reformat_Portara_daily_data(filename: str,
     """
     history_data =  pd.read_csv(filename)
     
-    history_data.columns = ['Date', 'Open', 'High', 'Low', 
-                            'Settle', 'Volume', 'OpenInterest', 'Contract Code']
+    history_data.columns = col_format
         
     # change the date from 20220222 (int) to '2022-02-22' (str)
     history_data['Date'] = [datetime.datetime.strptime(str(x)[0:4]+str(x)[4:6]+str(x)[6:], '%Y%m%d')
