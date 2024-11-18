@@ -24,20 +24,32 @@ from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST,\
                                   WEEKLY_30AVG_SYMBOL_LIST,\
                                   APC_FILE_MONTHLY_LOC, APC_FILE_WEEKLY_30AVG_LOC
                                   
-from crude_file_const import DAILY_APC_PKL, DAILY_DATA_PKL, \
+from crudeoil_future_const import DAILY_APC_PKL, DAILY_DATA_PKL, \
                              DAILY_MINUTE_DATA_PKL, APC_FILE_LOC, \
-                             HISTORY_DAILY_FILE_LOC, HISTORY_MINTUE_FILE_LOC
+                             HISTORY_DAILY_FILE_LOC, HISTORY_MINTUE_FILE_LOC,\
+                             MONTHS_TO_SYMBOLS, DATA_FILEPATH
 
 import os
 from dotenv import load_dotenv 
 
 from pathlib import Path
 
+# Get the base directory
+basepath = Path()
+basedir = str(basepath.cwd())
+# Load the environment variables
+envars = basepath.cwd() / '.env'
+load_dotenv(envars)
+# Read an environment variable.
+SECRET_KEY = os.getenv('SECRET_KEY')
+
+print(envars)
 # loading local global environment file
 load_dotenv()
-ARGUS_USR = os.environ.get("ARGUS_USR")
-ARGUS_PW = os.environ.get("ARGUS_PW")
+ARGUS_USR = os.environ.get("ARGUS_USRX")
+ARGUS_PW = os.environ.get("ARGUS_PWX")
 
+print("ARGUS_PW", ARGUS_PW)
 
 __author__ = "Dexter S.-H. Hon"
 __all__ = ['download_latest_APC', 'download_latest_APC_fast', 
@@ -152,18 +164,17 @@ def download_latest_APC_fast(auth_pack: dict,
     # download the latest APC from the latest_entry till today
     temp = download_latest_APC(auth_pack, asset_pack, start_date = latest_entry)
     
-    #print('temp',temp[time_proxy] ,temp[time_proxy].iloc[0:10])
+    print('temp',temp[time_proxies[0]] ,temp[time_proxies[0]].iloc[0:10])
     
     # for some reason I have to turn the Forecast column elements to str first 
     # to align them with the old data
     
     for time_proxy in time_proxies:
-        temp[time_proxy] = [temp[time_proxy].iloc[i].\
-                                          strftime("%Y-%m-%d") for 
+        temp[time_proxy] = [temp[time_proxy].iloc[i].strftime("%Y-%m-%d") for 
                                     i, _ in enumerate(temp[time_proxy])]
     
     # concandenate the old filedownload_latest_APC_list
-    signal_data = pd.concat([old_data, temp], ignore_index = True)
+    signal_data = pd.concat([old_data, temp[1:]], ignore_index = True)
     signal_data.sort_values(by=time_proxies[0])
     
     
@@ -226,11 +237,83 @@ def download_latest_APC_list(auth_pack: dict,
     
     return "All APC files downloaded!"
 
+from pathlib import Path
 
-def rolling_Portara_futures():
+def create_rolling_futures_Portara(start_date: datetime.datetime,
+                                   start_roll_date: datetime.datetime,
+                                   symbol: str, forward: int,
+                                   initial_roll_year: str, 
+                                   initial_roll_month: str, 
+                                   path: str, file_prefix: str, 
+                                   file_suffix: str = '.txt',
+                                   rolling_timescale: str ='Day'):
+    
+    read_funcs = {'Day': read.read_reformat_Portara_daily_data, 
+                      'Minute': read.read_reformat_Portara_minute_data}
+    
+    col_format_dict = {'Day': ['Date', 'Open', 'High', 'Low', 'Settle', 'Volume', 
+                               'OpenInterest'], 
+                       'Minute': ['Date', 'Time', 'Open', 'High', 'Low', 
+                                  'Settle', 'Volume']}    
+    
+    path = DATA_FILEPATH+"/roll_exp"
+    folder_name = "/Day/"
+    
+    first_filename_path = str(Path(path)) + str(folder_name) + initial_roll_year + initial_roll_month +'.txt'
+    first_P_data = read_funcs[rolling_timescale](first_filename_path, 
+                                                 col_format = col_format_dict['Day'])
+
+    first_P_data = first_P_data[first_P_data['Date']>=start_date][:-2]
+    first_P_data['Contract Code'] = [symbol+ initial_roll_year + initial_roll_month for i in range(len(first_P_data))]
+    print(first_P_data)
+            
+    master_table = first_P_data[:-1]
+    up_pt = first_P_data['Date'].iloc[-1] 
+    i = 1
+    while i <2:
+        temp_roll_date = up_pt + datetime.timedelta(days=forward+30)
+        print('start_date',i, temp_roll_date)
+
+        month, year = temp_roll_date.month, temp_roll_date.year
+        print("year+month", year, month)
+    
+        
+        filename = symbol + str(year) + MONTHS_TO_SYMBOLS[str(month)] 
+        filename_path = str(Path(path)) + str(folder_name) + filename +'.txt'
+
+        print('filename_path', filename_path)
+        # read source files
+        P_data = read_funcs['Day'](filename_path, col_format = \
+                                   col_format_dict[rolling_timescale])
+        # If the file is a full month, then the last entry will be zero for both volumne and openinterest
+        if P_data['Volume'].iloc[-1] == 0 and P_data['OpenInterest'].iloc[-1]==0:
+            P_data = P_data[P_data['Date']>=up_pt][:-2]
+            up_pt = P_data['Date'].iloc[-1]
+            print("roll_date", up_pt)
+        else:
+            P_data = P_data[P_data['Date']>=up_pt]
+            
+        # add contract name
+        P_data['Contract Code'] = [filename for i in range(len(P_data))]
+
+        print(P_data)
+        # Check if this is the full month (last element volume ==0)
+
+        
+        #date_point = P_data['Date'].iloc[-1]
+        #roll_date = roll_date 
+        print("next_entry", up_pt)
+        print("===========")
+
+        i = i +1 
+        
+        master_table = pd.concat([master_table, P_data[:-1]])
+    
+    # build rolling data 
+    print(master_table)
     return
 
-def update_Portara_data(old_filename):
+def update_rolling_futures_Portara(old_filename):
     # CSV (Portara format)-> CSV (c1c2 Foramt)
     # WIP
     # a function to download the newest Portara data
@@ -240,7 +323,7 @@ def update_Portara_data(old_filename):
 def update_pkl(old_pkl_filename: str,
                file_loc_dict: dict,
                time_proxies: list[str],
-               read_func):
+               read_func): # tested
     
     old_pkl = util.load_pkl(old_pkl_filename)
     symbols = list(file_loc_dict.keys())
@@ -268,7 +351,7 @@ def update_pkl(old_pkl_filename: str,
         print(new_data[-21:-1])
             
         #Store them in the pkl
-        #old_pkl[symbol] = new_data
+        old_pkl[symbol] = new_data
     return
 
 def build_db():
@@ -281,12 +364,16 @@ def main():
     # Second update the source data
         # update APC,
         # update Portara
+        
+    # Download the latest APC to CSV source files
     download_latest_APC_list(AUTH_PACK, list(APC_FILE_LOC.values()), CAT_LIST, 
                              KEYWORDS_LIST, SYMBOL_LIST, fast_dl=False)   
     # Roll Portara data
     
+    
     # Third update the pkl data
         # update Portara
+        
     # Update APC pkl
     update_pkl(DAILY_APC_PKL, APC_FILE_LOC, ["PERIOD"], 
                read.read_reformat_APC_data)
@@ -297,8 +384,9 @@ def main():
     update_pkl(DAILY_MINUTE_DATA_PKL, HISTORY_MINTUE_FILE_LOC, ["Date"], 
                read.read_reformat_Portara_minute_data)
     
-    
     # Fourth update the data base
+    
+    
     return
 
 if __name__ == "__main__": 
@@ -325,7 +413,7 @@ if __name__ == "__main__":
 
     # fast download on the 10 main crudeoil future contracts
     download_latest_APC_list(AUTH_PACK, SAVE_FILENAME_LIST, CAT_LIST, 
-                             KEYWORDS_LIST, SYMBOL_LIST, fast_dl=False)   
+                             KEYWORDS_LIST, SYMBOL_LIST, fast_dl=True)   
     
 
     # slow downloading all argus APC from their server

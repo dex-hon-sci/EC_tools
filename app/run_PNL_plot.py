@@ -143,7 +143,7 @@ if __name__=='__main__':
     # PLot PNL for the cumulative return for a specific strategy as well as 
     # the PNL for inidividual assets
     FILENAME = PORTFOLIO_ARGUSEXACT_SHORT_SR #OLD_BENCHMARK
-    date_col = 'Entry_Date'#'date'
+    date_col = 'Entry_Date'
     # Extract the cumulative PNL of the strategy
     date_all, cumPNL_all = extract_PNLplot_input(FILENAME, date_col=date_col)
     
@@ -310,31 +310,31 @@ if __name__=='__main__':
 argusexact_cross_P20S10_PNL = "/home/dexter/Euler_Capital_codes/EC_tools/results/routine_updates/20241007_argusexact_cross_P20S35_PNL_.xlsx"
 
 date_all_new, cumPNL_all_new = extract_PNLplot_input(argusexact_cross_P20S10_PNL, 
-                                                     date_col=date_col,
+                                                     #date_col=date_col,
                                                      val_col = 'cumulative P&L from trades')
 
 # Extract the trade_return of the strategy
 date_all2_new, return_all_new = extract_PNLplot_input(argusexact_cross_P20S10_PNL,
                                               val_col='scaled returns from trades', 
-                                              date_col=date_col,
+                                              #date_col=date_col,
                                               fill_or_not=False)
 
 
 # Extract the individual asset PNL and dates
 date_list_new = [extract_PNLplot_input(argusexact_cross_P20S10_PNL, 
                                    sheet_name=symbol_list[i], \
-                                   date_col = date_col,
+                                   #date_col = date_col,
                                    val_col = 'cumulative P&L from trades')[0] \
                                    for i in range(len(symbol_list))]
 data_list_new = [extract_PNLplot_input(argusexact_cross_P20S10_PNL, 
                                    sheet_name=symbol_list[i], 
-                                   date_col = date_col,
+                                   #date_col = date_col,
                                    val_col = 'cumulative P&L from trades')[1] \
                                    for i in range(len(symbol_list))]
 return_list_new = [extract_PNLplot_input(argusexact_cross_P20S10_PNL, 
                                      sheet_name=symbol_list[i], 
                                      val_col='scaled returns from trades', 
-                                     date_col = date_col,
+                                     #date_col = date_col,
                                      fill_or_not=False)[1] \
                                      for i in range(len(symbol_list))]
 

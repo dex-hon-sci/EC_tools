@@ -33,15 +33,38 @@ stoploss_quantile_str = ['S'+str(num) for num in stoploss_quantile]
 # =============================================================================
 
 
-def build_filename_matrix(x_axis_list, y_axis_list,
-                          folder_name = 'heatmap', 
-                          file_prefix = 'PNL_argusexact_',
-                          file_suffix = '_.xlsx'):
+def build_filename_matrix(x_axis_list: list, 
+                          y_axis_list: list,
+                          folder_name: str = 'heatmap', 
+                          file_prefix: str = 'PNL_argusexact_',
+                          file_suffix: str = '_.xlsx'):
+    """
+    A function that build a heatmap matrix with each element the name of the 
+    source data file. 
+
+    Parameters
+    ----------
+    x_axis_list : list
+        DESCRIPTION.
+    y_axis_list : list
+        DESCRIPTION.
+    folder_name : str, optional
+        DESCRIPTION. The default is 'heatmap'.
+    file_prefix : str, optional
+        DESCRIPTION. The default is 'PNL_argusexact_'.
+    file_suffix : str, optional
+        DESCRIPTION. The default is '_.xlsx'.
+
+    Returns
+    -------
+    filename_matrix : TYPE
+        DESCRIPTION.
+
+    """
     master_list = []
     # read a list of 
     for i in range(len(y_axis_list)):
         temp = [ele + y_axis_list[i] for ele in x_axis_list]
-        #print(temp)
         Q = make_path_list(folder_name = 'heatmap', 
                            file_prefix='PNL_argusexact_',
                            file_suffix='_.xlsx', 
@@ -53,48 +76,51 @@ def build_filename_matrix(x_axis_list, y_axis_list,
     #print(filename_matrix, len(filename_matrix))
     return filename_matrix
 
-def extract_info_from_filename_matrix(filename_matrix):
+def extract_info_from_filename_matrix(filename_matrix: np.ndarray):
     master_list = []
     for i in range(len(filename_matrix)):
-        temp = [extract_PNLplot_input(ele,sheet_name='QPc2')[1][-1]
+        temp = [extract_PNLplot_input(ele, sheet_name='QPc2')[1][-1]
                 for ele in filename_matrix[i]]
         
         print(i)
         master_list.append(temp)
+        
     matrix = np.array(master_list)
 
     return matrix
 
 
 def plot_heatmap():
-    ...
-
-Q = build_filename_matrix(gain_quantile_str, stoploss_quantile_str)
-P = extract_PNLplot_input(Q[0][0])
-
-MM = extract_info_from_filename_matrix(Q)
-
-fig, ax = plt.subplots()
-im = ax.imshow(MM)
-
-cbarlabel = "USD (in mil)"
-
-cbar = ax.figure.colorbar(im, ax=ax)
-cbar.ax.set_ylabel(cbarlabel, rotation=-90, va="bottom")
-
-ax.set_xticks(np.arange(len(gain_quantile)), labels=gain_quantile)
-ax.set_yticks(np.arange(len(stoploss_quantile)), labels=stoploss_quantile)
-
-for i in range(len(MM)):
-    for j in range(len(MM[0])):
-        text = ax.text(j, i, round(MM[i, j]/1e6,2),
-                       ha="center", va="center", color="w")
-
-
-ax.set_title("Argus Exact strategy with fixed \n \
-             Entry quantile at Q0.4 for Buy and Q0.6 for Sell \n\
-             for QPc2 (50 contracts)")
-ax.set_ylabel("Quantile (in %) Range for Stop Loss")
-ax.set_xlabel("Quantile (in %) Range for Gain")
-fig.tight_layout()
-plt.show()
+    # make a matrix containing the name of the source file in the respective 
+    # postions
+    Q = build_filename_matrix(gain_quantile_str, stoploss_quantile_str)
+    
+    # Extract 
+    P = extract_PNLplot_input(Q[0][0])
+    
+    MM = extract_info_from_filename_matrix(Q)
+    
+    fig, ax = plt.subplots()
+    im = ax.imshow(MM)
+    
+    cbarlabel = "USD (in mil)"
+    
+    cbar = ax.figure.colorbar(im, ax=ax)
+    cbar.ax.set_ylabel(cbarlabel, rotation=-90, va="bottom")
+    
+    ax.set_xticks(np.arange(len(gain_quantile)), labels=gain_quantile)
+    ax.set_yticks(np.arange(len(stoploss_quantile)), labels=stoploss_quantile)
+    
+    for i in range(len(MM)):
+        for j in range(len(MM[0])):
+            text = ax.text(j, i, round(MM[i, j]/1e6,2),
+                           ha="center", va="center", color="w")
+    
+    
+    ax.set_title("Argus Exact strategy with fixed \n \
+                 Entry quantile at Q0.4 for Buy and Q0.6 for Sell \n\
+                 for QPc2 (50 contracts)")
+    ax.set_ylabel("Quantile (in %) Range for Stop Loss")
+    ax.set_xlabel("Quantile (in %) Range for Take Profit")
+    fig.tight_layout()
+    plt.show()
