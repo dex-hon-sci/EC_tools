@@ -310,7 +310,7 @@ if __name__=='__main__':
 argusexact_cross_P20S10_PNL = "/home/dexter/Euler_Capital_codes/EC_tools/results/routine_updates/20241007_argusexact_cross_P20S35_PNL_.xlsx"
 
 date_all_new, cumPNL_all_new = extract_PNLplot_input(argusexact_cross_P20S10_PNL, 
-                                                     #date_col=date_col,
+                                                     date_col=date_col,
                                                      val_col = 'cumulative P&L from trades')
 
 # Extract the trade_return of the strategy

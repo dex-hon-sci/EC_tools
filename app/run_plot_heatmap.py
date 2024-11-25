@@ -40,7 +40,7 @@ def build_filename_matrix(x_axis_list: list,
                           file_suffix: str = '_.xlsx'):
     """
     A function that build a heatmap matrix with each element the name of the 
-    source data file. 
+    source data file 
 
     Parameters
     ----------
@@ -65,6 +65,7 @@ def build_filename_matrix(x_axis_list: list,
     # read a list of 
     for i in range(len(y_axis_list)):
         temp = [ele + y_axis_list[i] for ele in x_axis_list]
+        #print(temp)
         Q = make_path_list(folder_name = 'heatmap', 
                            file_prefix='PNL_argusexact_',
                            file_suffix='_.xlsx', 
@@ -76,10 +77,11 @@ def build_filename_matrix(x_axis_list: list,
     #print(filename_matrix, len(filename_matrix))
     return filename_matrix
 
-def extract_info_from_filename_matrix(filename_matrix: np.ndarray):
+def extract_info_from_filename_matrix(filename_matrix: np.ndarray,
+                                      sheetname = 'CLc1'):
     master_list = []
     for i in range(len(filename_matrix)):
-        temp = [extract_PNLplot_input(ele, sheet_name='QPc2')[1][-1]
+        temp = [extract_PNLplot_input(ele, sheet_name=sheetname)[1][-1]
                 for ele in filename_matrix[i]]
         
         print(i)
@@ -95,9 +97,9 @@ def plot_heatmap():
     # postions
     Q = build_filename_matrix(gain_quantile_str, stoploss_quantile_str)
     
-    # Extract 
-    P = extract_PNLplot_input(Q[0][0])
+    #P = extract_PNLplot_input(Q[0][0])
     
+    # Extract the particular columns and information to be plotted.
     MM = extract_info_from_filename_matrix(Q)
     
     fig, ax = plt.subplots()
@@ -124,3 +126,13 @@ def plot_heatmap():
     ax.set_xlabel("Quantile (in %) Range for Take Profit")
     fig.tight_layout()
     plt.show()
+    
+def run_main():
+    # make a matrix containing the name of the source file in the respective 
+    # postions
+    Q = build_filename_matrix(gain_quantile_str, stoploss_quantile_str)
+        
+    # Extract the particular columns and information to be plotted.
+    MM = extract_info_from_filename_matrix(Q)
+    
+    
