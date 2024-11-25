@@ -11,6 +11,7 @@ It pulls data from external servers to the local directory.
 """
 import datetime as datetime
 import pandas as pd
+import pickle
 
 import EC_tools.read as read
 import EC_tools.utility as util
@@ -49,7 +50,7 @@ load_dotenv()
 ARGUS_USR = os.environ.get("ARGUS_USRX")
 ARGUS_PW = os.environ.get("ARGUS_PWX")
 
-print("ARGUS_PW", ARGUS_PW)
+print("ARGUS_USRX", ARGUS_USR,"ARGUS_PW", ARGUS_PW)
 
 __author__ = "Dexter S.-H. Hon"
 __all__ = ['download_latest_APC', 'download_latest_APC_fast', 
@@ -249,7 +250,7 @@ def create_rolling_futures_Portara(start_date: datetime.datetime,
                                    rolling_timescale: str ='Day'):
     
     read_funcs = {'Day': read.read_reformat_Portara_daily_data, 
-                      'Minute': read.read_reformat_Portara_minute_data}
+                  'Minute': read.read_reformat_Portara_minute_data}
     
     col_format_dict = {'Day': ['Date', 'Open', 'High', 'Low', 'Settle', 'Volume', 
                                'OpenInterest'], 
@@ -259,7 +260,8 @@ def create_rolling_futures_Portara(start_date: datetime.datetime,
     path = DATA_FILEPATH+"/roll_exp"
     folder_name = "/Day/"
     
-    first_filename_path = str(Path(path)) + str(folder_name) + initial_roll_year + initial_roll_month +'.txt'
+    first_filename_path = str(Path(path)) + str(folder_name) + symbol +\
+                          initial_roll_year + initial_roll_month +'.txt'
     first_P_data = read_funcs[rolling_timescale](first_filename_path, 
                                                  col_format = col_format_dict['Day'])
 
@@ -270,7 +272,7 @@ def create_rolling_futures_Portara(start_date: datetime.datetime,
     master_table = first_P_data[:-1]
     up_pt = first_P_data['Date'].iloc[-1] 
     i = 1
-    while i <2:
+    while i <3:
         temp_roll_date = up_pt + datetime.timedelta(days=forward+30)
         print('start_date',i, temp_roll_date)
 
@@ -323,36 +325,42 @@ def update_rolling_futures_Portara(old_filename):
 def update_pkl(old_pkl_filename: str,
                file_loc_dict: dict,
                time_proxies: list[str],
-               read_func): # tested
+               read_func):
     
     old_pkl = util.load_pkl(old_pkl_filename)
     symbols = list(file_loc_dict.keys())
-
 
     for symbol in symbols:
         
         old_data = old_pkl[symbol]
     
-        print(old_data)
+        print('old_data',old_data)
         #Find the date of the latest entry
         latest_entry = old_data[time_proxies[0]].iloc[-1]
     
-        print(latest_entry)
+        print('latest_entry',latest_entry)
 
         # read the latest_entry till today
         temp = read_func(file_loc_dict[symbol])
         # select for the latest entry
         temp = temp[temp[time_proxies[0]]>latest_entry]
-        print(temp)
+        print('temp',temp)
 
         new_data = pd.concat([old_data, temp], ignore_index = True)
         new_data.sort_values(by=time_proxies[0])
 
-        print(new_data[-21:-1])
+        print(new_data[-10:])
             
         #Store them in the pkl
         old_pkl[symbol] = new_data
-    return
+        
+    # Saving the pkl
+    print("Saving")
+    output = open(old_pkl_filename, 'wb')
+    pickle.dump(old_pkl, output)
+    print("Saved")
+
+    return old_pkl
 
 def build_db():
     return
@@ -384,7 +392,7 @@ def main():
     update_pkl(DAILY_MINUTE_DATA_PKL, HISTORY_MINTUE_FILE_LOC, ["Date"], 
                read.read_reformat_Portara_minute_data)
     
-    # Fourth update the data base
+    # Fourth update the database
     
     
     return
