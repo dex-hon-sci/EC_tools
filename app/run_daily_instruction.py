@@ -10,7 +10,8 @@ import openpyxl
 import EC_tools.utility as util
 from EC_tools.strategy import ArgusMRStrategy
 from run_gen_MR_dir import run_gen_MR_signals_list, \
-                           run_gen_MR_signals_preloaded
+                           run_gen_MR_signals_preloaded,\
+                           run_gen_MR_signals_preloaded_single
 from crudeoil_future_const import CELL_LOC_DICT, MONTHS_TO_SYMBOLS, \
                                   CAT_LIST, KEYWORDS_LIST, \
                                   SYMBOL_LIST, APC_FILE_LOC, \
@@ -22,12 +23,15 @@ from crudeoil_future_const import CELL_LOC_DICT, MONTHS_TO_SYMBOLS, \
                                   OPEN_HR_DICT, CLOSE_HR_DICT, TIMEZONE_DICT
 
 
-
 CONTRACT_NUM_DICT = {'CLc1': 50, 'CLc2': 50, 
                      'HOc1': 50, 'HOc2': 50,
                      'RBc1': 50, 'RBc2': 50,
                      'QOc1': 50, 'QOc2': 50,
-                     'QPc1': 50, 'QPc2': 50,}
+                     'QPc1': 50, 'QPc2': 50}
+
+CQG_SYMBOL = {'CL':'CLE', 'HO':'HOE', 'RB':'RBE', 
+              'QO': 'QO', 'QP':'QP'}
+
 
 SIGNAL_PKL = util.load_pkl(DAILY_APC_PKL)
 HISTORY_DAILY_PKL = util.load_pkl(DAILY_DATA_PKL)
@@ -63,8 +67,49 @@ def make_new_symbol(date_interest: datetime.datetime,
 
     return new_symbol
 
-def run_MR():
-    return 
+def truncate_symbol(old_symbol: str) -> str:
+    """
+    A function that truncate an old asset symbol from Portara format 
+    to CQG format.
+
+    Parameters
+    ----------
+    old_symbol : str
+        Portara Format.
+
+    Returns
+    -------
+    str
+        DESCRIPTION.
+
+    """
+    contract_symbol = CQG_SYMBOL[old_symbol[0:2]]
+    contract_month = old_symbol[7:]
+    contract_year = old_symbol[5:7]
+
+    new_symbol = contract_symbol + contract_month + contract_year
+
+def run_MR(date_interest,
+           buy_range: tuple[float] =\
+                      ([0.2,0.25],[0.75,0.8],0.1),
+           sell_range: tuple[float] = \
+                      ([0.75,0.8],[0.2,0.25],0.9),
+           MR_method=run_gen_MR_signals_preloaded_single):
+    
+    
+    SAVE_SIGNAL_FILENAME_LIST = TEST_FILE_LOC
+    
+    result = MR_method(ArgusMRStrategy,
+                       SAVE_SIGNAL_FILENAME_LIST, 
+                       SIGNAL_PKL, 
+                       HISTORY_DAILY_PKL, 
+                       date_interest,
+                       open_hr_dict = OPEN_HR_DICT, 
+                       close_hr_dict = CLOSE_HR_DICT, 
+                       timezone_dict = TIMEZONE_DICT,
+                       save_or_not = False)
+    
+    return result 
 
 @util.time_it
 def run_MR_list(start_date, end_date, 
@@ -94,7 +139,7 @@ def run_MR_list(start_date, end_date,
                        SAVE_SIGNAL_FILENAME_LIST, 
                        SIGNAL_PKL, 
                        HISTORY_DAILY_PKL, 
-                       OPENPRICE_PKL,
+                       #OPENPRICE_PKL,
                        start_date, end_date,
                        open_hr_dict = OPEN_HR_DICT, 
                        close_hr_dict = CLOSE_HR_DICT, 
@@ -150,10 +195,16 @@ def enter_new_value(workbook, date_interest: datetime.datetime,
                                                             [-1]['Exit_Price']
         sheet_obj[stop_cell].value = signal_result_dict[asset_name].iloc\
                                                             [-1]['StopLoss_Price']
-        sheet_obj[symbol_cell].value = make_new_symbol(date_interest,
-                                                       asset_name, 
-                                                       forward_unit = 
-                                                       int(asset_name[-1]))
+                                                            
+        portara_assetname = signal_result_dict[asset_name].iloc[-1]['Contract_Month']                                      
+
+        sheet_obj[symbol_cell].value = truncate_symbol(portara_assetname)
+        
+        
+                                        #make_new_symbol(date_interest,
+                                        #               asset_name, 
+                                        #               forward_unit = 
+                                        #               int(asset_name[-1]))
         sheet_obj[number_cell].value = contract_num_dict[asset_name]
        
     # a function that add new values into the new excel file
@@ -219,7 +270,7 @@ if __name__ == "__main__":
         #Check and update everything
         
         # Run the strategy by list
-        SIGNAL_RESULT_DICT = run_MR_list(START_DATE, END_DATE)
+        SIGNAL_RESULT_DICT = run_MR(date_interest)
         print("SIGNAL_RESULT_DICT", SIGNAL_RESULT_DICT)
         # Generate the excel file
         gen_new_xlfile(XL_TEMPLATE_FILENAME, OUTPUT_FILENAME, 

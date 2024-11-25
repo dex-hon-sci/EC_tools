@@ -226,3 +226,11 @@ def convert_csv_to_npy(filename):
     dat = np.genfromtxt(filename, delimiter=",")
     print(dat[0:10])
     return dat
+
+import pandas_market_calendars as mcal
+
+def market_is_open(date, exchange="NYSE"):
+    result = mcal.get_calendar(exchange).schedule(start_date=date, 
+                                                  end_date=date)
+    return result.empty == False
+

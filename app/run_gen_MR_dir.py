@@ -111,7 +111,7 @@ def loop_signal(strategy: type[Strategy],
 
     """
     #make bucket
-    bucket = book.make_bucket(keyword=strategy().strategy_name,) # 'argus_exact_mode')#
+    bucket = book.make_bucket(keyword=strategy().strategy_name) # 'argus_exact_mode')#
     print('Start looping signal: {}...'.format(loop_symbol))
     print('Start and end',
           history_data.index[history_data['Date'] == start_date],
@@ -416,6 +416,117 @@ def run_gen_MR_signals_list(strategy: type[Strategy],
         output_dict[sym] = signal_data
         print("All asset signal generated!")
     return output_dict
+
+
+def run_gen_MR_signals_preloaded_single(strategy: type[Strategy],                                 
+                                        filename_list: list[str], 
+                                        signal_pkl: dict, 
+                                        history_daily_pkl: dict, 
+                                        date_interest: datetime.datetime,
+                                        open_hr_dict: dict, 
+                                        close_hr_dict: dict, 
+                                        timezone_dict: dict,
+                                        buy_range: tuple[float] =\
+                                                  ([0.2,0.25],[0.75,0.8],0.1),
+                                        sell_range: tuple[float] = \
+                                                  ([0.75,0.8],[0.2,0.25],0.9),
+                                        quantile: list[float] = \
+                                                  [0.05,0.1,0.25,0.4,
+                                                   0.5,0.6,0.75,0.9,0.95],
+                                        save_or_not: bool = True) -> pd.DataFrame:
+    
+    
+    # run meanreversion signal generation on the basis of individual programme  
+    # Loop the whole list in one go with all the contracts or Loop it one contract at a time?
+    master_dict, symbol_list = dict(), list(signal_pkl.keys())
+     
+    print(symbol_list, filename_list)
+    for symbol in symbol_list:
+        filename = filename_list[symbol]
+        # The reading part takes the longest time: 13 seconds. The loop itself takes 
+        # input 1, APC. Load the master table in memory and test multple strategies  
+        @util.save_csv("{}".format(filename), save_or_not=save_or_not)
+        def run_gen_MR_indi():
+            
+            book = Bookkeep(bucket_type = 'mr_signals')
+            
+            print("symbol",symbol)
+            #signal file input
+            signal_data = signal_pkl[symbol]
+           
+            # input 2, Portara history file.
+            history_data = history_daily_pkl[symbol]
+            #history_minute_file = history_minute_pkl[symbol]
+                        
+            open_hr = open_hr_dict[symbol]
+            close_hr = close_hr_dict[symbol]
+            Timezone= timezone_dict[symbol]
+            
+            # The strategy will be ran in loop_signal decorator
+            ############################
+            
+            bucket = book.make_bucket(keyword=strategy().strategy_name) # 'argus_exact_mode')#
+
+
+            # cross reference the APC list to get the APC of this date and symbol
+            APCs_this_date = signal_data[(signal_data['PERIOD']==date_interest)]
+            forecast_date = APCs_this_date['PERIOD'].to_list()[0] 
+                        
+            # This is the APC number only
+            curve_this_date = APCs_this_date.to_numpy()[0][-1-APC_LENGTH:-1]
+            # create input for bookkepping
+            price_code = APCs_this_date['symbol'].to_list()[0]
+            
+            full_contract_symbol = history_data['Contract Code'].iloc[0]
+
+            # Get the extracted 5 days Lag data. This is the main input to be
+            # put into the Stragey function
+            apc_curve_lag5, history_data_lag5 = read.extract_lag_data(\
+                                                                 signal_data, 
+                                                                 history_data, 
+                                                                 forecast_date,
+                                                                 lag_size=5)
+            print("apc_curve_lag5, history_data_lag5", 
+                  apc_curve_lag5, history_data_lag5)
+            # Apply the strategy, The Strategy is variable
+            strategy_output = strategy(curve_this_date).\
+                                        apply_strategy(history_data_lag5, 
+                                                       apc_curve_lag5, 
+                                                       0,
+                                                       buy_range=buy_range, 
+                                                       sell_range=sell_range,   
+                                                       quantile = quantile)
+
+            print('====================================')
+            print(forecast_date, full_contract_symbol,'MR signal generated!', 
+                   strategy_output['direction'])
+        
+
+            # make a list of data to be written into bookkeep
+            static_info = [symbol, full_contract_symbol, \
+                           Timezone, open_hr, close_hr]
+                
+            # put all the data in a singular list
+            data = [forecast_date, price_code] + \
+                    [strategy_output['direction']] + \
+                    static_info +  strategy_output['data']
+            #print("data", data, len(data))
+            # Storing the data    
+            bucket = book.store_to_bucket_single(data)       
+        
+            dict_contracts_quant_signals = pd.DataFrame(bucket)
+            print("dict_contracts_quant_signals.columns.values",
+                  dict_contracts_quant_signals.columns)
+            #sort by date (the first column)
+            dict_contracts_quant_signals = dict_contracts_quant_signals.sort_values(by=
+                                    dict_contracts_quant_signals.columns.values[0])
+            
+            return dict_contracts_quant_signals
+        
+
+        master_dict[symbol] = run_gen_MR_indi()
+
+    return master_dict
 
 @util.time_it
 def run_gen_MR_signals_preloaded(strategy: type[Strategy], 
