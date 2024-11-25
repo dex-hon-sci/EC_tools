@@ -408,7 +408,10 @@ def read_reformat_Portara_daily_data(filename: str,
                                                          'High', 'Low', 
                                                          'Settle', 'Volume', 
                                                          'OpenInterest', 
-                                                         'Contract Code'],
+                                                         'Contract Code',
+                                                         'Unadjusted Close',
+                                                         'Spread', 
+                                                         'Cumulative Spread'],
                                      add_col_data: dict = {}) -> \
                                      pd.DataFrame:
     """
