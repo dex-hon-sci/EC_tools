@@ -1847,19 +1847,20 @@ def find_closest_price_generic(data: pd.DataFrame,
         step = -1* step
         
     # determine whether it is in the time frame of minutes,
-    target_time_dt = datetime.datetime.strftime(target_time, "%H%M")
+    target_time = datetime.datetime.strptime(target_time, "%H%M").time()
+    target_time_dt = datetime.datetime.combine(datetime.datetime.today(), 
+                    target_time)
     
     #initial estimation of the target price
-    target_price = data[data[time_proxy] == target_time_dt][price_proxy]
+    target_price = data[data[time_proxy] == target_time_dt.time()][price_proxy]
     #loop through the next 30 minutes to find the opening price    
     for i in range(search_time):    
         if len(target_price) == 0:
             
             delta = datetime.timedelta(minutes = step)
             
-            target_time_dt = (datetime.datetime.combine(datetime.datetime.today(), 
-                            target_time_dt) + delta).time()
+            target_time = (target_time_dt + delta).time()
             
-            target_price = data[data[time_proxy] == target_time_dt][price_proxy]
+            target_price = data[data[time_proxy] == target_time][price_proxy]
             
-    return target_time_dt, target_price
+    return target_time, target_price

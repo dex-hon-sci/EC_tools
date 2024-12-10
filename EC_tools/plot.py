@@ -642,13 +642,18 @@ class SubComponents(object):
         return None
         
         
+        
+# plot PNL
+# plot minute 
+# plot HeatMap
+
 def plot_minute(filename_minute: str, signal_filename: str, 
                 price_approx: str = 'Open',
                 date_interest: str = "2022-05-19", 
                 direction: str = "Buy", 
                 open_hr: str = '0330', 
                 close_hr: str = '1930',
-                APC_time_str: str = 'Forecast_Period', 
+                APC_time_str: str = 'PERIOD', 
                 title: str ="",
                 bppt_x1 =[], bppt_y1 = [], 
                 bppt_x2 =[], bppt_y2 = [], 
@@ -742,17 +747,11 @@ if __name__ == "__main__":
     #FILENAME_MINUTE = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Minute/CL.001"
     #FILENSME_BUYSELL_SIGNALS = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_CLc1_full.csv"
     #SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_CLc1.csv"   
-
-    #date_interest = "2022-05-19"
-    #date_interest = "2024-04-03"
-    #date_interest = "2024-01-18"
-    #date_interest = "2023-12-29"
-    #date_interest = "2023-11-01"
     
     symbol = 'CLc1'
 
-    date_interest = "2023-05-24"
+    date_interest = "2022-03-24"
     
     plot_minute(HISTORY_MINTUE_FILE_LOC[symbol], APC_FILE_LOC[symbol], 
-                date_interest = date_interest, title=symbol, direction="Sell",
+                date_interest = date_interest, title=symbol, direction="Buy",
                 open_hr= OPEN_HR_DICT[symbol] , close_hr = CLOSE_HR_DICT[symbol])
