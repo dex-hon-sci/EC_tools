@@ -33,8 +33,8 @@ stoploss_quantile_str = ['S'+str(num) for num in stoploss_quantile]
 # =============================================================================
 
 
-def build_filename_matrix(x_axis_list: list, 
-                          y_axis_list: list,
+def build_filename_matrix(x_axis_list: list[str], 
+                          y_axis_list: list[str],
                           folder_name: str = 'heatmap', 
                           file_prefix: str = 'PNL_argusexact_',
                           file_suffix: str = '_.xlsx'):
@@ -45,20 +45,20 @@ def build_filename_matrix(x_axis_list: list,
     Parameters
     ----------
     x_axis_list : list
-        DESCRIPTION.
+        A list of str containing the name of the x-axis quantity.
     y_axis_list : list
-        DESCRIPTION.
+        A list of str containing the name of the y-axis quantity.
     folder_name : str, optional
-        DESCRIPTION. The default is 'heatmap'.
+        The parent folder name. The default is 'heatmap'.
     file_prefix : str, optional
-        DESCRIPTION. The default is 'PNL_argusexact_'.
+        The file prefix. The default is 'PNL_argusexact_'.
     file_suffix : str, optional
-        DESCRIPTION. The default is '_.xlsx'.
+        The file suffix. The default is '_.xlsx'.
 
     Returns
     -------
-    filename_matrix : TYPE
-        DESCRIPTION.
+    filename_matrix : 2D nd.array
+        A 2D matrix that has the full filename and address for the source data.
 
     """
     master_list = []
@@ -78,10 +78,33 @@ def build_filename_matrix(x_axis_list: list,
     return filename_matrix
 
 def extract_info_from_filename_matrix(filename_matrix: np.ndarray,
-                                      sheetname = 'CLc1'):
+                                      sheetname: str = 'CLc1',
+                                      date_col: str = "Entry_Date",
+                                      val_col: str = "cumulative P&L from trades for contracts (x 50)"):
+    """
+    A function that extra the parrticular information from the source files in 
+    filename matrix.
+
+    Parameters
+    ----------
+    filename_matrix : 2D np.ndarray
+        A 2D matrix that contains source filename str as its element.
+    sheetname : str, optional
+        The excel sheet names. The default is 'CLc1'.
+
+    Returns
+    -------
+    matrix : 2D np.ndarray
+        A 2D matrix that contains the extracted value as its element..
+
+    """
     master_list = []
     for i in range(len(filename_matrix)):
-        temp = [extract_PNLplot_input(ele, sheet_name=sheetname)[1][-1]
+        temp = [extract_PNLplot_input(ele, 
+                                      sheet_name=sheetname,
+                                      date_col = date_col, 
+                                      val_col = val_col,
+                                      fill_or_not=False)[1][-1]
                 for ele in filename_matrix[i]]
         
         print(i)
@@ -92,47 +115,53 @@ def extract_info_from_filename_matrix(filename_matrix: np.ndarray,
     return matrix
 
 
-def plot_heatmap():
+def plot_heatmap(x_axis_str_list: list[str], 
+                 y_axis_str_list: list[str],
+                 **kwargs):
+
     # make a matrix containing the name of the source file in the respective 
     # postions
-    Q = build_filename_matrix(gain_quantile_str, stoploss_quantile_str)
-    
-    #P = extract_PNLplot_input(Q[0][0])
-    
+    filename_matrix = build_filename_matrix(x_axis_str_list, y_axis_str_list)
+        
     # Extract the particular columns and information to be plotted.
-    MM = extract_info_from_filename_matrix(Q)
+    heatmap_data = extract_info_from_filename_matrix(filename_matrix)
     
+    # Start the plot
     fig, ax = plt.subplots()
-    im = ax.imshow(MM)
-    
-    cbarlabel = "USD (in mil)"
+    im = ax.imshow(heatmap_data)
     
     cbar = ax.figure.colorbar(im, ax=ax)
-    cbar.ax.set_ylabel(cbarlabel, rotation=-90, va="bottom")
+    cbar.ax.set_ylabel(kwargs['cbarlabel'], rotation=-90, va="bottom")
     
-    ax.set_xticks(np.arange(len(gain_quantile)), labels=gain_quantile)
-    ax.set_yticks(np.arange(len(stoploss_quantile)), labels=stoploss_quantile)
+    ax.set_xticks(np.arange(len(x_axis_str_list)), labels=gain_quantile)
+    ax.set_yticks(np.arange(len(y_axis_str_list)), labels=stoploss_quantile)
     
-    for i in range(len(MM)):
-        for j in range(len(MM[0])):
-            text = ax.text(j, i, round(MM[i, j]/1e6,2),
+    for i in range(len(heatmap_data)):
+        for j in range(len(heatmap_data[0])):
+            text = ax.text(j, i, round(heatmap_data[i, j]/1e6,2),
                            ha="center", va="center", color="w")
     
-    
-    ax.set_title("Argus Exact strategy with fixed \n \
-                 Entry quantile at Q0.4 for Buy and Q0.6 for Sell \n\
-                 for QPc2 (50 contracts)")
-    ax.set_ylabel("Quantile (in %) Range for Stop Loss")
-    ax.set_xlabel("Quantile (in %) Range for Take Profit")
+    ax.set_title(kwargs['plot_title'])
+    ax.set_xlabel(kwargs['xlabel'])
+    ax.set_ylabel(kwargs['ylabel'])
     fig.tight_layout()
     plt.show()
     
 def run_main():
     # make a matrix containing the name of the source file in the respective 
     # postions
-    Q = build_filename_matrix(gain_quantile_str, stoploss_quantile_str)
+    #Q = build_filename_matrix(gain_quantile_str, stoploss_quantile_str)
         
     # Extract the particular columns and information to be plotted.
-    MM = extract_info_from_filename_matrix(Q)
+    #MM = extract_info_from_filename_matrix(Q)
     
+    plot_heatmap(gain_quantile_str, 
+                 stoploss_quantile_str,
+                 cbarlabel = "USD (in mil)",
+                 plot_title = "Argus Exact strategy with fixed\nEntry quantile at Q0.4 for Buy\nand Q0.6 for Sell for QPc2 (50 contracts)",
+                 xlabel = "Quantile (in %) Range for Take Profit",
+                 ylabel = "Quantile (in %) Range for Stop Loss")
+    
+if __name__ == "__main__":
+    run_main()
     

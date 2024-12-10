@@ -307,76 +307,76 @@ if __name__=='__main__':
 #                 line_color = col_list[i])
 # =============================================================================
 
-argusexact_cross_P20S10_PNL = "/home/dexter/Euler_Capital_codes/EC_tools/results/routine_updates/20241007_argusexact_cross_P20S35_PNL_.xlsx"
-
-date_all_new, cumPNL_all_new = extract_PNLplot_input(argusexact_cross_P20S10_PNL, 
-                                                     date_col=date_col,
-                                                     val_col = 'cumulative P&L from trades')
-
-# Extract the trade_return of the strategy
-date_all2_new, return_all_new = extract_PNLplot_input(argusexact_cross_P20S10_PNL,
-                                              val_col='scaled returns from trades', 
-                                              #date_col=date_col,
-                                              fill_or_not=False)
-
-
-# Extract the individual asset PNL and dates
-date_list_new = [extract_PNLplot_input(argusexact_cross_P20S10_PNL, 
-                                   sheet_name=symbol_list[i], \
-                                   #date_col = date_col,
-                                   val_col = 'cumulative P&L from trades')[0] \
-                                   for i in range(len(symbol_list))]
-data_list_new = [extract_PNLplot_input(argusexact_cross_P20S10_PNL, 
-                                   sheet_name=symbol_list[i], 
-                                   #date_col = date_col,
-                                   val_col = 'cumulative P&L from trades')[1] \
-                                   for i in range(len(symbol_list))]
-return_list_new = [extract_PNLplot_input(argusexact_cross_P20S10_PNL, 
-                                     sheet_name=symbol_list[i], 
-                                     val_col='scaled returns from trades', 
-                                     #date_col = date_col,
-                                     fill_or_not=False)[1] \
-                                     for i in range(len(symbol_list))]
-
-# add the ten assets manually for validation
-date_list_new_last = date_list_new[-1]
-
-lastdate100 = date_list_new[-1][-101:-1]
-last100 = [data_list_new[i][-101:-1] for i,_ in enumerate(data_list_new)]
-
-date_list_new.append(lastdate100)
-data_list_new.append(sum(last100))
-
-label_list.append("TESTx10")
-col_list.append('w')
-line_list.append('--')
-# =============================================================================
-# strategy_date_list2 = [extract_PNLplot_input(argusexact_cross_P20S10_PNL, date_col="Entry_Date",
-#                                             val_col="cumulative P&L from trades")[0]]
-# 
-# strategy_data_list2 = [extract_PNLplot_input(argusexact_cross_P20S10_PNL, date_col="Entry_Date",
-#                                             val_col="cumulative P&L from trades")[1]]
-# 
-# strategy_label_list2 = ['argusexact_cross_P20S10_PNL (2024-10-07)'
-#                        ]
-# strategy_col_list2 = ['w']
-# strategy_line_list2 = ['solid']
-# =============================================================================
+    #argusexact_cross_P20S10_PNL = "/home/dexter/Euler_Capital_codes/EC_tools/results/routine_updates/20241007_argusexact_cross_P20S35_PNL_.xlsx"
+    argusexact_cross_P20S10_PNL = "/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap/PNL_argusexact_G30S35_.xlsx"
     
-twopanel_plot(date_all_new, cumPNL_all_new, return_all_new, label='All',
-              sub_x_list=date_list_new, 
-              sub_y1_list=data_list_new,
-              sub_label_list = label_list,
-              sub_col_list = col_list, 
-              sub_line_list =line_list)
-
-# =============================================================================
-# twopanel_plot([], [], [], label='',
-#               sub_x_list=strategy_date_list2,
-#               sub_y1_list=strategy_data_list2,
-#               sub_label_list = strategy_label_list2,
-#               sub_col_list = strategy_col_list2, 
-#               sub_line_list =strategy_line_list2)
-# =============================================================================
+    date_all_new, cumPNL_all_new = extract_PNLplot_input(argusexact_cross_P20S10_PNL, 
+                                                         val_col = 'cumulative P&L from trades for contracts (x 50)')
+    
+    # Extract the trade_return of the strategy
+    date_all2_new, return_all_new = extract_PNLplot_input(argusexact_cross_P20S10_PNL,
+                                                  val_col='scaled returns from trades', 
+                                                  #date_col=date_col,
+                                                  fill_or_not=False)
+    
+    
+    # Extract the individual asset PNL and dates
+    date_list_new = [extract_PNLplot_input(argusexact_cross_P20S10_PNL, 
+                                       sheet_name=symbol_list[i], \
+                                       #date_col = date_col,
+                                       val_col = 'cumulative P&L from trades for contracts (x 50)')[0] \
+                                       for i in range(len(symbol_list))]
+    data_list_new = [extract_PNLplot_input(argusexact_cross_P20S10_PNL, 
+                                       sheet_name=symbol_list[i], 
+                                       #date_col = date_col,
+                                       val_col = 'cumulative P&L from trades for contracts (x 50)')[1] \
+                                       for i in range(len(symbol_list))]
+    return_list_new = [extract_PNLplot_input(argusexact_cross_P20S10_PNL, 
+                                         sheet_name=symbol_list[i], 
+                                         val_col='cumulative P&L from trades for contracts (x 50)', 
+                                         #date_col = date_col,
+                                         fill_or_not=False)[1] \
+                                         for i in range(len(symbol_list))]
+    
+    # add the ten assets manually for validation
+    date_list_new_last = date_list_new[-1]
+    
+    # add the last 100 entries manualy to see if 
+    lastdate100 = date_list_new[-1][-101:-1]
+    last100 = [data_list_new[i][-101:-1] for i,_ in enumerate(data_list_new)]
+    date_list_new.append(lastdate100)
+    data_list_new.append(sum(last100))
+    label_list.append("TESTx10")
+    col_list.append('w')
+    line_list.append('--')
+    
+    # =============================================================================
+    # strategy_date_list2 = [extract_PNLplot_input(argusexact_cross_P20S10_PNL, date_col="Entry_Date",
+    #                                             val_col="cumulative P&L from trades")[0]]
+    # 
+    # strategy_data_list2 = [extract_PNLplot_input(argusexact_cross_P20S10_PNL, date_col="Entry_Date",
+    #                                             val_col="cumulative P&L from trades")[1]]
+    # 
+    # strategy_label_list2 = ['argusexact_cross_P20S10_PNL (2024-10-07)'
+    #                        ]
+    # strategy_col_list2 = ['w']
+    # strategy_line_list2 = ['solid']
+    # =============================================================================
+        
+    twopanel_plot(date_all_new, cumPNL_all_new, return_all_new, label='All',
+                  sub_x_list=date_list_new, 
+                  sub_y1_list=data_list_new,
+                  sub_label_list = label_list,
+                  sub_col_list = col_list, 
+                  sub_line_list =line_list)
+    
+    # =============================================================================
+    # twopanel_plot([], [], [], label='',
+    #               sub_x_list=strategy_date_list2,
+    #               sub_y1_list=strategy_data_list2,
+    #               sub_label_list = strategy_label_list2,
+    #               sub_col_list = strategy_col_list2, 
+    #               sub_line_list =strategy_line_list2)
+    # =============================================================================
 
                       

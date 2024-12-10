@@ -5,10 +5,16 @@ Created on Wed May 15 02:31:06 2024
 
 @author: dexter
 """
+import sys
+import os
+
+sys.path.insert(0, 'C:\\EC_tools-pure-code')
+
 import datetime as datetime
 import openpyxl
 import EC_tools.utility as util
 from EC_tools.strategy import ArgusMRStrategy
+
 from run_gen_MR_dir import run_gen_MR_signals_list, \
                            run_gen_MR_signals_preloaded,\
                            run_gen_MR_signals_preloaded_single
@@ -22,12 +28,13 @@ from crudeoil_future_const import CELL_LOC_DICT, MONTHS_TO_SYMBOLS, \
                                   DAILY_OPENPRICE_PKL,\
                                   OPEN_HR_DICT, CLOSE_HR_DICT, TIMEZONE_DICT
 
+# adding Folder_2 to the system path
 
-CONTRACT_NUM_DICT = {'CLc1': 50, 'CLc2': 50, 
-                     'HOc1': 50, 'HOc2': 50,
-                     'RBc1': 50, 'RBc2': 50,
-                     'QOc1': 50, 'QOc2': 50,
-                     'QPc1': 50, 'QPc2': 50}
+CONTRACT_NUM_DICT = {'CLc1': 1, 'CLc2': 1, 
+                     'HOc1': 1, 'HOc2': 1,
+                     'RBc1': 1, 'RBc2': 1,
+                     'QOc1': 1, 'QOc2': 1,
+                     'QPc1': 1, 'QPc2': 1}
 
 CQG_SYMBOL = {'CL':'CLE', 'HO':'HOE', 'RB':'RBE', 
               'QO': 'QO', 'QP':'QP'}
@@ -60,10 +67,11 @@ def make_new_symbol(date_interest: datetime.datetime,
         DESCRIPTION.
 
     """
+    contract_symbol = CQG_SYMBOL[old_symbol[0:2]]
 
     month_str = str(date_interest.month+forward_unit)
     year_str = str(date_interest.year)
-    new_symbol = old_symbol[0:2] + MONTHS_TO_SYMBOLS[month_str] + year_str[-2:]
+    new_symbol = contract_symbol + MONTHS_TO_SYMBOLS[month_str] + year_str[-2:]
 
     return new_symbol
 
@@ -89,6 +97,8 @@ def truncate_symbol(old_symbol: str) -> str:
 
     new_symbol = contract_symbol + contract_month + contract_year
 
+    return new_symbol
+
 def run_MR(date_interest,
            buy_range: tuple[float] =\
                       ([0.2,0.25],[0.75,0.8],0.1),
@@ -98,6 +108,7 @@ def run_MR(date_interest,
     
     
     SAVE_SIGNAL_FILENAME_LIST = TEST_FILE_LOC
+    
     
     result = MR_method(ArgusMRStrategy,
                        SAVE_SIGNAL_FILENAME_LIST, 
@@ -111,8 +122,9 @@ def run_MR(date_interest,
     
     return result 
 
-@util.time_it
-def run_MR_list(start_date, end_date, 
+#@util.time_it
+def run_MR_list(start_date: datetime.datetime, 
+                end_date: datetime.datetime, 
                 MR_method=run_gen_MR_signals_preloaded):
     """
     Run MR stratgy in a list.
@@ -133,24 +145,28 @@ def run_MR_list(start_date, end_date,
 
     """
     SAVE_SIGNAL_FILENAME_LIST = TEST_FILE_LOC
-    
-    
     result = MR_method(ArgusMRStrategy,
                        SAVE_SIGNAL_FILENAME_LIST, 
                        SIGNAL_PKL, 
                        HISTORY_DAILY_PKL, 
-                       #OPENPRICE_PKL,
+                       OPENPRICE_PKL,
                        start_date, end_date,
                        open_hr_dict = OPEN_HR_DICT, 
                        close_hr_dict = CLOSE_HR_DICT, 
                        timezone_dict = TIMEZONE_DICT,
+                       buy_range=([0.25,0.4],[0.6,0.75],0.3),
+                       sell_range=([0.6,0.75],[0.25,0.4],0.7),
                        save_or_not = False)
+    
     return result
 
-@util.time_it
-def enter_new_value(workbook, date_interest: datetime.datetime, 
-                    cell_loc_dict: dict, signal_result_dict: dict, 
-                    contract_num_dict: dict, output_filename: str):
+#@util.time_it
+def enter_new_value(workbook, 
+                    date_interest: datetime.datetime, 
+                    cell_loc_dict: dict, 
+                    signal_result_dict: dict, 
+                    contract_num_dict: dict, 
+                    output_filename: str):
     """
     Enter new values to the excel workbook.
 
@@ -179,7 +195,7 @@ def enter_new_value(workbook, date_interest: datetime.datetime,
     
     asset_name_list = list(cell_loc_dict.keys())
     for asset_name in asset_name_list:
-    #if asset_name == 'CLc1':
+        print("=====================")
         direction_cell = cell_loc_dict[asset_name]['signal_type']
         entry_cell = cell_loc_dict[asset_name]['target_entry']
         exit_cell = cell_loc_dict[asset_name]['target_exit']
@@ -195,9 +211,19 @@ def enter_new_value(workbook, date_interest: datetime.datetime,
                                                             [-1]['Exit_Price']
         sheet_obj[stop_cell].value = signal_result_dict[asset_name].iloc\
                                                             [-1]['StopLoss_Price']
+        print(asset_name)
+        print(direction_cell, signal_result_dict[asset_name].iloc\
+                                                            [-1]['Direction'])
+        print(entry_cell, signal_result_dict[asset_name].iloc\
+                                                            [-1]['Entry_Price'])
+        print(exit_cell,  signal_result_dict[asset_name].iloc\
+                                                            [-1]['Exit_Price'])
+        print(stop_cell, signal_result_dict[asset_name].iloc\
+                                                            [-1]['StopLoss_Price'])
                                                             
-        portara_assetname = signal_result_dict[asset_name].iloc[-1]['Contract_Month']                                      
-
+        portara_assetname = signal_result_dict[asset_name].iloc\
+                                                            [-1]['Contract_Month']                                      
+                                                            
         sheet_obj[symbol_cell].value = truncate_symbol(portara_assetname)
         
         
@@ -210,7 +236,7 @@ def enter_new_value(workbook, date_interest: datetime.datetime,
     # a function that add new values into the new excel file
     return workbook
 
-@util.time_it
+#@util.time_it
 def gen_new_xlfile(xl_template_filename: str, output_filename: str, 
                    date_interest: datetime.datetime, 
                    signal_result_dict: dict,
@@ -240,7 +266,7 @@ def gen_new_xlfile(xl_template_filename: str, output_filename: str,
         DESCRIPTION.
 
     """
-    wb_obj = openpyxl.load_workbook(xl_template_filename)
+    wb_obj = openpyxl.load_workbook(xl_template_filename, keep_vba=True)
 
     wb_obj = enter_new_value(wb_obj, date_interest, cell_loc_dict, 
                              signal_result_dict, 
@@ -251,31 +277,51 @@ def gen_new_xlfile(xl_template_filename: str, output_filename: str,
     return wb_obj
 
 if __name__ == "__main__":
+    XLS_TEMPLATE_FILEPATH  = "/home/dexter/Euler_Capital_codes/EC_tools/app/template/"
     
-    @util.time_it
+    #from app.run_send_email import send_trading_sheet_email
+    #@util.time_it
     def run_things():
         # Define the date of interest
-        date_interest = datetime.datetime(2023,5,23) #datetime.datetime.today()
-    
-        # Input and output filename
-        XL_TEMPLATE_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/app/template/Leigh1.xlsx"
-        OUTPUT_FILENAME = "./XLS_trading_sheet_MR_benchmark_{}.xlsx".format(
-                                            date_interest.strftime('%Y_%m_%d'))
+        date_interest = datetime.datetime(2024,11,20)#datetime.datetime.today()#datetime.datetime(2024,11,29)
+        print("date_interest", date_interest)
+        is_open = util.market_is_open(date_interest.strftime("%Y-%m-%d"))
+        # check if market is open today
+        if is_open:
+            print("Market Open")
+            # Input and output filename
+            XL_TEMPLATE_FILENAME = XLS_TEMPLATE_FILEPATH  + \
+                                   "argus_exact_MR_strategy_wb_light_auto_on.xlsm"
+            OUTPUT_FILENAME = XLS_TEMPLATE_FILEPATH  + \
+                              "XLS_trading_sheet_MR_{}.xlsm".format(
+                                                date_interest.strftime('%Y_%m_%d'))
+            print("OUTPUT_FILENAME", OUTPUT_FILENAME)
+            #Define the end date as the date of interest
+            END_DATE = date_interest.strftime("%Y-%m-%d")
+            
+            START_DATE = (date_interest - datetime.timedelta(days=7)).strftime("%Y-%m-%d")
+            #START_DATE2 = (date_interest - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+            #Check and update everything
+            print("START_DATE, END_DATE", START_DATE, END_DATE)
+            # Run the strategy by list
+            #date_interest = date_interest.strftime("%Y-%m-%d")
+
+
+            SIGNAL_RESULT_DICT = run_MR(date_interest)
         
-        #Define the end date as the date of interest
-        END_DATE = date_interest.strftime("%Y-%m-%d")
-    
-        START_DATE = (date_interest - datetime.timedelta(days=4)).strftime("%Y-%m-%d")
-        #START_DATE2 = (date_interest - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
-        #Check and update everything
-        
-        # Run the strategy by list
-        SIGNAL_RESULT_DICT = run_MR(date_interest)
-        print("SIGNAL_RESULT_DICT", SIGNAL_RESULT_DICT)
-        # Generate the excel file
-        gen_new_xlfile(XL_TEMPLATE_FILENAME, OUTPUT_FILENAME, 
-                       date_interest, SIGNAL_RESULT_DICT, 
-                       cell_loc_dict = CELL_LOC_DICT, 
-                       contract_num_dict=CONTRACT_NUM_DICT)
+            # Generate the excel file
+            gen_new_xlfile(XL_TEMPLATE_FILENAME, OUTPUT_FILENAME, 
+                           date_interest, SIGNAL_RESULT_DICT, 
+                           cell_loc_dict = CELL_LOC_DICT, 
+                           contract_num_dict=CONTRACT_NUM_DICT)
+            
+            # Send email to Leigh
+            #send_trading_sheet_email()
+            
+            # Run batch script that open the excel file
+            #os.chdir("C:\\trading_operation")
+            #os.startfile("open_xls.bat")
+        else:
+            print("Market Close")
     run_things()
     # email this to the traders?

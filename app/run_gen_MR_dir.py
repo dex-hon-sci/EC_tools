@@ -16,7 +16,8 @@ import pandas as pd
 import numpy as np
 
 # EC_tools imports
-from EC_tools.strategy import ArgusMRStrategy, ArgusMRStrategyMode, Strategy, APC_LENGTH
+from EC_tools.strategy import ArgusMRStrategy, ArgusMRStrategyMode, \
+                              Strategy, APC_LENGTH
 import EC_tools.read as read
 import EC_tools.utility as util
 from EC_tools.bookkeep import Bookkeep
@@ -62,7 +63,8 @@ def loop_signal(strategy: type[Strategy],
                 quantile = [0.05,0.1,0.25,0.4,0.5,0.6,0.75,0.9,0.95],
                 asset_name: str = '', Timezone: str = "",
                 contract_symbol_condse: bool = False, 
-                loop_symbol: bool = None) -> pd.DataFrame: 
+                loop_symbol: bool = None,
+                **kwargs) -> pd.DataFrame: 
     """
     The main loop used to generate Buy/Sell signals.
 
