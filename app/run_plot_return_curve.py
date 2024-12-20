@@ -6,22 +6,23 @@ Created on Mon Dec  2 16:50:12 2024
 @author: dexter
 """
 
+import datetime as datetime
+
+# import basic python packages
 import pandas as pd
 import numpy as np
 from scipy import stats
+from pathlib import Path
 
-
+# Import
 import matplotlib.dates as mdates
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 
-
-import datetime as datetime
+# import EC_tools
 from crudeoil_future_const import APC_FILE_LOC, DATA_FILEPATH, DAILY_DATA_PKL, \
                                   make_path_list
 import EC_tools.utility as util
-from pathlib import Path
-
 from app.run_PNL_plot import extract_PNLplot_input
 
 
@@ -37,41 +38,6 @@ def make_daily_price_change_data(date_list, symbol='CLc1'):
         bucket.append(diff)
     return bucket
 
-
-
-def plot_price_return(x, y, hist_bin, **kwargs):
-
-    diag_line = np.linspace(-4500,4500,10)
-    
-    # Create Price vs Return plot 
-    fig, ax = plt.subplots()
-
-    #ax.plot(diag_line, diag_line,'--',c='w')
-    
-    #ax.plot(x, y,'o', c='w', ms=3)
-    ax.scatter(x, y, c='w',s=1, alpha=0.5)
-    #ax.plot(D['Open'], all_diff, 'o', c='w', ms=3)
-    
-    #ax.vlines(0,-5000,5000, lw=3)
-    #ax.hlines(0,-5000,5000, lw=3)
-    
-    #ax.hlines(0,45,120, lw=3)
-    
-    ax.set_title(kwargs['plot_title'])
-    ax.set_xlabel(kwargs['xlabel'])
-    ax.set_ylabel(kwargs['ylabel'])
-    
-    #ax.set_ylim(-4,4)
-    
-    #ax.set_xlim(-4,4)
-    
-    #ax.set_ylim(-0.01,1.0)
-    #ax.set_xlim(-4500,4500)
-    ax.grid(ls='dashed',alpha=0.5)
-
-    fig.tight_layout()
-    plt.show()
-    return
 
 def plot_price_return_hist(x,y,**kwargs):
     default_kwargs = {'plot_title': '', 'ylabel': '', 'xlabel': '', 
