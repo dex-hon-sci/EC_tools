@@ -39,7 +39,7 @@ def make_daily_price_change_data(date_list, symbol='CLc1'):
 
 
 
-def plot_price_return(x,y,hist_bin, **kwargs):
+def plot_price_return(x, y, hist_bin, **kwargs):
 
     diag_line = np.linspace(-4500,4500,10)
     
@@ -74,6 +74,11 @@ def plot_price_return(x,y,hist_bin, **kwargs):
     return
 
 def plot_price_return_hist(x,y,**kwargs):
+    default_kwargs = {'plot_title': '', 'ylabel': '', 'xlabel': '', 
+                      'hist_size': 30, 'hist_ylim': [0,16], 
+                      'scatter_ylim':[0,180]}
+    kwargs = dict(default_kwargs,**kwargs)
+    
     # make negative and postice lists
     positive = [ele for ele in x if ele > 0]
     negative = [ele for ele in x if ele < 0]
@@ -90,41 +95,34 @@ def plot_price_return_hist(x,y,**kwargs):
     
     ax1.set_title(kwargs['plot_title'])
     ax1.set_ylabel(kwargs['ylabel'])
-    ax1.set_ylim(0,16)
+    ax1.set_ylim(*kwargs['hist_ylim'])
     ax1.set_xlim(min(x)-2*np.std(x),max(x)+2*np.std(x))
     
     ax1.grid(True, ls='dashed',alpha=0.5,axis='both')
-    #print(xx)
 
     ax1.scatter(x, y, c='w',s=1, alpha=0.5,zorder=9)
 
-    ax2.hist(positive, 30, histtype='stepfilled', facecolor='g',
-               alpha=0.6)
-    QQ = ax2.hist(negative, 30, histtype='stepfilled', facecolor='r',
-               alpha=0.6)
+    ax2.hist(positive, kwargs['hist_size'], histtype='stepfilled', 
+             facecolor='g', alpha=0.6)
+    QQ = ax2.hist(negative, kwargs['hist_size'], histtype='stepfilled', 
+                  facecolor='r', alpha=0.6)
     
     print(QQ)
     
-#    kde = stats.gaussian_kde(QQ[0])
- #   xx = np.linspace(min(x)-2*np.std(x),max(x)+2*np.std(x), 1000)
-  #  print(kde, kde(xx))
-    
-   # ax2.plot(xx, kde(xx),'g-')
 
     ax2.set_xlabel(kwargs['xlabel'])
 
     ax2.tick_params(axis='y', labelcolor='#6dd8f2')
     ax2.set_ylabel("Count",color='#6dd8f2')
     
-    
-    ax2.set_ylim(0,180)
+    ax2.set_ylim(*kwargs['scatter_ylim'])
     fig.tight_layout()
 
     plt.show()
     return
 
 def run_main():
-    argusexact_cross_PS_PNL = "/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap/PNL_argusexact_G20S35_.xlsx"
+    argusexact_cross_PS_PNL = "/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap/PNL_argusexact_G25S10_.xlsx"
 
     big_price_diff, big_trade_return = [], []
 
@@ -154,17 +152,18 @@ def run_main():
                            ylabel = "Daily Price Changes [%]",
                            xlabel = "Scaled Returns per Trade [USD]")
 
-    
-        
 
     #argusexact_cross_PS_PNL = "/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap/PNL_argusexact_G20S35_.xlsx"
     D = util.load_pkl(DAILY_DATA_PKL)['CLc1']
-    all_diff = abs(D['Settle']-D['Open'])/D['Open']
+    all_diff = 100*abs(D['Settle']-D['Open'])/D['Open']
     
     plot_price_return_hist(D['Open'].to_list(), all_diff,
                            plot_title="", 
                            ylabel = "Price changes ",
-                           xlabel = "Open Price [USD]")
+                           xlabel = "Open Price [USD]",
+                           hist_ylim = [0,16],
+                           scatter_ylim = [0,50],
+                           hist_size=100)
 
     
     
