@@ -4,12 +4,14 @@
 Created on Tue Dec 10 19:38:52 2024
 
 @author: dexter
+
+A quick application script to evaluate if a trading strategy is viable.
+
 """
 import sys
 import os
 
 sys.path.insert(0, '/home/dexter/Euler_Capital_codes/EC_tools/')
-
 
 import datetime
 import random
@@ -56,22 +58,22 @@ def trade_bytime(df: pd.DataFrame,
     t2 = t1 + delta_T
     
     if t2.date() != t1.date(): # if it reaches the next day, reset it to the last entry
-        print("Beyond last minute", t2)
+        #print("Beyond last minute", t2)
         t2 = datetime.datetime.combine(datetime.date.today(),last_time)
-        print("After Correction", t2)
+        #print("After Correction", t2)
 
     t2_str = datetime.datetime.strftime(t2,"%H%M")
 
     t1, price1 = read.find_closest_price_generic(df, t1_str, 
                                                  direction='forward', 
                                                  search_time=1000)
-    print('t1', t1)
-    print('price1', price1.item())
+    #print('t1', t1)
+    #print('price1', price1.item())
     t2, price2 = read.find_closest_price_generic(df, t2_str, 
                                                  direction='backward', 
                                                  search_time=1000)
-    print('t2', t2)
-    print('price2', price2.item())
+   # print('t2', t2)
+   # print('price2', price2.item())
     r = price2.item()-price1.item()
     print("rrr", r)
         
@@ -86,7 +88,7 @@ def gen_rand_sublist(n: int, parent_list: list = TRADING_DATES):
 
 def gen_duration_list(mu: float, sigma: float, n: int):
     
-
+    # define the distribution
     dist = list(np.random.normal(mu, sigma, 1000))
     
     durations = random.sample(dist,n)
@@ -113,8 +115,9 @@ def run_rand_trade_day(minute_data: dict,
     # randomising 
     # T_intervals
     mu, sigma = 5, 0.5
+    #mu, sigma = 10, 2
     # Win Rate
-    PR = 0.8
+    PR = 0.6
     
     # generate trading dates
     dates = gen_rand_sublist(N_days, parent_list = TRADING_DATES)
@@ -165,7 +168,7 @@ def plot_N_R(x_labels,y_data,ax,**kwargs):
     
     
     line_x = np.arange(0,50,1)
-    line_y = line_x*round_turn_fees['CLc1']
+    line_y = line_x*kwargs['fee']
     line_y2 = line_x*30
     
     ax.fill_between(line_x, line_y, np.repeat(-4000,len(line_x)), color='r', alpha=0.4)
@@ -180,20 +183,23 @@ def plot_N_R(x_labels,y_data,ax,**kwargs):
     ax.set_xlabel(kwargs['xlabel'])
     ax.set_ylabel(kwargs['ylabel'])
     
-    ax.set_ylim(-2500,4500)
-    ax.set_xlim(-4,45)
+    ax.set_ylim(-2000,4000)
+    ax.set_xlim(0,32)
     ax.grid(ls='dashed',alpha=0.5)
      
     
 def plot_prob(x: list[float], ax, **kwargs):
     
-    ax.hist(x, 30, histtype='stepfilled', facecolor='g',
+    ax.hist(x, kwargs['bin_size'], histtype='stepfilled', facecolor='g',
                alpha=0.6)
     ax.vlines(np.median(x),0, 10)
     
     ax.set_title(kwargs['plot_title'])
     ax.set_xlabel(kwargs['xlabel'])
     ax.set_ylabel(kwargs['ylabel'])
+    
+    ax.yaxis.set_label_position("right")
+    ax.yaxis.tick_right()
 
 
 def plot_box(x_labels,y_data, N_trade_list, WR_list, delta_T_list):
@@ -203,7 +209,7 @@ def plot_box(x_labels,y_data, N_trade_list, WR_list, delta_T_list):
     
     plt.style.use('dark_background')
 
-    fig = plt.figure(figsize=(6,3))
+    fig = plt.figure(figsize=(24,12))
     gs = GridSpec(3,5)
     ax1 = fig.add_subplot(gs[0:3,0:3])
     ax2 = fig.add_subplot(gs[0,3:])
@@ -211,65 +217,83 @@ def plot_box(x_labels,y_data, N_trade_list, WR_list, delta_T_list):
     ax4 = fig.add_subplot(gs[2,3:])
     
     plot_N_R(x_labels,y_data, ax1,
-             plot_title = "20 trading days, 60% Win Rate",
+             plot_title = "40 trading days, 60% Win Rate",
              xlabel="Number of Trades Per Day",
-             ylabel='Return Per Trades [USD]')
+             ylabel='Return Per Trades [USD]',
+             fee = round_turn_fees['CLc1'])
     
     plot_prob(N_trade_list, ax2,
+              bin_size = int(len(N_trade_list)/10),
               plot_title = "",
               xlabel = "Number of Trade Per Day",
               ylabel= "Count")
     plot_prob(WR_list, ax3,
+              bin_size = int(len(WR_list)/10),
               plot_title = "",
               xlabel = "Win Rate",
               ylabel= "Count")
     plot_prob(delta_T_list, ax4,
+              bin_size = int(len(delta_T_list)/10),
               plot_title = "",
-              xlabel = "Position Duration $\Delta$T [Seconds]",
+              xlabel = "Position Duration Delta T [Seconds]",
               ylabel= "Count")
     ax1.legend(loc='upper left')
     fig.tight_layout()
 
     plt.show()
+
     
-N_trades_list = list(np.arange(1,30,1))
 
-master_date_bucket, master_N_trades_bucket, master_return_bucket = [],[],[]
-master_PR_bucket, master_delta_T_bucket = [],[]
-for N in N_trades_list:
-    print('N',N)
-    date_bucket, N_trades_bucket, return_bucket, \
-                      PR_bucket, delta_T_bucket = run_rand_trade_day(MINUTE, 
-                                                                     N_trades=N, 
-                                                                     N_days=40)
+
+if __name__ == "__main__":
     
-    master_date_bucket.append(date_bucket)
-    master_N_trades_bucket.append(N_trades_bucket)
-    master_return_bucket.append(list(np.array(return_bucket)*SIZE_DICT['CLc1']))
-    master_PR_bucket.append(PR_bucket)
-    master_delta_T_bucket.append(delta_T_bucket)
+        
+    N_trades_list = list(np.arange(1,30,1))
+
+    master_date_bucket, master_N_trades_bucket, master_return_bucket = [],[],[]
+    master_PR_bucket, master_delta_T_bucket = [],[]
+    for N in N_trades_list:
+        print('N',N)
+        date_bucket, N_trades_bucket, return_bucket, \
+                          PR_bucket, delta_T_bucket = run_rand_trade_day(MINUTE, 
+                                                                         N_trades=N, 
+                                                                         N_days=40)
+        
+        master_date_bucket.append(date_bucket)
+        master_N_trades_bucket.append(N_trades_bucket)
+        master_return_bucket.append(list(np.array(return_bucket)*SIZE_DICT['CLc1']))
+        master_PR_bucket.append(PR_bucket)
+        
+        delta_T_bucket = [ele.seconds for ele in delta_T_bucket]
+        
+        master_delta_T_bucket.append(delta_T_bucket)
+        
+        
+    print(master_date_bucket, master_N_trades_bucket, master_return_bucket,
+          master_PR_bucket, master_delta_T_bucket)
+
+    plt.style.use('dark_background')
     
-#print(master_date_bucket, master_N_trades_bucket, master_return_bucket)
-plt.style.use('dark_background')
-
-fig,ax = plt.subplots()
-
-plot_N_R(N_trades_list, 
-         master_return_bucket,
-         ax,
-         plot_title = "20 trading days, 80% Win Rate",
-         xlabel="Number of Trades Per Day",
-         ylabel='Return Per Trades [USD]')
-
-
-plt.show()
-
-master_N_trades_bucket_flat = [item for row in master_N_trades_bucket for item in row]
-master_PR_bucket_flat = [item for row in master_PR_bucket for item in row]
-master_delta_T_bucket_flat =  [item for row in master_delta_T_bucket for item in row]
-
-plot_box(N_trades_list,
-         master_return_bucket,
-         master_N_trades_bucket_flat, 
-         master_PR_bucket_flat,
-         master_delta_T_bucket_flat)
+    fig,ax = plt.subplots()
+    
+    plot_N_R(N_trades_list, 
+             master_return_bucket,
+             ax,
+             plot_title = "40 trading days, 60% Win Rate",
+             xlabel="Number of Trades Per Day",
+             ylabel='Return Per Trades [USD]',
+             fee = round_turn_fees['CLc1'])
+    
+    plt.legend(loc='upper left')
+    plt.show()
+    
+    master_N_trades_bucket_flat = [item for row in master_N_trades_bucket for item in row]
+    master_PR_bucket_flat = [item for row in master_PR_bucket for item in row]
+    master_delta_T_bucket_flat =  [item for row in master_delta_T_bucket for item in row]
+    
+    #plot box plot on different iteration 
+    plot_box(N_trades_list,
+             master_return_bucket,
+             master_N_trades_bucket_flat, 
+             master_PR_bucket_flat,
+             master_delta_T_bucket_flat)

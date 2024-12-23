@@ -66,15 +66,16 @@ def plot_price_return_hist(x,y,**kwargs):
     
     ax1.grid(True, ls='dashed',alpha=0.5,axis='both')
 
+    # plot scatter plots
     ax1.scatter(x, y, c='w',s=1, alpha=0.5,zorder=9)
 
+    # plot histogram for both positives and negatives
     ax2.hist(positive, kwargs['hist_size'], histtype='stepfilled', 
              facecolor='g', alpha=0.6)
     QQ = ax2.hist(negative, kwargs['hist_size'], histtype='stepfilled', 
                   facecolor='r', alpha=0.6)
     
-    print(QQ)
-    
+    #print(QQ)
 
     ax2.set_xlabel(kwargs['xlabel'])
 
