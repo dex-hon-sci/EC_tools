@@ -358,16 +358,16 @@ CLOSE_HR_DICT_EARLY = {
     'QPc2':'1100'} #1630 UTC
 
 WRONG_OPEN_HR_DICT = {
-    'CLc1':'0330', # UTC
-    'CLc2':'0330', # UTC
+    'CLc1':'0230', # UTC
+    'CLc2':'0230', # UTC
     'HOc1':'0330', #0800 NY #1300 UTC
     'HOc2':'0330', #0800 NY #1300 UTC
     'RBc1':'0330', #0800 NY #1300 UTC
     'RBc2':'0330', #0800 NY #1300 UTC
-    'QOc1':'0330', # UTC
-    'QOc2':'0330', # UTC
-    'QPc1':'0800', # UTC
-    'QPc2':'0800'} # UTC
+    'QOc1':'0230', # UTC
+    'QOc2':'0230', # UTC
+    'QPc1':'0330', # UTC
+    'QPc2':'0330'} # UTC
 
 WRONG_CLOSE_HR_DICT = {
     'CLc1':'1959', #2000 UTC

@@ -314,7 +314,9 @@ def run_backtest_portfolio_preloaded(TradeMethod,
                                                   histroy_intraday_data_pkl,
                                                   give_obj_name=give_obj_name,
                                                   get_obj_quantity=get_obj_quantity,
-                                                  plot_or_not=plot_or_not)
+                                                  plot_or_not=plot_or_not,
+                                                  open_hr_dict=open_hr_dict,
+                                                  close_hr_dict=close_hr_dict)
     
     t2 = time.time()-t1
     print("It takes {} seconds to run the backtest".format(t2))

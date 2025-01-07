@@ -12,6 +12,7 @@ It pulls data from external servers to the local directory.
 import datetime as datetime
 import pandas as pd
 import pickle
+from pathlib import Path
 
 import EC_tools.read as read
 import EC_tools.utility as util
@@ -26,14 +27,16 @@ from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST,\
                                   APC_FILE_MONTHLY_LOC, APC_FILE_WEEKLY_30AVG_LOC
                                   
 from crudeoil_future_const import DAILY_APC_PKL, DAILY_DATA_PKL, \
-                             DAILY_MINUTE_DATA_PKL, APC_FILE_LOC, \
-                             HISTORY_DAILY_FILE_LOC, HISTORY_MINTUE_FILE_LOC,\
-                             MONTHS_TO_SYMBOLS, DATA_FILEPATH
+                                  DAILY_MINUTE_DATA_PKL, APC_FILE_LOC, \
+                                  HISTORY_DAILY_FILE_LOC, \
+                                  HISTORY_MINTUE_FILE_LOC,\
+                                  MONTHS_TO_SYMBOLS, DATA_FILEPATH,\
+                                  PORTARA_CONTINUOUS_MINTUE_FILE_LOC,\
+                                  PORTARA_CONITNUOUS_DAILY_FILE_LOC
 
 import os
 from dotenv import load_dotenv 
 
-from pathlib import Path
 
 # Get the base directory
 basepath = Path()
@@ -238,8 +241,6 @@ def download_latest_APC_list(auth_pack: dict,
     
     return "All APC files downloaded!"
 
-from pathlib import Path
-
 def create_rolling_futures_Portara(start_date: datetime.datetime,
                                    start_roll_date: datetime.datetime,
                                    symbol: str, forward: int,
@@ -260,8 +261,7 @@ def create_rolling_futures_Portara(start_date: datetime.datetime,
     path = DATA_FILEPATH+"/roll_exp"
     folder_name = "/Day/"
     
-    first_filename_path = str(Path(path)) + str(folder_name) + symbol +\
-                          initial_roll_year + initial_roll_month +'.txt'
+    first_filename_path = str(Path(path)) + str(folder_name) + initial_roll_year + initial_roll_month +'.txt'
     first_P_data = read_funcs[rolling_timescale](first_filename_path, 
                                                  col_format = col_format_dict['Day'])
 
@@ -272,7 +272,7 @@ def create_rolling_futures_Portara(start_date: datetime.datetime,
     master_table = first_P_data[:-1]
     up_pt = first_P_data['Date'].iloc[-1] 
     i = 1
-    while i <3:
+    while i <2:
         temp_roll_date = up_pt + datetime.timedelta(days=forward+30)
         print('start_date',i, temp_roll_date)
 
@@ -315,12 +315,36 @@ def create_rolling_futures_Portara(start_date: datetime.datetime,
     print(master_table)
     return
 
-def update_rolling_futures_Portara(old_filename):
-    # CSV (Portara format)-> CSV (c1c2 Foramt)
-    # WIP
-    # a function to download the newest Portara data
-    return None
+def copy_Portara_data():
+    symbols = list(PORTARA_CONTINUOUS_MINTUE_FILE_LOC.keys())
+    print("Copying continuous data to data folder.")
+    for symbol in symbols:
+        #print("{} {}".format(PORTARA_CONITNUOUS_DAILY_FILE_LOC[symbol],
+        #                              HISTORY_DAILY_FILE_LOC[symbol]))
+        os.system('copy "{}" "{}"'.format(PORTARA_CONITNUOUS_DAILY_FILE_LOC[symbol],
+                                          HISTORY_DAILY_FILE_LOC[symbol]))
+        os.system('copy "{}" "{}"'.format(PORTARA_CONTINUOUS_MINTUE_FILE_LOC[symbol],
+                                          HISTORY_MINTUE_FILE_LOC[symbol]))
+    print("Copy Complete!!")
 
+
+# =============================================================================
+#         
+# def update_rolling_futures_Portara(old_filename):
+#    # CSV (Portara format)-> CSV (c1c2 Foramt)
+#    # WIP
+#    # a function to download the newest Portara data
+#    return None
+# def rolling_Portara_futures():
+#     return
+# 
+# def update_Portara_data(old_filename):
+#     # CSV (Portara format)-> CSV (c1c2 Foramt)
+#     # WIP
+#     # a function to download the newest Portara data
+#     return None
+# 
+# =============================================================================
 @util.time_it
 def update_pkl(old_pkl_filename: str,
                file_loc_dict: dict,
@@ -366,36 +390,32 @@ def build_db():
     return
 
 def main():
-    # RUn update
+    # RUN update
     # First check if the old source data exists
     
     # Second update the source data
-        # update APC,
-        # update Portara
-        
-    # Download the latest APC to CSV source files
+    # update APC,
     download_latest_APC_list(AUTH_PACK, list(APC_FILE_LOC.values()), CAT_LIST, 
-                             KEYWORDS_LIST, SYMBOL_LIST, fast_dl=False)   
-    # Roll Portara data
-    
+                             KEYWORDS_LIST, SYMBOL_LIST, fast_dl=True)   
+    # update Portara
+    # Roll Portara data # new just used to roll function in Portara
+    # Copy all new continuous data from Portara to the master data folder.
+    #copy_Portara_data()
     
     # Third update the pkl data
-        # update Portara
-        
     # Update APC pkl
     update_pkl(DAILY_APC_PKL, APC_FILE_LOC, ["PERIOD"], 
                read.read_reformat_APC_data)
     # Update Portara Daily data (crudeoil futures) pkl
-    update_pkl(DAILY_DATA_PKL, HISTORY_DAILY_FILE_LOC, ["Date"], 
-               read.read_reformat_Portara_daily_data)
+    #update_pkl(DAILY_DATA_PKL, HISTORY_DAILY_FILE_LOC, ["Date"], 
+    #           read.read_reformat_Portara_daily_data)
     # Update Portara Intraday minute data (crudeoil futures) pkl
-    update_pkl(DAILY_MINUTE_DATA_PKL, HISTORY_MINTUE_FILE_LOC, ["Date"], 
-               read.read_reformat_Portara_minute_data)
-    
-    # Fourth update the database
+    #update_pkl(DAILY_MINUTE_DATA_PKL, HISTORY_MINTUE_FILE_LOC, ["Date"], 
+    #           read.read_reformat_Portara_minute_data)
     
     
-    return
+    # Fourth update the data base
+    return "Update Complete"
 
 if __name__ == "__main__": 
     SAVE_FILENAME_LIST = list(APC_FILE_LOC.values()) # Daily APC for 10 assets (front, second months)
@@ -418,10 +438,11 @@ if __name__ == "__main__":
 #     keywords_list = ["WTI","Heating", "Gasoline",'Brent', "gasoil"]
 #     symbol_list = ['CLc2', 'HOc2', 'RBc2', 'QOc2', 'QPc2']
 # =============================================================================
+    main()
 
     # fast download on the 10 main crudeoil future contracts
-    download_latest_APC_list(AUTH_PACK, SAVE_FILENAME_LIST, CAT_LIST, 
-                             KEYWORDS_LIST, SYMBOL_LIST, fast_dl=True)   
+    #download_latest_APC_list(AUTH_PACK, SAVE_FILENAME_LIST, CAT_LIST, 
+    #                         KEYWORDS_LIST, SYMBOL_LIST, fast_dl=True)   
     
 
     # slow downloading all argus APC from their server
