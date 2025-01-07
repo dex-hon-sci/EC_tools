@@ -1837,7 +1837,7 @@ def find_closest_price_generic(data: pd.DataFrame,
                                direction: str ='forward', 
                                step: int = 1, 
                                search_time: int = 1000) -> \
-                               tuple[datetime.datetime, float]: # WIP
+                               tuple[datetime.datetime, float]: 
     
     # If the input is forward, the loop search forward a unit of minute (step)
     if direction == 'forward':
@@ -1850,17 +1850,21 @@ def find_closest_price_generic(data: pd.DataFrame,
     target_time = datetime.datetime.strptime(target_time, "%H%M").time()
     target_time_dt = datetime.datetime.combine(datetime.datetime.today(), 
                     target_time)
+    #print("target_time_dt", target_time_dt.time())
     
     #initial estimation of the target price
     target_price = data[data[time_proxy] == target_time_dt.time()][price_proxy]
     #loop through the next 30 minutes to find the opening price    
-    for i in range(search_time):    
+    for i in range(search_time):   
+        #print("target_time",target_time)
+
         if len(target_price) == 0:
             
             delta = datetime.timedelta(minutes = step)
             
-            target_time = (target_time_dt + delta).time()
-            
-            target_price = data[data[time_proxy] == target_time][price_proxy]
-            
+            target_time_dt = target_time_dt + delta
+
+            target_price = data[data[time_proxy] == target_time_dt.time()][price_proxy]
+            print(target_time_dt, target_time_dt.time(), target_price)
+
     return target_time, target_price
