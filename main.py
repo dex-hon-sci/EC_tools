@@ -60,9 +60,8 @@ def load_source_data() -> tuple:
 
     SAVE_FILENAME_LOC = TEST_FILE_LOC #ARGUS_BENCHMARK_SIGNAL_FILE_LOC #TEST_FILE_LOC
     
-    return SIGNAL_PKL, HISTORY_DAILY_PKL, \
-                HISTORY_MINUTE_PKL,  \
-                OPENPRICE_PKL, SAVE_FILENAME_LOC
+    return SIGNAL_PKL, HISTORY_DAILY_PKL, HISTORY_MINUTE_PKL, OPENPRICE_PKL,\
+           SAVE_FILENAME_LOC
 
 #@jit(nopython=True)
 #@util.time_it
@@ -74,7 +73,6 @@ def run_main(strategy_name,
              give_obj_name: str = 'USD',
              get_obj_quantity: int = 1,
              preprocess: bool = False, 
-             runtype: str = "list",
              signal_gen_runtype: str = "preload",
              backtest_runtype: str = "preload",
              plot_PNL_or_not: bool = False) -> None:
@@ -88,7 +86,7 @@ def run_main(strategy_name,
     if preprocess:
         print("===============Data Preprocessing=============")
         # preprocess merge raw CSV data into pkl format 
-        run_preprocess()
+        #run_preprocess()
     
     print("=========Generating Buy/Sell Signals=======")
     
@@ -96,7 +94,7 @@ def run_main(strategy_name,
     strategy = MR_STRATEGIES_0[strategy_name]
     #SAVE_SIGNAL_FILENAME_LIST = list(FILE_LOC.values())
    
-    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/routine_updates/20241007_argusexact_cross_P20S35_signal.csv'
+    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/beyondmarketopen/20240813_argusexact_cross_P255S10_signal.csv'
 
     
     run_gen_signal_bulk(strategy, FILE_LOC,
@@ -105,7 +103,7 @@ def run_main(strategy_name,
                         sell_range = sell_range,
                         runtype = signal_gen_runtype,
                         master_signal_filename = MASTER_SIGNAL_FILENAME,
-                        open_hr_dict = OPEN_HR_DICT, 
+                        open_hr_dict = WRONG_OPEN_HR_DICT, 
                         close_hr_dict = CLOSE_HR_DICT, 
                         quantile= [0.05,0.1,0.25,0.4,0.5,0.6,0.75,0.9,0.95],
                         save_or_not=True,
@@ -114,7 +112,7 @@ def run_main(strategy_name,
 
     print("=========Running Back-Testing =============")
     
-    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/routine_updates/20241007_argusexact_cross_P20S35_PNL.pkl' 
+    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/beyondmarketopen/20240813_argusexact_cross_P25S10_PNL.pkl' 
     #SAVE_PNL_FILENAME_LIST = FILE_PNL_LOC
 
     run_backtest_bulk(trade_method, 
@@ -125,7 +123,7 @@ def run_main(strategy_name,
                       master_pnl_filename=MASTER_PNL_FILENAME,
                       give_obj_name = give_obj_name,
                       get_obj_quantity = get_obj_quantity,
-                      open_hr_dict = OPEN_HR_DICT, 
+                      open_hr_dict = WRONG_OPEN_HR_DICT, 
                       close_hr_dict= CLOSE_HR_DICT,
                       save_or_not=True, 
                       merge_or_not=True,
@@ -142,12 +140,11 @@ def run_main(strategy_name,
 
         P = open_portfolio(MASTER_PNL_FILENAME)
         PL = PortfolioLog(P)
-        PL.tradebook_filename = RESULT_FILEPATH + "/routine_updates/20241007_argusexact_cross_P20S35_PNL.csv"
+        PL.tradebook_filename = RESULT_FILEPATH + "/beyondmarketopen/20240813_argusexact_cross_P25S10_PNL.csv"
         PL.render_tradebook()
         PL.render_tradebook_xlsx()
         
-    if plot_PNL_or_not:
-    	pass
+    if plot_PNL_or_not: 	pass
      
 
 if __name__ == "__main__":
@@ -157,15 +154,15 @@ if __name__ == "__main__":
     #end_date = "2024-06-28"
     
     start_date = "2021-01-11"
-    end_date = "2024-10-04"
+    end_date = "2024-08-14"
     
     run_main('argus_exact', 
              OneTradePerDay, #OneTradePerDay, #onetrade_simple, #BiDirectionalTrade, 
              start_date, end_date,         
              #buy_range = (-0.1, 0.1, -0.45), 
              #sell_range = (0.1, -0.1, +0.45),
-             buy_range = ([0.25,0.4],[0.6,0.95],0.05),
-             sell_range = ([0.6,0.75],[0.4,0.05],0.95), 
+             buy_range = ([0.25,0.4],[0.65,0.95],0.3),
+             sell_range = ([0.6,0.75],[0.05,0.35],0.7), 
              give_obj_name = 'USD',
              get_obj_quantity = 1,
              preprocess = False, 

@@ -208,7 +208,7 @@ OIL_FUTURES_FEE = {'name':'USD', 'quantity': 15.0,
 def make_path_dict(folder_name: str, file_prefix: str, 
                    file_suffix: str = '.csv',  
                    path: str = RESULT_FILEPATH,
-                   syms: list = SYMBOL_LIST): 
+                   syms: list = SYMBOL_LIST)->dict: 
     
     bucket = dict()
     for sym in syms: 
@@ -219,7 +219,7 @@ def make_path_dict(folder_name: str, file_prefix: str,
 def make_path_list(folder_name: str, file_prefix: str, 
                    file_suffix: str = '.csv',  
                    path: str = RESULT_FILEPATH,
-                   syms: list = SYMBOL_LIST): #WIP
+                   syms: list = SYMBOL_LIST)->list: #WIP
     bucket = list()
     for sym in syms: 
         file_path = Path(path) / folder_name 
