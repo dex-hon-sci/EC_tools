@@ -945,7 +945,7 @@ def find_crossover(input_array: np.ndarray,
     # IF delta[i] < delta_lag[i], then the price drop below threshold
     indices_drop_below = np.where(np.sign(delta) < np.sign(delta_lag))
 
-    # Produce a dic of indicies for below and above
+    # Produce a dict of indicies for below and above
     return {'rise': indices_rise_above, 
             'drop': indices_drop_below}
 #tested

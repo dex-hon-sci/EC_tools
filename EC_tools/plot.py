@@ -748,7 +748,7 @@ if __name__ == "__main__":
     #FILENSME_BUYSELL_SIGNALS = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_CLc1_full.csv"
     #SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_CLc1.csv"   
     
-    symbol = 'QOc1'
+    symbol = 'CLc1'
 
     date_interest = "2024-08-13"
     

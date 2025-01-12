@@ -75,8 +75,19 @@ def run_main(strategy_name,
              preprocess: bool = False, 
              signal_gen_runtype: str = "preload",
              backtest_runtype: str = "preload",
-             plot_PNL_or_not: bool = False) -> None:
+             plot_PNL_or_not: bool = False, **kwargs) -> None:
     
+    default_kwargs = {'give_obj_name':'USD',
+                      'get_obj_quantity': 1,
+                      'open_hr_dict': OPEN_HR_DICT, 
+                      'close_hr_dict': CLOSE_HR_DICT, 
+                      'preprocess': False, 
+                      'signal_gen_runtype': "preload", 
+                      'backtest_runtype': "preload", 
+                      'plot_PNL_or_not':False}
+    
+    kwargs = dict(default_kwargs, **kwargs)
+
     
     FILE_LOC = TEST_FILE_LOC
     FILE_PNL_LOC = TEST_FILE_PNL_LOC
