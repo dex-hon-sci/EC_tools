@@ -28,7 +28,7 @@ from crudeoil_future_const import TEST_FILE_LOC, DAILY_DATA_PKL, \
                                   OPEN_HR_DICT, CLOSE_HR_DICT, RESULT_FILEPATH,\
                                   SYMBOL_LIST
                                   
-
+from main import run_main
 
 
 @util.time_it
@@ -77,12 +77,78 @@ def make_path_list(folder_name: str = '',
         bucket.append(str(file_path / str(file_prefix[i] + sym + file_suffix[i])))
     return bucket
            
-def run_main(strategy_name, 
-             trade_method,
-             start_date: str, end_date: str,         
-             buy_range: tuple = ([0.2,0.25],[0.75,0.8],0.05),
-             sell_range: tuple = ([0.75,0.8],[0.2,0.25],0.95), 
-             **kwargs):
+
+def build_filename_matrix(x_axis_list: list[str], 
+                          y_axis_list: list[str],
+                          folder_name: str = 'heatmap', 
+                          file_prefix: str = 'PNL_argusexact_',
+                          file_suffix: str = '_.xlsx'):
+    master_list = []
+    for i in range(len(y_axis_list)):
+        temp = [ele + y_axis_list[i] for ele in x_axis_list]
+        #print(temp)
+        Q = make_path_list(folder_name = folder_name, 
+                           file_prefix=file_prefix,
+                           file_suffix=file_suffix, 
+                           syms=temp)
+        master_list.append(Q)
+    
+    
+    filename_matrix = np.array(master_list)
+    #print(filename_matrix)
+    return filename_matrix
+
+    
+def make_timedict_inputs(initial_dict: dict, steps: int = 5, 
+                         time_delta: int = 30, 
+                         direction: str = 'negative') -> list:
+    
+    master_dict = dict()
+    syms = list(initial_dict.keys())
+    for sym in syms:
+        input_str = initial_dict[sym]
+        
+        master_list = []
+        for i in range(steps):
+            if direction == 'positive':
+                new_data = datetime.datetime.strptime(input_str, "%H%M") +\
+                           datetime.timedelta(minutes=time_delta*i)
+            elif direction == 'negative':
+                new_data = datetime.datetime.strptime(input_str, "%H%M") -\
+                           datetime.timedelta(minutes=time_delta*i)
+            else:
+                raise Exception("Input must be either Positive or Negative")
+            print(i,new_data)
+            new_data_str = new_data.strftime('%H%M')
+            master_list.append(new_data_str)
+            
+        master_dict[sym]=master_list
+        
+    # fracgmentation
+    frag_list = [{sym: master_dict[sym][i] for sym in syms} for i in range(steps)]
+    
+    # return a matrix of dict with str in it
+    return frag_list    
+
+def build_para_matrix(x_axis_list: list, 
+                      y_axis_list: list) -> np.array:
+    master_list = []
+    for i in range(len(y_axis_list)):
+        temp = [(ele, y_axis_list[i]) for ele in x_axis_list]
+        master_list.append(temp)
+    para_matrix = np.array(master_list)
+    return para_matrix
+
+def run_seq_backtest(strategy_name, 
+                     trade_method,
+                     para_matrix,
+                     signal_filename_matrix,
+                     portfolio_filename_matrix,
+                     tradebook_filename_matrix,
+                     start_date: str, end_date: str,         
+                     buy_range: tuple = ([0.2,0.25],[0.75,0.8],0.05),
+                     sell_range: tuple = ([0.75,0.8],[0.2,0.25],0.95), 
+                     **kwargs): # temp solution
     
     default_kwargs = {'give_obj_name':'USD',
                       'get_obj_quantity': 1,
@@ -93,18 +159,24 @@ def run_main(strategy_name,
                       'backtest_runtype': "preload", 
                       'plot_PNL_or_not':False}
     
-    kwargs = dict(default_kwargs,**kwargs)
+    kwargs = dict(default_kwargs, **kwargs)
     
     # the default is only one loop
     # it takes three sets of filename and parameters
     FILE_LOC = TEST_FILE_LOC
     FILE_PNL_LOC = TEST_FILE_PNL_LOC
         
-    signal_filenames, portfolio_filenames, tradebook_filenames = [],[],[]
+    parameters = para_matrix[4]
+
+    signal_filenames = signal_filename_matrix[4]
+    portfolio_filenames = portfolio_filename_matrix[4]
+    tradebook_filenames = tradebook_filename_matrix[4]
+     
+    for parameter, signal_filename, portfolio_filename, tradebook_filename \
+        in zip(parameters, signal_filenames, portfolio_filenames, \
+               tradebook_filenames):
     
-    for signal_filename, portfolio_filename, tradebook_filename \
-        in zip(signal_filenames, portfolio_filenames, tradebook_filenames):
-        
+            
         print("=========Generating Buy/Sell Signals=======")
         # Run signal generations
         #strategy_name = 'argus_exact_mode'
@@ -112,15 +184,14 @@ def run_main(strategy_name,
        
         MASTER_SIGNAL_FILENAME = signal_filename
     
-        
         run_gen_signal_bulk(strategy, FILE_LOC,
                             start_date, end_date,
                             buy_range = buy_range, 
                             sell_range = sell_range,
                             runtype = kwargs['signal_gen_runtype'],
                             master_signal_filename = MASTER_SIGNAL_FILENAME,
-                            open_hr_dict = kwargs['open_hr_dict'], 
-                            close_hr_dict = kwargs['close_hr_dict'], 
+                            open_hr_dict = parameter[0], #kwargs['open_hr_dict'], 
+                            close_hr_dict = parameter[1], #kwargs['close_hr_dict'], 
                             quantile= [0.05,0.1,0.25,0.4,0.5,0.6,0.75,0.9,0.95],
                             save_or_not=True,
                             merge_or_not=True)
@@ -137,8 +208,8 @@ def run_main(strategy_name,
                           master_pnl_filename=MASTER_PNL_FILENAME,
                           give_obj_name = kwargs['give_obj_name'],
                           get_obj_quantity = kwargs['get_obj_quantity'],
-                          open_hr_dict = kwargs['open_hr_dict'], 
-                          close_hr_dict= kwargs['close_hr_dict'],
+                          open_hr_dict = parameter[0], #kwargs['open_hr_dict'], 
+                          close_hr_dict = parameter[1], #kwargs['close_hr_dict'], 
                           save_or_not=True, 
                           merge_or_not=True,
                           loop_type= LoopType.CROSSOVER,
@@ -169,66 +240,7 @@ if __name__ == "__main__":
     
     # make Open hour and Close hr dict
 
-    def build_filename_matrix(x_axis_list: list[str], 
-                              y_axis_list: list[str],
-                              folder_name: str = 'heatmap', 
-                              file_prefix: str = 'PNL_argusexact_',
-                              file_suffix: str = '_.xlsx'):
-        master_list = []
-        for i in range(len(y_axis_list)):
-            temp = [ele + y_axis_list[i] for ele in x_axis_list]
-            #print(temp)
-            Q = make_path_list(folder_name = folder_name, 
-                               file_prefix=file_prefix,
-                               file_suffix=file_suffix, 
-                               syms=temp)
-            master_list.append(Q)
-        
-        
-        filename_matrix = np.array(master_list)
-        #print(filename_matrix)
-        return filename_matrix
-    
-    
-    def make_timedict_inputs(initial_dict: dict, steps: int = 5, 
-                             time_delta: int = 30, 
-                             direction: str = 'negative') -> list:
-        
-        master_dict = dict()
-        syms = list(initial_dict.keys())
-        for sym in syms:
-            input_str = initial_dict[sym]
-            
-            master_list = []
-            for i in range(steps):
-                if direction == 'positive':
-                    new_data = datetime.datetime.strptime(input_str, "%H%M") +\
-                               datetime.timedelta(minutes=time_delta*i)
-                elif direction == 'negative':
-                    new_data = datetime.datetime.strptime(input_str, "%H%M") -\
-                               datetime.timedelta(minutes=time_delta*i)
-                else:
-                    raise Exception("Input must be either Positive or Negative")
-                print(i,new_data)
-                new_data_str = new_data.strftime('%H%M')
-                master_list.append(new_data_str)
-                
-            master_dict[sym]=master_list
-            
-        # fracgmentation
-        frag_list = [{sym: master_dict[sym][i] for sym in syms} for i in range(steps)]
-        
-        # return a matrix of dict with str in it
-        return frag_list    
-    
-    def build_para_matrix(x_axis_list: list, 
-                          y_axis_list: list) -> np.array:
-        master_list = []
-        for i in range(len(y_axis_list)):
-            temp = [(ele, y_axis_list[i]) for ele in x_axis_list]
-            master_list.append(temp)
-        para_matrix = np.array(master_list)
-        return para_matrix
+
     
     openhr_str = ['Open0h0m','Open0h30m',
                   'Open1h0m','Open1h30m',
@@ -266,28 +278,22 @@ if __name__ == "__main__":
     para_matrix = build_para_matrix(OPEN_HR_VAR, CLOSE_HR_VAR)
     
     
-    print('signal',signal_filename_matrix)
-    print('port',portfolio_filename_matrix)
-    print('tb',tradebook_filename_matrix)
-    print('para',para_matrix)
-    
-    
-    
 # =============================================================================
-#     hour_symbol = ['Open0h0mClose0h0m', 'Open0h0mClose0h0m', 'Open0h0mClose0h0m'] 
-#     # make filenames 
-#     Q = make_path_list('beyondmarketopen',
-#                    file_prefix = ['20240813_argusexact_cross_TP25SL10_', 
-#                                   '20240813_argusexact_cross_TP25SL10_',
-#                                   '20240813_argusexact_cross_TP25SL10_'],
-#                    file_suffix = ['_signal.csv', '_PNL.pkl', '_PNL.csv'],
-#                    syms=hour_symbol)
+#     print('signal',signal_filename_matrix)
+#     print('port',portfolio_filename_matrix)
+#     print('tb',tradebook_filename_matrix)
+#     print('para',para_matrix)
 #     
 # =============================================================================
+    run_seq_backtest('argus_exact', 
+             OneTradePerDay,
+             para_matrix,
+             signal_filename_matrix,
+             portfolio_filename_matrix,
+             tradebook_filename_matrix,
+             start_date = start_date, 
+             end_date = end_date,         
+             buy_range =([0.2,0.4],[0.65,0.8],0.3),
+             sell_range = ([0.6,0.8],[0.2,0.35],0.7))
+    
 
-
-    #run_main('argus_exact', 
-    #         OneTradePerDay,  
-    #         start_date, end_date,         
-    #         buy_range = ([0.25,0.4],[0.65,0.95],0.3),
-    #         sell_range = ([0.6,0.75],[0.05,0.35],0.7))
