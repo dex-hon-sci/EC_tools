@@ -388,25 +388,46 @@ if __name__=='__main__':
     
     # (4) 
     argusexact_cross_P25S10_PNL = "/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap/PNL_argusexact_G25S10_.xlsx"
-    argusexact_cross_P25S10_PNL_early = "/home/dexter/Euler_Capital_codes/EC_tools/results/beyondmarketopen/20240813_argusexact_cross_P25S10_PNL_.xlsx"
-
-    strategy_date_list2 = [extract_PNLplot_input(argusexact_cross_P25S10_PNL, date_col="Entry_Date",
+    argusexact_cross_P25S10_PNL_early = "/home/dexter/Euler_Capital_codes/EC_tools/results/beyondmarketopen/20240813_argusexact_cross_TP25SL10_Open2h0mClose0h0m_PNL_.xlsx"
+    argusexact_cross_P25S10_PNL_early2 = "/home/dexter/Euler_Capital_codes/EC_tools/results/beyondmarketopen2/20240813_argusexact_cross_TP25SL10_Open2h0mClose0h0m_PNL_.xlsx"
+    
+    strategy_date_list2 = [extract_PNLplot_input(argusexact_cross_P25S10_PNL, 
+                                                 date_col="Entry_Date",
+                                                 sheet_name='QPc2',
+                                                 val_col='cumulative P&L from trades for contracts (x 50)')[0],
+                          extract_PNLplot_input(argusexact_cross_P25S10_PNL_early, 
+                                                date_col="Entry_Date",
+                                                sheet_name='QPc2',
                                                 val_col='cumulative P&L from trades for contracts (x 50)')[0],
-                          extract_PNLplot_input(argusexact_cross_P25S10_PNL_early, date_col="Entry_Date",
+                          extract_PNLplot_input(argusexact_cross_P25S10_PNL_early2, 
+                                                date_col="Entry_Date",
+                                                sheet_name='QPc2',
                                                 val_col='cumulative P&L from trades for contracts (x 50)')[0]
+
                           ]
-    strategy_data_list2 = [extract_PNLplot_input(argusexact_cross_P25S10_PNL, date_col="Entry_Date",
+    strategy_data_list2 = [extract_PNLplot_input(argusexact_cross_P25S10_PNL, 
+                                                 date_col="Entry_Date",
+                                                 sheet_name='QPc2',
+                                                 val_col='cumulative P&L from trades for contracts (x 50)')[1],
+                          extract_PNLplot_input(argusexact_cross_P25S10_PNL_early, 
+                                                date_col="Entry_Date",
+                                                sheet_name='QPc2',
                                                 val_col='cumulative P&L from trades for contracts (x 50)')[1],
-                          extract_PNLplot_input(argusexact_cross_P25S10_PNL_early, date_col="Entry_Date",
+                          extract_PNLplot_input(argusexact_cross_P25S10_PNL_early2, 
+                                                date_col="Entry_Date",
+                                                sheet_name='QPc2',
                                                 val_col='cumulative P&L from trades for contracts (x 50)')[1]
+
                           ]
-    strategy_label_list2 = ['Optimised MR strategy (normal market open)', 
-                           'Optimised MR strategy (early market open)'
+    strategy_label_list2 = ['Market open at 8:00 UTC', 
+                           'Market open at 6:00 UTC',
+                           'Market open at 3:30 UTC'
                            ]
-    strategy_col_list2 = ['w','w']
-    strategy_line_list2 = ['solid','dashed']                      
+    strategy_col_list2 = ['w','r','b']
+    strategy_line_list2 = ['solid','solid','solid']                      
     # Plot different strategies cumulative PNL
     twopanel_plot([], [], [], label='',
+                  plot_title = 'Cumulative PNL for QPc2',
                   sub_x_list=strategy_date_list2,
                   sub_y1_list=strategy_data_list2,
                   sub_label_list = strategy_label_list2,

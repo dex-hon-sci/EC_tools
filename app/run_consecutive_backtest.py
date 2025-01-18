@@ -26,7 +26,7 @@ from crudeoil_future_const import TEST_FILE_LOC, DAILY_DATA_PKL, \
                                   WEEKLY_30AVG_APC_PKL, DAILY_CUMAVG_MONTH_PKL,\
                                   MINUTE_CUMAVG_MONTH_PKL, TEST_FILE_PNL_LOC,\
                                   OPEN_HR_DICT, CLOSE_HR_DICT, RESULT_FILEPATH,\
-                                  SYMBOL_LIST
+                                  SYMBOL_LIST, WRONG_OPEN_HR_DICT
                                   
 from main import run_main
 
@@ -257,20 +257,20 @@ if __name__ == "__main__":
     
     # Build filenames for signals
     signal_filename_matrix = build_filename_matrix(openhr_str, closehr_str,
-                                                    folder_name='beyondmarketopen',
+                                                    folder_name='beyondmarketopen2',
                                                     file_prefix='20240813_argusexact_cross_TP25SL10_',
                                                     file_suffix='_signal.csv')
     portfolio_filename_matrix = build_filename_matrix(openhr_str, closehr_str,
-                                                      folder_name='beyondmarketopen',
+                                                      folder_name='beyondmarketopen2',
                                                       file_prefix='20240813_argusexact_cross_TP25SL10_',
                                                       file_suffix='_PNL.pkl')
     tradebook_filename_matrix = build_filename_matrix(openhr_str, closehr_str,
-                                                      folder_name='beyondmarketopen',
+                                                      folder_name='beyondmarketopen2',
                                                       file_prefix='20240813_argusexact_cross_TP25SL10_',
                                                       file_suffix='_PNL.csv')
     # make a list of inputs variations. In this case, it generate a list of 
     # Opening or closing hours with some given steps
-    OPEN_HR_VAR = make_timedict_inputs(OPEN_HR_DICT, steps=5, time_delta=30)
+    OPEN_HR_VAR = make_timedict_inputs(WRONG_OPEN_HR_DICT, steps=5, time_delta=30)
     CLOSE_HR_VAR = make_timedict_inputs(CLOSE_HR_DICT, steps=5, time_delta=30, 
                                         direction='positive')
 
