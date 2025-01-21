@@ -783,8 +783,8 @@ class PortfolioLog(Portfolio):
         
         for i, ele in enumerate(PP):
             #print(i)
-            trade_id = ele[0].pos_id
-            direction = re.sub(r'\-(.*)', '', ele[0].pos_type)
+            trade_id = ele[0].order_id
+            direction = re.sub(r'\-(.*)', '', ele[0].order_type)
             symbol = ele[0].get_obj['name']
             commodity_name = SYMBOL_KEYWORDS_DICT[symbol]
             entry_date = ele[0].fill_time.date()

@@ -62,16 +62,16 @@ class Order(object):
     portfolio: Portfolio = None
     
     # optional asset control
-    size: float = 1
+    size: float = 1 # contract lots
     fee: dict = None
-    pos_type: str = 'Long-Buy'
+    order_type: str = 'Long-Buy'
     
     # order attribute adjustable
     open_time: datetime = datetime.datetime.now() 
     fill_time: datetime = None
     void_time: datetime = None
     auto_adjust: bool = True
-    pos_id: str = util.random_string()  
+    order_id: str = util.random_string()  
     #misc: dict = field(default_factory={'None'})
     
     def __post_init__(self, 
@@ -188,7 +188,7 @@ class ExecuteOrder(object):
                             Portfolio.")
     def fill_pos(self, 
                  fill_time: datetime = datetime.datetime.now(), 
-                 pos_type: str ='Long-Buy') -> None:
+                 order_type: str ='Long-Buy') -> None:
         """
         Fill order method.
 
@@ -218,7 +218,7 @@ class ExecuteOrder(object):
         # simultaneous entry results in fault calculation in the Portfolio method 
         delay_time = datetime.timedelta(seconds=0.1) 
 
-        if pos_type == 'Long-Buy':
+        if order_type == 'Long-Buy':
             #print('Execute Long-buy order.')
             
             # Pay pre-existing asset
@@ -233,7 +233,7 @@ class ExecuteOrder(object):
             #print(self.order.get_obj)
 
             
-        elif pos_type == 'Long-Sell':
+        elif order_type == 'Long-Sell':
             #print('Execute Long-sell order.')
 
             # Pay pre-existing asset
@@ -247,7 +247,7 @@ class ExecuteOrder(object):
 
             #print(self.order.give_obj)
 
-        elif pos_type == 'Short-Borrow':
+        elif order_type == 'Short-Borrow':
             #print('Execute Short-Borrow order.')
 
             # The sub method does not allow overwithdraw. 
@@ -274,7 +274,7 @@ class ExecuteOrder(object):
             self.order.portfolio.add(debt_obj, datetime = 
                                         fill_time + delay_time*3) # debt object
 
-        elif pos_type == 'Short-Buyback':
+        elif order_type == 'Short-Buyback':
             #print('Execute Short-Buyback order.')
 
             payback_debt_obj = self.order.get_obj.copy() #replace(self.order.get_obj)

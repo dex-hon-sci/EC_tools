@@ -44,7 +44,7 @@ class Trade(Protocol):
                  save_only_exec_pos: bool = False,
                  auto_unload_all: bool = False):
         
-        self._portfolio = portfolio
+        self._portfolio = portfolio # the portfolio we operate on
         self._close_exit_or_not = close_exit_or_not
         self._save_only_exec_pos = save_only_exec_pos
         self._auto_unload_all = auto_unload_all
@@ -80,7 +80,7 @@ class Trade(Protocol):
                      target_price: float, 
                      size: int = 1, 
                      fee: int | float = None, 
-                     pos_type: str = 'Long',
+                     order_type: str = 'Long',
                      open_time: datetime.datetime = datetime.datetime.now(),
                      trade_id: int = 0):
         """
@@ -136,12 +136,12 @@ class Trade(Protocol):
         elif fee == None:
             new_fee = None
             
-        # Create a position
+        # Create an order
         order = Order(give_obj, get_obj, target_price, 
                        portfolio= self._portfolio, size = size,
-                       fee = new_fee, pos_type = pos_type, 
+                       fee = new_fee, order_type = order_type, 
                        open_time = open_time,
-                       pos_id = trade_id)
+                       order_id = trade_id)
 
         return order
 
@@ -234,7 +234,7 @@ class OneTradePerDay(Trade):
                        get_obj_name: str, 
                        get_obj_quantity: int | float, 
                        EES_target_list: list, 
-                       pos_type: str,
+                       order_type: str,
                        size: int | float = 1, 
                        fee: dict = None, 
                        open_time: datetime.datetime = datetime.datetime.now())\
@@ -253,7 +253,7 @@ class OneTradePerDay(Trade):
         EES_target_list : list
             A list of target EES values [entry_price, exit_price, 
                                          stop_price, close_price].
-        pos_type : str
+        order_type : str
             The type of position to be opened.
 
         Returns
@@ -262,13 +262,13 @@ class OneTradePerDay(Trade):
             The position list: [entry_pos, exit_pos, stop_pos, close_pos].
 
         """
-        if pos_type == 'Long':
-            pos_type1 = 'Long-Buy'
-            pos_type2 = 'Long-Sell'
+        if order_type == 'Long':
+            order_type1 = 'Long-Buy'
+            order_type2 = 'Long-Sell'
 
-        elif pos_type == 'Short':
-            pos_type1 = 'Short-Borrow'
-            pos_type2 = 'Short-Buyback'
+        elif order_type == 'Short':
+            order_type1 = 'Short-Borrow'
+            order_type2 = 'Short-Buyback'
             
         # a method that execute the one trade per day based on the cases of the EES
         entry_price, exit_price = EES_target_list[0], EES_target_list[1]
@@ -279,21 +279,21 @@ class OneTradePerDay(Trade):
         entry_order = super().add_order(give_obj_name, get_obj_name, 
                                          get_obj_quantity, entry_price, 
                                          size = size, fee = None, 
-                                         pos_type = pos_type1,
+                                         order_type = order_type1,
                                          open_time=open_time,
                                          trade_id=self.trade_id)
 
         exit_order = super().add_order(give_obj_name, get_obj_name, 
                                         get_obj_quantity, exit_price, 
                                         size = size, fee = fee, 
-                                        pos_type = pos_type2,
+                                        order_type = order_type2,
                                         open_time=open_time,
                                         trade_id=self.trade_id)
 
         stop_order = super().add_order(give_obj_name, get_obj_name, 
                                         get_obj_quantity, stop_price, 
                                         size = size, fee = fee, 
-                                        pos_type = pos_type2,
+                                        order_type = order_type2,
                                         open_time=open_time,
                                         trade_id=self.trade_id)
         
@@ -301,7 +301,7 @@ class OneTradePerDay(Trade):
 #         close_pos = super().add_order(give_obj_name, get_obj_name, 
 #                                          get_obj_quantity, close_price,
 #                                          size = size, fee = fee, 
-#                                          pos_type = pos_type2,
+#                                          order_type = order_type2,
 #                                          open_time=open_time,
 #                                          trade_id=self.trade_id)
 # =============================================================================
@@ -313,7 +313,7 @@ class OneTradePerDay(Trade):
     def execute_positions(self, 
                           trunc_dict: dict, 
                           pos_list: list, 
-                          pos_type: str = "Long"):
+                          order_type: str = "Long"):
         """
         A method that execute the a list posiiton given a EES_dict.
         It search the EES_dict the find the appropiate entry, exit, stop loss,
@@ -325,7 +325,7 @@ class OneTradePerDay(Trade):
             A truncation dictionary for all possible EES values.
         pos_list : list
             The position list: [entry_pos, exit_pos, stop_pos, close_pos].
-        pos_type : str, optional
+        order_type : str, optional
             The type of position. The default is "Long".
 
         Returns
@@ -340,13 +340,13 @@ class OneTradePerDay(Trade):
             The [opening_pos, closing_pos] .
 
         """
-        if pos_type == 'Long':
-            pos_type1 = 'Long-Buy'
-            pos_type2 = 'Long-Sell'
+        if order_type == 'Long':
+            order_type1 = 'Long-Buy'
+            order_type2 = 'Long-Sell'
 
-        elif pos_type == 'Short':
-            pos_type1 = 'Short-Borrow'
-            pos_type2 = 'Short-Buyback'
+        elif order_type == 'Short':
+            order_type1 = 'Short-Borrow'
+            order_type2 = 'Short-Buyback'
             
         # Unpack inputs
         entry_pos, exit_pos, stop_pos, close_pos = pos_list[0], pos_list[1], \
@@ -428,10 +428,10 @@ class OneTradePerDay(Trade):
 
         # Execute the positions
         ExecuteOrder(opening_pos).fill_pos(fill_time = trade_open[0], 
-                                              pos_type=pos_type1)
+                                              order_type=order_type1)
         
         ExecuteOrder(closing_pos).fill_pos(fill_time = trade_close[0], 
-                                              pos_type=pos_type2)
+                                              order_type=order_type2)
 
 
         # pack the outputs objects into lists
@@ -498,9 +498,9 @@ class OneTradePerDay(Trade):
         #Find the minute that the price crosses the EES values
         # Input the position type
         if direction == 'Buy':
-            pos_type= 'Long'
+            order_type= 'Long'
         elif direction == 'Sell':
-            pos_type = 'Short'
+            order_type = 'Short'
             
         # Note that this is not the EES_dict object from find_minute_EES.
         # This is just an initial estimation of the EES values for the 
@@ -514,7 +514,7 @@ class OneTradePerDay(Trade):
                                        get_obj_name, 
                                        get_obj_quantity, 
                                        EES_target_list, 
-                                       pos_type=pos_type, 
+                                       order_type=order_type, 
                                        size=SIZE_DICT[get_obj_name],
                                        fee=fee, 
                                        open_time = open_time)
@@ -525,7 +525,7 @@ class OneTradePerDay(Trade):
         # this class
         trade_open, trade_close, \
         pos_list, exec_pos_list = self.execute_positions(trunc_dict, pos_list,
-                                                         pos_type = pos_type)
+                                                         order_type = order_type)
 
         # the search function for entry and exit time should be completely 
         # sepearate to the trading actions
@@ -570,7 +570,7 @@ class BiDirectionalTrade(Trade):
                        get_obj_name: str, 
                        get_obj_quantity: int | float, 
                        EES_target_list: list, 
-                       pos_type: str,
+                       order_type: str,
                        size: int | float = 1, 
                        fee: dict = None, 
                        open_time: datetime.datetime = datetime.datetime.now(),
@@ -584,21 +584,21 @@ class BiDirectionalTrade(Trade):
                                                              get_obj_name,
                                                              get_obj_quantity, 
                                                              EES_target_list,
-                                                             pos_type, size,
+                                                             order_type, size,
                                                              fee, open_time,
                                                              trade_id)
     
     def execute_positions(self, 
                          EES_dict: dict, 
                          pos_list: list, 
-                         pos_type: str = "Long"):
+                         order_type: str = "Long"):
         """
         Same method as OneTradePerDay
 
         """
         return OneTradePerDay(self._portfolio).execute_positions(EES_dict, 
                                                                 pos_list, 
-                                                                pos_type)
+                                                                order_type)
     
     def run_trade(self, 
                   day: pd.DataFrame, 
@@ -701,7 +701,7 @@ class BiDirectionalTrade(Trade):
         pos_list_buy = self.open_positions(give_obj_name, get_obj_name, \
                                            get_obj_quantity, 
                                            EES_buy_target_list, \
-                                           pos_type='Long', 
+                                           order_type='Long', 
                                            size=SIZE_DICT[get_obj_name],
                                            fee=fee, 
                                            open_time = open_time,
@@ -710,13 +710,13 @@ class BiDirectionalTrade(Trade):
         trade_open_buy, trade_close_buy,\
         pos_list_buy, exec_pos_list_buy = self.execute_positions(EES_dict_buy, 
                                                                  pos_list_buy,
-                                                                 pos_type='Long')
+                                                                 order_type='Long')
         
         # Sell
         pos_list_sell = self.open_positions(give_obj_name, get_obj_name, \
                                             get_obj_quantity, 
                                             EES_sell_target_list, \
-                                            pos_type='Short', 
+                                            order_type='Short', 
                                             size=SIZE_DICT[get_obj_name],
                                             fee=fee, 
                                             open_time = open_time,
@@ -725,7 +725,7 @@ class BiDirectionalTrade(Trade):
         trade_open_sell, trade_close_sell,\
         pos_list_sell, exec_pos_list_sell = self.execute_positions(EES_dict_sell, 
                                                                    pos_list_sell,
-                                                                   pos_type='Short')
+                                                                   order_type='Short')
                                         
         # Now Bundle all the data together
         EES_dict, \
@@ -857,7 +857,7 @@ class OneTradePerDay_2(Trade):
                        get_obj_name: str, 
                        get_obj_quantity: int | float, 
                        EES_target_list: list, 
-                       pos_type: str,
+                       order_type: str,
                        pos_dict: dict,
                        size: int | float = 1, 
                        fee: dict = None, 
@@ -877,7 +877,7 @@ class OneTradePerDay_2(Trade):
         EES_target_list : list
             A list of target EES values [entry_price, exit_price, 
                                          stop_price, close_price].
-        pos_type : str
+        order_type : str
             The type of position to be opened.
 
         Returns
@@ -886,13 +886,13 @@ class OneTradePerDay_2(Trade):
             The position list: [entry_pos, exit_pos, stop_pos, close_pos].
 
         """
-        if pos_type == 'Long':
-            pos_type1 = 'Long-Buy'
-            pos_type2 = 'Long-Sell'
+        if order_type == 'Long':
+            order_type1 = 'Long-Buy'
+            order_type2 = 'Long-Sell'
 
-        elif pos_type == 'Short':
-            pos_type1 = 'Short-Borrow'
-            pos_type2 = 'Short-Buyback'
+        elif order_type == 'Short':
+            order_type1 = 'Short-Borrow'
+            order_type2 = 'Short-Buyback'
             
         # a method that execute the one trade per day based on the cases of the EES
         entry_price, exit_price = EES_target_list[0], EES_target_list[1]
@@ -903,21 +903,21 @@ class OneTradePerDay_2(Trade):
         entry_pos = super().add_position(give_obj_name, get_obj_name, 
                                          get_obj_quantity, entry_price, 
                                          size = size, fee = None, 
-                                         pos_type = pos_type1,
+                                         order_type = order_type1,
                                          open_time=open_time,
                                          trade_id=self.trade_id)
 
         exit_pos = super().add_position(give_obj_name, get_obj_name, 
                                         get_obj_quantity, exit_price, 
                                         size = size, fee = fee, 
-                                        pos_type = pos_type2,
+                                        order_type = order_type2,
                                         open_time=open_time,
                                         trade_id=self.trade_id)
 
         stop_pos = super().add_position(give_obj_name, get_obj_name, 
                                         get_obj_quantity, stop_price, 
                                         size = size, fee = fee, 
-                                        pos_type = pos_type2,
+                                        order_type = order_type2,
                                         open_time=open_time,
                                         trade_id=self.trade_id)
         
@@ -930,7 +930,7 @@ class OneTradePerDay_2(Trade):
             close_pos = super().add_position(give_obj_name, get_obj_name, 
                                              get_obj_quantity, close_price,
                                              size = size, fee = fee, 
-                                             pos_type = pos_type2,
+                                             order_type = order_type2,
                                              open_time=open_time,
                                              trade_id=self.trade_id)
             pos_dict['close_pos'] = close_pos
@@ -1027,7 +1027,7 @@ class OneTradePerDay_2(Trade):
     
     def execute_positions(self, 
                           trunc_dict: dict, 
-                          pos_type: str = "Long"):
+                          order_type: str = "Long"):
                           
         """
         A method that execute the a list posiiton given a EES_dict.
@@ -1040,7 +1040,7 @@ class OneTradePerDay_2(Trade):
             A truncation dictionary for all possible EES values.
         pos_dict : dict
             The position list: [entry_pos, exit_pos, stop_pos, close_pos].
-        pos_type : str, optional
+        order_type : str, optional
             The type of position. The default is "Long".
 
         Returns
@@ -1055,13 +1055,13 @@ class OneTradePerDay_2(Trade):
             The [opening_pos, closing_pos] .
 
         """
-        if pos_type == 'Long':
-            pos_type1 = 'Long-Buy'
-            pos_type2 = 'Long-Sell'
+        if order_type == 'Long':
+            order_type1 = 'Long-Buy'
+            order_type2 = 'Long-Sell'
 
-        elif pos_type == 'Short':
-            pos_type1 = 'Short-Borrow'
-            pos_type2 = 'Short-Buyback'
+        elif order_type == 'Short':
+            order_type1 = 'Short-Borrow'
+            order_type2 = 'Short-Buyback'
 
         #print(pos_dict.values(), type(pos_dict.values()))
         trade_open, trade_close = self.choose_positions(trunc_dict, self.pos_dict, 
@@ -1072,7 +1072,7 @@ class OneTradePerDay_2(Trade):
             self.exec_pos_dict['opening_pos'].price = trade_open[1]
             ExecuteOrder(self.exec_pos_dict['opening_pos']).fill_pos(
                                                      fill_time = trade_open[0], 
-                                                     pos_type=pos_type1)
+                                                     order_type=order_type1)
          
         # Execute the closing position
         if self.exec_pos_dict['closing_pos'] != None:
@@ -1080,7 +1080,7 @@ class OneTradePerDay_2(Trade):
             #print("closing_pos_testest",self.pos_dict['exit_pos'])
             ExecuteOrder(self.exec_pos_dict['closing_pos']).fill_pos(
                                                     fill_time = trade_close[0], 
-                                                    pos_type=pos_type2)
+                                                    order_type=order_type2)
             ##print("closing_pos_testest_After",closing_pos)
             #print("closing_pos_testest",pos_dict['exit_pos'])
 
@@ -1092,58 +1092,58 @@ class OneTradePerDay_2(Trade):
     
     def execute_extra_positions(self, 
                                 trunc_dict: dict, 
-                                extra_pos_type: str = "Long"):
+                                extra_order_type: str = "Long"):
         # This method does not require entry because we already have something
         # Assume you already have some thing in the Portfolio and want to unload them
         # The function of execute_extra_positions is connected to execute_positions
         # If the conditions of execute_positions is triggered, and if auto_unload_all
         # is turned on, this function will unload
-        if extra_pos_type == 'Long':
+        if extra_order_type == 'Long':
             # For extra position, Long-Buy is omitted, this variable does not matter
-            pos_type1 = 'Long-Buy' 
+            order_type1 = 'Long-Buy' 
             # Only Long-Sell is done to unload existing assets
-            pos_type2 = 'Long-Sell'
+            order_type2 = 'Long-Sell'
 
-        elif extra_pos_type == 'Short':
+        elif extra_order_type == 'Short':
             # For extra position in Short, the first action is to sell your 
             # extra assets, thus it is a 'Long-Sell'
-            pos_type1 = 'Long-Sell' 
+            order_type1 = 'Long-Sell' 
             # The second action is to Buyback. But because there is no debt 
             # involved, it is a 'Long-Buy', instead of 'Short-Buyback'.
             # Alternatively, because this is autounload all, the second position is
             # irrelevant
-            pos_type2 = 'Long-Buy' #
+            order_type2 = 'Long-Buy' #
 
 
         # load all data from trunc_dict and choose opening_pos and closing_pos
         trade_open, trade_close = self.choose_positions(trunc_dict, 
                                                         self.extra_pos_dict, 
                                                         self.extra_exec_pos_dict)
-        print("pos_type1, pos_type2", pos_type1, pos_type2)
+        print("order_type1, order_type2", order_type1, order_type2)
         # For regular 'Long', the entry position is cancelled
-        if extra_pos_type == 'Long' and\
+        if extra_order_type == 'Long' and\
             self.extra_exec_pos_dict['opening_pos'] != None:
             # cancel the open position
             self.extra_exec_pos_dict['opening_pos'].price = trade_open[1]
             ExecuteOrder(self.extra_exec_pos_dict['opening_pos']).cancel_pos(\
                                                     void_time = trade_open[0])            
-        elif extra_pos_type == 'Short' and\
+        elif extra_order_type == 'Short' and\
              self.extra_exec_pos_dict['opening_pos'] != None:
             # Execute the open position
             self.extra_exec_pos_dict['opening_pos'].price = trade_open[1]
             ExecuteOrder(self.extra_exec_pos_dict['opening_pos']).fill_pos(\
                                                     fill_time = trade_open[0], 
-                                                    pos_type = pos_type1)
+                                                    order_type = order_type1)
             
         
         # define the closing position and execute it if we set it to auto close
-        if extra_pos_type == 'Long' and\
+        if extra_order_type == 'Long' and\
             self.extra_exec_pos_dict['closing_pos'] != None:            
             # Execute the closing position
             ExecuteOrder(self.extra_exec_pos_dict['closing_pos']).fill_pos(
                                                     fill_time = trade_close[0], 
-                                                    pos_type = pos_type2)
-        elif extra_pos_type == 'Short' and\
+                                                    order_type = order_type2)
+        elif extra_order_type == 'Short' and\
             self.extra_exec_pos_dict['closing_pos'] != None:            
             # Execute the closing position
             ExecuteOrder(self.extra_exec_pos_dict['closing_pos']).cancel_pos(
@@ -1211,9 +1211,9 @@ class OneTradePerDay_2(Trade):
         #Find the minute that the price crosses the EES values
         # Input the position type
         if direction == 'Buy':
-            pos_type= 'Long'
+            order_type= 'Long'
         elif direction == 'Sell':
-            pos_type = 'Short'
+            order_type = 'Short'
             
         # Note that this is not the EES_dict object from find_minute_EES.
         # This is just an initial estimation of the EES values for the 
@@ -1227,7 +1227,7 @@ class OneTradePerDay_2(Trade):
                                        get_obj_name, 
                                        get_obj_quantity, 
                                        EES_target_list, 
-                                       pos_type=pos_type, 
+                                       order_type=order_type, 
                                        pos_dict=self.pos_dict,
                                        size=SIZE_DICT[get_obj_name],
                                        fee=fee, 
@@ -1239,7 +1239,7 @@ class OneTradePerDay_2(Trade):
                                                  get_obj_name, 
                                                  extra_quantity, 
                                                  EES_target_list, 
-                                                 pos_type=pos_type, 
+                                                 order_type=order_type, 
                                                  pos_dict=self.extra_pos_dict,
                                                  size=SIZE_DICT[get_obj_name],
                                                  fee=fee, 
@@ -1250,14 +1250,14 @@ class OneTradePerDay_2(Trade):
         # this class
         trade_open, trade_close, \
         pos_dict, exec_pos_dict = self.execute_positions(trunc_dict,
-                                                         pos_type = pos_type)
+                                                         order_type = order_type)
         
         if self.auto_unload_all == True: 
             extra_trade_open, extra_trade_close, \
             extra_pos_dict, extra_exec_pos_dict = self.execute_extra_positions(\
                                                                     trunc_dict, 
-                                                                    extra_pos_type =\
-                                                                    pos_type)
+                                                                    extra_order_type =\
+                                                                    order_type)
                 
         # the search function for entry and exit time should be completely 
         # sepearate to the trading actions
@@ -1347,19 +1347,19 @@ class MultiTradePerMonth(Trade):
                        get_obj_name: str, 
                        get_obj_quantity: int | float, 
                        EES_target_list: list, 
-                       pos_type: str,
+                       order_type: str,
                        pos_dict: dict,
                        size: int | float = 1, 
                        fee: dict = None, 
                        open_time: datetime.datetime = datetime.datetime.now())\
                        -> list[Order]: 
-        if pos_type == 'Long':
-            pos_type1 = 'Long-Buy'
-            pos_type2 = 'Long-Sell'
+        if order_type == 'Long':
+            order_type1 = 'Long-Buy'
+            order_type2 = 'Long-Sell'
 
-        elif pos_type == 'Short':
-            pos_type1 = 'Short-Borrow'
-            pos_type2 = 'Short-Buyback'
+        elif order_type == 'Short':
+            order_type1 = 'Short-Borrow'
+            order_type2 = 'Short-Buyback'
             
         # a method that execute the one trade per day based on the cases of the EES
         entry_price, exit_price = EES_target_list[0], EES_target_list[1]
@@ -1370,21 +1370,21 @@ class MultiTradePerMonth(Trade):
         entry_pos = super().add_position(give_obj_name, get_obj_name, 
                                          get_obj_quantity, entry_price, 
                                          size = size, fee = None, 
-                                         pos_type = pos_type1,
+                                         order_type = order_type1,
                                          open_time=open_time,
                                          trade_id=self.trade_id)
 
         exit_pos = super().add_position(give_obj_name, get_obj_name, 
                                         get_obj_quantity, exit_price, 
                                         size = size, fee = fee, 
-                                        pos_type = pos_type2,
+                                        order_type = order_type2,
                                         open_time=open_time,
                                         trade_id=self.trade_id)
 
         stop_pos = super().add_position(give_obj_name, get_obj_name, 
                                         get_obj_quantity, stop_price, 
                                         size = size, fee = fee, 
-                                        pos_type = pos_type2,
+                                        order_type = order_type2,
                                         open_time=open_time,
                                         trade_id=self.trade_id)
         
@@ -1397,7 +1397,7 @@ class MultiTradePerMonth(Trade):
             close_pos = super().add_position(give_obj_name, get_obj_name, 
                                              get_obj_quantity, close_price,
                                              size = size, fee = fee, 
-                                             pos_type = pos_type2,
+                                             order_type = order_type2,
                                              open_time=open_time,
                                              trade_id=self.trade_id)
             pos_dict['close_pos'] = close_pos
@@ -1496,15 +1496,15 @@ class MultiTradePerMonth(Trade):
         
     def execute_positions(self, 
                           trunc_dict: dict, 
-                          pos_type: str = "Long"):        
+                          order_type: str = "Long"):        
         
-        if pos_type == 'Long':
-            pos_type1 = 'Long-Buy'
-            pos_type2 = 'Long-Sell'
+        if order_type == 'Long':
+            order_type1 = 'Long-Buy'
+            order_type2 = 'Long-Sell'
 
-        elif pos_type == 'Short':
-            pos_type1 = 'Short-Borrow'
-            pos_type2 = 'Short-Buyback'
+        elif order_type == 'Short':
+            order_type1 = 'Short-Borrow'
+            order_type2 = 'Short-Buyback'
 
         #print(pos_dict.values(), type(pos_dict.values()))
         trade_open, trade_close = self.choose_positions(trunc_dict, self.pos_dict, 
@@ -1515,7 +1515,7 @@ class MultiTradePerMonth(Trade):
             self.exec_pos_dict['opening_pos'].price = trade_open[1]
             ExecuteOrder(self.exec_pos_dict['opening_pos']).fill_pos(
                                                      fill_time = trade_open[0], 
-                                                     pos_type=pos_type1)
+                                                     order_type=order_type1)
          
         # Execute the closing position
         if self.exec_pos_dict['closing_pos'] != None:
@@ -1523,7 +1523,7 @@ class MultiTradePerMonth(Trade):
             #print("closing_pos_testest",self.pos_dict['exit_pos'])
             ExecuteOrder(self.exec_pos_dict['closing_pos']).fill_pos(
                                                     fill_time = trade_close[0], 
-                                                    pos_type=pos_type2)
+                                                    order_type=order_type2)
             ##print("closing_pos_testest_After",closing_pos)
             #print("closing_pos_testest",pos_dict['exit_pos'])
 
@@ -1537,59 +1537,59 @@ class MultiTradePerMonth(Trade):
         
     def execute_extra_positions(self, 
                                 trunc_dict: dict, 
-                                extra_pos_type: str = "Long"):
+                                extra_order_type: str = "Long"):
 
         # This method does not require entry because we already have something
         # Assume you already have some thing in the Portfolio and want to unload them
         # The function of execute_extra_positions is connected to execute_positions
         # If the conditions of execute_positions is triggered, and if auto_unload_all
         # is turned on, this function will unload
-        if extra_pos_type == 'Long':
+        if extra_order_type == 'Long':
             # For extra position, Long-Buy is omitted, this variable does not matter
-            pos_type1 = 'Long-Buy' 
+            order_type1 = 'Long-Buy' 
             # Only Long-Sell is done to unload existing assets
-            pos_type2 = 'Long-Sell'
+            order_type2 = 'Long-Sell'
     
-        elif extra_pos_type == 'Short':
+        elif extra_order_type == 'Short':
             # For extra position in Short, the first action is to sell your 
             # extra assets, thus it is a 'Long-Sell'
-            pos_type1 = 'Long-Sell' 
+            order_type1 = 'Long-Sell' 
             # The second action is to Buyback. But because there is no debt 
             # involved, it is a 'Long-Buy', instead of 'Short-Buyback'.
             # Alternatively, because this is autounload all, the second position is
             # irrelevant
-            pos_type2 = 'Long-Buy' #
+            order_type2 = 'Long-Buy' #
     
     
         # load all data from trunc_dict and choose opening_pos and closing_pos
         trade_open, trade_close = self.choose_positions(trunc_dict, 
                                                         self.extra_pos_dict, 
                                                         self.extra_exec_pos_dict)
-        print("pos_type1, pos_type2", pos_type1, pos_type2)
+        print("order_type1, order_type2", order_type1, order_type2)
         # For regular 'Long', the entry position is cancelled
-        if extra_pos_type == 'Long' and\
+        if extra_order_type == 'Long' and\
             self.extra_exec_pos_dict['opening_pos'] != None:
             # cancel the open position
             self.extra_exec_pos_dict['opening_pos'].price = trade_open[1]
             ExecuteOrder(self.extra_exec_pos_dict['opening_pos']).cancel_pos(\
                                                     void_time = trade_open[0])            
-        elif extra_pos_type == 'Short' and\
+        elif extra_order_type == 'Short' and\
              self.extra_exec_pos_dict['opening_pos'] != None:
             # Execute the open position
             self.extra_exec_pos_dict['opening_pos'].price = trade_open[1]
             ExecuteOrder(self.extra_exec_pos_dict['opening_pos']).fill_pos(\
                                                     fill_time = trade_open[0], 
-                                                    pos_type = pos_type1)
+                                                    order_type = order_type1)
             
         
         # define the closing position and execute it if we set it to auto close
-        if extra_pos_type == 'Long' and\
+        if extra_order_type == 'Long' and\
             self.extra_exec_pos_dict['closing_pos'] != None:            
             # Execute the closing position
             ExecuteOrder(self.extra_exec_pos_dict['closing_pos']).fill_pos(
                                                     fill_time = trade_close[0], 
-                                                    pos_type = pos_type2)
-        elif extra_pos_type == 'Short' and\
+                                                    order_type = order_type2)
+        elif extra_order_type == 'Short' and\
             self.extra_exec_pos_dict['closing_pos'] != None:            
             # Execute the closing position
             ExecuteOrder(self.extra_exec_pos_dict['closing_pos']).cancel_pos(
@@ -1623,9 +1623,9 @@ class MultiTradePerMonth(Trade):
         #Find the minute that the price crosses the EES values
         # Input the position type
         if direction == 'Buy':
-            pos_type= 'Long'
+            order_type= 'Long'
         elif direction == 'Sell':
-            pos_type = 'Short'
+            order_type = 'Short'
             
         # Note that this is not the EES_dict object from find_minute_EES.
         # This is just an initial estimation of the EES values for the 
@@ -1639,7 +1639,7 @@ class MultiTradePerMonth(Trade):
                                        get_obj_name, 
                                        get_obj_quantity, 
                                        EES_target_list, 
-                                       pos_type=pos_type, 
+                                       order_type=order_type, 
                                        pos_dict=self.pos_dict,
                                        size=SIZE_DICT[get_obj_name],
                                        fee=fee, 
@@ -1651,7 +1651,7 @@ class MultiTradePerMonth(Trade):
                                                  get_obj_name, 
                                                  extra_quantity, 
                                                  EES_target_list, 
-                                                 pos_type=pos_type, 
+                                                 order_type=order_type, 
                                                  pos_dict=self.extra_pos_dict,
                                                  size=SIZE_DICT[get_obj_name],
                                                  fee=fee, 
@@ -1662,14 +1662,14 @@ class MultiTradePerMonth(Trade):
         # this class
         trade_open, trade_close, \
         pos_dict, exec_pos_dict = self.execute_positions(trunc_dict,
-                                                         pos_type = pos_type)
+                                                         order_type = order_type)
         
         if self.auto_unload_all == True: 
             extra_trade_open, extra_trade_close, \
             extra_pos_dict, extra_exec_pos_dict = self.execute_extra_positions(\
                                                                     trunc_dict, 
-                                                                    extra_pos_type =\
-                                                                    pos_type)
+                                                                    extra_order_type =\
+                                                                    order_type)
                 
         print("trade_open, trade_close, pos_dict, exec_pos_dict")
         print(trade_open, trade_close, pos_dict, exec_pos_dict)
@@ -1787,17 +1787,17 @@ class ConsecutiveTradePerMonth_2(Trade):
 #         return OneTradePerDay(self.portfolio).find_EES_values(EES_dict)
 #     
 #     def open_positions(self, give_obj_name, get_obj_name, 
-#                        get_obj_quantity, EES_target_list, pos_type,
+#                        get_obj_quantity, EES_target_list, order_type,
 #                        size = 1, fee = None, 
 #                        open_time = datetime.datetime.now()):
 #         
-#         if pos_type == 'Long':
-#             pos_type1 = 'Long-Buy'
-#             pos_type2 = 'Long-Sell'
+#         if order_type == 'Long':
+#             order_type1 = 'Long-Buy'
+#             order_type2 = 'Long-Sell'
 # 
-#         elif pos_type == 'Short':
-#             pos_type1 = 'Short-Borrow'
-#             pos_type2 = 'Short-Buyback'
+#         elif order_type == 'Short':
+#             order_type1 = 'Short-Borrow'
+#             order_type2 = 'Short-Buyback'
 #             
 #         # a method that execute the one trade per day based on the cases of the EES
 #         entry_price, exit_price = EES_target_list[0], EES_target_list[1]
@@ -1808,25 +1808,25 @@ class ConsecutiveTradePerMonth_2(Trade):
 #         entry_pos = super().add_position(give_obj_name, get_obj_name, 
 #                                       get_obj_quantity, entry_price, 
 #                                       size = size, fee = None, 
-#                                       pos_type = pos_type1,
+#                                       order_type = order_type1,
 #                                       open_time=open_time)
 # 
 #         exit_pos = super().add_position(give_obj_name, get_obj_name, 
 #                           get_obj_quantity, exit_price, 
 #                           size = size, fee = fee, 
-#                           pos_type = pos_type2,
+#                           order_type = order_type2,
 #                           open_time=open_time)
 # 
 #         stop_pos = super().add_position(give_obj_name, get_obj_name, 
 #                           get_obj_quantity, stop_price, 
 #                           size = size, fee = fee, 
-#                           pos_type = pos_type2,
+#                           order_type = order_type2,
 #                           open_time=open_time)
 #         
 #         close_pos = super().add_position(give_obj_name, get_obj_name, 
 #                           get_obj_quantity, close_price,
 #                           size = size, fee = fee, 
-#                           pos_type = pos_type2,
+#                           order_type = order_type2,
 #                           open_time=open_time)
 # 
 #         pos_list = [entry_pos, exit_pos, stop_pos, close_pos]
@@ -1834,7 +1834,7 @@ class ConsecutiveTradePerMonth_2(Trade):
 #         return pos_list
 #         
 #     
-#     def execute_position(self, EES_dict, pos_list, pos_type="Long"):
+#     def execute_position(self, EES_dict, pos_list, order_type="Long"):
 #         # A method that search for correct EES points from a EES_dict
 #         
 #         # initialise
@@ -1893,9 +1893,9 @@ class ConsecutiveTradePerMonth_2(Trade):
 #     
 #         # Input the position type
 #         if direction == 'Buy':
-#             pos_type= 'Long'
+#             order_type= 'Long'
 #         elif direction == 'Sell':
-#             pos_type = 'Short'
+#             order_type = 'Short'
 #             
 # 
 #         pos_list_bundle = []
@@ -1906,7 +1906,7 @@ class ConsecutiveTradePerMonth_2(Trade):
 #             # run the trade via position module
 #             pos_list = self.open_positions(give_obj_name, get_obj_name, \
 #                                            get_obj_quantity, EES_target_list, \
-#                                            pos_type=pos_type, 
+#                                            order_type=order_type, 
 #                                            size = SIZE_DICT[get_obj_name],
 #                                            fee=fee, open_time = open_hr)
 #                                                #open_time = open_hr_dt)  # add open time in position
@@ -1914,7 +1914,7 @@ class ConsecutiveTradePerMonth_2(Trade):
 #         
 #             trade_open, trade_close, pos_list, exec_pos_list = \
 #                                             self.execute_position(EES_dict, pos_list,
-#                                                                   pos_type=pos_type)
+#                                                                   order_type=order_type)
 # 
 #         # the search function for entry and exit time should be completely 
 #         # sepearate to the trading actions
@@ -1925,13 +1925,3 @@ class ConsecutiveTradePerMonth_2(Trade):
 #         
 # =============================================================================
         
-# =============================================================================
-#  under construction
-# @dataclass
-# class TradeBot:
-#     
-#     exchange: None
-#     trading_startegy: None
-#     
-# =============================================================================
-    
