@@ -12,8 +12,8 @@ import pytest
 
 
 from EC_tools.strategy import ArgusMRStrategy, SignalStatus, ArgusMRStrategyMode
-import EC_tools.read as read
-import EC_tools.math_func as mfunc
+import EC_tools.base.read as read
+import EC_tools.utility.math_func as mfunc
 from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, \
                                   APC_FILE_LOC, HISTORY_DAILY_FILE_LOC,\
                                   HISTORY_MINTUE_FILE_LOC, TIMEZONE_DICT,\

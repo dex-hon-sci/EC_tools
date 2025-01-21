@@ -5,14 +5,17 @@ Created on Tue Jan  7 18:43:50 2025
 
 @author: dexter
 """
+# Python import
 import datetime
 from pathlib import Path
+
+# Common Package import
 import numpy as np
+
 # Import EC_tools    
-from EC_tools.read import render_PNL_xlsx, open_portfolio
+from EC_tools.base.read import render_PNL_xlsx, open_portfolio
 import EC_tools.utility as util
 from EC_tools.trade import OneTradePerDay, BiDirectionalTrade
-from EC_tools.simple_trade import onetrade_simple
 from EC_tools.backtest import LoopType
 from EC_tools.portfolio import PortfolioMetrics, PortfolioLog, PortfolioLog
 

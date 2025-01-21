@@ -24,8 +24,8 @@ import pandas as pd
 
 # import EC_tools
 from EC_tools.portfolio import Portfolio
-from EC_tools.order import Order, ExecuteOrder
-import EC_tools.read as read
+from EC_tools.trade.order import Order, ExecuteOrder
+import EC_tools.base.read as read
 import EC_tools.utility as util
 from crudeoil_future_const import OIL_FUTURES_FEE, SIZE_DICT, ASSET_DICT
 

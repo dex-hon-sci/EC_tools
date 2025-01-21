@@ -5,19 +5,24 @@ Created on Tue Sep 24 14:37:07 2024
 
 @author: dexter
 """
+# Ptyhon import
+import datetime as datetime
+from pathlib import Path
 
+# Common packages mport
 import pandas as pd
 import numpy as np
 import matplotlib.dates as mdates
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
-import datetime as datetime
 import cmasher as cmr
 
-from crudeoil_future_const import APC_FILE_LOC, DATA_FILEPATH, RESULT_FILEPATH, make_path_list
-from app.run_PNL_plot import extract_PNLplot_input
+#EC_tools import
 import EC_tools.utility as util
-from pathlib import Path
+from crudeoil_future_const import APC_FILE_LOC, DATA_FILEPATH, RESULT_FILEPATH, make_path_list
+
+# application imports
+from app.run_PNL_plot import extract_PNLplot_input
 
 gain_quantile = [10,15,20,25,30,35,40,45,50,55]
 stoploss_quantile = [10,15,20,25,30,35]

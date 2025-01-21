@@ -22,9 +22,9 @@ from prettytable import PrettyTable
 
 # EC_tools import
 import EC_tools.utility as util
-from EC_tools.asset import Asset
-from EC_tools.bookkeep import Bookkeep
-import EC_tools.read as read
+from EC_tools.portfolio.asset import Asset
+from EC_tools.portfolio.bookkeep import Bookkeep
+import EC_tools.base.read as read
 from crudeoil_future_const import SIZE_DICT, HISTORY_DAILY_FILE_LOC, \
                                   SYMBOL_KEYWORDS_DICT, DAILY_DATA_PKL
 

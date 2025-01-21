@@ -9,11 +9,17 @@ This script updates the daily APC data.
 It pulls data from external servers to the local directory.
 
 """
+# Python import
+import os
+from dotenv import load_dotenv 
 import datetime as datetime
-import pandas as pd
-import pickle
 from pathlib import Path
 
+# Common package import
+import pandas as pd
+import pickle
+
+# EC_tools import
 import EC_tools.read as read
 import EC_tools.utility as util
 from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST,\
@@ -34,8 +40,6 @@ from crudeoil_future_const import DAILY_APC_PKL, DAILY_DATA_PKL, \
                                   PORTARA_CONTINUOUS_MINTUE_FILE_LOC,\
                                   PORTARA_CONITNUOUS_DAILY_FILE_LOC
 
-import os
-from dotenv import load_dotenv 
 
 
 # Get the base directory

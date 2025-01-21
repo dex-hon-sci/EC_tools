@@ -5,10 +5,11 @@ Created on Sun Jun 23 09:00:12 2024
 
 @author: dexter
 """
-import numpy as np
-from dotenv import load_dotenv 
 import os
+from dotenv import load_dotenv 
 from pathlib import Path
+
+import numpy as np
 
 # loading local global environment file
 load_dotenv()

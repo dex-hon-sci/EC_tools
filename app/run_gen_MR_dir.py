@@ -6,21 +6,21 @@ Created on Wed Mar 13 19:51:24 2024
 A modified script based on the Mean-Reversion Method developed by Abbe Whitford.
 
 """
-# python import
+# Python import
 import datetime as datetime
 from enum import Enum
 from typing import TypeVar
-import getpass
-# package imports
+
+# common package imports
 import pandas as pd 
 import numpy as np
 
 # EC_tools imports
 from EC_tools.strategy import ArgusMRStrategy, ArgusMRStrategyMode, \
                               Strategy, APC_LENGTH
-import EC_tools.read as read
+import EC_tools.base.read as read
 import EC_tools.utility as util
-from EC_tools.bookkeep import Bookkeep
+from EC_tools.portfolio.bookkeep import Bookkeep
 
 from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, \
                                   APC_FILE_LOC, HISTORY_DAILY_FILE_LOC,\

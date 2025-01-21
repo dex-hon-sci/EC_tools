@@ -6,8 +6,8 @@ import pytest
 
 # Import EC_tools
 from EC_tools.strategy import ArgusMRStrategy, SignalStatus
-import EC_tools.read as read
-import EC_tools.math_func as mfunc
+import EC_tools.base.read as read
+import EC_tools.utility.math_func as mfunc
 from tests.test_strategy import SingleRun
 
 # Import global constatns

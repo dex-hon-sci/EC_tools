@@ -7,10 +7,12 @@ Created on Wed Aug  7 19:30:06 2024
 """
 import datetime as datetime
 
-from crudeoil_future_const import APC_FILE_LOC, DATA_FILEPATH, SYMBOL_LIST, \
-                                  MONTHLY_APC_PKL, SYMBOL_LIST_SHORT
+# import EC_tools
 import EC_tools.utility as util
 from run_PNL_plot import twopanel_plot
+
+from crudeoil_future_const import APC_FILE_LOC, DATA_FILEPATH, SYMBOL_LIST, \
+                                  MONTHLY_APC_PKL, SYMBOL_LIST_SHORT
 
 
 #APC_PKL_FILENAME = DATA_FILEPATH + '/pkl_vault/crudeoil_future_APC_full.pkl' 

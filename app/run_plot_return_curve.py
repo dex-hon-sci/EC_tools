@@ -14,15 +14,18 @@ import numpy as np
 from scipy import stats
 from pathlib import Path
 
-# Import
+# common package import
 import matplotlib.dates as mdates
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 
 # import EC_tools
+import EC_tools.utility as util
+
 from crudeoil_future_const import APC_FILE_LOC, DATA_FILEPATH, DAILY_DATA_PKL, \
                                   make_path_list
-import EC_tools.utility as util
+
+# application import
 from app.run_PNL_plot import extract_PNLplot_input
 
 

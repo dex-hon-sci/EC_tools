@@ -5,16 +5,21 @@ Created on Wed May 15 02:31:06 2024
 
 @author: dexter
 """
+# Python import
 import sys
 import os
 
 sys.path.insert(0, 'C:\\EC_tools-pure-code')
 
+# common package import
 import datetime as datetime
 import openpyxl
+
+# EC_tools import
 import EC_tools.utility as util
 from EC_tools.strategy import ArgusMRStrategy
 
+#EC_tools application import
 from run_gen_MR_dir import run_gen_MR_signals_list, \
                            run_gen_MR_signals_preloaded,\
                            run_gen_MR_signals_preloaded_single

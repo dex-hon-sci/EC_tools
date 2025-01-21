@@ -5,15 +5,20 @@ Created on Fri May 10 04:35:17 2024
 
 @author: dexter
 """
+#Python import
+import datetime as datetime
 
+# Common python import
 import pandas as pd
 import numpy as np
 import matplotlib.dates as mdates
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
-import datetime as datetime
-from crudeoil_future_const import APC_FILE_LOC, DATA_FILEPATH
+
+# EC_tools import
 import EC_tools.utility as util
+from crudeoil_future_const import APC_FILE_LOC, DATA_FILEPATH
+
 #FILENAME = './data/profits_and_losses_data_benchmark_11_.xlsx'
 #FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_PNL_xlsx/benchmark_PNL_full_.xlsx'
 ARGUS_EXACT_PNL_FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/results/argus_exact_PNL_full_.xlsx'

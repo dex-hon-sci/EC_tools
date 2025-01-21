@@ -23,8 +23,8 @@ import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 
 # import EC_tools
-import EC_tools.read as read
-import EC_tools.math_func as mfunc
+import EC_tools.base.read as read
+import EC_tools.utility.math_func as mfunc
 import EC_tools.utility as util
 
 from crudeoil_future_const import HISTORY_MINTUE_FILE_LOC, APC_FILE_LOC, \

@@ -5,8 +5,10 @@ Created on Sat Jun 22 23:32:11 2024
 
 
 """
+# Common package import
+
 from numba import jit
-# Import EC_tools    
+# EC_tools import
 from EC_tools.read import render_PNL_xlsx, open_portfolio
 import EC_tools.utility as util
 from EC_tools.trade import OneTradePerDay, BiDirectionalTrade
@@ -14,6 +16,7 @@ from EC_tools.simple_trade import onetrade_simple
 from EC_tools.backtest import LoopType
 from EC_tools.portfolio import PortfolioMetrics, PortfolioLog, PortfolioLog
 
+# application import
 from app.run_preprocess import run_preprocess
 from app.run_gen_MR_dir import MR_STRATEGIES_0, run_gen_signal_bulk
 from app.run_backtest import run_backtest_bulk

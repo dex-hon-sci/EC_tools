@@ -5,13 +5,16 @@ Created on Wed Jul 17 23:30:24 2024
 
 @author: dexter
 """
+# Python Import
+import datetime as datetime
+# Python Library import
 import pandas as pd 
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib.ticker import MultipleLocator
 
-import datetime as datetime
+# EC_tools Import
 import EC_tools.utility as util
 
 REF_SIGNAL ="/home/dexter/Euler_Capital_codes/EC_tools/results/20220101_20240628_signals_2.xlsx"

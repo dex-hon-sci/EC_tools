@@ -8,9 +8,15 @@ fast processing. While this script takes a longer time to complete, the rest
 of the back-test workflow will be less time consuming.
 
 """
+# common pacakge import
 import json
 import pickle
 import pandas as pd
+
+# EC_tools import
+import EC_tools.read as read
+import EC_tools.utility as util
+
 from crudeoil_future_const import SYMBOL_LIST, HISTORY_DAILY_FILE_LOC,\
                                   HISTORY_MINTUE_FILE_LOC, APC_FILE_LOC,\
                                   ARGUS_BENCHMARK_SIGNAL_FILE_LOC,\
@@ -25,8 +31,7 @@ from crudeoil_future_const import SYMBOL_LIST, HISTORY_DAILY_FILE_LOC,\
                                   SYMBOL_LIST_SHORT
 
 
-import EC_tools.read as read
-import EC_tools.utility as util
+
 
 @util.time_it
 def create_aggegrate_pkl(file_loc_list: list[str], 

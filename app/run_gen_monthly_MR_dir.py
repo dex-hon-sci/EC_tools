@@ -10,6 +10,7 @@ import datetime as datetime
 from enum import Enum
 from typing import TypeVar
 import getpass
+
 # package imports
 import pandas as pd 
 import numpy as np
@@ -17,7 +18,7 @@ import numpy as np
 # EC_tools imports
 from EC_tools.strategy import ArgusMRStrategy, ArgusMRStrategyMode, Strategy, \
                               APC_LENGTH, ArgusMonthlyStrategy
-import EC_tools.read as read
+import EC_tools.base.read as read
 import EC_tools.utility as util
 from EC_tools.bookkeep import Bookkeep
 

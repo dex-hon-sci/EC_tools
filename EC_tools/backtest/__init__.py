@@ -63,8 +63,8 @@ from enum import Enum
 
 # import from EC_tools
 import EC_tools.utility as util
-import EC_tools.read as read
-from EC_tools.bookkeep import Bookkeep
+import EC_tools.base.read as read
+from EC_tools.portfolio.bookkeep import Bookkeep
 import EC_tools.plot as plot
 from EC_tools.portfolio import Portfolio
 from EC_tools.trade import Trade

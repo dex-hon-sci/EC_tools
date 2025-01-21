@@ -7,16 +7,19 @@ Created on Wed May 29 16:50:39 2024
 
 
 """
-
+# Python imports
 import datetime as datetime
 
+# EC_tools imports
 from EC_tools.portfolio import Portfolio
-from EC_tools.position import PositionStatus
+from EC_tools.trade.order import OrderStatus
 from EC_tools.trade import OneTradePerDay
 from EC_tools.backtest import extract_intraday_minute_data, \
                               prepare_signal_interest, plot_in_backtest
+import EC_tools.base.read as read
+
 from crudeoil_future_const import DATA_FILEPATH, RESULT_FILEPATH
-import EC_tools.read as read
+
 
 
 FILENAME_MINUTE = DATA_FILEPATH +"/history_data/Minute/CL.001"
@@ -140,10 +143,10 @@ def test_onetradeperday_buy_noentry() -> None:
     EES_dict, trade_open, trade_close, \
     pos_list, exec_pos_list = onetradeperday(date_interest_no_entry_buy,'Buy')
 
-    assert pos_list[0].status == PositionStatus.VOID
-    assert pos_list[1].status == PositionStatus.VOID
-    assert pos_list[2].status == PositionStatus.VOID
-    assert pos_list[3].status == PositionStatus.VOID
+    assert pos_list[0].status == OrderStatus.VOID
+    assert pos_list[1].status == OrderStatus.VOID
+    assert pos_list[2].status == OrderStatus.VOID
+    assert pos_list[3].status == OrderStatus.VOID
     assert exec_pos_list[0] == None
     assert exec_pos_list[1] == None
 
@@ -166,12 +169,12 @@ def test_onetradeperday_buy_normalexit()->None:
     EES_dict, trade_open, trade_close, \
     pos_list, exec_pos_list = onetradeperday(date_interest_normal_exit_buy,'Buy')
 
-    assert pos_list[0].status == PositionStatus.FILLED
-    assert pos_list[1].status == PositionStatus.FILLED
-    assert pos_list[2].status == PositionStatus.VOID
-    assert pos_list[3].status == PositionStatus.VOID
-    assert exec_pos_list[0].status == PositionStatus.FILLED
-    assert exec_pos_list[1].status == PositionStatus.FILLED
+    assert pos_list[0].status == OrderStatus.FILLED
+    assert pos_list[1].status == OrderStatus.FILLED
+    assert pos_list[2].status == OrderStatus.VOID
+    assert pos_list[3].status == OrderStatus.VOID
+    assert exec_pos_list[0].status == OrderStatus.FILLED
+    assert exec_pos_list[1].status == OrderStatus.FILLED
     
     USD_amount = P1.master_table[P1.master_table['name'] == give_obj_name\
                                  ]['quantity'].iloc[0]
@@ -194,12 +197,12 @@ def test_onetradeperday_buy_stoploss() -> None:
     pos_list, exec_pos_list = onetradeperday(date_interest_stop_loss_buy,'Buy')
 
     print("target_entry, target_exit", target_entry, target_exit)
-    assert pos_list[0].status == PositionStatus.FILLED
-    assert pos_list[1].status == PositionStatus.VOID
-    assert pos_list[2].status == PositionStatus.FILLED
-    assert pos_list[3].status == PositionStatus.VOID
-    assert exec_pos_list[0].status == PositionStatus.FILLED
-    assert exec_pos_list[1].status == PositionStatus.FILLED
+    assert pos_list[0].status == OrderStatus.FILLED
+    assert pos_list[1].status == OrderStatus.VOID
+    assert pos_list[2].status == OrderStatus.FILLED
+    assert pos_list[3].status == OrderStatus.VOID
+    assert exec_pos_list[0].status == OrderStatus.FILLED
+    assert exec_pos_list[1].status == OrderStatus.FILLED
     USD_amount = P1.master_table[P1.master_table['name'] == give_obj_name\
                                  ]['quantity'].iloc[0]
     CL_amount = P1.master_table[P1.master_table['name'] == get_obj_name\
@@ -225,12 +228,12 @@ def test_onetradeperday_buy_closeexit() -> None:
                                                         'Buy')
     print("target_entry, target_exit", target_entry, target_exit)
 
-    assert pos_list[0].status == PositionStatus.FILLED
+    assert pos_list[0].status == OrderStatus.FILLED
     #assert pos_list[1].status == PositionStatus.VOID
-    assert pos_list[2].status == PositionStatus.VOID
+    assert pos_list[2].status == OrderStatus.VOID
     #assert pos_list[3].status == PositionStatus.FILLED
-    assert exec_pos_list[0].status == PositionStatus.FILLED
-    assert exec_pos_list[1].status == PositionStatus.FILLED
+    assert exec_pos_list[0].status == OrderStatus.FILLED
+    assert exec_pos_list[1].status == OrderStatus.FILLED
 
     CL_amount = P1.master_table[P1.master_table['name'] == get_obj_name\
                                 ]['quantity'].iloc[0]
@@ -255,10 +258,10 @@ def test_onetradeperday_sell_noentry() -> None:
     EES_dict, trade_open, trade_close, \
     pos_list, exec_pos_list = onetradeperday(date_interest_no_entry_sell,'Sell')
 
-    assert pos_list[0].status == PositionStatus.VOID
-    assert pos_list[1].status == PositionStatus.VOID
-    assert pos_list[2].status == PositionStatus.VOID
-    assert pos_list[3].status == PositionStatus.VOID
+    assert pos_list[0].status == OrderStatus.VOID
+    assert pos_list[1].status == OrderStatus.VOID
+    assert pos_list[2].status == OrderStatus.VOID
+    assert pos_list[3].status == OrderStatus.VOID
     assert exec_pos_list[0] == None
     assert exec_pos_list[1] == None
 
@@ -280,12 +283,12 @@ def test_onetradeperday_sell_normalexit()->None:
     EES_dict, trade_open, trade_close, \
     pos_list, exec_pos_list = onetradeperday(date_interest_normal_exit_sell,'Sell')
 
-    assert pos_list[0].status == PositionStatus.FILLED
-    assert pos_list[1].status == PositionStatus.FILLED
-    assert pos_list[2].status == PositionStatus.VOID
-    assert pos_list[3].status == PositionStatus.VOID
-    assert exec_pos_list[0].status == PositionStatus.FILLED
-    assert exec_pos_list[1].status == PositionStatus.FILLED
+    assert pos_list[0].status == OrderStatus.FILLED
+    assert pos_list[1].status == OrderStatus.FILLED
+    assert pos_list[2].status == OrderStatus.VOID
+    assert pos_list[3].status == OrderStatus.VOID
+    assert exec_pos_list[0].status == OrderStatus.FILLED
+    assert exec_pos_list[1].status == OrderStatus.FILLED
 
     USD_amount = P1.master_table[P1.master_table['name'] == give_obj_name\
                                  ]['quantity'].iloc[0]
@@ -314,12 +317,12 @@ def test_onetradeperday_sell_stoploss() -> None:
     pos_list, exec_pos_list = onetradeperday(date_interest_stop_loss_sell,'Sell')
 
 
-    assert pos_list[0].status == PositionStatus.FILLED
-    assert pos_list[1].status == PositionStatus.VOID
-    assert pos_list[2].status == PositionStatus.FILLED
-    assert pos_list[3].status == PositionStatus.VOID
-    assert exec_pos_list[0].status == PositionStatus.FILLED
-    assert exec_pos_list[1].status == PositionStatus.FILLED
+    assert pos_list[0].status == OrderStatus.FILLED
+    assert pos_list[1].status == OrderStatus.VOID
+    assert pos_list[2].status == OrderStatus.FILLED
+    assert pos_list[3].status == OrderStatus.VOID
+    assert exec_pos_list[0].status == OrderStatus.FILLED
+    assert exec_pos_list[1].status == OrderStatus.FILLED
 
     USD_amount = P1.master_table[P1.master_table['name'] == give_obj_name\
                                  ]['quantity'].iloc[0]
@@ -343,12 +346,12 @@ def test_onetradeperday_sell_closeexit() -> None:
     EES_dict, trade_open, trade_close, \
     pos_list, exec_pos_list = onetradeperday(date_interest_close_exit_sell,'Sell')
     
-    assert pos_list[0].status == PositionStatus.FILLED
-    assert pos_list[1].status == PositionStatus.VOID
-    assert pos_list[2].status == PositionStatus.VOID
-    assert pos_list[3].status == PositionStatus.FILLED
-    assert exec_pos_list[0].status == PositionStatus.FILLED
-    assert exec_pos_list[1].status == PositionStatus.FILLED
+    assert pos_list[0].status == OrderStatus.FILLED
+    assert pos_list[1].status == OrderStatus.VOID
+    assert pos_list[2].status == OrderStatus.VOID
+    assert pos_list[3].status == OrderStatus.FILLED
+    assert exec_pos_list[0].status == OrderStatus.FILLED
+    assert exec_pos_list[1].status == OrderStatus.FILLED
 
     CL_amount = P1.master_table[P1.master_table['name'] == get_obj_name\
                                 ]['quantity'].iloc[0]

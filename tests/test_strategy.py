@@ -5,10 +5,14 @@ Created on Fri May 31 03:27:22 2024
 
 @author: dexter
 """
+# Python import
 import datetime as datetime
-import EC_tools.read as read
+
+# EC_tools import
+import EC_tools.base.read as read
 import EC_tools.utility as util
 from EC_tools.strategy import SignalStatus
+
 from crudeoil_future_const import DATA_FILEPATH, \
                                   DAILY_DATA_PKL, DAILY_MINUTE_DATA_PKL, \
                                   DAILY_APC_PKL

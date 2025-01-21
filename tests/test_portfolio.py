@@ -5,15 +5,17 @@ Created on Tue May 28 02:08:35 2024
 
 @author: dexter
 """
-from crudeoil_future_const import DATA_FILEPATH, RESULT_FILEPATH
 #import unittest
 #from werkzeug import exceptions
 import datetime
 import pandas as pd
 import pytest
 
-from EC_tools.portfolio import Asset, Portfolio
+from EC_tools.portfolio.asset import Asset
+from EC_tools.portfolio import Portfolio
 #import EC_tools.utility as util
+from crudeoil_future_const import DATA_FILEPATH, RESULT_FILEPATH
+
 
 PRICE_TABLE = {"CLc1": DATA_FILEPATH + "/history_data/Day/CL.day",
                "CLc2": DATA_FILEPATH + "/history_data/Day/CL_d01.day",

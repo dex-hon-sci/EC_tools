@@ -9,6 +9,9 @@ The Strategy module contains the parent class for all strategy to be applied in
 signal generation. 
 
 """
+# python import
+from dataclasses import dataclass, field
+
 import numpy as np
 import pandas as pd
 
@@ -17,7 +20,7 @@ from numpy.typing import NDArray
 
 from enum import Enum, auto
 
-import EC_tools.math_func as mfunc
+import EC_tools.utility.math_func as mfunc
 
 __all__ = ["SignalStatus", "Strategy",
            "ArgusMRStrategy","ArgusMRStrategyMode",
@@ -26,6 +29,11 @@ __author__="Dexter S.-H. Hon"
 
 APC_LENGTH = len(np.arange(0.0025, 0.9975, 0.0025))
 
+@dataclass
+class Signal(object):
+    duration = ""
+    
+@dataclass
 class SignalStatus(Enum):
     """
     A simple class that contains the avaliable status for signals.

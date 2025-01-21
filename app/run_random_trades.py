@@ -8,23 +8,24 @@ Created on Tue Dec 10 19:38:52 2024
 A quick application script to evaluate if a trading strategy is viable.
 
 """
+# Python import
 import sys
 import os
-
-sys.path.insert(0, '/home/dexter/Euler_Capital_codes/EC_tools/')
-
 import datetime
 import random
 
+sys.path.insert(0, '/home/dexter/Euler_Capital_codes/EC_tools/')
+
+# Common Package import
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
-
 import pandas_market_calendars as mcal
 
+# EC_tools import
 import EC_tools.utility as util
-import EC_tools.read as read
+import EC_tools.base.read as read
 
 from crudeoil_future_const import DAILY_DATA_PKL, DAILY_MINUTE_DATA_PKL, \
                                   SIZE_DICT, round_turn_fees
