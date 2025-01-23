@@ -21,6 +21,7 @@ from numpy.typing import NDArray
 from enum import Enum, auto
 
 import EC_tools.utility.math_func as mfunc
+from EC_tools.strategy.signal import SignalStatus, Signal
 
 __all__ = ["SignalStatus", "Strategy",
            "ArgusMRStrategy","ArgusMRStrategyMode",
@@ -28,20 +29,6 @@ __all__ = ["SignalStatus", "Strategy",
 __author__="Dexter S.-H. Hon"
 
 APC_LENGTH = len(np.arange(0.0025, 0.9975, 0.0025))
-
-@dataclass
-class Signal(object):
-    duration = ""
-    
-@dataclass
-class SignalStatus(Enum):
-    """
-    A simple class that contains the avaliable status for signals.
-    
-    """
-    BUY = "Buy" # When the position is added but not filled
-    SELL = "Sell" # When the position is executed
-    NEUTRAL = "Neutral" # When the position is cancelled
 
 
 class Strategy(Protocol):

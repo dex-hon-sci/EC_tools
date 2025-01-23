@@ -20,7 +20,7 @@ import pandas as pd
 import pickle
 
 # EC_tools import
-import EC_tools.read as read
+import EC_tools.base.read as read
 import EC_tools.utility as util
 from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST,\
                                   APC_FILE_COMPLETE_LOC,\

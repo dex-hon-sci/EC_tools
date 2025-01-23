@@ -73,6 +73,10 @@ class Trade(Protocol):
     def auto_unload_all(self, bool_val: bool):
         self._auto_unload_all = bool_val
     
+    
+    # time speciised order type
+    # duration limited order type
+    
     def add_order(self, 
                      give_obj_name: str, 
                      get_obj_name: str, 
