@@ -14,7 +14,7 @@ import pickle
 import pandas as pd
 
 # EC_tools import
-import EC_tools.read as read
+import EC_tools.base.read as read
 import EC_tools.utility as util
 
 from crudeoil_future_const import SYMBOL_LIST, HISTORY_DAILY_FILE_LOC,\

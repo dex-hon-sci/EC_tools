@@ -44,6 +44,9 @@ class Portfolio(object):
 
     It contains the pool list which contain every transaction operating on this
     Portfolio.
+    
+    Portfolio only contrains the asset transaction record and the entirety
+    order records.
 
 
     """
@@ -53,8 +56,8 @@ class Portfolio(object):
         self.__pool_datetime: list = []
         self._pool: list = []
         self._pool_window: list = []
-        self._position_pool: list = []
-        self._position_pool_window: list = []
+        self._order_pool: list = []
+        self._order_pool_window: list = []
         self._table: pd.DataFrame = None
         self._master_table: pd.DataFrame = None
         self._zeropoint: float = 0.0  # The zero point value for the portfolio
@@ -165,46 +168,46 @@ class Portfolio(object):
         return self._pool_window
 
 
-    def set_position_pool_window(self,
+    def set_order_pool_window(self,
                                  start_time: datetime.datetime = \
                                              datetime.datetime(1900, 1, 1),
                                  end_time: datetime.datetime = \
                                            datetime.datetime(2200, 12, 31)):
         
-        position_time_list = [pos.open_time for pos in self.position_pool]
+        order_time_list = [pos.open_time for pos in self.order_pool]
         
         start_time_delta_list = [abs(pool_dt - start_time) for pool_dt in
-                                 position_time_list]
+                                 order_time_list]
         end_time_delta_list = [abs(pool_dt - end_time) for pool_dt in
-                               position_time_list]
+                               order_time_list]
         
         # define a window of interest amount the pool object
         start_time_index = start_time_delta_list.index(min(start_time_delta_list))
         end_time_index = end_time_delta_list.index(min(end_time_delta_list))
 
 
-        self._position_pool_window = self.position_pool[start_time_index:\
+        self._order_pool_window = self.order_pool[start_time_index:\
                                                         end_time_index+1]
         
-        return self._position_pool_window
+        return self._order_pool_window
     
-    def position_pool_window(self):
+    def order_pool_window(self):
         """
-        A subset of position pool that is made by the set_position_pool_window
+        A subset of order pool that is made by the set_order_pool_window
         method. 
 
         """
-        return self._position_pool_window
+        return self._order_pool_window
     
     @property
-    def position_pool(self):
+    def order_pool(self):
         """
-        The master position pool is a list that contains all the Position objects.
+        The master order pool is a list that contains all the Order objects.
         This can be used to construct trading records using the PortfolioLog
         class and its method
 
         """
-        return self._position_pool
+        return self._order_pool
 
 
     @staticmethod
@@ -767,16 +770,16 @@ class PortfolioLog(Portfolio):
                         'Exit_Date', 'Exit_Datetime', 'Exit_Price',
                         'Trade_Return', 'Trade_Return_Fraction']
 
-        position_pool = self.portfolio.position_pool
+        order_pool = self.portfolio.order_pool
         book = Bookkeep(bucket_type='backtest', custom_keywords_list=custom_list0)
 
         #, 'Scaled_Return']  # , 'Risk_Reward_Ratio', 'strategy_name']
 
         trade_PNL = book.make_bucket()
 
-        def select_func_fill(x): return position_pool[x].status.value == 'Filled'
+        def select_func_fill(x): return order_pool[x].status.value == 'Filled'
         
-        PP = read.group_trade(position_pool,
+        PP = read.group_trade(order_pool,
                               select_func=select_func_fill)
         
         #print(PP[0:2])
@@ -870,12 +873,12 @@ class PortfolioMetrics(Portfolio):
         list
             Filled position list
         """
-        position_pool = self._portfolio.position_pool
+        order_pool = self._portfolio.order_pool
 
         def select_func_fill(x): 
-            return position_pool[x].status.value == 'Filled'
+            return order_pool[x].status.value == 'Filled'
         
-        PP = read.group_trade(position_pool,
+        PP = read.group_trade(order_pool,
                               select_func=select_func_fill)
         return PP
     
@@ -928,12 +931,12 @@ class PortfolioMetrics(Portfolio):
         return len(self.tradebook), '#', "Total Trades"
 
     def total_fee_paid(self) -> float: # WIP
-        position_pool = self._portfolio.position_pool
+        order_pool = self._portfolio.order_pool
 
         def select_func_fill(x): 
-            return position_pool[x].status.value == 'Filled'
+            return order_pool[x].status.value == 'Filled'
         
-        PP = read.group_trade(position_pool,
+        PP = read.group_trade(order_pool,
                               select_func=select_func_fill)
 
         total_fee_dict = dict()
@@ -1061,11 +1064,11 @@ class PortfolioMetrics(Portfolio):
         return total_open_pos, '#', 'Total Open Positions'
     
     def total_close_positions(self): 
-        position_pool = self._portfolio.position_pool
+        order_pool = self._portfolio.order_pool
         
         # Group the trades by ID and Filled status
-        trade_pool = read.group_trade(position_pool, select_func= 
-                                      lambda x : position_pool[x].status.value 
+        trade_pool = read.group_trade(order_pool, select_func= 
+                                      lambda x : order_pool[x].status.value 
                                       == 'Filled')
         
         total_open_pos = sum(1 for pos in trade_pool if len(pos) == 2)

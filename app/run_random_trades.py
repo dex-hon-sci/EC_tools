@@ -115,10 +115,10 @@ def run_rand_trade_day(minute_data: dict,
     df = minute_data[symbol]
     # randomising 
     # T_intervals
-    mu, sigma = 5, 0.5
+    mu, sigma = 60, 10
     #mu, sigma = 10, 2
     # Win Rate
-    PR = 0.6
+    PR = 0.5
     
     # generate trading dates
     dates = gen_rand_sublist(N_days, parent_list = TRADING_DATES)

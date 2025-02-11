@@ -236,6 +236,9 @@ def test_table_invlaid()-> None:
     with pytest.raises(Exception):
         PP.table 
         
+test_Asset()
+test_add_str()
+test_sub_str()
 # =============================================================================
 #     
 # class test_invalid(unittest.TestCase):

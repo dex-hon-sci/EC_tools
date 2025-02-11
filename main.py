@@ -7,12 +7,12 @@ Created on Sat Jun 22 23:32:11 2024
 """
 # Common package import
 
-from numba import jit
+#from numba import jit
 # EC_tools import
-from EC_tools.read import render_PNL_xlsx, open_portfolio
+from EC_tools.base.read import render_PNL_xlsx, open_portfolio
 import EC_tools.utility as util
 from EC_tools.trade import OneTradePerDay, BiDirectionalTrade
-from EC_tools.simple_trade import onetrade_simple
+#from EC_tools.simple_trade import onetrade_simple
 from EC_tools.backtest import LoopType
 from EC_tools.portfolio import PortfolioMetrics, PortfolioLog, PortfolioLog
 

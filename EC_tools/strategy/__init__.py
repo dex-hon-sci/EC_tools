@@ -21,9 +21,8 @@ from numpy.typing import NDArray
 from enum import Enum, auto
 
 import EC_tools.utility.math_func as mfunc
-from EC_tools.strategy.signal import SignalStatus, Signal
-
-__all__ = ["SignalStatus", "Strategy",
+from EC_tools.strategy.signal import SignalStatus, Signal, SignalType
+__all__ = ["Strategy",
            "ArgusMRStrategy","ArgusMRStrategyMode",
            "ArgusMonthlyStrategy"]
 __author__="Dexter S.-H. Hon"
@@ -51,7 +50,7 @@ class Strategy(Protocol):
                           "Sell": [False]}
         
         # make the default value of a strategy 'Neutral'
-        self._direction = SignalStatus.NEUTRAL 
+        self._direction = SignalType.NEUTRAL 
         
     @property
     def buy_cond(self):
@@ -84,13 +83,13 @@ class Strategy(Protocol):
     def direction(self):
         
         if self.buy_cond == True:
-            self._direction = SignalStatus.BUY
+            self._direction = SignalType.BUY
         
         if self.sell_cond == True:
-                self._direction = SignalStatus.SELL
+                self._direction = SignalType.SELL
 
         if self.neutral_cond == True:
-            self._direction = SignalStatus.NEUTRAL
+            self._direction = SignalType.NEUTRAL
 
         return self._direction
     
@@ -363,7 +362,7 @@ class ArgusMRStrategy(Strategy):
 
         """
 
-        if self.direction == SignalStatus.BUY:
+        if self.direction == SignalType.BUY:
             # (A) Entry region at price < APC p=0.4 and 
             entry_price = [float(self._curve_today_spline(buy_range[0][0])), 
                            float(self._curve_today_spline(buy_range[0][1]))]
@@ -374,7 +373,7 @@ class ArgusMRStrategy(Strategy):
             stop_loss = float(self._curve_today_spline(buy_range[2]))
 
             
-        elif self.direction == SignalStatus.SELL:
+        elif self.direction == SignalType.SELL:
             # (A) Entry region at price > APC p=0.6 and 
             entry_price = [float(self._curve_today_spline(sell_range[0][0])), 
                            float(self._curve_today_spline(sell_range[0][1]))]
@@ -384,7 +383,7 @@ class ArgusMRStrategy(Strategy):
             # (C) Stop loss at APC p=0.9
             stop_loss = float(self._curve_today_spline(sell_range[2]))
             
-        elif self.direction == SignalStatus.NEUTRAL:
+        elif self.direction == SignalType.NEUTRAL:
             entry_price = ["NA", "NA"]
             exit_price = ["NA", "NA"]
             stop_loss = "NA"
@@ -453,11 +452,11 @@ class ArgusMRStrategy(Strategy):
         entry_price, exit_price, stop_loss = self.set_EES(buy_range=buy_range, 
                                                           sell_range=sell_range)
 
-        if direction == SignalStatus.BUY:
+        if direction == SignalType.BUY:
             entry_price_val, exit_price_val = entry_price[1], exit_price[0]
-        elif direction == SignalStatus.SELL:
+        elif direction == SignalType.SELL:
             entry_price_val, exit_price_val = entry_price[0], exit_price[1]
-        elif direction == SignalStatus.NEUTRAL:
+        elif direction == SignalType.NEUTRAL:
             entry_price_val, exit_price_val = entry_price[0], exit_price[0]
             
         # Bookkeeping area
@@ -649,7 +648,7 @@ class ArgusMRStrategyMode(Strategy):
         
         mode_quant = self._curve_today_reverse_spline(self.mode_price)
         
-        if self.direction == SignalStatus.BUY:
+        if self.direction == SignalType.BUY:
             # (A) Entry region at price < APC p=0.4 and 
             entry_price = float(self._curve_today_spline(mode_quant+ 
                                                           buy_range[0]))
@@ -661,7 +660,7 @@ class ArgusMRStrategyMode(Strategy):
                                                        buy_range[2]))
 
             
-        elif self.direction == SignalStatus.SELL:
+        elif self.direction == SignalType.SELL:
             # (A) Entry region at price > APC p=0.6 and 
             entry_price = float(self._curve_today_spline(mode_quant+
                                                           sell_range[0]))
@@ -672,7 +671,7 @@ class ArgusMRStrategyMode(Strategy):
             stop_loss = float(self._curve_today_spline(mode_quant+
                                                        sell_range[2]))
             
-        elif self.direction == SignalStatus.NEUTRAL:
+        elif self.direction == SignalType.NEUTRAL:
             entry_price = "NA"
             exit_price = "NA"
             stop_loss = "NA"
@@ -705,11 +704,11 @@ class ArgusMRStrategyMode(Strategy):
         entry_price, exit_price, stop_loss = self.set_EES(buy_range=buy_range, 
                                                           sell_range=sell_range)
 
-        if direction == SignalStatus.BUY:
+        if direction == SignalType.BUY:
             entry_price_val, exit_price_val = entry_price, exit_price
-        elif direction == SignalStatus.SELL:
+        elif direction == SignalType.SELL:
             entry_price_val, exit_price_val = entry_price, exit_price
-        elif direction == SignalStatus.NEUTRAL:
+        elif direction == SignalType.NEUTRAL:
             entry_price_val, exit_price_val = entry_price, exit_price
             
         # Bookkeeping area
@@ -998,7 +997,7 @@ class ArgusMRStrategy_22(Strategy):
 
         """
 
-        if self.direction == SignalStatus.BUY:
+        if self.direction == SignalType.BUY:
             # (A) Entry region at price < APC p=0.4 and 
             entry_price = [float(self._curve_today_spline(buy_range[0][0])), 
                            float(self._curve_today_spline(buy_range[0][1]))]
@@ -1009,7 +1008,7 @@ class ArgusMRStrategy_22(Strategy):
             stop_loss = float(self._curve_today_spline(buy_range[2]))
 
             
-        elif self.direction == SignalStatus.SELL:
+        elif self.direction == SignalType.SELL:
             # (A) Entry region at price > APC p=0.6 and 
             entry_price = [float(self._curve_today_spline(sell_range[0][0])), 
                            float(self._curve_today_spline(sell_range[0][1]))]
@@ -1019,7 +1018,7 @@ class ArgusMRStrategy_22(Strategy):
             # (C) Stop loss at APC p=0.9
             stop_loss = float(self._curve_today_spline(sell_range[2]))
             
-        elif self.direction == SignalStatus.NEUTRAL:
+        elif self.direction == SignalType.NEUTRAL:
             entry_price = ["NA", "NA"]
             exit_price = ["NA", "NA"]
             stop_loss = "NA"
@@ -1088,11 +1087,11 @@ class ArgusMRStrategy_22(Strategy):
         entry_price, exit_price, stop_loss = self.set_EES(buy_range=buy_range, 
                                                           sell_range=sell_range)
 
-        if direction == SignalStatus.BUY:
+        if direction == SignalType.BUY:
             entry_price_val, exit_price_val = entry_price[1], exit_price[0]
-        elif direction == SignalStatus.SELL:
+        elif direction == SignalType.SELL:
             entry_price_val, exit_price_val = entry_price[0], exit_price[1]
-        elif direction == SignalStatus.NEUTRAL:
+        elif direction == SignalType.NEUTRAL:
             entry_price_val, exit_price_val = entry_price[0], exit_price[0]
             
         # Bookkeeping area
@@ -1373,7 +1372,7 @@ class ArgusMonthlyStrategy(Strategy):
                              prev_cum_avg * prev_cum_n
         
         
-        if self.direction == SignalStatus.BUY:
+        if self.direction == SignalType.BUY:
             # (A) Entry region at price < APC p=0.4 and 
             entry_price = [buy_target_lower_entry, buy_target_upper_entry]
             # (B) Exit price
@@ -1382,7 +1381,7 @@ class ArgusMonthlyStrategy(Strategy):
             stop_loss = buy_stoploss_exit
 
             
-        elif self.direction == SignalStatus.SELL:
+        elif self.direction == SignalType.SELL:
             # (A) Entry region at price > APC p=0.6 and 
             entry_price = [sell_target_lower_entry, sell_target_upper_entry]
             # (B) Exit price
@@ -1390,7 +1389,7 @@ class ArgusMonthlyStrategy(Strategy):
             # (C) Stop loss at APC p=0.9
             stop_loss = sell_stoploss_exit
             
-        elif self.direction == SignalStatus.NEUTRAL:
+        elif self.direction == SignalType.NEUTRAL:
             entry_price = ["NA", "NA"]
             exit_price = ["NA", "NA"]
             stop_loss = "NA"
@@ -1431,11 +1430,11 @@ class ArgusMonthlyStrategy(Strategy):
                                                           buy_range=buy_range, 
                                                           sell_range=sell_range)
 
-        if direction == SignalStatus.BUY:
+        if direction == SignalType.BUY:
             entry_price_val, exit_price_val = entry_price[1], exit_price[0]
-        elif direction == SignalStatus.SELL:
+        elif direction == SignalType.SELL:
             entry_price_val, exit_price_val = entry_price[0], exit_price[1]
-        elif direction == SignalStatus.NEUTRAL:
+        elif direction == SignalType.NEUTRAL:
             entry_price_val, exit_price_val = entry_price[0], exit_price[0]
             
         # Bookkeeping area

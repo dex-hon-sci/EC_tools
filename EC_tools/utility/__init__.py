@@ -13,6 +13,7 @@ import datetime
 import numpy as np
 import random
 import pickle
+import pandas_market_calendars as mcal
 
 def random_string(length:int=16):
     """
@@ -227,7 +228,6 @@ def convert_csv_to_npy(filename):
     print(dat[0:10])
     return dat
 
-import pandas_market_calendars as mcal
 
 def market_is_open(date, exchange="NYSE"):
     result = mcal.get_calendar(exchange).schedule(start_date=date, 

@@ -128,7 +128,7 @@ def twopanel_plot(x_data: list, y1_data: list, y2_data: list,
         ax1.plot(x_element, y1_element, ls=sub_line_list[i], 
                  label=sub_label_list[i], color=sub_col_list[i])
         
-    ax1.plot(x_data, y1_data,'-', c=line_color, label=label, alpha = alpha)
+    ax1.plot(x_data, y1_data,'o-', c=line_color, label=label, alpha = alpha)
     
     fmt = mdates.DateFormatter('%y-%m-%d')
     ax1.legend(loc='center left', bbox_to_anchor=(1, 0.5))
@@ -320,7 +320,7 @@ if __name__=='__main__':
     # 2021-1-11 to 2024-8-13
     
     #argusexact_cross_P20S10_PNL = "/home/dexter/Euler_Capital_codes/EC_tools/results/routine_updates/20241007_argusexact_cross_P20S35_PNL_.xlsx"
-    argusexact_cross_P20S10_PNL = "/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap/PNL_argusexact_G30S35_.xlsx"
+    argusexact_cross_P20S10_PNL = "/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap/PNL_argusexact_G25S10_.xlsx"
     
     date_all_new, cumPNL_all_new = extract_PNLplot_input(argusexact_cross_P20S10_PNL, 
                                                          val_col = 'cumulative P&L from trades for contracts (x 50)')

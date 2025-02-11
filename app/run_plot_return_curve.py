@@ -92,7 +92,7 @@ def plot_price_return_hist(x,y,**kwargs):
     return
 
 def run_main():
-    argusexact_cross_PS_PNL = "/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap/PNL_argusexact_G25S10_.xlsx"
+    argusexact_cross_PS_PNL = "/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap/PNL_argusexact_G40S10_.xlsx"
 
     big_price_diff, big_trade_return = [], []
 
@@ -118,7 +118,7 @@ def run_main():
 
     print(len(big_price_diff), len(big_trade_return))
     plot_price_return_hist(big_trade_return, big_price_diff, 
-                           plot_title="Benchmark MR Returns (TP 20%, SL 35%)", 
+                           plot_title="Benchmark MR Returns (TP 40%, SL 10%)", 
                            ylabel = "Daily Price Changes [%]",
                            xlabel = "Scaled Returns per Trade [USD]")
 

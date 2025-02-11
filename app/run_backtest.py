@@ -41,9 +41,9 @@ import EC_tools.backtest as backtest
 import EC_tools.utility as util
 from EC_tools.backtest import LoopType, Loop
 from EC_tools.trade import OneTradePerDay, MultiTradePerMonth
-from EC_tools.simple_trade import onetrade_simple
+#from EC_tools.simple_trade import onetrade_simple
 from EC_tools.portfolio import Portfolio
-from EC_tools.asset import Asset
+from EC_tools.portfolio.asset import Asset
 from crudeoil_future_const import OPEN_HR_DICT, CLOSE_HR_DICT, \
                                   DATA_FILEPATH, RESULT_FILEPATH,\
                                   ARGUS_EXACT_SIGNAL_FILE_LOC, \

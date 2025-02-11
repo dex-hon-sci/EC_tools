@@ -15,8 +15,8 @@ from crudeoil_future_const import APC_FILE_LOC, DATA_FILEPATH, SYMBOL_LIST, \
                                   MONTHLY_APC_PKL, SYMBOL_LIST_SHORT
 
 
-#APC_PKL_FILENAME = DATA_FILEPATH + '/pkl_vault/crudeoil_future_APC_full.pkl' 
-APC_PKL_FILENAME = MONTHLY_APC_PKL
+APC_PKL_FILENAME = DATA_FILEPATH + '/pkl_vault/crudeoil_future_APC_full.pkl' 
+#APC_PKL_FILENAME = MONTHLY_APC_PKL
 APC_quantile_label_list = ['0.1','0.4','0.5','0.6','0.9']
 
 apc_pkl = util.load_pkl(APC_PKL_FILENAME)
@@ -160,7 +160,7 @@ def plot_all_apc_price(symbol_list, col_list, start_date, end_date):
                     sub_y1_list= apc_quant_list,
                     sub_label_list = APC_quantile_label_list,
                     sub_col_list = ['w', 'w', 'w', 'w', 'w'], 
-                    sub_line_list = ['dashed', 'solid', 'dotted', 'solid', 'dashed'])
+                    sub_line_list = ['dashed', 'dotted', 'solid', 'dotted', 'dashed'])
         
 def plot_all_apc_price_OHLC(symbol_list, col_list, start_date, end_date):
 
@@ -217,7 +217,7 @@ if __name__=='__main__':
                 '#6ABBC6']
     
     start_date = datetime.datetime.strptime("2021-01-11", '%Y-%m-%d')
-    end_date = datetime.datetime.strptime('2024-06-17', '%Y-%m-%d')
+    end_date = datetime.datetime.strptime('2025-02-04', '%Y-%m-%d')
 
         
     #plot_all_apc_price(SYMBOL_LIST, COL_LIST, start_date, end_date)    

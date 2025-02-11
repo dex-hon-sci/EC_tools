@@ -40,10 +40,10 @@ class OrderType(Enum):
     LONG_SELL = 'Long-Sell'
     SHORT_BORROW = 'Short-Borrow'
     SHORT_BUYBACK = 'Short-Buyback'
-    CALL_BUY = 'Call-Buy'
-    CALL_SELL = 'Call-Sell'
-    PUT_BUY = 'Put-Buy'
-    PUT_SELL = 'Put-Sell'
+    #CALL_BUY = 'Call-Buy'
+    #CALL_SELL = 'Call-Sell'
+    #PUT_BUY = 'Put-Buy'
+    #PUT_SELL = 'Put-Sell'
     
     
 @dataclass

@@ -9,6 +9,7 @@ This is a utility library for mathematical operations.
 
 """
 import numpy as np
+import pandas as pd
 from scipy.interpolate import CubicSpline, UnivariateSpline
 import findiff as fd 
 
@@ -47,7 +48,9 @@ def generic_spline(x,y, method="cubic", s = 0):
 # =============================================================================
     return func(x,y)
 
-def find_quant(cdf, quant_list, val):
+def find_quant(cdf: np.array, 
+               quant_list: np.array, 
+               val: float | int):
     """
     This is an inverse Spline interpolation treating the cdf as the x-axis.
     This is meant to find the corresponding quantile with a given price.
@@ -57,8 +60,10 @@ def find_quant(cdf, quant_list, val):
 
     Parameters
     ----------
-    cdf : 1D pandas dataframe
+    cdf : 1D numpy array
         A 1D array that contains a discrete number of cdf points.
+    quant_list: 1D numpy array
+        
     val : float
         The given value (e.g. price).
 

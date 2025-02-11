@@ -45,7 +45,7 @@ def test_Order_input_valid()-> None:
     # optional asset control
     assert PP.size == 1
     assert PP.fee == None
-    assert len(PP.pos_id) == 16
+    assert len(PP.order_id) == 16
     
     #test price get method
     assert PP.price ==  PP._price
