@@ -450,6 +450,15 @@ def read_reformat_Portara_daily_data(filename: str,
 
 #tested
 def read_reformat_Portara_minute_data(filename: str,  
+                                      col_format: list = ['Date', 'Time',
+                                                          'Open', 'High', 
+                                                          'Low', 'Settle', 
+                                                          'Tick_Count', 
+                                                          'Volume', 
+                                                          'Contract Code',
+                                                          'Unadjusted Close',
+                                                          'Spread', 
+                                                          'Cumulative Spread'],
                                       add_col_data: dict = {},
                                       time_to_datetime = False) -> \
                                       pd.DataFrame:
@@ -468,8 +477,7 @@ def read_reformat_Portara_minute_data(filename: str,
 
     """
     history_data =  pd.read_csv(filename)
-    history_data.columns = ['Date', 'Time', 'Open', 'High', 'Low', 
-                            'Settle', 'Volume', 'Contract Code']
+    history_data.columns = col_format
     
     # include a function that let user to choose the reformat?
     
@@ -1451,28 +1459,28 @@ def group_trade(position_pool: list,
     # A function that matches the trade_id and group them in a list
     # First sort the pool by trade_id.
     pos_pool = position_pool.copy()
-    pos_pool.sort(key=lambda x : x.pos_id)
+    pos_pool.sort(key=lambda x : x.order_id)
     
     bucket, temp = [], []
-    trade_id_now = pos_pool[0].pos_id
+    trade_id_now = pos_pool[0].order_id
     
     
     i=0
     while i < len(pos_pool):
         # loop through each position, if the pos_id == trade_id_now, save in 
         # a temp list
-        if  pos_pool[i].pos_id == trade_id_now:
+        if  pos_pool[i].order_id == trade_id_now:
             if select_func(i):
                 temp.append(pos_pool[i])
             i = i + 1
                 
-        elif pos_pool[i].pos_id != trade_id_now: 
+        elif pos_pool[i].order_id != trade_id_now: 
             # Otherwise, put the temp list into the overall bucket, restart 
             # the counter and make a new temp list to repeat the process
             #print('switch')
             #print(i, pos_pool[i].pos_id)
             bucket.append(temp)
-            trade_id_now = pos_pool[i].pos_id
+            trade_id_now = pos_pool[i].order_id
             temp = []
             temp.append(pos_pool[i])
             

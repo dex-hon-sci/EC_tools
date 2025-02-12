@@ -301,16 +301,14 @@ class OneTradePerDay(Trade):
                                         open_time=open_time,
                                         trade_id=self.trade_id)
         
-# =============================================================================
-#         close_pos = super().add_order(give_obj_name, get_obj_name, 
-#                                          get_obj_quantity, close_price,
-#                                          size = size, fee = fee, 
-#                                          order_type = order_type2,
-#                                          open_time=open_time,
-#                                          trade_id=self.trade_id)
-# =============================================================================
+        close_order = super().add_order(give_obj_name, get_obj_name, 
+                                         get_obj_quantity, close_price,
+                                         size = size, fee = fee, 
+                                         order_type = order_type2,
+                                         open_time=open_time,
+                                         trade_id=self.trade_id)
 
-        pos_list = [entry_order, exit_order, stop_order]
+        pos_list = [entry_order, exit_order, stop_order, close_order]
         #print("pos_list", pos_list)
         return pos_list
     
@@ -445,7 +443,7 @@ class OneTradePerDay(Trade):
         #print("exec_pos_list", exec_pos_list)
         
         for pos in pos_list: # Add position in the position book
-            self._portfolio._position_pool.append(copy.copy(pos))
+            self._portfolio._order_pool.append(copy.copy(pos))
 
         return trade_open, trade_close, pos_list, exec_pos_list
     
@@ -775,7 +773,7 @@ class OneTradePerDay_2(Trade):
         self.EES_type = None
         self.EES_para_num = 1
         
-    def store_to_position_pool(self, 
+    def store_to_order_pool(self, 
                                key_dict: dict, 
                                pos_dict: dict,
                                exec_pos_dict: dict) -> None:
@@ -787,7 +785,7 @@ class OneTradePerDay_2(Trade):
             
          # Add position in the position book
         for pos in list(key_dict.values()):
-            self._portfolio._position_pool.append(copy.copy(pos))
+            self._portfolio._order_pool.append(copy.copy(pos))
                      
     @staticmethod
     def choose_EES_values(EES_dict: dict) -> tuple[tuple, tuple, tuple, tuple]:
@@ -1088,7 +1086,7 @@ class OneTradePerDay_2(Trade):
             ##print("closing_pos_testest_After",closing_pos)
             #print("closing_pos_testest",pos_dict['exit_pos'])
 
-        self.store_to_position_pool(key_dict = self.key_pos_dict, 
+        self.store_to_order_pool(key_dict = self.key_pos_dict, 
                                     pos_dict = self.pos_dict,
                                     exec_pos_dict = self.exec_pos_dict)
 
@@ -1154,7 +1152,7 @@ class OneTradePerDay_2(Trade):
                                                     void_time = trade_close[0])
                 
             
-        self.store_to_position_pool(key_dict = self.extra_key_pos_dict, 
+        self.store_to_order_pool(key_dict = self.extra_key_pos_dict, 
                                     pos_dict = self.extra_pos_dict,
                                     exec_pos_dict = self.extra_exec_pos_dict)
 
@@ -1289,7 +1287,7 @@ class MultiTradePerMonth(Trade):
         self.extra_key_pos_dict = None
         
 
-    def store_to_position_pool(self, 
+    def store_to_order_pool(self, 
                                key_dict: dict, 
                                pos_dict: dict,
                                exec_pos_dict: dict) -> None:
@@ -1301,7 +1299,7 @@ class MultiTradePerMonth(Trade):
             
          # Add position in the position book
         for pos in list(key_dict.values()):
-            self._portfolio._position_pool.append(copy.copy(pos))
+            self._portfolio._order_pool.append(copy.copy(pos))
         
     @staticmethod
     def choose_EES_values(EES_dict: dict) -> tuple[tuple, tuple, tuple, tuple]:
@@ -1531,7 +1529,7 @@ class MultiTradePerMonth(Trade):
             ##print("closing_pos_testest_After",closing_pos)
             #print("closing_pos_testest",pos_dict['exit_pos'])
 
-        self.store_to_position_pool(key_dict = self.key_pos_dict, 
+        self.store_to_order_pool(key_dict = self.key_pos_dict, 
                                     pos_dict = self.pos_dict,
                                     exec_pos_dict = self.exec_pos_dict)
         #print("trade_open, trade_close, self.pos_dict, self.exec_pos_dict")
@@ -1600,7 +1598,7 @@ class MultiTradePerMonth(Trade):
                                                     void_time = trade_close[0])
                 
             
-        self.store_to_position_pool(key_dict = self.extra_key_pos_dict, 
+        self.store_to_order_pool(key_dict = self.extra_key_pos_dict, 
                                     pos_dict = self.extra_pos_dict,
                                     exec_pos_dict = self.extra_exec_pos_dict)
     
@@ -1705,7 +1703,7 @@ class ConsecutiveTradePerMonth_2(Trade):
         self.extra_key_pos_dict = None
         
 
-    def store_to_position_pool(self, 
+    def store_to_order_pool(self, 
                                key_dict: dict, 
                                pos_dict: dict,
                                exec_pos_dict: dict) -> None:
@@ -1717,7 +1715,7 @@ class ConsecutiveTradePerMonth_2(Trade):
             
          # Add position in the position book
         for pos in list(key_dict.values()):
-            self._portfolio._position_pool.append(copy.copy(pos))   
+            self._portfolio._order_pool.append(copy.copy(pos))   
             
     @staticmethod
     def choose_EES_values(EES_dict: dict) -> tuple[tuple, tuple, tuple, tuple]:

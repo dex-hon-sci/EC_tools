@@ -14,7 +14,7 @@ import openpyxl
 import EC_tools.utility as util
 
 #xl_filename = "/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap/PNL_argusexact_G25S10_.xlsx"
-xl_filename = "/home/dexter/Euler_Capital_codes/EC_tools/results/EC_benchmark/EC_benchmark_prime.xlsx"
+xl_filename = "/home/dexter/Euler_Capital_codes/EC_tools/results/EC_benchmark/20240813_argusexact_cross_P25S10_PNL_2.xlsx"#EC_benchmark_prime.xlsx"
 wb_obj = openpyxl.load_workbook(xl_filename, keep_vba=True)
 
 #symbol_list = wb_obj.sheetnames
@@ -148,8 +148,8 @@ for sym in symbol_list:
     ax1 = fig.add_subplot(gs[0])
     ax2 = fig.add_subplot(gs[1], sharex=ax1)
     #ax1.plot(date_bucket1, return_bucket,'-', c="g")
-    ax1.bar(date_bucket1, return_bucket, color="g")
-    #ax1.plot(date_bucket1, cum_return_bucket, color="g")
+    #ax1.bar(date_bucket1, return_bucket, color="g")
+    ax1.plot(date_bucket1, cum_return_bucket, color="g")
     
     
     ax1.hlines(0,datetime.datetime(2020,11,22),

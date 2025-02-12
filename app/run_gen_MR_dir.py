@@ -145,8 +145,8 @@ def loop_signal(strategy: type[Strategy],
             price_code = APCs_this_date['symbol'].to_list()[0]
             
             # find the quantile of the opening price
-            price_330 = open_price_data[open_price_data['Date']==this_date]\
-                                                            ['Open Price'].item()
+            #price_330 = open_price_data[open_price_data['Date']==this_date]\
+            #                                                ['Open Price'].item()
             
             # The conidtions to decide whether we trim the full_contract_symbol
             # CLA2024J or CL24J
@@ -168,7 +168,7 @@ def loop_signal(strategy: type[Strategy],
             strategy_output = strategy(curve_this_date).\
                                         apply_strategy(history_data_lag5, 
                                                        apc_curve_lag5, 
-                                                       price_330,
+                                                       #price_330,
                                                        buy_range=buy_range, 
                                                        sell_range=sell_range,   
                                                        quantile = quantile)
@@ -275,9 +275,9 @@ def run_gen_MR_signals(strategy: type[Strategy],
     # Find the opening price at 03:30 UK time. If not found, 
     #loop through the next 30 minutes to find the opening price
     #price_330 = read.find_open_price(history_data_daily, history_data_minute)
-    price_330 = read.find_price_by_time(history_data_daily, 
-                                        history_data_minute,
-                                        open_hr=OPEN_HR_DICT[symbol])
+    #price_330 = read.find_price_by_time(history_data_daily, 
+    #                                    history_data_minute,
+    #                                    open_hr=OPEN_HR_DICT[symbol])
 
     # make an empty signal dictionary for storage
     book = Bookkeep(bucket_type = 'mr_signals')
@@ -294,15 +294,15 @@ def run_gen_MR_signals(strategy: type[Strategy],
     portara_dat = history_data_daily[(history_data_daily['Date'] >= start_date_lag) & 
                                       (history_data_daily['Date'] <= end_date)]
     
-    open_price_data = price_330[(price_330['Date'] >= start_date_lag) & 
-                                      (price_330['Date'] <= end_date)]
+    #open_price_data = price_330[(price_330['Date'] >= start_date_lag) & 
+    #                                  (price_330['Date'] <= end_date)]
     
     #print(APCs_dat, portara_dat, open_price_data)
     
     # The strategy will be ran in loop_signal decorator
     dict_contracts_quant_signals = loop_signal(strategy, book, 
                                                APCs_dat, portara_dat, 
-                                               open_price_data,
+                                               #open_price_data,
                                                start_date, end_date,
                                                buy_range=buy_range, 
                                                sell_range=sell_range,

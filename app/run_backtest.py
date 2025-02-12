@@ -496,7 +496,29 @@ def run_backtest_bulk(TradeMethod,
         
     elif method == "preload":
         #MASTER_SIGNAL_FILENAME
-        HISTORY_MINUTE_PKL = util.load_pkl(DAILY_MINUTE_DATA_PKL)
+        #HISTORY_MINUTE_PKL = util.load_pkl(DAILY_MINUTE_DATA_PKL)
+        
+        HISTORY_MINUTE_PKL_CLc1 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_CLc1.pkl')
+        HISTORY_MINUTE_PKL_CLc2 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_CLc2.pkl')
+        HISTORY_MINUTE_PKL_HOc1 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_HOc1.pkl')
+        HISTORY_MINUTE_PKL_HOc2 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_HOc2.pkl')
+        HISTORY_MINUTE_PKL_RBc1 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_RBc1.pkl')
+        HISTORY_MINUTE_PKL_RBc2 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_RBc2.pkl')
+        HISTORY_MINUTE_PKL_QOc1 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_QOc1.pkl')
+        HISTORY_MINUTE_PKL_QOc2 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_QOc2.pkl')
+        HISTORY_MINUTE_PKL_QPc1 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_QPc1.pkl')
+        HISTORY_MINUTE_PKL_QPc2 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_QPc2.pkl')
+        
+        HISTORY_MINUTE_PKL = {**HISTORY_MINUTE_PKL_CLc1, 
+                              **HISTORY_MINUTE_PKL_CLc2,
+                              **HISTORY_MINUTE_PKL_HOc1,
+                              **HISTORY_MINUTE_PKL_HOc2,
+                              **HISTORY_MINUTE_PKL_RBc1,
+                              **HISTORY_MINUTE_PKL_RBc2,
+                              **HISTORY_MINUTE_PKL_QOc1,
+                              **HISTORY_MINUTE_PKL_QOc2,
+                              **HISTORY_MINUTE_PKL_QPc1,
+                              **HISTORY_MINUTE_PKL_QPc2}
 
         PP = run_backtest_portfolio_preloaded(TradeMethod,
                                               master_signal_filename, 

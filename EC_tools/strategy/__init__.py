@@ -207,7 +207,7 @@ class ArgusMRStrategy(Strategy):
         
     
     def run_cond(self, data: dict, 
-                 open_price: float, 
+                 #open_price: float, 
                  total_lag_days: int = 2, 
                  apc_mid_Q: float = 0.5): 
         """
@@ -397,7 +397,7 @@ class ArgusMRStrategy(Strategy):
     def apply_strategy(self, 
                        history_data_lag: pd.DataFrame, 
                        apc_curve_lag: pd.DataFrame, 
-                       open_price: float, 
+                       #open_price: float, 
                        quantile: list[float] = [0.25,0.4,0.6,0.75],
                        total_lag_days: int = 2, 
                        apc_mid_Q: float = 0.5, 
@@ -444,7 +444,7 @@ class ArgusMRStrategy(Strategy):
         strategy_info, quantile_info = self.gen_data(history_data_lag, apc_curve_lag,
                                                      quantile = quantile)
         
-        direction, cond_info = self.run_cond(strategy_info, open_price,
+        direction, cond_info = self.run_cond(strategy_info,# open_price,
                                              total_lag_days = total_lag_days, 
                                              apc_mid_Q = apc_mid_Q)
                                              
@@ -574,7 +574,8 @@ class ArgusMRStrategyMode(Strategy):
  
         return strategy_info, qunatile_info 
     
-    def run_cond(self, data, open_price_quant, total_lag_days = 2):
+    def run_cond(self, data, #open_price_quant, 
+                 total_lag_days = 2):
         
         rollingaverage_q = data['rollingaverage']
         lag_close_q_list = [data['lag_list'][i] for i in range(total_lag_days)]
@@ -589,7 +590,7 @@ class ArgusMRStrategyMode(Strategy):
         # (2) rolling 5 days average lower than the median apc 
         cond_buy_list_2 = [(rollingaverage_q < average_mode_Q)]
         # (3) price at today's opening hour above the 0.1 quantile of today's apc
-        cond_buy_list_3 = [(open_price_quant >= 0.1)]
+        #cond_buy_list_3 = [(open_price_quant >= 0.1)]
         
         # "SELL" condition
         # (1) Two consecutive days of closing price higher than the signal median
@@ -597,15 +598,15 @@ class ArgusMRStrategyMode(Strategy):
         # (2) rolling 5 days average higher than the median apc 
         cond_sell_list_2 = [(rollingaverage_q > average_mode_Q)]
         # (3) price at today's opening hour below the 0.9 quantile of today's apc
-        cond_sell_list_3 = [(open_price_quant <= 0.9)]
+        #cond_sell_list_3 = [(open_price_quant <= 0.9)]
         
         # save the condtion boolean value to the sub-condition dictionary
         self._sub_buy_cond_dict = {'NCONS': [cond_buy_list_1],	
-                             'NROLL': [cond_buy_list_2],
-                             'OP_WITHIN': [cond_buy_list_3]}
+                             'NROLL': [cond_buy_list_2],}
+        #                     'OP_WITHIN': [cond_buy_list_3]}
         self._sub_sell_cond_dict = {'NCONS': [cond_sell_list_1],	
-                             'NROLL': [cond_sell_list_2],
-                             'OP_WITHIN': [cond_sell_list_3]}
+                             'NROLL': [cond_sell_list_2],}
+        #                     'OP_WITHIN': [cond_sell_list_3]}
                              
         # Store all sub-conditions into 
         self.sub_cond_dict = {'Buy':[sum(self._sub_buy_cond_dict[key],[]) 
@@ -685,7 +686,7 @@ class ArgusMRStrategyMode(Strategy):
     def apply_strategy(self, 
                        history_data_lag, 
                        apc_curve_lag, 
-                       open_price, 
+                       #open_price, 
                        quantile: list = [-0.1, 0.0, +0.1],
                        total_lag_days: int = 2, 
                        buy_range: tuple = (-0.1, 0.1, -0.45), 
@@ -694,10 +695,10 @@ class ArgusMRStrategyMode(Strategy):
         strategy_info, quantile_info = self.gen_data(history_data_lag, apc_curve_lag,
                                                      quantile_delta=quantile)
         
-        open_price_quant = mfunc.find_quant(self._curve_today,
-                                            self._quant_list, open_price)
+        #open_price_quant = mfunc.find_quant(self._curve_today,
+        #                                    self._quant_list, open_price)
 
-        direction, cond_info = self.run_cond(strategy_info, open_price_quant,
+        direction, cond_info = self.run_cond(strategy_info, #open_price_quant,
                                              total_lag_days = total_lag_days)
                                              
         

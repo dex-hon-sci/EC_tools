@@ -134,8 +134,8 @@ def run_preprocess() -> None:
     #                     save_filename = DAILY_APC_PKL)
     #create_aggegrate_pkl(HISTORY_DAILY_FILE_LOC, read.read_reformat_Portara_daily_data,
     #                     save_filename = DAILY_DATA_PKL)
-    #create_aggegrate_pkl(HISTORY_MINTUE_FILE_LOC, read.read_reformat_Portara_minute_data,
-    #                     save_filename = DAILY_MINUTE_DATA_PKL)
+    create_aggegrate_pkl(HISTORY_MINTUE_FILE_LOC, read.read_reformat_Portara_minute_data,
+                         save_filename = DAILY_MINUTE_DATA_PKL)
     
     # calculate and load the open price data into a pkl file
     #create_open_price_list(HISTORY_DAILY_FILE_LOC, HISTORY_MINTUE_FILE_LOC)
@@ -156,9 +156,9 @@ def run_preprocess() -> None:
     
     #create_minute_cumavg_list(HISTORY_MINTUE_FILE_LOC, HISTORY_DAILY_CUMAVG_IN_MONTH,
     #                          )
-    create_aggegrate_pkl(HISTORY_MINUTE_CUMAVG_IN_MONTH, 
-                         read.read_reformat_dateNtime,
-                         save_filename = MINUTE_CUMAVG_MONTH_PKL)
+    #create_aggegrate_pkl(HISTORY_MINUTE_CUMAVG_IN_MONTH, 
+    #                     read.read_reformat_dateNtime,
+    #                     save_filename = MINUTE_CUMAVG_MONTH_PKL)
 
 if __name__ == "__main__":
     print(SYMBOL_LIST)

@@ -28,7 +28,8 @@ import EC_tools.utility.math_func as mfunc
 import EC_tools.utility as util
 
 from crudeoil_future_const import HISTORY_MINTUE_FILE_LOC, APC_FILE_LOC, \
-                                  OPEN_HR_DICT, CLOSE_HR_DICT, APC_LENGTH
+                                  OPEN_HR_DICT, CLOSE_HR_DICT, APC_LENGTH,\
+                                  WRONG_OPEN_HR_DICT
 color_dict_light_mode = {'data_col':'k','bg_col':'white', 'col':'g'}
 color_dict_dark_mode = {'data_col':'white','bg_col':'k', 'col':'g'}
 
@@ -697,12 +698,12 @@ def plot_minute(filename_minute: str, signal_filename: str,
     #quant_price_list = [curve['0.05'], curve['0.4'], curve['0.5'], 
     #                    curve['0.6'], curve['0.95']]
     
-    quant_list=['q0.05','q0.25', 'q0.4', 'q0.5', 'q0.6', 'q0.75', 'q0.95']
-    quant_price_list = [curve['0.05'], 
-                        curve['0.25'], curve['0.4'], 
+    quant_list=['q0.3','q0.4', 'q0.45', 'q0.5', 'q0.6', 'q0.65', 'q0.7']
+    quant_price_list = [curve['0.3'], 
+                        curve['0.4'], curve['0.45'], 
                         curve['0.5'], 
-                        curve['0.6'], curve['0.75'], 
-                        curve['0.95']]
+                        curve['0.6'], curve['0.65'], 
+                        curve['0.7']]
 
 
     # Define the upper and lower bound of the pricing plot in the y-axis
@@ -750,8 +751,8 @@ if __name__ == "__main__":
     
     symbol = 'CLc1'
 
-    date_interest = "2024-08-13"
+    date_interest = "2025-02-04"
     
     plot_minute(HISTORY_MINTUE_FILE_LOC[symbol], APC_FILE_LOC[symbol], 
                 date_interest = date_interest, title=symbol, direction="Buy",
-                open_hr= OPEN_HR_DICT[symbol] , close_hr = CLOSE_HR_DICT[symbol])
+                open_hr= WRONG_OPEN_HR_DICT[symbol] , close_hr = CLOSE_HR_DICT[symbol])

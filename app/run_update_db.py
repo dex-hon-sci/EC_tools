@@ -36,9 +36,9 @@ from crudeoil_future_const import DAILY_APC_PKL, DAILY_DATA_PKL, \
                                   DAILY_MINUTE_DATA_PKL, APC_FILE_LOC, \
                                   HISTORY_DAILY_FILE_LOC, \
                                   HISTORY_MINTUE_FILE_LOC,\
-                                  MONTHS_TO_SYMBOLS, DATA_FILEPATH,\
-                                  PORTARA_CONTINUOUS_MINTUE_FILE_LOC,\
-                                  PORTARA_CONITNUOUS_DAILY_FILE_LOC
+                                  MONTHS_TO_SYMBOLS, DATA_FILEPATH
+                                  #PORTARA_CONTINUOUS_MINTUE_FILE_LOC,\
+                                  #PORTARA_CONITNUOUS_DAILY_FILE_LOC
 
 
 
@@ -319,17 +319,19 @@ def create_rolling_futures_Portara(start_date: datetime.datetime,
     print(master_table)
     return
 
-def copy_Portara_data():
-    symbols = list(PORTARA_CONTINUOUS_MINTUE_FILE_LOC.keys())
-    print("Copying continuous data to data folder.")
-    for symbol in symbols:
-        #print("{} {}".format(PORTARA_CONITNUOUS_DAILY_FILE_LOC[symbol],
-        #                              HISTORY_DAILY_FILE_LOC[symbol]))
-        os.system('copy "{}" "{}"'.format(PORTARA_CONITNUOUS_DAILY_FILE_LOC[symbol],
-                                          HISTORY_DAILY_FILE_LOC[symbol]))
-        os.system('copy "{}" "{}"'.format(PORTARA_CONTINUOUS_MINTUE_FILE_LOC[symbol],
-                                          HISTORY_MINTUE_FILE_LOC[symbol]))
-    print("Copy Complete!!")
+# =============================================================================
+# def copy_Portara_data():
+#     symbols = list(PORTARA_CONTINUOUS_MINTUE_FILE_LOC.keys())
+#     print("Copying continuous data to data folder.")
+#     for symbol in symbols:
+#         #print("{} {}".format(PORTARA_CONITNUOUS_DAILY_FILE_LOC[symbol],
+#         #                              HISTORY_DAILY_FILE_LOC[symbol]))
+#         os.system('copy "{}" "{}"'.format(PORTARA_CONITNUOUS_DAILY_FILE_LOC[symbol],
+#                                           HISTORY_DAILY_FILE_LOC[symbol]))
+#         os.system('copy "{}" "{}"'.format(PORTARA_CONTINUOUS_MINTUE_FILE_LOC[symbol],
+#                                           HISTORY_MINTUE_FILE_LOC[symbol]))
+#     print("Copy Complete!!")
+# =============================================================================
 
 
 # =============================================================================
@@ -355,6 +357,7 @@ def update_pkl(old_pkl_filename: str,
                time_proxies: list[str],
                read_func):
     
+    
     old_pkl = util.load_pkl(old_pkl_filename)
     symbols = list(file_loc_dict.keys())
 
@@ -363,15 +366,23 @@ def update_pkl(old_pkl_filename: str,
         old_data = old_pkl[symbol]
     
         print('old_data',old_data)
-        #Find the date of the latest entry
-        latest_entry = old_data[time_proxies[0]].iloc[-1]
-    
-        print('latest_entry',latest_entry)
-
         # read the latest_entry till today
         temp = read_func(file_loc_dict[symbol])
+
+        cond_list = []
+        for time_ele in range(time_proxies):
+            #Find the date of the latest entry
+            latest_entry = old_data[time_ele].iloc[-1]
+            cond_list.append(temp[time_ele]>latest_entry)
+        
+            print('latest_entry',latest_entry)
+            
         # select for the latest entry
-        temp = temp[temp[time_proxies[0]]>latest_entry]
+        select_cond = True #initialisation
+        for cond_ele in cond_list:
+            select_cond = (select_cond & cond_ele)
+            
+        temp = temp[select_cond]
         print('temp',temp)
 
         new_data = pd.concat([old_data, temp], ignore_index = True)
@@ -380,7 +391,7 @@ def update_pkl(old_pkl_filename: str,
         print(new_data[-10:])
             
         #Store them in the pkl
-        old_pkl[symbol] = new_data
+        #old_pkl[symbol] = new_data
         
     # Saving the pkl
     print("Saving")
@@ -399,8 +410,8 @@ def main():
     
     # Second update the source data
     # update APC,
-    download_latest_APC_list(AUTH_PACK, list(APC_FILE_LOC.values()), CAT_LIST, 
-                             KEYWORDS_LIST, SYMBOL_LIST, fast_dl=True)   
+    #download_latest_APC_list(AUTH_PACK, list(APC_FILE_LOC.values()), CAT_LIST, 
+    #                         KEYWORDS_LIST, SYMBOL_LIST, fast_dl=True)   
     # update Portara
     # Roll Portara data # new just used to roll function in Portara
     # Copy all new continuous data from Portara to the master data folder.
@@ -408,8 +419,8 @@ def main():
     
     # Third update the pkl data
     # Update APC pkl
-    update_pkl(DAILY_APC_PKL, APC_FILE_LOC, ["PERIOD"], 
-               read.read_reformat_APC_data)
+    #update_pkl(DAILY_APC_PKL, APC_FILE_LOC, ["PERIOD"], 
+    #           read.read_reformat_APC_data)
     # Update Portara Daily data (crudeoil futures) pkl
     #update_pkl(DAILY_DATA_PKL, HISTORY_DAILY_FILE_LOC, ["Date"], 
     #           read.read_reformat_Portara_daily_data)

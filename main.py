@@ -108,7 +108,7 @@ def run_main(strategy_name,
     strategy = MR_STRATEGIES_0[strategy_name]
     #SAVE_SIGNAL_FILENAME_LIST = list(FILE_LOC.values())
    
-    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/beyondmarketopen/20240813_argusexact_cross_P255S10_signal.csv'
+    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/EC_benchmark/20250210_argusexact_cross_P255S10_signal.csv'
 
     
     run_gen_signal_bulk(strategy, FILE_LOC,
@@ -126,7 +126,7 @@ def run_main(strategy_name,
 
     print("=========Running Back-Testing =============")
     
-    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/beyondmarketopen/20240813_argusexact_cross_P25S10_PNL.pkl' 
+    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/EC_benchmark/20250210_argusexact_cross_P25S10_PNL.pkl' 
     #SAVE_PNL_FILENAME_LIST = FILE_PNL_LOC
 
     run_backtest_bulk(trade_method, 
@@ -154,7 +154,7 @@ def run_main(strategy_name,
 
         P = open_portfolio(MASTER_PNL_FILENAME)
         PL = PortfolioLog(P)
-        PL.tradebook_filename = RESULT_FILEPATH + "/beyondmarketopen/20240813_argusexact_cross_P25S10_PNL.csv"
+        PL.tradebook_filename = RESULT_FILEPATH + "/EC_benchmark/20250210_argusexact_cross_P25S10_PNL.csv"
         PL.render_tradebook()
         PL.render_tradebook_xlsx()
         
@@ -167,9 +167,12 @@ if __name__ == "__main__":
     #start_date = "2022-01-05"
     #end_date = "2024-06-28"
     
-    start_date = "2021-01-11"
-    end_date = "2024-08-14"
+    #start_date = "2021-01-11"
+    #end_date = "2024-08-14"
     
+    start_date = "2025-01-02"
+    end_date = "2025-02-11"
+
     run_main('argus_exact', 
              OneTradePerDay, #OneTradePerDay, #onetrade_simple, #BiDirectionalTrade, 
              start_date, end_date,         
