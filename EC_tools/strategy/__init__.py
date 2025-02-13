@@ -398,13 +398,13 @@ class ArgusMRStrategy(Strategy):
                        history_data_lag: pd.DataFrame, 
                        apc_curve_lag: pd.DataFrame, 
                        #open_price: float, 
-                       quantile: list[float] = [0.25,0.4,0.6,0.75],
-                       total_lag_days: int = 2, 
-                       apc_mid_Q: float = 0.5, 
                        buy_range: tuple[list|tuple,float] = 
                                    ([0.25,0.4],[0.6,0.75],0.05), 
                        sell_range: tuple[list|tuple,float] = 
-                                   ([0.6,0.75],[0.25,0.4],0.95)):
+                                   ([0.6,0.75],[0.25,0.4],0.95),
+                       quantile: list[float] = [0.25,0.4,0.6,0.75],
+                       total_lag_days: int = 2, 
+                       apc_mid_Q: float = 0.5):
         """
         A method to apply the strategy.
 

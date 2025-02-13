@@ -29,7 +29,7 @@ import EC_tools.utility as util
 
 from crudeoil_future_const import HISTORY_MINTUE_FILE_LOC, APC_FILE_LOC, \
                                   OPEN_HR_DICT, CLOSE_HR_DICT, APC_LENGTH,\
-                                  WRONG_OPEN_HR_DICT
+                                  WRONG_OPEN_HR_DICT, DAILY_APC_PKL, DAILY_MINUTE_DATA_INDI_PKL
 color_dict_light_mode = {'data_col':'k','bg_col':'white', 'col':'g'}
 color_dict_dark_mode = {'data_col':'white','bg_col':'k', 'col':'g'}
 
@@ -37,8 +37,9 @@ pt_col='w'
 
 
 class XObject(object):
-    def __init__(self, x):
+    def __init__(self, x, date_interest):
         self._x = x
+        self._date_interest = date_interest
         
     @property
     def x(self):
@@ -83,20 +84,21 @@ class XObject(object):
         if fmt == datetime.time:  #tested
             pass
 
-        self._x = [datetime.datetime.combine(datetime.date.today(), t) 
+        self._x = [datetime.datetime.combine(self._date_interest.date(), t) 
                    for t in self._x]
         return self._x
     
 class AxisLimit(object):
     # make functions that check what datetime format we are operating in
-    def __init__(self):
+    def __init__(self, date_interest=datetime.datetime.today()):
         # These attributes define the frame of the plot
         self.price_lower_limit = 70.0 
         self.price_upper_limit = 78.0
-        self.start_line = datetime.datetime.combine(datetime.date.today(), 
+        self._date_interest = date_interest
+        self.start_line = datetime.datetime.combine(self._date_interest.date(), 
                                                      datetime.time(hour=0,
                                                                    minute=0))
-        self.end_line = datetime.datetime.combine(datetime.date.today(),
+        self.end_line = datetime.datetime.combine(self._date_interest.date(),
                                                    datetime.time(hour=23, 
                                                                  minute=59))
 
@@ -213,12 +215,12 @@ class PlotPricing(object):
             The figure.
     
         """
-        x_o = XObject(x)
+        x_o = XObject(x,date_interest)
         x_o.x = 'datetime'
         x_datetime = x_o.x
         
-        o_hr = XObject(open_hr)
-        c_hr = XObject(close_hr)
+        o_hr = XObject(open_hr,date_interest)
+        c_hr = XObject(close_hr,date_interest)
         o_hr.x = 'datetime'
         c_hr.x = 'datetime'
         open_hr = o_hr.x[0] 
@@ -231,7 +233,7 @@ class PlotPricing(object):
         
         #buy_time = datetime.datetime.combine(datetime.date.today(), buy_time)  
         #sell_time = datetime.datetime.combine(datetime.date.today(), sell_time)
-        EES_txt_start_time = datetime.datetime.combine(datetime.date.today(), 
+        EES_txt_start_time = datetime.datetime.combine(date_interest.date(), 
                                                        EES_txt_start_time)
 
         # choose the color mode
@@ -273,7 +275,7 @@ class PlotPricing(object):
                       quant_list, quant_price_list)
             
         # Add subcomponents  
-        subcomp = SubComponents(ax1)
+        subcomp = SubComponents(ax1,axis_limit=self.axis_limit)
         subcomp._quant_lines = True
         subcomp._add_EES_region = False
         subcomp._add_EES_range_region = True
@@ -335,12 +337,15 @@ class PlotPricing(object):
         # add cross over points
         if subcomp._add_crossover_pts:
             print("Add crossover points")
-            bppt_x1 = [datetime.datetime.combine(date_interest, t.time()) 
-                       for t in bppt_x1]
-            bppt_x2 = [datetime.datetime.combine(date_interest, t.time()) 
-                       for t in bppt_x2]
-            bppt_x3 = [datetime.datetime.combine(date_interest, t.time()) 
-                       for t in bppt_x3]
+# =============================================================================
+#             bppt_x1 = [datetime.datetime.combine(date_interest, t.time()) 
+#                        for t in bppt_x1]
+#             bppt_x2 = [datetime.datetime.combine(date_interest, t.time()) 
+#                        for t in bppt_x2]
+#             bppt_x3 = [datetime.datetime.combine(date_interest, t.time()) 
+#                        for t in bppt_x3]
+# =============================================================================
+
             print("subcomp._add_crossover_pts", subcomp._add_crossover_pts,
                   bppt_x1, bppt_y1, bppt_x2, bppt_y2, bppt_x3, bppt_y3)
             subcomp.crossover_pts(bppt_x1, bppt_y1, bppt_x2, bppt_y2, 
@@ -633,9 +638,9 @@ class SubComponents(object):
         print("crossover_pts")
         print(bppt_x1, bppt_y1, bppt_x2, bppt_y2, bppt_x3, bppt_y3)
         # crossover points set 1 
-        self.ax.plot(bppt_x1, bppt_y1,'o', ms=10, c='blue')
-        self.ax.plot(bppt_x2, bppt_y2,'o', ms=10, c='green')
-        self.ax.plot(bppt_x3, bppt_y3,'o', ms=26, c='red')
+        self.ax.plot(bppt_x1, bppt_y1,'o', ms=6, c='blue')
+        self.ax.plot(bppt_x2, bppt_y2,'o', ms=6, c='green')
+        self.ax.plot(bppt_x3, bppt_y3,'o', ms=6, c='red')
         
     def buysellpoints(self, buy_time = "1201", buy_price =  86.05,
                             sell_time = "1900", sell_price = 85.70):
@@ -656,22 +661,22 @@ def plot_minute(filename_minute: str, signal_filename: str,
                 close_hr: str = '1930',
                 APC_time_str: str = 'PERIOD', 
                 title: str ="",
+                sym="",
                 bppt_x1 =[], bppt_y1 = [], 
                 bppt_x2 =[], bppt_y2 = [], 
                 bppt_x3 =[], bppt_y3 = []):
     
     # read the reformatted minute history data
-    history_data = read.read_reformat_Portara_minute_data(filename_minute)
+    #history_data = read.read_reformat_Portara_minute_data(filename_minute)
+    history_data = util.load_pkl(filename_minute)[sym]
     
     #reformat the date of interest
-    date_interest_year = int(date_interest[:4])
-    date_interest_month = int(date_interest[5:7])
-    date_interest_day = int(date_interest[-2:])
+    #date_interest_year = int(date_interest[:4])
+    #date_interest_month = int(date_interest[5:7])
+    #date_interest_day = int(date_interest[-2:])
     
     #temporary solution here because to read the APC file I need to use string
-    date_interest_dt = datetime.datetime(year = date_interest_year, 
-                                         month = date_interest_month , 
-                                         day = date_interest_day)
+    date_interest_dt = datetime.datetime.strptime(date_interest,'%Y-%m-%d')
     
     # Get the history data on the date of interest
     interest = history_data[history_data['Date']  == date_interest_dt]
@@ -680,10 +685,13 @@ def plot_minute(filename_minute: str, signal_filename: str,
     #interest = util.convert_intmin_to_time(interest)
     
     x, y = interest['Time'], interest[price_approx]
-    print("x,y", x,y)
+    print("x,y", x, y)
+    print(type(x.iloc[70]))
     
     #read the APC file on the relevant date
-    curve = read.read_apc_data(signal_filename)
+    #curve = read.read_apc_data(signal_filename)
+    curve = util.load_pkl(signal_filename)[sym]
+    
     curve = curve[curve[APC_time_str] == date_interest]
     
     # Calculate the pdf from the cdf for plotting
@@ -698,20 +706,27 @@ def plot_minute(filename_minute: str, signal_filename: str,
     #quant_price_list = [curve['0.05'], curve['0.4'], curve['0.5'], 
     #                    curve['0.6'], curve['0.95']]
     
-    quant_list=['q0.3','q0.4', 'q0.45', 'q0.5', 'q0.6', 'q0.65', 'q0.7']
-    quant_price_list = [curve['0.3'], 
-                        curve['0.4'], curve['0.45'], 
+# =============================================================================
+#     quant_list=['q0.3','q0.35', 'q0.4', 'q0.5', 'q0.6', 'q0.65', 'q0.7']
+#     quant_price_list = [curve['0.3'], 
+#                         curve['0.35'], curve['0.4'], 
+#                         curve['0.5'], 
+#                         curve['0.6'], curve['0.65'], 
+#                         curve['0.7']]
+# =============================================================================
+    quant_list=['q0.05','q0.25', 'q0.4', 'q0.5', 'q0.6', 'q0.75', 'q0.95']
+    quant_price_list = [curve['0.05'], 
+                        curve['0.25'], curve['0.4'], 
                         curve['0.5'], 
-                        curve['0.6'], curve['0.65'], 
-                        curve['0.7']]
-
+                        curve['0.6'], curve['0.75'], 
+                        curve['0.95']]
 
     # Define the upper and lower bound of the pricing plot in the y-axis
     price_lower_limit = curve['0.03'].to_numpy()
     price_upper_limit = curve['0.97'].to_numpy()
     
     # First set up the axes limit class to define the plot limit
-    new_axis_limit = AxisLimit()
+    new_axis_limit = AxisLimit(date_interest=date_interest_dt)
     new_axis_limit.price_lower_limit = price_lower_limit
     new_axis_limit.price_upper_limit = price_upper_limit
     
@@ -734,7 +749,29 @@ def plot_minute(filename_minute: str, signal_filename: str,
     
     
 if __name__ == "__main__":
-
+# =============================================================================
+#     HISTORY_MINUTE_PKL_CLc1 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_CLc1.pkl')
+#     HISTORY_MINUTE_PKL_CLc2 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_CLc2.pkl')
+#     HISTORY_MINUTE_PKL_HOc1 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_HOc1.pkl')
+#     HISTORY_MINUTE_PKL_HOc2 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_HOc2.pkl')
+#     HISTORY_MINUTE_PKL_RBc1 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_RBc1.pkl')
+#     HISTORY_MINUTE_PKL_RBc2 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_RBc2.pkl')
+#     HISTORY_MINUTE_PKL_QOc1 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_QOc1.pkl')
+#     HISTORY_MINUTE_PKL_QOc2 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_QOc2.pkl')
+#     HISTORY_MINUTE_PKL_QPc1 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_QPc1.pkl')
+#     HISTORY_MINUTE_PKL_QPc2 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_QPc2.pkl')
+#     
+#     HISTORY_MINUTE_PKL = {**HISTORY_MINUTE_PKL_CLc1, 
+#                           **HISTORY_MINUTE_PKL_CLc2,
+#                           **HISTORY_MINUTE_PKL_HOc1,
+#                           **HISTORY_MINUTE_PKL_HOc2,
+#                           **HISTORY_MINUTE_PKL_RBc1,
+#                           **HISTORY_MINUTE_PKL_RBc2,
+#                           **HISTORY_MINUTE_PKL_QOc1,
+#                           **HISTORY_MINUTE_PKL_QOc2,
+#                           **HISTORY_MINUTE_PKL_QPc1,
+#                           **HISTORY_MINUTE_PKL_QPc2}
+# =============================================================================
     
     
     # filename_daily = "/home/dexter/Euler_Capital_codes/EC_tools/data/history_data/Day/QP_.day"
@@ -751,8 +788,77 @@ if __name__ == "__main__":
     
     symbol = 'CLc1'
 
-    date_interest = "2025-02-04"
+    date_interest = "2022-01-05"
+    first = datetime.datetime.combine(datetime.datetime(2025,2,4).date(), datetime.time(hour=6,minute=9))
+    #plot_minute(HISTORY_MINTUE_FILE_LOC[symbol], APC_FILE_LOC[symbol], 
+    #            date_interest = date_interest, title=symbol, direction="Buy",
+    #            open_hr= WRONG_OPEN_HR_DICT[symbol] , close_hr = CLOSE_HR_DICT[symbol])
+    entry_time = [datetime.datetime(2025, 2, 4, 5, 9), 
+                  datetime.datetime(2025, 2, 4, 5, 13), 
+                  datetime.datetime(2025, 2, 4, 5, 16), 
+                  datetime.datetime(2025, 2, 4, 5, 20), 
+                  datetime.datetime(2025, 2, 4, 5, 38), 
+                  datetime.datetime(2025, 2, 4, 6, 47), 
+                  datetime.datetime(2025, 2, 4, 6, 59),
+                  datetime.datetime(2025, 2, 4, 7, 28), 
+                  datetime.datetime(2025, 2, 4, 7, 50), 
+                  datetime.datetime(2025, 2, 4, 7, 55),
+                  datetime.datetime(2025, 2, 4, 8, 28),
+                  datetime.datetime(2025, 2, 4, 8, 31),
+                  datetime.datetime(2025, 2, 4, 8, 33), 
+                  datetime.datetime(2025, 2, 4, 10, 57), 
+                  datetime.datetime(2025, 2, 4, 11, 1), 
+                  datetime.datetime(2025, 2, 4, 11, 4)]
+    entry_price = [np.float64(71.87), np.float64(71.98),
+                   np.float64(71.98), np.float64(71.95),
+                   np.float64(71.92), np.float64(71.98),
+                   np.float64(71.95), np.float64(71.97),
+                   np.float64(71.96), np.float64(71.98),
+                   np.float64(71.98), np.float64(71.96), 
+                   np.float64(71.96),
+                   np.float64(71.98), np.float64(71.97),
+                   np.float64(71.92)]
     
-    plot_minute(HISTORY_MINTUE_FILE_LOC[symbol], APC_FILE_LOC[symbol], 
-                date_interest = date_interest, title=symbol, direction="Buy",
-                open_hr= WRONG_OPEN_HR_DICT[symbol] , close_hr = CLOSE_HR_DICT[symbol])
+    exit_time = [datetime.datetime(2025, 2, 4, 14, 50), 
+                 datetime.datetime(2025, 2, 4, 14, 57),  
+                 datetime.datetime(2025, 2, 4, 16, 5), 
+                 datetime.datetime(2025, 2, 4, 16, 19),
+                 datetime.datetime(2025, 2, 4, 17, 34),
+                 datetime.datetime(2025, 2, 4, 19, 58)]
+    exit_price = [np.float64(72.63),np.float64(72.56),np.float64(72.54),  
+                  np.float64(72.59),np.float64(72.59),np.float64(72.64)]
+    
+    stop_time = [datetime.datetime(2025, 2, 4, 8, 6), 
+                 datetime.datetime(2025, 2, 4, 8, 10), 
+                 datetime.datetime(2025, 2, 4, 8, 51), 
+                 datetime.datetime(2025, 2, 4, 9, 14), 
+                 datetime.datetime(2025, 2, 4, 9, 18), 
+                 datetime.datetime(2025, 2, 4, 9, 38), 
+                 datetime.datetime(2025, 2, 4, 9, 40), 
+                 datetime.datetime(2025, 2, 4, 10, 26), 
+                 datetime.datetime(2025, 2, 4, 11, 23),
+                 datetime.datetime(2025, 2, 4, 11, 30),
+                 datetime.datetime(2025, 2, 4, 11, 40),  
+                 datetime.datetime(2025, 2, 4, 11, 46),  
+                 datetime.datetime(2025, 2, 4, 11, 49),  
+                 datetime.datetime(2025, 2, 4, 12, 5)]
+    stop_price =[np.float64(71.74), np.float64(71.69), np.float64(71.74),
+                 np.float64(71.73), np.float64(71.74), np.float64(71.73),
+                 np.float64(71.74), np.float64(71.72), np.float64(71.73),
+                 np.float64(71.73), np.float64(71.74), np.float64(71.74),
+                 np.float64(71.74), np.float64(71.7)]
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+    
+     
+    apc_file_loc = DAILY_APC_PKL
+    plot_minute(DAILY_MINUTE_DATA_INDI_PKL[symbol], DAILY_APC_PKL, 
+                date_interest = date_interest, 
+                title=symbol, 
+                direction="Buy", 
+                sym=symbol,
+                open_hr= WRONG_OPEN_HR_DICT[symbol], 
+                close_hr = CLOSE_HR_DICT[symbol],
+                bppt_x1 =entry_time, bppt_y1 = entry_price,
+                bppt_x2 =exit_time, bppt_y2 = exit_price,
+                bppt_x3 =stop_time, bppt_y3 = stop_price)
+                #bppt_x1 =[first], bppt_y1 = [71.796])

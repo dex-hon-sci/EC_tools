@@ -377,47 +377,78 @@ class OneTradePerDay(Trade):
             
             return trade_open, trade_close, pos_list, exec_pos_list
             
-        # Case 2: An exit is hit, normal exit
-        elif entry_pt and exit_pt != (np.nan,np.nan):
-            #print("Noraml exit.")
-            trade_open, trade_close = entry_pt, exit_pt
-            opening_pos, closing_pos = entry_pos, exit_pos
-            #print("Before price adjustment", opening_pos, closing_pos)
-
-            # change the closing price
-            closing_pos.price = round(exit_pt[1],9)
-            
-            # Cancel all order positions
-            ExecuteOrder(stop_pos).cancel_pos(void_time= trade_close[0])
-            ExecuteOrder(close_pos).cancel_pos(void_time= trade_close[0])  
-            
-        # Case 3: stop loss
-        elif exit_pt== (np.nan,np.nan) and stop_pt != (np.nan,np.nan):
-            #print('Stop loss.')
-            trade_open, trade_close = entry_pt, stop_pt
-            opening_pos, closing_pos = entry_pos, stop_pos
-            #print("Before price adjustment", opening_pos, closing_pos)
-
-            # change the closing price
-            closing_pos.price = round(stop_pt[1],9)
-            
-            # Cancel all order positions
-            ExecuteOrder(exit_pos).cancel_pos(void_time= trade_close[0])
-            ExecuteOrder(close_pos).cancel_pos(void_time= trade_close[0])  
-            
-       # Case 4: Neither an exit or stop loss is hit, exit position at close time
-        elif exit_pt== (np.nan,np.nan) and stop_pt == (np.nan,np.nan):
-            #print("Sell at close.")
-            trade_open, trade_close = entry_pt, close_pt
-            opening_pos, closing_pos = entry_pos, close_pos
-            #print("Before price adjustment", opening_pos, closing_pos)
-
-            # change the closing price
-            closing_pos.price = round(close_pt[1],9)
-            
-            # Cancel all order positions
-            ExecuteOrder(stop_pos).cancel_pos(void_time=trade_close[0])
-            ExecuteOrder(exit_pos).cancel_pos(void_time=trade_close[0])
+        elif entry_pt != (np.nan,np.nan):
+            # Case 2: No SL points, normal exit
+            if exit_pt != (np.nan,np.nan) and stop_pt == (np.nan,np.nan):
+            #elif entry_pt != (np.nan,np.nan) and (exit_pt[0]<stop_pt[0]):
+                #print("Noraml exit.")
+                trade_open, trade_close = entry_pt, exit_pt
+                opening_pos, closing_pos = entry_pos, exit_pos
+                #print("Before price adjustment", opening_pos, closing_pos)
+    
+                # change the closing price
+                closing_pos.price = round(exit_pt[1],9)
+                
+                # Cancel all order positions
+                ExecuteOrder(stop_pos).cancel_pos(void_time= trade_close[0])
+                ExecuteOrder(close_pos).cancel_pos(void_time= trade_close[0])  
+                
+            # Case 3: No exit points, noraml SL
+            elif exit_pt == (np.nan,np.nan) and stop_pt != (np.nan,np.nan):
+            #elif entry_pt != (np.nan,np.nan) and (exit_pt[0] > stop_pt[0]):
+                #print('Stop loss.')
+                trade_open, trade_close = entry_pt, stop_pt
+                opening_pos, closing_pos = entry_pos, stop_pos
+                #print("Before price adjustment", opening_pos, closing_pos)
+    
+                # change the closing price
+                closing_pos.price = round(stop_pt[1],9)
+                
+                # Cancel all order positions
+                ExecuteOrder(exit_pos).cancel_pos(void_time= trade_close[0])
+                ExecuteOrder(close_pos).cancel_pos(void_time= trade_close[0]) 
+                
+            # Case 4: Both SL and exit points exit:
+            elif exit_pt != (np.nan,np.nan) and stop_pt != (np.nan,np.nan):
+                # Case 4.1: Stop pt is before exit pt
+                if exit_pt[0] > stop_pt[0]: # SL happens first
+                    trade_open, trade_close = entry_pt, stop_pt
+                    opening_pos, closing_pos = entry_pos, stop_pos
+                    #print("Before price adjustment", opening_pos, closing_pos)
+        
+                    # change the closing price
+                    closing_pos.price = round(stop_pt[1],9)
+                    
+                    # Cancel all order positions
+                    ExecuteOrder(exit_pos).cancel_pos(void_time= trade_close[0])
+                    ExecuteOrder(close_pos).cancel_pos(void_time= trade_close[0]) 
+                    
+                # Case 4.2 Exit pt is before Stop pt
+                elif exit_pt[0] < stop_pt[0]: # exit happens first
+                    trade_open, trade_close = entry_pt, exit_pt
+                    opening_pos, closing_pos = entry_pos, exit_pos
+                    #print("Before price adjustment", opening_pos, closing_pos)
+        
+                    # change the closing price
+                    closing_pos.price = round(exit_pt[1],9)
+                    
+                    # Cancel all order positions
+                    ExecuteOrder(stop_pos).cancel_pos(void_time= trade_close[0])
+                    ExecuteOrder(close_pos).cancel_pos(void_time= trade_close[0])  
+                    
+           # Case 5: Neither an exit or stop loss is hit, exit position at close time
+            elif exit_pt== (np.nan,np.nan) and stop_pt == (np.nan,np.nan):
+                #print("Sell at close.")
+                trade_open, trade_close = entry_pt, close_pt
+                opening_pos, closing_pos = entry_pos, close_pos
+                #print("Before price adjustment", opening_pos, closing_pos)
+    
+                # change the closing price
+                closing_pos.price = round(close_pt[1],9)
+                
+                # Cancel all order positions
+                ExecuteOrder(stop_pos).cancel_pos(void_time=trade_close[0])
+                ExecuteOrder(exit_pos).cancel_pos(void_time=trade_close[0])
         
         # change the price for the open position
         opening_pos.price = entry_pt[1]

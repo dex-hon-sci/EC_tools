@@ -858,6 +858,8 @@ class Loop(Protocol):
                                                                   open_hr_dt, 
                                                                   close_hr_dt, 
                                                                   direction)
+            #print('trunc_dict,target_entry, target_exit, stop_exit')
+            #print(trunc_dict,target_entry, target_exit, stop_exit)
 
             # Run the trade itself
             trade_open, trade_close, \
