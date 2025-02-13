@@ -569,7 +569,7 @@ if __name__ == "__main__":
     MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + "/monthly_test/test_master_signal.csv"
     MASTER_PNL_FILENAME = RESULT_FILEPATH + "/monthly_test/test_PNL.pkl"
     
-    HISTORY_MINUTE_PKL = util.load_pkl(DAILY_MINUTE_DATA_PKL)
+    #HISTORY_MINUTE_PKL = util.load_pkl(DAILY_MINUTE_DATA_PKL)
     HISTORY_MINUTE_CUMAVG_IN_MONTH_PKL = util.load_pkl(MINUTE_CUMAVG_MONTH_PKL)
     
     
@@ -580,50 +580,53 @@ if __name__ == "__main__":
     
     #start_date = "2024-03-04"
     #end_date = "2024-06-17"
-    backtest_result = \
-    run_backtest_portfolio_monthly(MultiTradePerMonth,                                     
-                                    MASTER_SIGNAL_FILENAME, 
-                                    HISTORY_MINUTE_PKL,
-                                    HISTORY_MINUTE_CUMAVG_IN_MONTH_PKL, 
-                                    start_date, end_date,
-                                    give_obj_name ="USD", 
-                                    get_obj_quantity = 1,
-                                    loop_type = LoopType.CROSSOVER,
-                                    open_hr_dict = OPEN_HR_DICT, 
-                                    close_hr_dict = CLOSE_HR_DICT, 
-                                    selected_directions = ["Buy", "Sell"],
-                                    plot_or_not = False)
-    
-    print(backtest_result.master_table)
-    
-    file = open(MASTER_SIGNAL_FILENAME, 'wb')
-    pickle.dump(backtest_result, file)
+# =============================================================================
+#     backtest_result = \
+#     run_backtest_portfolio_monthly(MultiTradePerMonth,                                     
+#                                     MASTER_SIGNAL_FILENAME, 
+#                                     HISTORY_MINUTE_PKL,
+#                                     HISTORY_MINUTE_CUMAVG_IN_MONTH_PKL, 
+#                                     start_date, end_date,
+#                                     give_obj_name ="USD", 
+#                                     get_obj_quantity = 1,
+#                                     loop_type = LoopType.CROSSOVER,
+#                                     open_hr_dict = OPEN_HR_DICT, 
+#                                     close_hr_dict = CLOSE_HR_DICT, 
+#                                     selected_directions = ["Buy", "Sell"],
+#                                     plot_or_not = False)
+#     
+#     print(backtest_result.master_table)
+#     
+#     file = open(MASTER_SIGNAL_FILENAME, 'wb')
+#     pickle.dump(backtest_result, file)
+# =============================================================================
     #output = open(MASTER_PNL_FILENAME, 'wb')
     #my_pkl = pickle.load(output)
 
-# =============================================================================
-#     run_backtest_bulk(OneTradePerDay, 
-#                       TEST_FILE_LOC, TEST_FILE_PNL_LOC, 
-#                       start_date, end_date, 
-#                       method = "preload", 
-#                       master_signal_filename = MASTER_SIGNAL_FILENAME,
-#                       master_pnl_filename= MASTER_PNL_FILENAME,
-#                       give_obj_name = 'USD',
-#                       get_obj_quantity = 1,
-#                       open_hr_dict = OPEN_HR_DICT, 
-#                       close_hr_dict= CLOSE_HR_DICT,
-#                       loop_type = LoopType.CROSSOVER,
-#                       save_or_not=True, 
-#                       merge_or_not=True)
-# =============================================================================
+
+    run_backtest_bulk(OneTradePerDay, 
+                      TEST_FILE_LOC, TEST_FILE_PNL_LOC, 
+                      start_date, end_date, 
+                      method = "preload", 
+                      master_signal_filename = MASTER_SIGNAL_FILENAME,
+                      master_pnl_filename= MASTER_PNL_FILENAME,
+                      give_obj_name = 'USD',
+                      get_obj_quantity = 1,
+                      open_hr_dict = OPEN_HR_DICT, 
+                      close_hr_dict= CLOSE_HR_DICT,
+                      loop_type = LoopType.CROSSOVER,
+                      save_or_not=True, 
+                      merge_or_not=True)
     
-    from EC_tools.portfolio import PortfolioLog
-    
-    P = read.open_portfolio(MASTER_PNL_FILENAME)
-    PL = PortfolioLog(P)
-    PL.tradebook_filename = RESULT_FILEPATH + "/monthly_test/test_PNL_tradebook.csv"
-    PL.render_tradebook()
-    PL.render_tradebook_xlsx()
+# =============================================================================
+#     from EC_tools.portfolio import PortfolioLog
+#     
+#     P = read.open_portfolio(MASTER_PNL_FILENAME)
+#     PL = PortfolioLog(P)
+#     PL.tradebook_filename = RESULT_FILEPATH + "/monthly_test/test_PNL_tradebook.csv"
+#     PL.render_tradebook()
+#     PL.render_tradebook_xlsx()
+# =============================================================================
     
     #run_backtest(trade_choice_simple_2,FILENAME_MINUTE, FILENAME_BUYSELL_SIGNALS, 
     #             "2022-01-03", "2024-06-17")

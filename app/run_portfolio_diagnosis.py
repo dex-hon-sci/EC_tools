@@ -14,7 +14,10 @@ import openpyxl
 import EC_tools.utility as util
 
 #xl_filename = "/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap/PNL_argusexact_G25S10_.xlsx"
-xl_filename = "/home/dexter/Euler_Capital_codes/EC_tools/results/EC_benchmark/20240813_argusexact_cross_P25S10_PNL_2.xlsx"#EC_benchmark_prime.xlsx"
+#xl_filename = "/home/dexter/Euler_Capital_codes/EC_tools/results/EC_benchmark/20250210_argusexact_cross_P25S10_PNL_full_.xlsx"#EC_benchmark_prime.xlsx"
+#xl_filename = "/home/dexter/Euler_Capital_codes/EC_tools/results/EC_benchmark/20250210_argusexact_cross_P25S10_PNL_.xlsx"#EC_benchmark_prime.xlsx"
+xl_filename = "/home/dexter/Euler_Capital_codes/EC_tools/results/EC_benchmark/20250210_argusexact_cross_P10S35_PNL_full_righttime_.xlsx"
+
 wb_obj = openpyxl.load_workbook(xl_filename, keep_vba=True)
 
 #symbol_list = wb_obj.sheetnames

@@ -18,6 +18,19 @@ RESULT_FILEPATH = os.environ.get("RESULT_FILEPATH")
 DAILY_DATA_PKL = DATA_FILEPATH +"/pkl_vault/crudeoil_future_daily_full.pkl"
 DAILY_MINUTE_DATA_PKL = DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_full.pkl"
 DAILY_APC_PKL = DATA_FILEPATH +"/pkl_vault/crudeoil_future_APC_full.pkl"
+
+DAILY_MINUTE_DATA_INDI_PKL = {'CLc1': DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_CLc1.pkl",
+                              'CLc2': DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_CLc2.pkl",
+                              'HOc1': DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_HOc1.pkl",
+                              'HOc2': DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_HOc2.pkl",
+                              'RBc1': DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_RBc1.pkl",
+                              'RBc2': DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_RBc2.pkl",
+                              'QOc1': DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_QOc1.pkl",
+                              'QOc2': DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_QOc2.pkl",
+                              'QPc1': DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_QPc1.pkl",
+                              'QPc2': DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_QPc2.pkl"}
+
+
 DAILY_OPENPRICE_PKL = DATA_FILEPATH +'/pkl_vault/crudeoil_future_openprice_full.pkl'
 
 MONTHLY_APC_PKL = DATA_FILEPATH +"/pkl_vault/crudeoil_future_Monthly_APC_full.pkl"
@@ -358,14 +371,14 @@ CLOSE_HR_DICT_EARLY = {
     'QPc2':'1100'} #1630 UTC
 
 WRONG_OPEN_HR_DICT = {
-    'CLc1':'0230', # UTC
-    'CLc2':'0230', # UTC
+    'CLc1':'0330', # UTC
+    'CLc2':'0330', # UTC
     'HOc1':'0330', #0800 NY #1300 UTC
     'HOc2':'0330', #0800 NY #1300 UTC
     'RBc1':'0330', #0800 NY #1300 UTC
     'RBc2':'0330', #0800 NY #1300 UTC
-    'QOc1':'0230', # UTC
-    'QOc2':'0230', # UTC
+    'QOc1':'0330', # UTC
+    'QOc2':'0330', # UTC
     'QPc1':'0330', # UTC
     'QPc2':'0330'} # UTC
 

@@ -46,7 +46,7 @@ PORTFOLIO_ARGUSEXACT_SHORT_SR_range = "/home/dexter/Euler_Capital_codes/EC_tools
 
 ARGUS_SAMPLE_SHORT = "/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/Argus_sample/Argus_sample_trades_2_.xlsx"
 ARGUS_SAMPLE_SHORT_MYBACKTEST = "/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/Argus_sample_with_mybacktest/Argus_sample_PNL_with_mybacktest_.xlsx"
-
+ARGUS_SAMPLE_SHORT_MYBACKTEST_newcode = "/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/Argus_sample_with_mybacktest_newcode/Argus_sample_PNL_with_mybacktest_newcode_.xlsx"
 TEST_NEWLOOP_PORTFOLIO_ARGUSEXACT_SHORT_SR = "/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/test_newloop/test_newloop_PNL_Portfolio_ArgusExact_Short_SR_crossover_.xlsx"
 TEST_NEWLOOP_PORTFOLIO_ARGUSEXACT_SHORT_SR_range = "/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/test_newloop/test_newloop_PNL_Portfolio_ArgusExact_Short_SR_range_.xlsx"
 
@@ -265,6 +265,8 @@ if __name__=='__main__':
                                                 val_col="cumulative P&L from trades")[0],
                           extract_PNLplot_input(ARGUS_SAMPLE_SHORT_MYBACKTEST,
                                                 val_col="cumulative P&L from trades")[0],
+                          extract_PNLplot_input(ARGUS_SAMPLE_SHORT_MYBACKTEST_newcode,
+                                                val_col="cumulative P&L from trades")[0],
                           extract_PNLplot_input(PORTFOLIO_ARGUSEXACT_SHORT_SR_range,
                                                 val_col="cumulative P&L from trades")[0],
                           extract_PNLplot_input(TEST_NEWLOOP_PORTFOLIO_ARGUSEXACT_SHORT_SR,
@@ -282,6 +284,8 @@ if __name__=='__main__':
                                                 val_col="cumulative P&L from trades")[1],
                           extract_PNLplot_input(ARGUS_SAMPLE_SHORT_MYBACKTEST,
                                                 val_col="cumulative P&L from trades")[1],
+                          extract_PNLplot_input(ARGUS_SAMPLE_SHORT_MYBACKTEST_newcode,
+                                                val_col="cumulative P&L from trades")[1],
                           extract_PNLplot_input(PORTFOLIO_ARGUSEXACT_SHORT_SR_range,
                                                 val_col="cumulative P&L from trades")[1],
                           extract_PNLplot_input(TEST_NEWLOOP_PORTFOLIO_ARGUSEXACT_SHORT_SR,
@@ -294,12 +298,13 @@ if __name__=='__main__':
                            'Portfolio_ArgusExact_Short (Dex-Signal, Dex-Backtest)',
                            'Argus_Sample (Argus-Signal, Argus-Backtest)',
                            'Argus_Sample (Argus-Signal, Dex-Backtest)',
+                           'Argus_Sample (Argus-Signal, Dex-Backtest-newcode)',
                            'Portfolio_ArgusExact_Short_range (Dex-Signal, Dex-Backtest)',
                            'test_newloop_crossover',
                            'test_newloop_range'
                            ]
-    strategy_col_list = ['r','r', 'w', 'b', '#28ebee', 'g', 'yellow', '#c509c8']
-    strategy_line_list = ['solid','dashed','solid', 'solid','solid', 'solid', 'dotted', 'dotted']
+    strategy_col_list = ['r','r', 'w', 'b', '#3ec9b4', '#28ebee', 'g', 'yellow', '#c509c8']
+    strategy_line_list = ['solid','dashed','solid', 'solid', 'solid','solid', 'solid', 'dotted', 'dotted']
     
     # Plot different strategies cumulative PNL
     twopanel_plot([], [], [], label='',

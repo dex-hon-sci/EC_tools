@@ -22,7 +22,8 @@ import EC_tools.base.read as read
 import EC_tools.utility as util
 from EC_tools.portfolio.bookkeep import Bookkeep
 
-from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, \
+from crudeoil_future_const import DAILY_DATA_PKL, DAILY_APC_PKL,\
+                                  CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, \
                                   APC_FILE_LOC, HISTORY_DAILY_FILE_LOC,\
                                   HISTORY_MINTUE_FILE_LOC, TIMEZONE_DICT,\
                                   OPEN_HR_DICT, CLOSE_HR_DICT,\
@@ -43,6 +44,23 @@ __all__ = ['loop_signal',
 
 __author__="Dexter S.-H. Hon"
 
+DEFAULT_KWARGS= {'open_hr_dict': OPEN_HR_DICT, 
+                 'close_hr_dict': CLOSE_HR_DICT, 
+                 'timezone_dict': TIMEZONE_DICT,
+                 'save_filenames_loc':TEST_FILE_LOC,
+                 'quantile': [0.05,0.1,0.25,0.4,0.5,0.6,0.75,0.9,0.95],
+                 'master_signal_filename': "master_signal.csv",
+                 'save_or_not': False,
+                 'merge_or_not': True,
+                 'contract_symbol_condse': False,
+                 'loop_symbol': None,
+                 'open_hr': '', 
+                 'close_hr': '',
+                 'asset_name':'', 
+                 'Timezone': "",
+                 'signal_pkl': DAILY_APC_PKL,
+                 'history_daily_pkl': DAILY_DATA_PKL}
+
 
 
 class SignalGenMethod(Enum):
@@ -51,19 +69,13 @@ class SignalGenMethod(Enum):
     SIGNAL_GEN_PRELOAD = "signal_gen_preload"
 
 def loop_signal(strategy: type[Strategy], 
-                book: Bookkeep, 
+                book: type[Bookkeep], 
                 signal_data: pd.DataFrame, 
                 history_data: pd.DataFrame, 
-                open_price_data: pd.DataFrame,  
                 start_date: datetime.datetime, 
                 end_date: datetime.datetime,
                 buy_range: tuple = ([0.25,0.4],[0.6,0.75],0.05), 
                 sell_range: tuple = ([0.6,0.75],[0.25,0.4],0.95), 
-                open_hr: str = '', close_hr: str = '',
-                quantile = [0.05,0.1,0.25,0.4,0.5,0.6,0.75,0.9,0.95],
-                asset_name: str = '', Timezone: str = "",
-                contract_symbol_condse: bool = False, 
-                loop_symbol: bool = None,
                 **kwargs) -> pd.DataFrame: 
     """
     The main loop used to generate Buy/Sell signals.
@@ -112,12 +124,16 @@ def loop_signal(strategy: type[Strategy],
         The generated signals
 
     """
+    default_kwargs = DEFAULT_KWARGS
+    kwargs = dict(default_kwargs,**kwargs)
+
     #make bucket
     bucket = book.make_bucket(keyword=strategy().strategy_name) # 'argus_exact_mode')#
-    print('Start looping signal: {}...'.format(loop_symbol))
+    print('Start looping signal: {}...'.format(kwargs['loop_symbol']))
     print('Start and end',
           history_data.index[history_data['Date'] == start_date],
           history_data.index[history_data['Date'] == end_date])
+    
     # Find the index of the start_date and end_date here.
     start_index = history_data.index[history_data['Date'] == start_date].item()    
     end_index = history_data.index[history_data['Date'] == end_date].item()
@@ -150,10 +166,10 @@ def loop_signal(strategy: type[Strategy],
             
             # The conidtions to decide whether we trim the full_contract_symbol
             # CLA2024J or CL24J
-            if contract_symbol_condse == True:
+            if kwargs['contract_symbol_condse'] == True:
                 temp = history_data['Contract Code'][i]
                 full_contract_symbol = str(temp)[0:2] + str(temp)[5:7] + str(temp)[-1]
-            elif contract_symbol_condse == False:
+            elif kwargs['contract_symbol_condse'] == False:
                 full_contract_symbol = history_data['Contract Code'][i]
             
             # Get the extracted 5 days Lag data. This is the main input to be
@@ -171,7 +187,7 @@ def loop_signal(strategy: type[Strategy],
                                                        #price_330,
                                                        buy_range=buy_range, 
                                                        sell_range=sell_range,   
-                                                       quantile = quantile)
+                                                       quantile = kwargs['quantile'])
 
             print('====================================')
             print(forecast_date, full_contract_symbol,'MR signal generated!', 
@@ -179,8 +195,9 @@ def loop_signal(strategy: type[Strategy],
         
 
             # make a list of data to be written into bookkeep
-            static_info = [asset_name, full_contract_symbol, \
-                           Timezone, open_hr, close_hr]
+            static_info = [kwargs['asset_name'], full_contract_symbol, 
+                           kwargs['Timezone'], kwargs['open_hr'], 
+                           kwargs['close_hr']]
                 
             # put all the data in a singular list
             data = [forecast_date, price_code] + \
@@ -205,11 +222,7 @@ def run_gen_MR_signals(strategy: type[Strategy],
                        start_date: str, end_date: str,
                        buy_range: tuple = ([0.25,0.4],[0.6,0.75],0.05), 
                        sell_range: tuple = ([0.6,0.75],[0.25,0.4],0.95), 
-                       open_hr: str = '', close_hr: str = '',
-                       qunatile: list[float] = [0.05,0.1,0.25,0.4,0.5,
-                                                0.6,0.75,0.9,0.95], 
-                       asset_name: str = '', Timezone: str = "",
-                       start_date_pushback: int = 20) -> pd.DataFrame:
+                       start_date_pushback: int = 20, **kwargs) -> pd.DataFrame:
     """
     The main function that generate MeanRversion signals.
     This particular method uses the bookkeep module to generate CSV file as 
@@ -257,6 +270,9 @@ def run_gen_MR_signals(strategy: type[Strategy],
         The result dataframe for bookkeep.
 
     """
+    default_kwargs = DEFAULT_KWARGS
+    kwargs = dict(default_kwargs,**kwargs)
+
     symbol, asset_name = asset_pack['symbol'], asset_pack['keywords']
 
     # The reading part takes the longest time: 13 seconds. The loop itself takes 
@@ -302,15 +318,14 @@ def run_gen_MR_signals(strategy: type[Strategy],
     # The strategy will be ran in loop_signal decorator
     dict_contracts_quant_signals = loop_signal(strategy, book, 
                                                APCs_dat, portara_dat, 
-                                               #open_price_data,
                                                start_date, end_date,
                                                buy_range=buy_range, 
                                                sell_range=sell_range,
-                                               open_hr=open_hr, 
-                                               close_hr=close_hr,
-                                               qunatile = qunatile,
+                                               open_hr=kwargs['open_hr'], 
+                                               close_hr=kwargs['close_hr'],
+                                               qunatile = kwargs['qunatile'],
                                                asset_name = asset_name, 
-                                               Timezone= Timezone,
+                                               Timezone= kwargs['Timezone'],
                                                loop_symbol = symbol)
                   
     dict_contracts_quant_signals = pd.DataFrame(dict_contracts_quant_signals)
@@ -322,7 +337,7 @@ def run_gen_MR_signals(strategy: type[Strategy],
 
 @util.time_it
 def run_gen_MR_signals_list(strategy: type[Strategy], 
-                            filename_list: list[str], 
+                            save_filenames_list: list[str], 
                             categories_list: list[str], 
                             keywords_list: list[str], 
                             symbol_list: list[str],
@@ -330,13 +345,9 @@ def run_gen_MR_signals_list(strategy: type[Strategy],
                             history_daily_list: list, 
                             history_minute_list: list,
                             start_date: str, end_date: str,
-                            open_hr_dict: dict, close_hr_dict: dict, 
-                            timezone_dict: dict, 
                             buy_range: tuple = ([0.25,0.4],[0.6,0.75],0.05), 
                             sell_range: tuple =([0.6,0.75],[0.25,0.4],0.95),
-                            quantile: list[float] = [0.05,0.1,0.25,0.4,0.5,
-                                                     0.6,0.75,0.9,0.95],
-                            save_or_not: bool = False) -> dict:
+                            **kwargs) -> dict:
     """
     A method that run Mean Reversion signal generation form a list of inputs.
     
@@ -347,7 +358,7 @@ def run_gen_MR_signals_list(strategy: type[Strategy],
     ----------
     Strategy : strategy object
         The strategy function that is used to generate the trade signals.
-    filename_list : list
+    save_filenames_list : list
         The saved filename list.
     categories_list : list
         A list containing categories keywords.
@@ -385,28 +396,33 @@ def run_gen_MR_signals_list(strategy: type[Strategy],
         The resuting dictionary for all the signals for different assets.
 
     """
-    
+    default_kwargs = DEFAULT_KWARGS
+    kwargs = dict(default_kwargs,**kwargs)
+
     output_dict = dict()
     for filename, cat, key, sym, signal, history_daily, history_minute in zip(\
-        filename_list, categories_list, keywords_list, symbol_list, signal_list, \
-                                        history_daily_list, history_minute_list):
+        save_filenames_list, categories_list, keywords_list, symbol_list, \
+        signal_list, history_daily_list, history_minute_list):
         print("filename", filename)
         @util.time_it
-        @util.save_csv("{}".format(filename), save_or_not=save_or_not)
+        @util.save_csv("{}".format(filename), save_or_not=kwargs['save_or_not'])
         def run_gen_MR_signals_indi(cat: str, key: str, sym: str):
             asset_pack = {'categories': cat, 'keywords': key, 'symbol': sym}
             
-            open_hr = open_hr_dict[sym]
-            close_hr = close_hr_dict[sym]
-            Timezone= timezone_dict[sym]
+            open_hr = kwargs['open_hr_dict'][sym]
+            close_hr = kwargs['close_hr_dict'][sym]
+            Timezone= kwargs['timezone_dict'][sym]
             
             print("files",signal, history_daily, history_minute)            
             signal_data = run_gen_MR_signals(strategy, asset_pack, 
-                                             signal, history_daily, history_minute,
+                                             signal, 
+                                             history_daily, 
+                                             history_minute,
                                              start_date, end_date,
                                              buy_range=buy_range, 
                                              sell_range=sell_range,
-                                             open_hr=open_hr, close_hr=close_hr,
+                                             open_hr=open_hr, 
+                                             close_hr=close_hr,
                                              asset_name = key, 
                                              Timezone= Timezone
                                              ) #WIP
@@ -419,6 +435,118 @@ def run_gen_MR_signals_list(strategy: type[Strategy],
         print("All asset signal generated!")
     return output_dict
 
+
+@util.time_it
+def run_gen_MR_signals_preloaded(strategy: type[Strategy], 
+                                 #filename_list: list[str], 
+                                 signal_pkl: dict, 
+                                 history_daily_pkl: dict, 
+                                 start_date: str, end_date: str,
+                                 buy_range: tuple[float] = ([0.2,0.25],[0.75,0.8],0.1),
+                                 sell_range: tuple[float] = ([0.75,0.8],[0.2,0.25],0.9),
+                                  **kwargs) -> pd.DataFrame:
+    """
+    A method that run Mean Reversion signal generation form a preloaded 
+    dictionary. The dictionary contains a key-value pairs with the asset name 
+    as keys and a dataframe as value. 
+    
+    This method depends upon the function run_gen_MR_signals to iterate over
+    the input lists and calculate the signal for each assets independently.
+
+    Parameters
+    ----------
+    Strategy : strategy object
+        The strategy function in use in generating the signal.
+    filename_list : list
+        The saved filename list.
+    signal_pkl : dict
+        A dictionary read from a pkl file that contains the signal data in 
+        a dataframe as values and keywords as key.
+    history_daily_pkl : dict
+        A dictionary read from a pkl file that contains the daily historical 
+        data in a dataframe as values and keywords as key.
+    openprice_pkl : dict
+        A dictionary read from a pkl file that contains the daily openning price 
+        data in a dataframe as values and keywords as key..
+    start_date : str
+        The starting date.
+    end_date : str
+        The ending date.
+    open_hr_dict : dict
+        A dictionary for the input opening hour strings.
+    close_hr_dict : dict
+        A dictionary for the input closing hour strings.
+    timezone_dict : dict
+        A dictionary for the Time Zone name strings.
+    buy_range : tuple, optional
+        The buy range in the format of (entry, exit, stop loss). 
+        The default is ([0.25,0.4],[0.6,0.75],0.05).
+    sell_range : tuple, optional
+        The sell range in the format of (entry, exit, stop loss). 
+        The default is ([0.6,0.75],[0.25,0.4],0.95).
+    save_or_not : bool, optional
+        A boolean value to indicate whether to save the result in a file or not. 
+        The default is False.
+
+    Returns
+    -------
+    dataframe
+        signal data.
+
+    """
+    default_kwargs = DEFAULT_KWARGS
+    kwargs = dict(default_kwargs,**kwargs)
+    
+    # run meanreversion signal generation on the basis of individual programme  
+    # Loop the whole list in one go with all the contracts or Loop it one contract at a time?
+    master_dict, symbol_list = dict(), list(signal_pkl.keys())
+     
+    print(symbol_list, kwargs['save_filenames_loc'])
+    for symbol in symbol_list:
+        filename = kwargs['save_filenames_loc'][symbol]
+        # The reading part takes the longest time: 13 seconds. The loop itself takes 
+        # input 1, APC. Load the master table in memory and test multple strategies  
+        @util.save_csv("{}".format(filename), save_or_not=kwargs['save_or_not'])
+        def run_gen_MR_indi():
+            
+            book = Bookkeep(bucket_type = 'mr_signals')
+            
+            print("symbol",symbol)
+            #signal file input
+            signal_file = signal_pkl[symbol]
+           
+            # input 2, Portara history file.
+            history_daily_file = history_daily_pkl[symbol]
+            #history_minute_file = history_minute_pkl[symbol]
+            
+            # Find the opening price at 03:30 UK time. If not found, 
+            # loop through the next 30 minutes to find the opening price
+            #open_price = openprice_pkl[symbol]
+            
+            open_hr = kwargs['open_hr_dict'][symbol]
+            close_hr = kwargs['close_hr_dict'][symbol]
+            Timezone= kwargs['timezone_dict'][symbol]
+            
+            # The strategy will be ran in loop_signal decorator
+            dict_contracts_quant_signals = loop_signal(strategy, book, 
+                                                       signal_file, 
+                                                       history_daily_file, 
+                                                       #open_price,
+                                                       start_date, end_date,
+                                                       buy_range=buy_range,
+                                                       sell_range=sell_range,
+                                                       open_hr=open_hr, 
+                                                       close_hr=close_hr,
+                                                       quantile = kwargs['quantile'],
+                                                       asset_name = symbol, 
+                                                       Timezone= Timezone,
+                                                       loop_symbol=symbol)
+            return dict_contracts_quant_signals
+        
+
+        master_dict[symbol] = run_gen_MR_indi()
+
+    return master_dict
 
 def run_gen_MR_signals_preloaded_single(strategy: type[Strategy],                                 
                                         filename_list: list[str], 
@@ -436,7 +564,7 @@ def run_gen_MR_signals_preloaded_single(strategy: type[Strategy],
                                                   [0.05,0.1,0.25,0.4,
                                                    0.5,0.6,0.75,0.9,0.95],
                                         save_or_not: bool = True) -> pd.DataFrame:
-    
+    # Special case for live trading 
     
     # run meanreversion signal generation on the basis of individual programme  
     # Loop the whole list in one go with all the contracts or Loop it one contract at a time?
@@ -530,137 +658,12 @@ def run_gen_MR_signals_preloaded_single(strategy: type[Strategy],
 
     return master_dict
 
-@util.time_it
-def run_gen_MR_signals_preloaded(strategy: type[Strategy], 
-                                 filename_list: list[str], 
-                                 signal_pkl: dict, 
-                                 history_daily_pkl: dict, 
-                                 openprice_pkl: dict, 
-                                 start_date: str, end_date: str,
-                                 open_hr_dict: dict, 
-                                 close_hr_dict: dict, 
-                                 timezone_dict: dict,
-                                 buy_range: tuple[float] = ([0.2,0.25],[0.75,0.8],0.1),
-                                 sell_range: tuple[float] = ([0.75,0.8],[0.2,0.25],0.9),
-                                 quantile: list[float] = [0.05,0.1,0.25,0.4,
-                                                          0.5,0.6,0.75,0.9,0.95],
-                                 save_or_not: bool = True) -> pd.DataFrame:
-    """
-    A method that run Mean Reversion signal generation form a preloaded 
-    dictionary. The dictionary contains a key-value pairs with the asset name 
-    as keys and a dataframe as value. 
-    
-    This method depends upon the function run_gen_MR_signals to iterate over
-    the input lists and calculate the signal for each assets independently.
-
-    Parameters
-    ----------
-    Strategy : strategy object
-        The strategy function in use in generating the signal.
-    filename_list : list
-        The saved filename list.
-    signal_pkl : dict
-        A dictionary read from a pkl file that contains the signal data in 
-        a dataframe as values and keywords as key.
-    history_daily_pkl : dict
-        A dictionary read from a pkl file that contains the daily historical 
-        data in a dataframe as values and keywords as key.
-    openprice_pkl : dict
-        A dictionary read from a pkl file that contains the daily openning price 
-        data in a dataframe as values and keywords as key..
-    start_date : str
-        The starting date.
-    end_date : str
-        The ending date.
-    open_hr_dict : dict
-        A dictionary for the input opening hour strings.
-    close_hr_dict : dict
-        A dictionary for the input closing hour strings.
-    timezone_dict : dict
-        A dictionary for the Time Zone name strings.
-    buy_range : tuple, optional
-        The buy range in the format of (entry, exit, stop loss). 
-        The default is ([0.25,0.4],[0.6,0.75],0.05).
-    sell_range : tuple, optional
-        The sell range in the format of (entry, exit, stop loss). 
-        The default is ([0.6,0.75],[0.25,0.4],0.95).
-    save_or_not : bool, optional
-        A boolean value to indicate whether to save the result in a file or not. 
-        The default is False.
-
-    Returns
-    -------
-    dataframe
-        signal data.
-
-    """
-    
-    # run meanreversion signal generation on the basis of individual programme  
-    # Loop the whole list in one go with all the contracts or Loop it one contract at a time?
-    master_dict, symbol_list = dict(), list(signal_pkl.keys())
-     
-    print(symbol_list, filename_list)
-    for symbol in symbol_list:
-        filename = filename_list[symbol]
-        # The reading part takes the longest time: 13 seconds. The loop itself takes 
-        # input 1, APC. Load the master table in memory and test multple strategies  
-        @util.save_csv("{}".format(filename), save_or_not=save_or_not)
-        def run_gen_MR_indi():
-            
-            book = Bookkeep(bucket_type = 'mr_signals')
-            
-            print("symbol",symbol)
-            #signal file input
-            signal_file = signal_pkl[symbol]
-           
-            # input 2, Portara history file.
-            history_daily_file = history_daily_pkl[symbol]
-            #history_minute_file = history_minute_pkl[symbol]
-            
-            # Find the opening price at 03:30 UK time. If not found, 
-            # loop through the next 30 minutes to find the opening price
-            open_price = openprice_pkl[symbol]
-            
-            open_hr = open_hr_dict[symbol]
-            close_hr = close_hr_dict[symbol]
-            Timezone= timezone_dict[symbol]
-            
-            # The strategy will be ran in loop_signal decorator
-            dict_contracts_quant_signals = loop_signal(strategy, book, 
-                                                       signal_file, 
-                                                       history_daily_file, 
-                                                       open_price,
-                                                       start_date, end_date,
-                                                       buy_range=buy_range,
-                                                       sell_range=sell_range,
-                                                       open_hr=open_hr, 
-                                                       close_hr=close_hr,
-                                                       quantile = quantile,
-                                                       asset_name = symbol, 
-                                                       Timezone= Timezone,
-                                                       loop_symbol=symbol)
-            return dict_contracts_quant_signals
-        
-
-        master_dict[symbol] = run_gen_MR_indi()
-
-    return master_dict
-
-
 def run_gen_signal_bulk(strategy: type[Strategy], 
-                        save_filename_loc: dict,  
                         start_date: str, end_date: str,
-                        open_hr_dict: dict = OPEN_HR_DICT, 
-                        close_hr_dict: dict = CLOSE_HR_DICT, 
-                        timezone_dict: dict = TIMEZONE_DICT,
                         buy_range: tuple[float] = (0.4,0.6,0.1), 
                         sell_range: tuple[float] = (0.6,0.4,0.9),
-                        quantile: list[float] = [0.05,0.1,0.25,0.4,
-                                                 0.5,0.6,0.75,0.9,0.95],
                         runtype: str = 'list', 
-                        master_signal_filename: str = "master_signal.csv",
-                        merge_or_not: bool = True, 
-                        save_or_not: bool = False) -> None:
+                        **kwargs) -> None:
     """
     A method that runs signal generations in bulk. This functions allows you 
     to choose from euther
@@ -669,7 +672,7 @@ def run_gen_signal_bulk(strategy: type[Strategy],
     ----------
     Strategy : strategy object
         The strategy function in use in generating the signal.
-    save_filename_loc : dict
+    save_filenames_loc : dict
         The saved filename dictionary corresponding to the name of the asset.
     start_date : str
         The starting date.
@@ -708,6 +711,11 @@ def run_gen_signal_bulk(strategy: type[Strategy],
     None.
 
     """
+    default_kwargs = DEFAULT_KWARGS
+    kwargs = dict(default_kwargs,**kwargs)
+    
+    SAVE_FILENAME_LIST = list(kwargs['save_filename_loc'].values())
+
     
     if runtype == "list":
         # Fixed input filename from constant variables
@@ -715,69 +723,74 @@ def run_gen_signal_bulk(strategy: type[Strategy],
         HISTORY_DAILY_LIST = list(HISTORY_DAILY_FILE_LOC.values())
         HISTORY_MINUTE_LIST = list(HISTORY_MINTUE_FILE_LOC.values())
 
-        SAVE_FILENAME_LIST = list(save_filename_loc.values())
         # Run signal generation in a list format
         run_gen_MR_signals_list(strategy, SAVE_FILENAME_LIST, 
                                 CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST,
-                                SIGNAL_LIST, HISTORY_DAILY_LIST, 
+                                SIGNAL_LIST, 
+                                HISTORY_DAILY_LIST, 
                                 HISTORY_MINUTE_LIST,
                                 start_date, end_date,
-                                open_hr_dict, close_hr_dict, 
-                                timezone_dict,
                                 buy_range = buy_range, 
-                                quantile = quantile,
                                 sell_range = sell_range,
-                                save_or_not=save_or_not)
-        
-        if merge_or_not:
-            #merge_filename = getpass.getpass(prompt="please enter the name for the merged file :") 
-            MASTER_SIGNAL_FILENAME = master_signal_filename            
-            #MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + merge_filename
-            
-            read.merge_raw_data(SAVE_FILENAME_LIST, 
-                                MASTER_SIGNAL_FILENAME, sort_by="Date")
+                                open_hr_dict = kwargs['open_hr_dict'], 
+                                close_hr_dict = kwargs['close_hr_dict'], 
+                                timezone_dict = kwargs['timezone_dict'],
+                                quantile = kwargs['quantile'],
+                                save_or_not=kwargs['save_or_not'])
+
+# =============================================================================
+#         if kwargs['merge_or_not']:
+#             #merge_filename = getpass.getpass(prompt="please enter the name for the merged file :") 
+#             MASTER_SIGNAL_FILENAME = kwargs['master_signal_filename']            
+#             #MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + merge_filename
+#             
+#             read.merge_raw_data(SAVE_FILENAME_LIST, 
+#                                 MASTER_SIGNAL_FILENAME, sort_by="Date")
+# =============================================================================
             
     elif runtype=='preload':
         # Fixed input filename from constant variables
-        SIGNAL_PKL = util.load_pkl(DATA_FILEPATH+"/pkl_vault/crudeoil_future_APC_full.pkl")
-        HISTORY_DAILY_PKL = util.load_pkl(DATA_FILEPATH+"/pkl_vault/crudeoil_future_daily_full.pkl")
-        OPENPRICE_PKL = util.load_pkl(DATA_FILEPATH+"/pkl_vault/crudeoil_future_openprice_full.pkl")
+        SIGNAL_PKL = util.load_pkl(kwargs['signal_pkl'])
+        HISTORY_DAILY_PKL = util.load_pkl(kwargs['history_daily_pkl'])
 
-        SAVE_FILENAME_LIST = list(save_filename_loc.values())
 
         # Run signal generation in a preloaded format
-        run_gen_MR_signals_preloaded(strategy, save_filename_loc, 
+        run_gen_MR_signals_preloaded(strategy, 
                                      SIGNAL_PKL, HISTORY_DAILY_PKL, 
-                                     OPENPRICE_PKL,
                                      start_date, end_date,
-                                     open_hr_dict, close_hr_dict, 
-                                     timezone_dict,
                                      buy_range = buy_range, 
-                                     quantile = quantile,
                                      sell_range = sell_range,
-                                     save_or_not = save_or_not)
-        if merge_or_not:
+                                     open_hr_dict = kwargs['open_hr_dict'],
+                                     close_hr_dict = kwargs['close_hr_dict'], 
+                                     timezone_dict = kwargs['timezone_dict'],
+                                     save_filenames = kwargs['save_filenames_loc'],
+                                     quantile = kwargs['quantile'],
+                                     save_or_not = kwargs['save_or_not'])
 
-            MASTER_SIGNAL_FILENAME = master_signal_filename            
-            read.merge_raw_data(SAVE_FILENAME_LIST, 
-                                MASTER_SIGNAL_FILENAME, sort_by="Date")
+    if kwargs['merge_or_not']:
+        #SAVE_FILENAME_LIST = list(kwargs['save_filenames_loc'].values())
+        MASTER_SIGNAL_FILENAME = kwargs['master_signal_filename']       
+        
+        read.merge_raw_data(SAVE_FILENAME_LIST, 
+                            MASTER_SIGNAL_FILENAME, sort_by="Date")
 
-MR_STRATEGIES_0 = {"argus_exact": ArgusMRStrategy,
-                   "argus_exact_mode": ArgusMRStrategyMode}
+
 
 
 
 if __name__ == "__main__":
+    MR_STRATEGIES_0 = {"argus_exact": ArgusMRStrategy,
+                       "argus_exact_mode": ArgusMRStrategyMode}
     
     SignalGen_RunType = {"signal_gen": run_gen_MR_signals,
                          "signal_gen_list": run_gen_MR_signals_list, 
                          "signal_gen_preload": run_gen_MR_signals_preloaded
-                                        }
+                        }
 
     
     start_date = "2024-03-04"
     #start_date = "2021-01-11"
-    end_date = "2024-06"
+    end_date = "2024-06-09"
     SAVE_FILENAME_LIST = list(TEST_FILE_LOC.values())
 
     #maybe I need an unpacking function here to handle payload from json files
@@ -789,16 +802,16 @@ if __name__ == "__main__":
 
     strategy_name = 'argus_exact'
     strategy = MR_STRATEGIES_0[strategy_name]
-    buy_range = ([0.2,0.25],[0.75,0.8],0.1) # (-0.1,0.1,-0.45)
-    sell_range = ([0.75,0.8],[0.2,0.25],0.9) # (0.1,-0.1,0.45)
+    buy_range = ([0.25,0.4],[0.6,0.75],0.05) # (-0.1,0.1,-0.45)
+    sell_range = ([0.6,0.75],[0.25,0.4],0.95) # (0.1,-0.1,0.45)
     
     # master function in running everything
     run_gen_signal_bulk(strategy, 
-                        TEST_FILE_LOC,
                         start_date, end_date,
                         buy_range = buy_range, 
                         sell_range = sell_range,
                         runtype = 'list',
+                        save_filenames_loc = TEST_FILE_LOC,
                         merge_or_not= True,
                         save_or_not=True)
     
