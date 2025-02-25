@@ -128,7 +128,7 @@ def twopanel_plot(x_data: list, y1_data: list, y2_data: list,
         ax1.plot(x_element, y1_element, ls=sub_line_list[i], 
                  label=sub_label_list[i], color=sub_col_list[i])
         
-    ax1.plot(x_data, y1_data,'o-', c=line_color, label=label, alpha = alpha)
+    ax1.plot(x_data, y1_data,'-', c=line_color, label=label, alpha = alpha)
     
     fmt = mdates.DateFormatter('%y-%m-%d')
     ax1.legend(loc='center left', bbox_to_anchor=(1, 0.5))
@@ -303,7 +303,7 @@ if __name__=='__main__':
                            'test_newloop_crossover',
                            'test_newloop_range'
                            ]
-    strategy_col_list = ['r','r', 'w', 'b', '#3ec9b4', '#28ebee', 'g', 'yellow', '#c509c8']
+    strategy_col_list = ['r','r', 'w', 'b', '#fd7911', '#28ebee', 'g', 'yellow', '#c509c8']
     strategy_line_list = ['solid','dashed','solid', 'solid', 'solid','solid', 'solid', 'dotted', 'dotted']
     
     # Plot different strategies cumulative PNL

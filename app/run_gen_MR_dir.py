@@ -44,7 +44,12 @@ __all__ = ['loop_signal',
 
 __author__="Dexter S.-H. Hon"
 
-DEFAULT_KWARGS= {'open_hr_dict': OPEN_HR_DICT, 
+DEFAULT_KWARGS= {'signal_list': list(APC_FILE_LOC.values()),
+                 'history_daily_list': list(HISTORY_DAILY_FILE_LOC.values()),
+                 'history_minute_list': list(HISTORY_MINTUE_FILE_LOC.values()),
+                 'signal_pkl': DAILY_APC_PKL,
+                 'history_daily_pkl': DAILY_DATA_PKL,
+                 'open_hr_dict': OPEN_HR_DICT, 
                  'close_hr_dict': CLOSE_HR_DICT, 
                  'timezone_dict': TIMEZONE_DICT,
                  'save_filenames_loc':TEST_FILE_LOC,
@@ -57,9 +62,7 @@ DEFAULT_KWARGS= {'open_hr_dict': OPEN_HR_DICT,
                  'open_hr': '', 
                  'close_hr': '',
                  'asset_name':'', 
-                 'Timezone': "",
-                 'signal_pkl': DAILY_APC_PKL,
-                 'history_daily_pkl': DAILY_DATA_PKL}
+                 'Timezone': ""}
 
 
 
@@ -135,8 +138,12 @@ def loop_signal(strategy: type[Strategy],
           history_data.index[history_data['Date'] == end_date])
     
     # Find the index of the start_date and end_date here.
-    start_index = history_data.index[history_data['Date'] == start_date].item()    
+    start_index = history_data.index[history_data['Date'] == start_date].item()  
+    
+    print(history_data.index[history_data['Date'] == end_date],end_date)
     end_index = history_data.index[history_data['Date'] == end_date].item()
+    
+    
         
     # loop through every forecast date and contract symbol 
     for i in np.arange(start_index,end_index): 
@@ -184,7 +191,6 @@ def loop_signal(strategy: type[Strategy],
             strategy_output = strategy(curve_this_date).\
                                         apply_strategy(history_data_lag5, 
                                                        apc_curve_lag5, 
-                                                       #price_330,
                                                        buy_range=buy_range, 
                                                        sell_range=sell_range,   
                                                        quantile = kwargs['quantile'])
@@ -714,7 +720,7 @@ def run_gen_signal_bulk(strategy: type[Strategy],
     default_kwargs = DEFAULT_KWARGS
     kwargs = dict(default_kwargs,**kwargs)
     
-    SAVE_FILENAME_LIST = list(kwargs['save_filename_loc'].values())
+    SAVE_FILENAME_LIST = list(kwargs['save_filenames_loc'].values())
 
     
     if runtype == "list":
@@ -777,10 +783,10 @@ def run_gen_signal_bulk(strategy: type[Strategy],
 
 
 
+MR_STRATEGIES_0 = {"argus_exact": ArgusMRStrategy,
+                   "argus_exact_mode": ArgusMRStrategyMode}
 
 if __name__ == "__main__":
-    MR_STRATEGIES_0 = {"argus_exact": ArgusMRStrategy,
-                       "argus_exact_mode": ArgusMRStrategyMode}
     
     SignalGen_RunType = {"signal_gen": run_gen_MR_signals,
                          "signal_gen_list": run_gen_MR_signals_list, 
@@ -788,9 +794,10 @@ if __name__ == "__main__":
                         }
 
     
-    start_date = "2024-03-04"
+    #start_date = "2024-03-04"
     #start_date = "2021-01-11"
-    end_date = "2024-06-09"
+    start_date = "2022-01-05"
+    end_date = "2024-06-28"
     SAVE_FILENAME_LIST = list(TEST_FILE_LOC.values())
 
     #maybe I need an unpacking function here to handle payload from json files
@@ -810,7 +817,7 @@ if __name__ == "__main__":
                         start_date, end_date,
                         buy_range = buy_range, 
                         sell_range = sell_range,
-                        runtype = 'list',
+                        runtype = 'preload',
                         save_filenames_loc = TEST_FILE_LOC,
                         merge_or_not= True,
                         save_or_not=True)

@@ -69,7 +69,8 @@ import EC_tools.plot as plot
 from EC_tools.portfolio import Portfolio
 from EC_tools.trade import Trade
 from crudeoil_future_const import OPEN_HR_DICT, CLOSE_HR_DICT, OIL_FUTURES_FEES,\
-                                  HISTORY_MINTUE_FILE_LOC, APC_FILE_LOC
+                                  HISTORY_MINTUE_FILE_LOC, APC_FILE_LOC, \
+                                  TIMEZONE_DICT, TEST_FILE_LOC
 
 
 
@@ -78,6 +79,20 @@ __all__ = ['LoopType', 'prepare_signal_interest', 'extract_intraday_minute_data'
            'load_EES_from_signal', 
            'Loop']
 __author__="Dexter S.-H. Hon"
+
+DEFAULT_KWARGS= {'give_obj_name': 'USD',
+                 'get_obj_quantity': 1,
+                 'open_hr_dict': OPEN_HR_DICT, 
+                 'close_hr_dict': CLOSE_HR_DICT, 
+                 'timezone_dict': TIMEZONE_DICT,
+                 'save_filenames_loc':TEST_FILE_LOC,
+                 'fee_dict': OIL_FUTURES_FEES,
+                 'strategy_name': "Unamed Strategy",
+                 'save_or_not': False,
+                 'merge_or_not': True,
+                 'plot_or_not' : False,
+                 'open_hr': '0000', # assume the whole duration of the trading day
+                 'close_hr': '2359'}
 
 class LoopType(Enum):
     """
@@ -407,7 +422,7 @@ def gen_trunc_dict(loop_type: LoopType,
         target_entry_mid = (target_entry[1] - target_entry[0])/2
         target_exit_mid =  (target_exit[1] - target_exit[0])/2
         target_entry, target_exit = target_entry_mid, target_exit_mid 
-        
+        #print("trunc_dict",trunc_dict)
     return trunc_dict, target_entry, target_exit, stop_exit
     
 @util.time_it
@@ -527,7 +542,7 @@ def load_EES_from_signal(trade_method,
             
 
     return target_entry, target_exit, stop_exit, direction
-     
+
 
 class Loop(Protocol):
     """
@@ -542,10 +557,11 @@ class Loop(Protocol):
     def loop_date(trade_method, 
                   signal_table: pd.DataFrame, 
                   histroy_intraday_data: pd.DataFrame, 
-                  strategy_name: str = 'argus_exact',
-                  open_hr: str ='0330', close_hr: str='1930',
-                  plot_or_not: bool = False, 
-                  sort_by: str = 'Entry_Date') -> pd.DataFrame:
+                  #strategy_name: str = 'argus_exact',
+                  #open_hr: str ='0330', close_hr: str='1930',
+                  #plot_or_not: bool = False, 
+                  sort_by: str = 'Entry_Date',
+                  **kwargs) -> pd.DataFrame:
         """
         Fast looping method that generate simple CSV output file.
         This loop is meant to be fast and only produce a 
@@ -584,9 +600,12 @@ class Loop(Protocol):
             DESCRIPTION.
     
         """
+        default_kwargs = DEFAULT_KWARGS
+        kwargs = dict(default_kwargs,**kwargs)
+
         # make bucket 
         book = Bookkeep(bucket_type='backtest')
-        dict_trade_PNL = book.make_bucket(keyword=strategy_name)
+        dict_trade_PNL = book.make_bucket(keyword=kwargs['strategy_name'])
     
         trade_id = 0
     
@@ -617,18 +636,19 @@ class Loop(Protocol):
             # We may want to remake all this and make Timestamp the universal 
             # parameter when dealing with time
             day = extract_intraday_minute_data(histroy_intraday_data, date_interest, 
-                                               open_hr=open_hr, close_hr=close_hr)
+                                               open_hr=kwargs['open_hr'], 
+                                               close_hr=kwargs['close_hr'])
             
             #print(day['Date'].iloc[0], direction, target_entry, target_exit, stop_exit)
             
             open_hr_dt, open_price = read.find_closest_price(day,
-                                                               target_hr= open_hr,
-                                                               direction='forward')
+                                                             target_hr= kwargs['open_hr'],
+                                                             direction='forward')
             
             #print('open',open_hr_dt, open_price)
             
             close_hr_dt, close_price = read.find_closest_price(day,
-                                                               target_hr= close_hr,
+                                                               target_hr= kwargs['close_hr'],
                                                                direction='backward')
             #print('close', close_hr_dt, close_price)
     
@@ -636,7 +656,8 @@ class Loop(Protocol):
             # make a dictionary for all the possible EES time and values
             EES_dict = read.find_minute_EES(day, 
                                             target_entry, target_exit, stoploss_price,
-                                            open_hr=open_hr_dt, close_hr=close_hr_dt, 
+                                            open_hr=open_hr_dt, 
+                                            close_hr=close_hr_dt, 
                                             direction = direction)
     
             # make the trade.
@@ -671,8 +692,7 @@ class Loop(Protocol):
                                         
             # plotting mid-backtest
             plot_in_backtest(date_interest, price_code, EES_dict, direction, 
-                             plot_or_not=plot_or_not)
-            
+                             plot_or_not=kwargs['plot_or_not'])            
             trade_id = trade_id +1       
     
             #print('info', data)
@@ -687,19 +707,22 @@ class Loop(Protocol):
                             portfo: Portfolio, 
                             trade_method: Trade, 
                             signal_table: pd.DataFrame, 
-                            histroy_intraday_data: pd.DataFrame, 
-                            strategy_name: str = 'argus_exact',
-                            give_obj_name: str = "USD", 
-                            get_obj_name: str = "CLc1", 
-                            get_obj_quantity: int = 50,
-                            open_hr: str = '0330', close_hr: str ='1930',
-                            plot_or_not: bool = False):
+                            histroy_intraday_data: pd.DataFrame,
+                            **kwargs):
+                            #strategy_name: str = 'argus_exact',
+                            #give_obj_name: str = "USD", 
+                            #get_obj_name: str = "CLc1", 
+                            #get_obj_quantity: int = 50,
+                            #open_hr: str = '0330', close_hr: str ='1930',
+                            #plot_or_not: bool = False):
         """
         Portfolio module method. This method assume looping through using only
         one unique asset.
         
         
         """
+        default_kwargs = DEFAULT_KWARGS
+        kwargs = dict(default_kwargs,**kwargs)
         
         for i in range(len(signal_table)):
 
@@ -712,18 +735,20 @@ class Loop(Protocol):
             # Define the date of interest by reading TimeStamp. 
             # We may want to remake all this and make Timestamp the universal 
             # parameter when dealing with time
-            day = extract_intraday_minute_data(histroy_intraday_data, date_interest, 
-                                               open_hr=open_hr, close_hr=close_hr)
+            day = extract_intraday_minute_data(histroy_intraday_data, 
+                                               date_interest, 
+                                               open_hr=kwargs['open_hr'], 
+                                               close_hr=kwargs['close_hr'])
             
             
             open_hr_dt, open_price = read.find_closest_price(day,
-                                                             target_hr= open_hr,
+                                                             target_hr= kwargs['open_hr'],
                                                              direction='forward')
             
             print('open',open_hr_dt, open_price)
             
             close_hr_dt, close_price = read.find_closest_price(day,
-                                                               target_hr= close_hr,
+                                                               target_hr= kwargs['close_hr'],
                                                                direction='backward')
             print('close', close_hr_dt, close_price)
         
@@ -748,24 +773,24 @@ class Loop(Protocol):
 
             # Run the trade
             trade_open, trade_close, \
-            pos, exec_pos = trade_method(portfo, trade_id =i).\
-                                                 run_trade(trunc_dict, 
-                                                           give_obj_name, 
-                                                           get_obj_name, 
-                                                           get_obj_quantity, 
-                                                           target_entry, 
-                                                           target_exit, 
-                                                           stop_exit, 
-                                                           open_hr = open_hr_dt, 
-                                                           close_hr = close_hr_dt, 
-                                                           direction = direction,
-                                                           fee=OIL_FUTURES_FEES[price_code],
-                                                           open_time = open_hr_dt)
+            pos, exec_pos = trade_method(portfo, trade_id =i).run_trade(
+                                                    trunc_dict, 
+                                                    kwargs['give_obj_name'], 
+                                                    get_obj_name, 
+                                                    kwargs['get_obj_quantity'], 
+                                                    target_entry, 
+                                                    target_exit, 
+                                                    stop_exit, 
+                                                    open_hr = open_hr_dt, 
+                                                    close_hr = close_hr_dt, 
+                                                    direction = direction,
+                                                    fee=kwargs['fee_dict'][price_code],
+                                                    open_time = open_hr_dt)
           
     
             # plotting mid-backtest
             plot_in_backtest(date_interest, price_code, trunc_dict, direction, 
-                             plot_or_not=plot_or_not)
+                             plot_or_not=kwargs['plot_or_not'])
             
         return portfo
         
@@ -774,11 +799,12 @@ class Loop(Protocol):
                                   trade_method,
                                   signal_table: pd.DataFrame, 
                                   histroy_intraday_data_pkl: dict[str, pd.DataFrame], 
-                                  give_obj_name: str = "USD", 
-                                  get_obj_quantity: int = 1,
-                                  open_hr_dict: dict = OPEN_HR_DICT, 
-                                  close_hr_dict: dict = CLOSE_HR_DICT, 
-                                  plot_or_not: bool = False):
+                                  **kwargs):
+                                  #give_obj_name: str = "USD", 
+                                  #get_obj_quantity: int = 1,
+                                  #open_hr_dict: dict = OPEN_HR_DICT, 
+                                  #close_hr_dict: dict = CLOSE_HR_DICT, 
+                                  #plot_or_not: bool = False):
         """
         A method that utilise one portfolio to run multi-asset backtest using 
         preloaded data with multiple assets.
@@ -807,7 +833,11 @@ class Loop(Protocol):
             DESCRIPTION.
     
         """
-    
+        default_kwargs = DEFAULT_KWARGS
+        kwargs = dict(default_kwargs,**kwargs)
+        #print("backtest_open_hr_dict", kwargs['open_hr_dict'])
+        #raise Exception("?")
+
         for i in range(len(signal_table)):
             
             # setup trade inputs ###########
@@ -817,8 +847,8 @@ class Loop(Protocol):
             date_interest = item['Date']
             get_obj_name = item['Price_Code']
     
-            open_hr = open_hr_dict[symbol]
-            close_hr = close_hr_dict[symbol]
+            open_hr = kwargs['open_hr_dict'][symbol]
+            close_hr = kwargs['close_hr_dict'][symbol]
             histroy_intraday_data = histroy_intraday_data_pkl[symbol]
             
             day = extract_intraday_minute_data(histroy_intraday_data, 
@@ -844,7 +874,7 @@ class Loop(Protocol):
             target_entry, target_exit, \
             stop_exit, direction = load_EES_from_signal(trade_method, 
                                                         self._loop_type, item)
-
+            print('===============================')
             print(i, pos_open_dt, direction, symbol)
             #print(self._loop_type, day, target_entry,
             #      target_exit, stop_exit, open_hr_dt, close_hr_dt, direction)
@@ -865,21 +895,21 @@ class Loop(Protocol):
             trade_open, trade_close, \
             pos, exec_pos = trade_method(portfo, trade_id = trade_id).\
                                                  run_trade(trunc_dict, 
-                                                           give_obj_name, 
+                                                           kwargs['give_obj_name'], 
                                                            get_obj_name, 
-                                                           get_obj_quantity, 
+                                                           kwargs['get_obj_quantity'], 
                                                            target_entry, 
                                                            target_exit, 
                                                            stop_exit, 
                                                            open_hr = open_hr_dt, 
                                                            close_hr=close_hr_dt, 
                                                            direction = direction,
-                                                           fee=OIL_FUTURES_FEES[symbol],
+                                                           fee=kwargs['fee_dict'][symbol],
                                                            open_time= pos_open_dt)
                     
             # plotting mid-backtest
             plot_in_backtest(date_interest,get_obj_name, trunc_dict, direction, 
-                             plot_or_not=plot_or_not)
+                             plot_or_not=kwargs['plot_or_not'])
 
         return portfo
     
@@ -889,12 +919,13 @@ class Loop(Protocol):
                                   trade_method,
                                   signal_table: pd.DataFrame, 
                                   histroy_intraday_data_pkl: dict[str, pd.DataFrame], 
-                                  histroy_minute_cumavg_data_pkl: dict[str, pd.DataFrame], 
-                                  give_obj_name: str = "USD", 
-                                  get_obj_quantity: int = 1,
-                                  open_hr_dict: dict = OPEN_HR_DICT, 
-                                  close_hr_dict: dict = CLOSE_HR_DICT, 
-                                  plot_or_not: bool = False):
+                                  histroy_minute_cumavg_data_pkl: dict[str, pd.DataFrame],
+                                  **kwargs):
+                                  #give_obj_name: str = "USD", 
+                                  #get_obj_quantity: int = 1,
+                                  #open_hr_dict: dict = OPEN_HR_DICT, 
+                                  #close_hr_dict: dict = CLOSE_HR_DICT, 
+                                  #plot_or_not: bool = False):
         """
         A method that utilise one portfolio to run multi-asset backtest using 
         preloaded data with multiple assets.
@@ -923,6 +954,9 @@ class Loop(Protocol):
             DESCRIPTION.
     
         """
+        default_kwargs = DEFAULT_KWARGS
+        kwargs = dict(default_kwargs,**kwargs)
+
 # =============================================================================
 #         
 #         #print('histroy_minute_cumavg_data_pkl', histroy_minute_cumavg_data_pkl)
@@ -952,8 +986,8 @@ class Loop(Protocol):
             get_obj_name = item['Price_Code']
             print(i, symbol)
 
-            open_hr = open_hr_dict[symbol]
-            close_hr = close_hr_dict[symbol]
+            open_hr = kwargs['open_hr_dict'][symbol]
+            close_hr = kwargs['close_hr_dict'][symbol]
             #histroy_intraday_data = histroy_intraday_data_pkl[symbol]
             histroy_minute_cumavg_data = histroy_minute_cumavg_data_pkl[symbol]
             
@@ -1045,21 +1079,21 @@ class Loop(Protocol):
             trade_open, trade_close, \
             pos, exec_pos = trade_method(portfo, trade_id = trade_id).\
                                                  run_trade(trunc_dict, 
-                                                           give_obj_name, 
+                                                           kwargs['give_obj_name'], 
                                                            get_obj_name, 
-                                                           get_obj_quantity, 
+                                                           kwargs['get_obj_quantity'], 
                                                            target_entry, 
                                                            target_exit, 
                                                            stop_exit, 
                                                            open_hr = open_hr_dt, 
                                                            close_hr=close_hr_dt, 
                                                            direction = direction,
-                                                           fee=OIL_FUTURES_FEES[symbol],
+                                                           fee=kwargs['fee_dict'][symbol],
                                                            open_time= pos_open_dt)
                     
             # plotting mid-backtest
             plot_in_backtest(date_interest,get_obj_name, trunc_dict, direction, 
-                             plot_or_not=plot_or_not)
+                             plot_or_not=kwargs['plot_or_not'])
 
         return portfo
 

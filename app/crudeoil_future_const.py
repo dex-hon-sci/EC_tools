@@ -5,23 +5,32 @@ Created on Sun Jun 23 09:00:12 2024
 
 @author: dexter
 """
-import os
-from dotenv import load_dotenv 
-from pathlib import Path
-
 import numpy as np
+from dotenv import load_dotenv 
+import os
+from pathlib import Path
 
 # loading local global environment file
 load_dotenv()
 DATA_FILEPATH = os.environ.get("DATA_FILEPATH")
 RESULT_FILEPATH = os.environ.get("RESULT_FILEPATH")
 
-PORTARA_CONTINUOUS_DAILY_FILEPATH  = os.environ.get("PORTARA_CONTINUOUS_DAILY_FILEPATH")
-PORTARA_CONTINUOUS_MINUTE_FILEPATH  = os.environ.get("PORTARA_CONTINUOUS_MINUTE_FILEPATH")
-
 DAILY_DATA_PKL = DATA_FILEPATH +"/pkl_vault/crudeoil_future_daily_full.pkl"
 DAILY_MINUTE_DATA_PKL = DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_full.pkl"
 DAILY_APC_PKL = DATA_FILEPATH +"/pkl_vault/crudeoil_future_APC_full.pkl"
+
+DAILY_MINUTE_DATA_INDI_PKL = {'CLc1': DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_CLc1.pkl",
+                              'CLc2': DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_CLc2.pkl",
+                              'HOc1': DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_HOc1.pkl",
+                              'HOc2': DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_HOc2.pkl",
+                              'RBc1': DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_RBc1.pkl",
+                              'RBc2': DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_RBc2.pkl",
+                              'QOc1': DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_QOc1.pkl",
+                              'QOc2': DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_QOc2.pkl",
+                              'QPc1': DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_QPc1.pkl",
+                              'QPc2': DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_QPc2.pkl"}
+
+
 DAILY_OPENPRICE_PKL = DATA_FILEPATH +'/pkl_vault/crudeoil_future_openprice_full.pkl'
 
 MONTHLY_APC_PKL = DATA_FILEPATH +"/pkl_vault/crudeoil_future_Monthly_APC_full.pkl"
@@ -209,7 +218,7 @@ OIL_FUTURES_FEE = {'name':'USD', 'quantity': 15.0,
 def make_path_dict(folder_name: str, file_prefix: str, 
                    file_suffix: str = '.csv',  
                    path: str = RESULT_FILEPATH,
-                   syms: list = SYMBOL_LIST)->dict: 
+                   syms: list = SYMBOL_LIST): 
     
     bucket = dict()
     for sym in syms: 
@@ -220,7 +229,7 @@ def make_path_dict(folder_name: str, file_prefix: str,
 def make_path_list(folder_name: str, file_prefix: str, 
                    file_suffix: str = '.csv',  
                    path: str = RESULT_FILEPATH,
-                   syms: list = SYMBOL_LIST)->list: #WIP
+                   syms: list = SYMBOL_LIST): #WIP
     bucket = list()
     for sym in syms: 
         file_path = Path(path) / folder_name 
@@ -364,14 +373,14 @@ CLOSE_HR_DICT_EARLY = {
 WRONG_OPEN_HR_DICT = {
     'CLc1':'0330', # UTC
     'CLc2':'0330', # UTC
-    'HOc1':'0530', #0800 NY #1300 UTC
-    'HOc2':'0530', #0800 NY #1300 UTC
-    'RBc1':'0530', #0800 NY #1300 UTC
-    'RBc2':'0530', #0800 NY #1300 UTC
+    'HOc1':'0330', #0800 NY #1300 UTC
+    'HOc2':'0330', #0800 NY #1300 UTC
+    'RBc1':'0330', #0800 NY #1300 UTC
+    'RBc2':'0330', #0800 NY #1300 UTC
     'QOc1':'0330', # UTC
     'QOc2':'0330', # UTC
-    'QPc1':'0530', # UTC
-    'QPc2':'0530'} # UTC
+    'QPc1':'0330', # UTC
+    'QPc2':'0330'} # UTC
 
 WRONG_CLOSE_HR_DICT = {
     'CLc1':'1959', #2000 UTC
@@ -435,32 +444,6 @@ HISTORY_MINTUE_FILE_LOC = {
     "QOc2": DATA_FILEPATH + "/history_data/Minute/QO_d01.001",
     "QPc1": DATA_FILEPATH + "/history_data/Minute/QP.001",
     "QPc2": DATA_FILEPATH + "/history_data/Minute/QP_d01.001"
-    }
-
-PORTARA_CONITNUOUS_DAILY_FILE_LOC = {
-    "CLc1": PORTARA_CONTINUOUS_DAILY_FILEPATH + "\\Daily\\CLA_c01\\CLA_c01.txt",
-    "CLc2": PORTARA_CONTINUOUS_DAILY_FILEPATH + "\\Daily\\CLA_c02\\CLA_c02.txt",
-    "HOc1": PORTARA_CONTINUOUS_DAILY_FILEPATH + "\\Daily\\HOA_c01\\HOA_c01.txt",
-    "HOc2": PORTARA_CONTINUOUS_DAILY_FILEPATH + "\\Daily\\HOA_c02\\HOA_c02.txt",
-    "RBc1": PORTARA_CONTINUOUS_DAILY_FILEPATH + "\\Daily\\RBA_c01\\RBA_c01.txt",
-    "RBc2": PORTARA_CONTINUOUS_DAILY_FILEPATH + "\\Daily\\RBA_c02\\RBA_c02.txt",
-    "QOc1": PORTARA_CONTINUOUS_DAILY_FILEPATH + "\\Daily\\QOA_c01\\QOA_c01.txt",
-    "QOc2": PORTARA_CONTINUOUS_DAILY_FILEPATH + "\\Daily\\QOA_c02\\QOA_c02.txt",
-    "QPc1": PORTARA_CONTINUOUS_DAILY_FILEPATH + "\\Daily\\QPA_c01\\QPA_c01.txt",
-    "QPc2": PORTARA_CONTINUOUS_DAILY_FILEPATH + "\\Daily\\QPA_c02\\QPA_c02.txt"
-}
-
-PORTARA_CONTINUOUS_MINTUE_FILE_LOC = {
-    "CLc1": PORTARA_CONTINUOUS_MINUTE_FILEPATH + "\\1 Minute\\CLA_c01\\CLA_c01.txt",
-    "CLc2": PORTARA_CONTINUOUS_MINUTE_FILEPATH + "\\1 Minute\\CLA_c02\\CLA_c02.txt",
-    "HOc1": PORTARA_CONTINUOUS_MINUTE_FILEPATH + "\\1 Minute\\HOA_c01\\HOA_c01.txt",
-    "HOc2": PORTARA_CONTINUOUS_MINUTE_FILEPATH + "\\1 Minute\\HOA_c02\\HOA_c02.txt",
-    "RBc1": PORTARA_CONTINUOUS_MINUTE_FILEPATH + "\\1 Minute\\RBA_c01\\RBA_c01.txt",
-    "RBc2": PORTARA_CONTINUOUS_MINUTE_FILEPATH + "\\1 Minute\\RBA_c02\\RBA_c02.txt",
-    "QOc1": PORTARA_CONTINUOUS_MINUTE_FILEPATH + "\\1 Minute\\QOA_c01\\QOA_c01.txt",
-    "QOc2": PORTARA_CONTINUOUS_MINUTE_FILEPATH + "\\1 Minute\\QOA_c02\\QOA_c02.txt",
-    "QPc1": PORTARA_CONTINUOUS_MINUTE_FILEPATH + "\\1 Minute\\QPA_c01\\QPA_c01.txt",
-    "QPc2": PORTARA_CONTINUOUS_MINUTE_FILEPATH + "\\1 Minute\\QPA_c02\\QPA_c02.txt"
     }
 
 OPEN_PRICE_FILE_LOC = {    

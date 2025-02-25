@@ -9,7 +9,6 @@ Created on Thu Jan 23 06:46:41 2025
 from dataclasses import dataclass
 from enum import Enum
 
-@dataclass
 class SignalType(Enum):
     """
     A simple class that contains the avaliable status for signals.
@@ -19,7 +18,6 @@ class SignalType(Enum):
     SELL = "Sell" # When the position is executed
     NEUTRAL = "Neutral" # When the position is cancelled
     
-@dataclass
 class SignalStatus(Enum):
      ACTIVE = "Active"
      INACTIVE = "Inactive"

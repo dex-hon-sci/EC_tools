@@ -16,7 +16,9 @@ import EC_tools.utility as util
 #xl_filename = "/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap/PNL_argusexact_G25S10_.xlsx"
 #xl_filename = "/home/dexter/Euler_Capital_codes/EC_tools/results/EC_benchmark/20250210_argusexact_cross_P25S10_PNL_full_.xlsx"#EC_benchmark_prime.xlsx"
 #xl_filename = "/home/dexter/Euler_Capital_codes/EC_tools/results/EC_benchmark/20250210_argusexact_cross_P25S10_PNL_.xlsx"#EC_benchmark_prime.xlsx"
-xl_filename = "/home/dexter/Euler_Capital_codes/EC_tools/results/EC_benchmark/20250210_argusexact_cross_P10S35_PNL_full_righttime_.xlsx"
+#xl_filename = "/home/dexter/Euler_Capital_codes/EC_tools/results/EC_benchmark/20250210_argusexact_cross_P10S35_PNL_full_righttime_.xlsx"
+#xl_filename = '/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/live_trade_vs_backtest_newcode/live_trade_compare_pnl_.xlsx'
+xl_filename = '/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap2/20240813_argusexact_cross_P35S15_PNL_.xlsx'
 
 wb_obj = openpyxl.load_workbook(xl_filename, keep_vba=True)
 
@@ -84,7 +86,7 @@ def group_by_date(df, date_col='Entry_Date',
                                 df[return_col].to_list()):
         if date != temp_date:
             temp_date = datetime.datetime.strptime(temp_date, '%Y-%m-%d')
-            print(temp_date,temp_return)
+            #print(temp_date,temp_return)
             date_bucket.append(temp_date)
             return_bucket.append(temp_return)
             #print(temp_date,temp_return)
@@ -115,7 +117,7 @@ def sharpe_ratio(cum_returns,timescale):
     
     print("annual_return", annual_return)
     print('annual_std', annual_std)
-    print("excess_return",excess_return, np.average(excess_return))
+    print("excess_return", np.average(excess_return))#,excess_return)
     #return ((np.average(excess_return)-RFR)*252)/annual_std
     return (annual_return-RFR)/annual_std
 #xl_filename = "/home/dexter/Euler_Capital_codes/EC_tools/results/beyondmarketopen2/"
@@ -129,8 +131,8 @@ for sym in symbol_list:
     
     df_new = pd.DataFrame(data={'Date':date_bucket1, 'Return': cum_return_bucket})
     print(sym)
-    print(win_rate(df))
-    print(profit_factor(df))
+    print("Win_rate", win_rate(df))
+    print("Profit Factor", profit_factor(df))
     #print('Total Profit', df['cumulative P&L from trades'].iloc[-1])
     print("Day(#), total return", len(date_bucket1), sum(return_bucket))
     
@@ -150,7 +152,7 @@ for sym in symbol_list:
     
     ax1 = fig.add_subplot(gs[0])
     ax2 = fig.add_subplot(gs[1], sharex=ax1)
-    #ax1.plot(date_bucket1, return_bucket,'-', c="g")
+
     #ax1.bar(date_bucket1, return_bucket, color="g")
     ax1.plot(date_bucket1, cum_return_bucket, color="g")
     

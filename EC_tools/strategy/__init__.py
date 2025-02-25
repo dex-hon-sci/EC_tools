@@ -21,7 +21,7 @@ from numpy.typing import NDArray
 from enum import Enum, auto
 
 import EC_tools.utility.math_func as mfunc
-from EC_tools.strategy.signal import SignalStatus, Signal, SignalType
+from EC_tools.strategy.signal import SignalType
 __all__ = ["Strategy",
            "ArgusMRStrategy","ArgusMRStrategyMode",
            "ArgusMonthlyStrategy"]
@@ -86,7 +86,7 @@ class Strategy(Protocol):
             self._direction = SignalType.BUY
         
         if self.sell_cond == True:
-                self._direction = SignalType.SELL
+            self._direction = SignalType.SELL
 
         if self.neutral_cond == True:
             self._direction = SignalType.NEUTRAL
@@ -315,7 +315,7 @@ class ArgusMRStrategy(Strategy):
 
         # Put the condition info in a list
         cond_info = [NCONS,	NROLL, Signal_NCONS, Signal_NROLL]
-        
+        print('Direction', self.direction)
         return self.direction, cond_info
 
 
@@ -361,7 +361,7 @@ class ArgusMRStrategy(Strategy):
             input.
 
         """
-
+        print("set_EES", self.direction)
         if self.direction == SignalType.BUY:
             # (A) Entry region at price < APC p=0.4 and 
             entry_price = [float(self._curve_today_spline(buy_range[0][0])), 
@@ -371,7 +371,10 @@ class ArgusMRStrategy(Strategy):
                           float(self._curve_today_spline(buy_range[1][1]))] 
             # (C) Stop loss at APC p=0.1
             stop_loss = float(self._curve_today_spline(buy_range[2]))
-
+            print("Buy Direction!")
+            print("entry:",buy_range[0], entry_price)
+            print("exit:",buy_range[1], exit_price)
+            print("stop:",buy_range[2], stop_loss)
             
         elif self.direction == SignalType.SELL:
             # (A) Entry region at price > APC p=0.6 and 
@@ -382,11 +385,19 @@ class ArgusMRStrategy(Strategy):
                           float(self._curve_today_spline(sell_range[1][1]))]
             # (C) Stop loss at APC p=0.9
             stop_loss = float(self._curve_today_spline(sell_range[2]))
+            print("Sell Direction!")
+            print("entry:",sell_range[0], entry_price)
+            print("exit:",sell_range[1], exit_price)
+            print("stop:",sell_range[2], stop_loss)
             
         elif self.direction == SignalType.NEUTRAL:
             entry_price = ["NA", "NA"]
             exit_price = ["NA", "NA"]
             stop_loss = "NA"
+            print("Neutral Direction!")
+            print("entry:",entry_price)
+            print("exit:",exit_price)
+            print("stop:",stop_loss)
         else:
             raise Exception(
                 'Unaccepted input, condition needs to be either Buy, \

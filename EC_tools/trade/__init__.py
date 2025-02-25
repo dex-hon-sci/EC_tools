@@ -194,7 +194,7 @@ class OneTradePerDay(Trade):
 
         """
         # A method that search for correct EES points from a EES_dict
-        
+        #print("EES_dict", EES_dict)
         # initialise
         entry_pt, exit_pt = (np.nan,np.nan), (np.nan,np.nan)
         stop_pt, close_pt = (np.nan,np.nan), (np.nan,np.nan)
@@ -230,7 +230,9 @@ class OneTradePerDay(Trade):
             # put in the new exit and stop
             exit_pt = earliest_exit
             stop_pt = earliest_stop
-
+            
+        #print('entry_pt, exit_pt, stop_pt, close_pt')
+        #print(entry_pt, exit_pt, stop_pt, close_pt)
         return entry_pt, exit_pt, stop_pt, close_pt
     
     def open_positions(self, 
@@ -559,7 +561,8 @@ class OneTradePerDay(Trade):
         trade_open, trade_close, \
         pos_list, exec_pos_list = self.execute_positions(trunc_dict, pos_list,
                                                          order_type = order_type)
-
+        #print(trade_open, trade_close, exec_pos_list)
+        
         # the search function for entry and exit time should be completely 
         # sepearate to the trading actions
         return trade_open, trade_close, pos_list, exec_pos_list            

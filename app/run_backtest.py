@@ -54,7 +54,8 @@ from crudeoil_future_const import OPEN_HR_DICT, CLOSE_HR_DICT, \
                                   ARGUS_EXACT_SIGNAL_AMB3_FILE_LOC, ARGUS_EXACT_PNL_AMB3_LOC,\
                                   ARGUS_EXACT_SIGNAL_MODE_FILE_LOC, ARGUS_EXACT_PNL_MODE_LOC,\
                                   TEST_FILE_LOC, TEST_FILE_PNL_LOC,\
-                                  DAILY_MINUTE_DATA_PKL, MINUTE_CUMAVG_MONTH_PKL\
+                                  DAILY_MINUTE_DATA_PKL, MINUTE_CUMAVG_MONTH_PKL,\
+                                  DAILY_MINUTE_DATA_INDI_PKL
                                       
 
 
@@ -66,15 +67,26 @@ __all__ = ['run_backtest','run_backtest_list',
 __author__="Dexter S.-H. Hon"
 
 
+from EC_tools.backtest import DEFAULT_KWARGS as BT_DEFAULT_KWARGS
+
+DEFAULT_KWARGS= {**BT_DEFAULT_KWARGS,
+                 'signal_file_loc': TEST_FILE_LOC, 
+                 'save_file_loc': TEST_FILE_PNL_LOC, 
+                 'master_signal_filename': 'master_signal.csv', 
+                 'master_pnl_filename': 'master_pnl.csv',
+                 'histroy_intraday_data_pkl': dict(),
+                 'selected_directions': ["Buy", "Sell"],
+                 'method': "preload"}
+
 @util.time_it
 def run_backtest(trade_choice, 
                  filename_minute: str,
                  filename_buysell_signals: str, 
                  start_date: datetime.datetime, 
                  end_date: datetime.datetime, 
-                 open_hr: str = '0800', 
-                 close_hr: str = '1630',
-                 selected_directions = ["Buy", "Sell"]) -> pd.DataFrame:
+                 #open_hr: str = '0800', 
+                 #close_hr: str = '1630',
+                 **kwargs) -> pd.DataFrame:
     """
     
     The simplest backtest method. It uses the basic 'loop_date' to iterate 
@@ -107,13 +119,15 @@ def run_backtest(trade_choice,
         The resulting PNL file.
 
     """
+    default_kwargs = DEFAULT_KWARGS
+    kwargs = dict(default_kwargs,**kwargs)
 
     # read the reformatted minute history data
     history_data = read.read_reformat_Portara_minute_data(filename_minute)
     
     # Find the date for trading
     trade_date_table = backtest.prepare_signal_interest(filename_buysell_signals, 
-                                                        direction = selected_directions,
+                                                        direction = kwargs['selected_directions'],
                                                         trim = False)
 
     start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")# datetime.datetime(2023,1,1)
@@ -129,7 +143,8 @@ def run_backtest(trade_choice,
     # loop through the date and set the EES prices for each trading day   
     dict_trade_PNL = backtest.loop_date(trade_choice, 
                                         trade_date_table, history_data, 
-                                        open_hr=open_hr, close_hr=close_hr,
+                                        open_hr=kwargs['open_hr'], 
+                                        close_hr=kwargs['close_hr'],
                                         plot_or_not = False)    
 
 
@@ -141,21 +156,24 @@ def run_backtest_list(trade_choice,
                       signal_filename_list: list[str], 
                       history_minute_filename_list: list[str],
                       start_date, end_date,
-                      open_hr_dict = OPEN_HR_DICT, 
-                      close_hr_dict = CLOSE_HR_DICT, 
-                      selected_directions = ['Buy', 'Sell'],
-                      save_or_not: bool = False) -> dict:
+                      #open_hr_dict = OPEN_HR_DICT, 
+                      #close_hr_dict = CLOSE_HR_DICT, 
+                      #selected_directions = ['Buy', 'Sell'],
+                      #save_or_not: bool = False,
+                      **kwargs) -> dict:
 
+    default_kwargs = DEFAULT_KWARGS
+    kwargs = dict(default_kwargs,**kwargs)
     
     output_dict = dict()
     for save_filename, sym, signal_filename, history_minute_file in zip(\
         save_filename_list, symbol_list, signal_filename_list, \
                                          history_minute_filename_list):
         
-        open_hr = open_hr_dict[sym]
-        close_hr = close_hr_dict[sym]
+        open_hr = kwargs['open_hr_dict'][sym]
+        close_hr = kwargs['close_hr_dict'][sym]
         print("Running backtest on {}".format(sym))
-        @util.save_csv("{}".format(save_filename), save_or_not=save_or_not)
+        @util.save_csv("{}".format(save_filename), save_or_not=kwargs['save_or_not'])
         def run_backtest_indi(trade_choice, 
                               filename_minute,filename_buysell_signals, 
                          start_date, end_date, open_hr='0300', close_hr='2200'):
@@ -166,7 +184,8 @@ def run_backtest_list(trade_choice,
                                         start_date, end_date, 
                                         open_hr=open_hr, 
                                         close_hr=close_hr,
-                                        selected_directions = selected_directions)
+                                        selected_directions = \
+                                            kwargs['selected_directions'])
             return backtest_data
                        
             
@@ -186,8 +205,9 @@ def run_backtest_portfolio(TradeMethod,
                            filename_buysell_signals: str, 
                            start_date: str, end_date: str,
                            loop_type: LoopType = LoopType.CROSSOVER,
-                           selected_directions = ["Buy", "Sell"]) \
-                           -> Portfolio:
+                           **kwargs) -> Portfolio:
+
+                           #selected_directions = ["Buy", "Sell"]) \
     """
     The basic backtest method utilising the Portfolio module.
     
@@ -214,6 +234,9 @@ def run_backtest_portfolio(TradeMethod,
         The resulting Portfolio.
 
     """
+    default_kwargs = DEFAULT_KWARGS
+    kwargs = dict(default_kwargs,**kwargs)
+    
     # Turn the start and end date from str to datetime.datetime
     start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")# datetime.datetime(2023,1,1)
     end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")##datetime.datetime(2023,12,30)
@@ -223,7 +246,7 @@ def run_backtest_portfolio(TradeMethod,
 
     # Find the date for trading, only "Buy" or "Sell" date are taken.
     trade_date_table = backtest.prepare_signal_interest(filename_buysell_signals, 
-                                                        direction = selected_directions,
+                                                        direction = kwargs['selected_directions'],
                                                         trim = False)
     
     # Select for the date interval for investigation
@@ -241,10 +264,8 @@ def run_backtest_portfolio(TradeMethod,
     # loop through the date and set the EES prices for each trading day   
     P1 = Loop(loop_type).loop_date_portfolio(P1, TradeMethod,
                                              trade_date_table, history_data,
-                                             give_obj_name = "USD", get_obj_name = "HOc1",
-                                             get_obj_quantity = 10,
-                                             open_hr='1300', close_hr='1828', 
-                                             plot_or_not = False)    
+                                             get_obj_name = "HOc1",
+                                             **kwargs)    
     print('master_table', P1.master_table)
 
     return P1
@@ -252,16 +273,17 @@ def run_backtest_portfolio(TradeMethod,
 
 
 def run_backtest_portfolio_preloaded(TradeMethod,
-                                     master_signals_filename: str, 
-                                     histroy_intraday_data_pkl: dict,
+                                     #master_signals_filename: str, 
+                                     #histroy_intraday_data_pkl: dict,
                                      start_date: str, end_date: str,
-                                     give_obj_name: str = "USD", 
-                                     get_obj_quantity: int = 1,
+                                     #give_obj_name: str = "USD", 
+                                     #get_obj_quantity: int = 1,
                                      loop_type: LoopType = LoopType.CROSSOVER,
-                                     open_hr_dict: dict = OPEN_HR_DICT, 
-                                     close_hr_dict: dict = CLOSE_HR_DICT, 
-                                     selected_directions = ["Buy", "Sell"],
-                                     plot_or_not: bool = False): 
+                                     #open_hr_dict: dict = OPEN_HR_DICT, 
+                                     #close_hr_dict: dict = CLOSE_HR_DICT, 
+                                     #selected_directions = ["Buy", "Sell"],
+                                     #plot_or_not: bool = False,
+                                     **kwargs): 
     """
     
 
@@ -288,14 +310,17 @@ def run_backtest_portfolio_preloaded(TradeMethod,
         DESCRIPTION.
 
     """
+    default_kwargs = DEFAULT_KWARGS
+    kwargs = dict(default_kwargs,**kwargs)
+
     t1 = time.time()
     start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
     end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
 
     #histroy_intraday_data_pkl = util.load_pkl(histroy_intraday_data_pkl_filename)
     # Find the date for trading, only "Buy" or "Sell" date are taken.
-    trade_date_table = backtest.prepare_signal_interest(master_signals_filename,
-                                                        direction = selected_directions,
+    trade_date_table = backtest.prepare_signal_interest(kwargs['master_signal_filename'],
+                                                        direction = kwargs['selected_directions'],
                                                         trim = False)
     #start_date_lag = datetime.datetime.strptime(start_date, '%Y-%m-%d') - \
     #                        datetime.timedelta(days= start_date_pushback)
@@ -312,12 +337,12 @@ def run_backtest_portfolio_preloaded(TradeMethod,
     P1 = Loop(loop_type).loop_portfolio_preloaded(P1, 
                                                   TradeMethod,
                                                   trade_date_table, 
-                                                  histroy_intraday_data_pkl,
-                                                  give_obj_name=give_obj_name,
-                                                  get_obj_quantity=get_obj_quantity,
-                                                  plot_or_not=plot_or_not,
-                                                  open_hr_dict=open_hr_dict,
-                                                  close_hr_dict=close_hr_dict)
+                                                  kwargs['histroy_intraday_data_pkl'],
+                                                  give_obj_name=kwargs['give_obj_name'],
+                                                  get_obj_quantity=kwargs['get_obj_quantity'],
+                                                  open_hr_dict=kwargs['open_hr_dict'],
+                                                  close_hr_dict=kwargs['close_hr_dict'])
+                                            
     
     t2 = time.time()-t1
     print("It takes {} seconds to run the backtest".format(t2))
@@ -336,7 +361,8 @@ def run_backtest_portfolio_monthly(TradeMethod,
                                    open_hr_dict: dict = OPEN_HR_DICT, 
                                    close_hr_dict: dict = CLOSE_HR_DICT, 
                                    selected_directions = ["Buy", "Sell"],
-                                   plot_or_not: bool = False):
+                                   plot_or_not: bool = False,
+                                   **kwargs): #decrepated, WIP
     """
     
 
@@ -375,12 +401,15 @@ def run_backtest_portfolio_monthly(TradeMethod,
         DESCRIPTION.
 
     """
+    default_kwargs = DEFAULT_KWARGS
+    kwargs = dict(default_kwargs,**kwargs)
+    
     t1 = time.time()
     start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
     end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
     # Find the date for trading, only "Buy" or "Sell" date are taken.
     trade_date_table = backtest.prepare_signal_interest(master_signals_filename,
-                                                        direction = selected_directions,
+                                                        direction = kwargs['selected_directions'],
                                                         trim = False)
     trade_date_table = trade_date_table[(trade_date_table['Date'] >= start_date) & 
                                         (trade_date_table['Date'] <= end_date)]
@@ -408,21 +437,15 @@ def run_backtest_portfolio_monthly(TradeMethod,
 
     
 def run_backtest_bulk(TradeMethod, 
-                      signal_file_loc: dict, 
-                      save_file_loc: dict, 
+                      #signal_file_loc: dict, 
+                      #save_file_loc: dict, 
                       start_date: str, 
                       end_date: str, 
-                      method: str = "list", 
-                      master_signal_filename: str = "", 
-                      master_pnl_filename: str = '',
-                      give_obj_name: str = 'USD',
-                      get_obj_quantity: int = 1,
-                      open_hr_dict = OPEN_HR_DICT, 
-                      close_hr_dict = CLOSE_HR_DICT,
+                      #master_signal_filename: str = "", 
+                      #master_pnl_filename: str = '',
                       loop_type: LoopType = LoopType.CROSSOVER,
-                      selected_directions = ['Buy', 'Sell'],
-                      save_or_not: bool = True, 
-                      merge_or_not: bool = True):
+                      #selected_directions = ['Buy', 'Sell'],
+                      **kwargs):
     """
     
 
@@ -467,11 +490,15 @@ def run_backtest_bulk(TradeMethod,
         DESCRIPTION.
 
     """
+    default_kwargs = DEFAULT_KWARGS
+    kwargs = dict(default_kwargs,**kwargs)
+    
+
             
-    if method == "list":
-        SAVE_FILENAME_LIST = list(save_file_loc.values())
-        SIGNAL_FILENAME_LIST = list(signal_file_loc.values())
-        SYMBOL_LIST = list(signal_file_loc.keys())
+    if kwargs['method'] == "list":
+        SAVE_FILENAME_LIST = list(kwargs['save_file_loc'].values())
+        SIGNAL_FILENAME_LIST = list(kwargs['signal_file_loc'].values())
+        SYMBOL_LIST = list(kwargs['signal_file_loc'].keys())
         HISTORY_MINUTE_FILENAME_LIST = list(HISTORY_MINTUE_FILE_LOC.values())
     
         
@@ -481,59 +508,50 @@ def run_backtest_bulk(TradeMethod,
                                             SIGNAL_FILENAME_LIST, 
                                             HISTORY_MINUTE_FILENAME_LIST,
                                             start_date, end_date,
-                                            open_hr_dict = open_hr_dict, 
-                                            close_hr_dict = close_hr_dict, 
-                                            selected_directions = selected_directions,
-                                            save_or_not=save_or_not)
+                                            open_hr_dict = kwargs['open_hr_dict'], 
+                                            close_hr_dict = kwargs['close_hr_dict'], 
+                                            selected_directions = kwargs['selected_directions'],
+                                            save_or_not=kwargs['save_or_not'])
                       
-        if merge_or_not:
+        if kwargs['merge_or_not']:
             #merge_filename = getpass.getpass(prompt="please enter the name for the merged file :") 
             #MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + merge_filename
 
             read.merge_raw_data(SAVE_FILENAME_LIST, 
-                                master_pnl_filename, sort_by="Entry_Date")
+                                kwargs['master_pnl_filename'], 
+                                sort_by="Entry_Date")
         
         
-    elif method == "preload":
+    elif kwargs['method'] == "preload":
         #MASTER_SIGNAL_FILENAME
         #HISTORY_MINUTE_PKL = util.load_pkl(DAILY_MINUTE_DATA_PKL)
         
-        HISTORY_MINUTE_PKL_CLc1 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_CLc1.pkl')
-        HISTORY_MINUTE_PKL_CLc2 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_CLc2.pkl')
-        HISTORY_MINUTE_PKL_HOc1 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_HOc1.pkl')
-        HISTORY_MINUTE_PKL_HOc2 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_HOc2.pkl')
-        HISTORY_MINUTE_PKL_RBc1 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_RBc1.pkl')
-        HISTORY_MINUTE_PKL_RBc2 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_RBc2.pkl')
-        HISTORY_MINUTE_PKL_QOc1 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_QOc1.pkl')
-        HISTORY_MINUTE_PKL_QOc2 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_QOc2.pkl')
-        HISTORY_MINUTE_PKL_QPc1 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_QPc1.pkl')
-        HISTORY_MINUTE_PKL_QPc2 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_QPc2.pkl')
-        
-        HISTORY_MINUTE_PKL = {**HISTORY_MINUTE_PKL_CLc1, 
-                              **HISTORY_MINUTE_PKL_CLc2,
-                              **HISTORY_MINUTE_PKL_HOc1,
-                              **HISTORY_MINUTE_PKL_HOc2,
-                              **HISTORY_MINUTE_PKL_RBc1,
-                              **HISTORY_MINUTE_PKL_RBc2,
-                              **HISTORY_MINUTE_PKL_QOc1,
-                              **HISTORY_MINUTE_PKL_QOc2,
-                              **HISTORY_MINUTE_PKL_QPc1,
-                              **HISTORY_MINUTE_PKL_QPc2}
+# =============================================================================
+#         master_dict = {}
+#         for filename in DAILY_MINUTE_DATA_INDI_PKL:
+#             temp_dict = util.load_pkl(filename)
+#             master_dict = {**temp_dict}
+#             
+#         
+#         HISTORY_MINUTE_PKL 
+# =============================================================================
 
         PP = run_backtest_portfolio_preloaded(TradeMethod,
-                                              master_signal_filename, 
-                                              HISTORY_MINUTE_PKL,
+                                              #HISTORY_MINUTE_PKL,
                                               start_date, end_date,
                                               loop_type = loop_type,
-                                              give_obj_name=give_obj_name,
-                                              get_obj_quantity=get_obj_quantity,
-                                              open_hr_dict = open_hr_dict, 
-                                              close_hr_dict = close_hr_dict, 
-                                              selected_directions = selected_directions)
-        
+                                              master_signal_filename = kwargs['master_signal_filename'], 
+                                              histroy_intraday_data_pkl = kwargs['histroy_intraday_data_pkl'],
+                                              give_obj_name=kwargs['give_obj_name'],
+                                              get_obj_quantity=kwargs['get_obj_quantity'],
+                                              open_hr_dict = kwargs['open_hr_dict'], 
+                                              close_hr_dict = kwargs['close_hr_dict'], 
+                                              selected_directions = kwargs['selected_directions'])
+
+
         backtest_result = PP
-        if save_or_not: # save pkl portfolio
-            file = open(master_pnl_filename, 'wb')
+        if kwargs['save_or_not']: # save pkl portfolio
+            file = open(kwargs['master_pnl_filename'], 'wb')
             pickle.dump(PP, file)
             
             #my_pkl = pickle.load(output)
@@ -566,15 +584,15 @@ if __name__ == "__main__":
 #     FILEPATH = "/home/dexter/Euler_Capital_codes/EC_tools/results/"
 #     MASTER_PNL_FILENAME = FILEPATH+'argus_exact_PNL_amb3_full.csv'
 # =============================================================================
-    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + "/monthly_test/test_master_signal.csv"
-    MASTER_PNL_FILENAME = RESULT_FILEPATH + "/monthly_test/test_PNL.pkl"
+    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + "/consistency/Argus_sample_with_mybacktest_newcode/Argus_sample_signals_2.csv"
+    MASTER_PNL_FILENAME = RESULT_FILEPATH + "/consistency/Argus_sample_with_mybacktest_newcode/Argus_sample_PNL_with_mybacktest_newcode.pkl"
     
     #HISTORY_MINUTE_PKL = util.load_pkl(DAILY_MINUTE_DATA_PKL)
-    HISTORY_MINUTE_CUMAVG_IN_MONTH_PKL = util.load_pkl(MINUTE_CUMAVG_MONTH_PKL)
+    #HISTORY_MINUTE_CUMAVG_IN_MONTH_PKL = util.load_pkl(MINUTE_CUMAVG_MONTH_PKL)
     
     
-    start_date = "2022-01-01"
-    end_date = "2022-01-30"
+    start_date = "2022-02-01"
+    end_date = "2022-02-02"
 
     #end_date = "2024-06-28"
     
@@ -603,18 +621,28 @@ if __name__ == "__main__":
     #output = open(MASTER_PNL_FILENAME, 'wb')
     #my_pkl = pickle.load(output)
 
-
+    def load_source_data_bt(filenames_loc) -> dict:
+        master_dict = {}
+        for filename in filenames_loc:
+            temp_dict = util.load_pkl(filename)
+            master_dict = dict(master_dict, **temp_dict)
+            
+        return master_dict
+    
+    HISTORY_MINUTE_PKL = load_source_data_bt(list(DAILY_MINUTE_DATA_INDI_PKL.values()))
+    
     run_backtest_bulk(OneTradePerDay, 
-                      TEST_FILE_LOC, TEST_FILE_PNL_LOC, 
+                      #TEST_FILE_LOC, TEST_FILE_PNL_LOC, 
                       start_date, end_date, 
                       method = "preload", 
                       master_signal_filename = MASTER_SIGNAL_FILENAME,
-                      master_pnl_filename= MASTER_PNL_FILENAME,
+                      master_pnl_filename = MASTER_PNL_FILENAME,
+                      histroy_intraday_data_pkl = HISTORY_MINUTE_PKL,
                       give_obj_name = 'USD',
                       get_obj_quantity = 1,
                       open_hr_dict = OPEN_HR_DICT, 
                       close_hr_dict= CLOSE_HR_DICT,
-                      loop_type = LoopType.CROSSOVER,
+                      loop_type = LoopType.RANGE,
                       save_or_not=True, 
                       merge_or_not=True)
     

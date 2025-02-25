@@ -45,7 +45,8 @@ from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST, \
                                   ARGUS_EXACT_SIGNAL_MODE_WRONGTIME_FILE_LOC,\
                                   ARGUS_EXACT_MODE_PNL_WRONGTIME_LOC,\
                                   ARGUS_EXACT_SIGNAL_EARLY_FILE_LOC, \
-                                  ARGUS_EXACT_PNL_EARLY_FILE_LOC
+                                  ARGUS_EXACT_PNL_EARLY_FILE_LOC,\
+                                  DAILY_MINUTE_DATA_INDI_PKL
                                         
 from crudeoil_future_const import ARGUS_BENCHMARK_SIGNAL_AMB_FILE_LOC, \
                                   ARGUS_BENCHMARK_SIGNAL_AMB_BUY_FILE_LOC, \
@@ -54,38 +55,26 @@ from crudeoil_future_const import ARGUS_BENCHMARK_SIGNAL_AMB_FILE_LOC, \
 
                   
 @util.time_it
-def load_source_data() -> tuple:
+def load_source_data_signal() -> tuple:
     #load the pkl 
     SIGNAL_PKL = util.load_pkl(DATA_FILEPATH+"/pkl_vault/crudeoil_future_APC_full.pkl")
     HISTORY_DAILY_PKL = util.load_pkl(DATA_FILEPATH+"/pkl_vault/crudeoil_future_daily_full.pkl")
     #HISTORY_MINUTE_PKL = util.load_pkl(DATA_FILEPATH+"/pkl_vault/crudeoil_future_minute_full.pkl")
-    OPENPRICE_PKL = util.load_pkl(DATA_FILEPATH+"/pkl_vault/crudeoil_future_openprice_full.pkl")
+    #OPENPRICE_PKL = util.load_pkl(DATA_FILEPATH+"/pkl_vault/crudeoil_future_openprice_full.pkl")
     
-    HISTORY_MINUTE_PKL_CLc1 = util.load_pkl(DATA_FILEPATH+'/pkl_vault/crudeoil_future_minute_CLc1.pkl')
-    HISTORY_MINUTE_PKL_CLc2 = util.load_pkl(DATA_FILEPATH+'/pkl_vault/crudeoil_future_minute_CLc2.pkl')
-    HISTORY_MINUTE_PKL_HOc1 = util.load_pkl(DATA_FILEPATH+'/pkl_vault/crudeoil_future_minute_HOc1.pkl')
-    HISTORY_MINUTE_PKL_HOc2 = util.load_pkl(DATA_FILEPATH+'/pkl_vault/crudeoil_future_minute_HOc2.pkl')
-    HISTORY_MINUTE_PKL_RBc1 = util.load_pkl(DATA_FILEPATH+'/pkl_vault/crudeoil_future_minute_RBc1.pkl')
-    HISTORY_MINUTE_PKL_RBc2 = util.load_pkl(DATA_FILEPATH+'/pkl_vault/crudeoil_future_minute_RBc2.pkl')
-    HISTORY_MINUTE_PKL_QOc1 = util.load_pkl(DATA_FILEPATH+'/pkl_vault/crudeoil_future_minute_QOc1.pkl')
-    HISTORY_MINUTE_PKL_QOc2 = util.load_pkl(DATA_FILEPATH+'/pkl_vault/crudeoil_future_minute_QOc2.pkl')
-    HISTORY_MINUTE_PKL_QPc1 = util.load_pkl(DATA_FILEPATH+'/pkl_vault/crudeoil_future_minute_QPc1.pkl')
-    HISTORY_MINUTE_PKL_QPc2 = util.load_pkl(DATA_FILEPATH+'/pkl_vault/crudeoil_future_minute_QPc2.pkl')
-    
-    HISTORY_MINUTE_PKL = {**HISTORY_MINUTE_PKL_CLc1, 
-                          **HISTORY_MINUTE_PKL_CLc2,
-                          **HISTORY_MINUTE_PKL_HOc1,
-                          **HISTORY_MINUTE_PKL_HOc2,
-                          **HISTORY_MINUTE_PKL_RBc1,
-                          **HISTORY_MINUTE_PKL_RBc2,
-                          **HISTORY_MINUTE_PKL_QOc1,
-                          **HISTORY_MINUTE_PKL_QOc2,
-                          **HISTORY_MINUTE_PKL_QPc1,
-                          **HISTORY_MINUTE_PKL_QPc2}
     #SAVE_FILENAME_LOC = TEST_FILE_LOC #ARGUS_BENCHMARK_SIGNAL_FILE_LOC #TEST_FILE_LOC
     #SAVE_FILENAME_LOC = TEST_FILE_PNL_LOC #ARGUS_BENCHMARK_SIGNAL_FILE_LOC #TEST_FILE_LOC
     
-    return SIGNAL_PKL, HISTORY_DAILY_PKL, HISTORY_MINUTE_PKL, OPENPRICE_PKL
+    return SIGNAL_PKL, HISTORY_DAILY_PKL
+
+@util.time_it
+def load_source_data_bt(filenames_loc) -> dict:
+    master_dict = {}
+    for filename in filenames_loc:
+        temp_dict = util.load_pkl(filename)
+        master_dict = dict(master_dict, **temp_dict)
+        
+    return master_dict
 
 #@jit(nopython=True)
 #@util.time_it
@@ -124,44 +113,52 @@ def run_main(strategy_name,
         # preprocess merge raw CSV data into pkl format 
         #run_preprocess()
     elif load:
-        SIGNAL_PKL, HISTORY_DAILY_PKL, \
-        HISTORY_MINUTE_PKL, OPENPRICE_PKL = load_source_data()
+        SIGNAL_PKL, HISTORY_DAILY_PKL = load_source_data_signal()
+        HISTORY_MINUTE_PKL = load_source_data_bt(list(DAILY_MINUTE_DATA_INDI_PKL.values()))
+        
+        print('HISTORY_MINUTE_PKL',HISTORY_MINUTE_PKL)
+        #raise Exception('?')
     print("=========Generating Buy/Sell Signals=======")
     
     #strategy_name = 'argus_exact_mode'
     strategy = MR_STRATEGIES_0[strategy_name]
     #SAVE_SIGNAL_FILENAME_LIST = list(FILE_LOC.values())
    
-    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/consistency/Argus_sample_with_mybacktest_newcode/Argus_sample_signals_2.csv'
-
+    #MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/consistency/Argus_sample_with_mybacktest_newcode/Argus_sample_signals_2.csv'
+    #MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/consistency/live_trade_vs_backtest_newcode/live_trade_compare_signals.csv'
+    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/EC_benchmark/20240814_argusexact_cross_P25S35_0330_entry_signal_full.csv'
     
-    run_gen_signal_bulk(strategy, FILE_LOC,
+    run_gen_signal_bulk(strategy,
                         start_date, end_date,
                         buy_range = buy_range, 
                         sell_range = sell_range,
                         runtype = signal_gen_runtype,
                         master_signal_filename = MASTER_SIGNAL_FILENAME,
-                        open_hr_dict = OPEN_HR_DICT, 
+                        #histroy_intraday_data_pkl = HISTORY_MINUTE_PKL,
+                        open_hr_dict = WRONG_OPEN_HR_DICT, 
                         close_hr_dict = CLOSE_HR_DICT, 
-                        quantile= [0.05,0.1,0.25,0.4,0.5,0.6,0.75,0.9,0.95],
                         save_or_not=True,
                         merge_or_not=True)
     
 
     print("=========Running Back-Testing =============")
     
-    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/consistency/Argus_sample_with_mybacktest_newcode/Argus_sample_PNL_with_mybacktest_newcode.pkl' 
+    #MASTER_PNL_FILENAME = RESULT_FILEPATH + '/consistency/Argus_sample_with_mybacktest_newcode/Argus_sample_PNL_with_mybacktest_newcode.pkl' 
+    #MASTER_PNL_FILENAME = RESULT_FILEPATH + '/consistency/live_trade_vs_backtest_newcode/live_trade_compare_portoflio.pkl' 
+    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/EC_benchmark/20240814_argusexact_cross_P25S35_0330_entry_PNL_full.pkl'
+    
     #SAVE_PNL_FILENAME_LIST = FILE_PNL_LOC
-
+    print("HISTORY_MINUTE_PKL", HISTORY_MINUTE_PKL)
     run_backtest_bulk(trade_method, 
-                      FILE_LOC, FILE_PNL_LOC, 
+                      #FILE_LOC, FILE_PNL_LOC, 
                       start_date, end_date, 
                       method = backtest_runtype, 
                       master_signal_filename = MASTER_SIGNAL_FILENAME,
                       master_pnl_filename=MASTER_PNL_FILENAME,
+                      histroy_intraday_data_pkl = HISTORY_MINUTE_PKL,
                       give_obj_name = give_obj_name,
                       get_obj_quantity = get_obj_quantity,
-                      open_hr_dict = OPEN_HR_DICT, 
+                      open_hr_dict = WRONG_OPEN_HR_DICT, 
                       close_hr_dict= CLOSE_HR_DICT,
                       save_or_not=True, 
                       merge_or_not=True,
@@ -178,7 +175,10 @@ def run_main(strategy_name,
 
         P = open_portfolio(MASTER_PNL_FILENAME)
         PL = PortfolioLog(P)
-        PL.tradebook_filename = RESULT_FILEPATH + "/consistency/Argus_sample_with_mybacktest_newcode/Argus_sample_PNL_with_mybacktest_newcode.csv"
+        #PL.tradebook_filename = RESULT_FILEPATH + "/consistency/Argus_sample_with_mybacktest_newcode/Argus_sample_PNL_with_mybacktest_newcode.csv"
+        #PL.tradebook_filename = RESULT_FILEPATH + "/consistency/live_trade_vs_backtest_newcode/live_trade_compare_pnl.csv"
+        PL.tradebook_filename = RESULT_FILEPATH + "/EC_benchmark/20240814_argusexact_cross_P25S35_0330_entry_PNL_full.csv"
+        
         PL.render_tradebook()
         PL.render_tradebook_xlsx()
         
@@ -190,32 +190,31 @@ if __name__ == "__main__":
     #end_date = "2022-01-19"
     
     # Argus test date range
-    start_date = "2022-01-05"
-    end_date = "2024-06-28"
+    #start_date = "2022-01-05"
+    #end_date = "2024-06-28"
     
     # Total date range
-    #start_date = "2021-01-11"
-    #end_date = "2024-08-14"
+    start_date = "2021-01-11"
+    end_date = "2024-08-14"
     
     # live trade test date range
-    #start_date = "2025-01-02"
-    #end_date = "2025-02-10"
+    #start_date = "2025-01-10"
+    #end_date = "2025-02-14"
 
     run_main('argus_exact', 
              OneTradePerDay, #OneTradePerDay, #onetrade_simple, #BiDirectionalTrade, 
              start_date, end_date,         
-             #buy_range = (-0.1, 0.1, -0.45), 
-             #sell_range = (0.1, -0.1, +0.45),
-             #buy_range = ([0.25,0.4],[0.65,0.95],0.3),
-             #sell_range = ([0.6,0.75],[0.05,0.35],0.7), 
-             buy_range = ([0.25,0.4],[0.6,0.75],0.05),
-             sell_range = ([0.6,0.75],[0.25,0.4],0.95), 
+             buy_range = ([0.25,0.4],[0.65,0.75],0.05),
+             sell_range = ([0.6,0.75],[0.25,0.35],0.95), 
              give_obj_name = 'USD',
              get_obj_quantity = 1,
              preprocess = False, 
              signal_gen_runtype='preload',
              backtest_runtype = "preload")
-   
+             #buy_range = (-0.1, 0.1, -0.45), 
+             #sell_range = (0.1, -0.1, +0.45),
+             #buy_range = ([0.25,0.4],[0.65,0.95],0.3),
+             #sell_range = ([0.6,0.75],[0.05,0.35],0.7), 
     ## Visualise PNL plot and metrics.
     ##run_PNL
     #cumPNL_plot()

@@ -70,7 +70,7 @@ def plot_price_return_hist(x,y,**kwargs):
     ax1.grid(True, ls='dashed',alpha=0.5,axis='both')
 
     # plot scatter plots
-    ax1.scatter(x, y, c='w',s=1, alpha=0.5,zorder=9)
+    ax1.scatter(x, y, c='w',s=1, alpha=0.3,zorder=9)
 
     # plot histogram for both positives and negatives
     ax2.hist(positive, kwargs['hist_size'], histtype='stepfilled', 
@@ -92,7 +92,9 @@ def plot_price_return_hist(x,y,**kwargs):
     return
 
 def run_main():
-    argusexact_cross_PS_PNL = "/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap/PNL_argusexact_G40S10_.xlsx"
+    #argusexact_cross_PS_PNL = "/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap/PNL_argusexact_G40S10_.xlsx"
+    argusexact_cross_PS_PNL = '/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap2/20240813_argusexact_cross_P35S15_PNL_.xlsx'
+
 
     big_price_diff, big_trade_return = [], []
 

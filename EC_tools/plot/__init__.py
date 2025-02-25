@@ -10,7 +10,6 @@ Intraday price plotting functions
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from dataclasses import dataclass
 
 from plotly.offline import iplot
 from plotly.offline import plot, init_notebook_mode
@@ -636,7 +635,7 @@ class SubComponents(object):
                       bppt_x2, bppt_y2, 
                       bppt_x3, bppt_y3):
         print("crossover_pts")
-        print(bppt_x1, bppt_y1, bppt_x2, bppt_y2, bppt_x3, bppt_y3)
+        #print(bppt_x1, bppt_y1, bppt_x2, bppt_y2, bppt_x3, bppt_y3)
         # crossover points set 1 
         self.ax.plot(bppt_x1, bppt_y1,'o', ms=6, c='blue')
         self.ax.plot(bppt_x2, bppt_y2,'o', ms=6, c='green')
@@ -707,6 +706,7 @@ def plot_minute(filename_minute: str, signal_filename: str,
     #                    curve['0.6'], curve['0.95']]
     
 # =============================================================================
+#     #live trading range
 #     quant_list=['q0.3','q0.35', 'q0.4', 'q0.5', 'q0.6', 'q0.65', 'q0.7']
 #     quant_price_list = [curve['0.3'], 
 #                         curve['0.35'], curve['0.4'], 
@@ -714,6 +714,7 @@ def plot_minute(filename_minute: str, signal_filename: str,
 #                         curve['0.6'], curve['0.65'], 
 #                         curve['0.7']]
 # =============================================================================
+    #Test trading range
     quant_list=['q0.05','q0.25', 'q0.4', 'q0.5', 'q0.6', 'q0.75', 'q0.95']
     quant_price_list = [curve['0.05'], 
                         curve['0.25'], curve['0.4'], 
@@ -786,9 +787,9 @@ if __name__ == "__main__":
     #FILENSME_BUYSELL_SIGNALS = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_CLc1_full.csv"
     #SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_CLc1.csv"   
     
-    symbol = 'CLc1'
+    symbol = 'RBc2'
 
-    date_interest = "2022-01-05"
+    date_interest = "2024-05-01"
     first = datetime.datetime.combine(datetime.datetime(2025,2,4).date(), datetime.time(hour=6,minute=9))
     #plot_minute(HISTORY_MINTUE_FILE_LOC[symbol], APC_FILE_LOC[symbol], 
     #            date_interest = date_interest, title=symbol, direction="Buy",
@@ -861,4 +862,3 @@ if __name__ == "__main__":
                 bppt_x1 =entry_time, bppt_y1 = entry_price,
                 bppt_x2 =exit_time, bppt_y2 = exit_price,
                 bppt_x3 =stop_time, bppt_y3 = stop_price)
-                #bppt_x1 =[first], bppt_y1 = [71.796])

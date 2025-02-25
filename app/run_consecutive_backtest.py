@@ -19,31 +19,49 @@ from EC_tools.trade import OneTradePerDay, BiDirectionalTrade
 from EC_tools.backtest import LoopType
 from EC_tools.portfolio import PortfolioMetrics, PortfolioLog, PortfolioLog
 
-from app.run_preprocess import run_preprocess
 from app.run_gen_MR_dir import MR_STRATEGIES_0, run_gen_signal_bulk
 from app.run_backtest import run_backtest_bulk
 
 from crudeoil_future_const import TEST_FILE_LOC, DAILY_DATA_PKL, \
-                                  DAILY_MINUTE_DATA_PKL, DAILY_APC_PKL,\
-                                  DAILY_OPENPRICE_PKL, MONTHLY_APC_PKL,\
-                                  WEEKLY_30AVG_APC_PKL, DAILY_CUMAVG_MONTH_PKL,\
-                                  MINUTE_CUMAVG_MONTH_PKL, TEST_FILE_PNL_LOC,\
+                                  DAILY_APC_PKL, TEST_FILE_PNL_LOC,\
                                   OPEN_HR_DICT, CLOSE_HR_DICT, RESULT_FILEPATH,\
-                                  SYMBOL_LIST, WRONG_OPEN_HR_DICT
+                                  SYMBOL_LIST, WRONG_OPEN_HR_DICT,\
+                                  DAILY_MINUTE_DATA_INDI_PKL
                                   
 from main import run_main
 
+# =============================================================================
+# 
+# @util.time_it
+# def load_source_data() -> tuple:
+#     #load the pkl 
+#     SIGNAL_PKL = util.load_pkl(DAILY_APC_PKL)
+#     HISTORY_DAILY_PKL = util.load_pkl(DAILY_DATA_PKL)
+#     HISTORY_MINUTE_PKL = util.load_pkl(DAILY_MINUTE_DATA_PKL)
+#     OPENPRICE_PKL = util.load_pkl(DAILY_OPENPRICE_PKL)
+#     
+#     return SIGNAL_PKL, HISTORY_DAILY_PKL, HISTORY_MINUTE_PKL, OPENPRICE_PKL
+#         
+# =============================================================================
+
 
 @util.time_it
-def load_source_data() -> tuple:
+def load_source_data_signal() -> tuple:
     #load the pkl 
     SIGNAL_PKL = util.load_pkl(DAILY_APC_PKL)
     HISTORY_DAILY_PKL = util.load_pkl(DAILY_DATA_PKL)
-    HISTORY_MINUTE_PKL = util.load_pkl(DAILY_MINUTE_DATA_PKL)
-    OPENPRICE_PKL = util.load_pkl(DAILY_OPENPRICE_PKL)
     
-    return SIGNAL_PKL, HISTORY_DAILY_PKL, HISTORY_MINUTE_PKL, OPENPRICE_PKL
+    return SIGNAL_PKL, HISTORY_DAILY_PKL
+
+
+def load_source_data_bt(filenames_loc) -> dict:
+    master_dict = {}
+    for filename in filenames_loc:
+        temp_dict = util.load_pkl(filename)
+        master_dict = dict(master_dict, **temp_dict)
         
+    return master_dict
+
 import builtins
           
 def make_path_list(folder_name: str = '', 
@@ -142,19 +160,19 @@ def build_para_matrix(x_axis_list: list,
     para_matrix = np.array(master_list)
     return para_matrix
 
-def run_seq_backtest(strategy_name, 
-                     trade_method,
-                     para_matrix,
-                     signal_filename_matrix,
-                     portfolio_filename_matrix,
-                     tradebook_filename_matrix,
-                     start_date: str, end_date: str,         
-                     buy_range: tuple = ([0.2,0.25],[0.75,0.8],0.05),
-                     sell_range: tuple = ([0.75,0.8],[0.2,0.25],0.95), 
-                     **kwargs): # temp solution
+def run_seq_backtest(para_matrix: np.ndarray,
+                    signal_filename_matrix: list,
+                    portfolio_filename_matrix,
+                    tradebook_filename_matrix,
+                    start_date: str, end_date: str,         
+                    **kwargs): # temp solution
     
-    default_kwargs = {'give_obj_name':'USD',
+    default_kwargs = {'strategy_name': 'argus_exact', 
+                      'trade_method': OneTradePerDay,
+                      'give_obj_name':'USD',
                       'get_obj_quantity': 1,
+                      'buy_range': ([0.2,0.25],[0.75,0.8],0.05),
+                      'sell_range': ([0.75,0.8],[0.2,0.25],0.95), 
                       'open_hr_dict': OPEN_HR_DICT, 
                       'close_hr_dict': CLOSE_HR_DICT, 
                       'preprocess': False, 
@@ -166,58 +184,59 @@ def run_seq_backtest(strategy_name,
     
     # the default is only one loop
     # it takes three sets of filename and parameters
-    FILE_LOC = TEST_FILE_LOC
-    FILE_PNL_LOC = TEST_FILE_PNL_LOC
-        
-    parameters = para_matrix[4]
+    parameters = para_matrix[7]
 
-    signal_filenames = signal_filename_matrix[4]
-    portfolio_filenames = portfolio_filename_matrix[4]
-    tradebook_filenames = tradebook_filename_matrix[4]
-     
+    signal_filenames = signal_filename_matrix[7]
+    portfolio_filenames = portfolio_filename_matrix[7]
+    tradebook_filenames = tradebook_filename_matrix[7]
+
+    #kwargs['buy_range'] = parameters
     for parameter, signal_filename, portfolio_filename, tradebook_filename \
         in zip(parameters, signal_filenames, portfolio_filenames, \
                tradebook_filenames):
-    
-            
+        kwargs['buy_range'] = ([0,0.4], [parameter[0][0],1.0], parameter[1][0])
+        kwargs['sell_range'] = ([0.6,1.0],[0.0, parameter[0][1]], parameter[1][1])
+
+        
         print("=========Generating Buy/Sell Signals=======")
         # Run signal generations
         #strategy_name = 'argus_exact_mode'
-        strategy = MR_STRATEGIES_0[strategy_name]
+        strategy = MR_STRATEGIES_0[kwargs['strategy_name']]
        
         MASTER_SIGNAL_FILENAME = signal_filename
     
-        run_gen_signal_bulk(strategy, FILE_LOC,
+        run_gen_signal_bulk(strategy, 
                             start_date, end_date,
-                            buy_range = buy_range, 
-                            sell_range = sell_range,
+                            buy_range = kwargs['buy_range'], 
+                            sell_range = kwargs['sell_range'],
                             runtype = kwargs['signal_gen_runtype'],
                             master_signal_filename = MASTER_SIGNAL_FILENAME,
-                            open_hr_dict = parameter[0], #kwargs['open_hr_dict'], 
-                            close_hr_dict = parameter[1], #kwargs['close_hr_dict'], 
+                            open_hr_dict = kwargs['open_hr_dict'], #parameter[0], #
+                            close_hr_dict = kwargs['close_hr_dict'], #parameter[1], #
                             quantile= [0.05,0.1,0.25,0.4,0.5,0.6,0.75,0.9,0.95],
                             save_or_not=True,
                             merge_or_not=True)
+        
         
         print("=========Running Back-Testing =============")
         # Run Backtest
         MASTER_PNL_FILENAME = portfolio_filename
     
-        run_backtest_bulk(trade_method, 
-                          FILE_LOC, FILE_PNL_LOC, 
+        run_backtest_bulk(kwargs['trade_method'], 
                           start_date, end_date, 
                           method = kwargs['backtest_runtype'], 
                           master_signal_filename = MASTER_SIGNAL_FILENAME,
                           master_pnl_filename=MASTER_PNL_FILENAME,
+                          histroy_intraday_data_pkl = kwargs['histroy_intraday_data_pkl'],
                           give_obj_name = kwargs['give_obj_name'],
                           get_obj_quantity = kwargs['get_obj_quantity'],
-                          open_hr_dict = parameter[0], #kwargs['open_hr_dict'], 
-                          close_hr_dict = parameter[1], #kwargs['close_hr_dict'], 
+                          open_hr_dict = kwargs['open_hr_dict'], #parameter[0], #
+                          close_hr_dict = kwargs['close_hr_dict'], #parameter[1], #
                           save_or_not=True, 
                           merge_or_not=True,
                           loop_type= LoopType.CROSSOVER,
                           selected_directions = ["Buy", "Sell"])
-        
+
         print("=========Running PNL EXCEL File =============")
         # make tradebook files
         if kwargs['backtest_runtype'] == 'list':
@@ -235,16 +254,13 @@ def run_seq_backtest(strategy_name,
             
         if kwargs['plot_PNL_or_not']: pass
     return None
-           
-if __name__ == "__main__":
-    
+
+
+def run_seq_backtest_time():
     start_date = "2021-01-11"
     end_date = "2024-08-14"
-    
+    # Run Multiple Backtest for different trading windows
     # make Open hour and Close hr dict
-
-
-    
     openhr_str = ['Open0h0m','Open0h30m',
                   'Open1h0m','Open1h30m',
                   'Open2h0m']
@@ -260,17 +276,18 @@ if __name__ == "__main__":
     
     # Build filenames for signals
     signal_filename_matrix = build_filename_matrix(openhr_str, closehr_str,
-                                                    folder_name='beyondmarketopen2',
+                                                    folder_name='heatmap2',
                                                     file_prefix='20240813_argusexact_cross_TP25SL10_',
                                                     file_suffix='_signal.csv')
     portfolio_filename_matrix = build_filename_matrix(openhr_str, closehr_str,
-                                                      folder_name='beyondmarketopen2',
+                                                      folder_name='heatmap2',
                                                       file_prefix='20240813_argusexact_cross_TP25SL10_',
                                                       file_suffix='_PNL.pkl')
     tradebook_filename_matrix = build_filename_matrix(openhr_str, closehr_str,
-                                                      folder_name='beyondmarketopen2',
+                                                      folder_name='heatmap2',
                                                       file_prefix='20240813_argusexact_cross_TP25SL10_',
                                                       file_suffix='_PNL.csv')
+    
     # make a list of inputs variations. In this case, it generate a list of 
     # Opening or closing hours with some given steps
     OPEN_HR_VAR = make_timedict_inputs(WRONG_OPEN_HR_DICT, steps=5, time_delta=30)
@@ -280,7 +297,8 @@ if __name__ == "__main__":
     # Build the parameter matrixs for the simulation
     para_matrix = build_para_matrix(OPEN_HR_VAR, CLOSE_HR_VAR)
     
-    
+    #load historical minute data
+    HISTORY_MINUTE_PKL = load_source_data_bt(list(DAILY_MINUTE_DATA_INDI_PKL.values()))
 # =============================================================================
 #     print('signal',signal_filename_matrix)
 #     print('port',portfolio_filename_matrix)
@@ -288,15 +306,87 @@ if __name__ == "__main__":
 #     print('para',para_matrix)
 #     
 # =============================================================================
-    run_seq_backtest('argus_exact', 
-             OneTradePerDay,
-             para_matrix,
-             signal_filename_matrix,
-             portfolio_filename_matrix,
-             tradebook_filename_matrix,
-             start_date = start_date, 
-             end_date = end_date,         
-             buy_range =([0.2,0.4],[0.65,0.8],0.3),
-             sell_range = ([0.6,0.8],[0.2,0.35],0.7))
+    run_seq_backtest(para_matrix,
+                     signal_filename_matrix,
+                     portfolio_filename_matrix,
+                     tradebook_filename_matrix,
+                     start_date = start_date, 
+                     end_date = end_date,         
+                     buy_range =([0.2,0.4],[0.65,0.8],0.3),
+                     sell_range = ([0.6,0.8],[0.2,0.35],0.7),
+                     histroy_intraday_data_pkl=HISTORY_MINUTE_PKL)
+    
+    
+@util.time_it          
+def run_seq_backtest_buysell_range():
+    start_date = "2021-01-11"
+    end_date = "2024-08-14"
+    
+    start_buy_quant = 0.4
+    start_sell_quant = 0.6
+    
+    #loopover to get the right range
+    TP_range = [0.05, 0.1, 0.15, 0.2, 0.25, 0.30, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6] #loopover to get the right range
+    SL_range = [0.05, 0.1, 0.15, 0.2, 0.25, 0.30, 0.35, 0.4] #loopover to get the right range
+
+    
+    TP_vals_buy = [start_buy_quant+val for val in TP_range]
+    TP_vals_sell = [start_sell_quant-val for val in TP_range]
+
+    SL_vals_buy = [start_buy_quant-val for val in SL_range]
+    SL_vals_sell = [start_sell_quant+val for val in SL_range]
+    
+    print(TP_vals_sell, SL_vals_sell)
+    
+    #import itertools
+    TP_ranges = list(zip(TP_vals_buy,TP_vals_sell))
+    SL_ranges = list(zip(SL_vals_buy,SL_vals_sell))
+    
+    # Define BuySell para matrix
+    buysell_para_matrix = build_para_matrix(TP_ranges, SL_ranges)
+        
+    # Define Str list for TP and SL filenames
+    profit_ranges_str = ['P'+str(int(val*100)) for val in TP_range]
+    stoploss_ranges_str = ['S'+str(int(val*100)) for val in SL_range]
+
+    print(profit_ranges_str,stoploss_ranges_str)
+    
+    
+    # Define output filenames        
+    signal_filename_matrix = build_filename_matrix(profit_ranges_str, 
+                                                   stoploss_ranges_str,
+                                                    folder_name='heatmap2',
+                                                    file_prefix='20240813_argusexact_cross_',
+                                                    file_suffix='_signal.csv')
+    portfolio_filename_matrix = build_filename_matrix(profit_ranges_str, 
+                                                      stoploss_ranges_str,
+                                                      folder_name='heatmap2',
+                                                      file_prefix='20240813_argusexact_cross_',
+                                                      file_suffix='_PNL.pkl')
+    tradebook_filename_matrix = build_filename_matrix(profit_ranges_str, 
+                                                      stoploss_ranges_str,
+                                                      folder_name='heatmap2',
+                                                      file_prefix='20240813_argusexact_cross_',
+                                                      file_suffix='_PNL.csv')
+    
+    
+    
+    HISTORY_MINUTE_PKL = load_source_data_bt(list(DAILY_MINUTE_DATA_INDI_PKL.values()))
+
+    run_seq_backtest(buysell_para_matrix,
+                     signal_filename_matrix,
+                     portfolio_filename_matrix,
+                     tradebook_filename_matrix,
+                     start_date = start_date, 
+                     end_date = end_date,         
+                     histroy_intraday_data_pkl=HISTORY_MINUTE_PKL,
+                     open_hr_dict=WRONG_OPEN_HR_DICT)
+
+    
+if __name__ == "__main__":
+    
+
+    run_seq_backtest_buysell_range()
+    #run_seq_backtest_time()
     
 
