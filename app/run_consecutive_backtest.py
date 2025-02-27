@@ -8,6 +8,8 @@ Created on Tue Jan  7 18:43:50 2025
 # Python import
 import datetime
 from pathlib import Path
+import logging
+import builtins
 
 # Common Package import
 import numpy as np
@@ -30,19 +32,12 @@ from crudeoil_future_const import TEST_FILE_LOC, DAILY_DATA_PKL, \
                                   
 from main import run_main
 
-# =============================================================================
-# 
-# @util.time_it
-# def load_source_data() -> tuple:
-#     #load the pkl 
-#     SIGNAL_PKL = util.load_pkl(DAILY_APC_PKL)
-#     HISTORY_DAILY_PKL = util.load_pkl(DAILY_DATA_PKL)
-#     HISTORY_MINUTE_PKL = util.load_pkl(DAILY_MINUTE_DATA_PKL)
-#     OPENPRICE_PKL = util.load_pkl(DAILY_OPENPRICE_PKL)
-#     
-#     return SIGNAL_PKL, HISTORY_DAILY_PKL, HISTORY_MINUTE_PKL, OPENPRICE_PKL
-#         
-# =============================================================================
+# Define logger object
+logger = logging.getLogger(__name__)
+logging.basicConfig(filename='./log/consecutive_backtest.log', 
+                    level=logging.INFO,
+                    format="%(asctime) s%(levelname)s %(message)s",
+                    datefmt="%Y-%m-%d %H:%M:%S",)
 
 
 @util.time_it
@@ -62,7 +57,6 @@ def load_source_data_bt(filenames_loc) -> dict:
         
     return master_dict
 
-import builtins
           
 def make_path_list(folder_name: str = '', 
                    file_prefix: str | list[str] = '', 
@@ -184,11 +178,11 @@ def run_seq_backtest(para_matrix: np.ndarray,
     
     # the default is only one loop
     # it takes three sets of filename and parameters
-    parameters = para_matrix[7]
+    parameters = para_matrix[0]
 
-    signal_filenames = signal_filename_matrix[7]
-    portfolio_filenames = portfolio_filename_matrix[7]
-    tradebook_filenames = tradebook_filename_matrix[7]
+    signal_filenames = signal_filename_matrix[0]
+    portfolio_filenames = portfolio_filename_matrix[0]
+    tradebook_filenames = tradebook_filename_matrix[0]
 
     #kwargs['buy_range'] = parameters
     for parameter, signal_filename, portfolio_filename, tradebook_filename \
@@ -198,7 +192,8 @@ def run_seq_backtest(para_matrix: np.ndarray,
         kwargs['sell_range'] = ([0.6,1.0],[0.0, parameter[0][1]], parameter[1][1])
 
         
-        print("=========Generating Buy/Sell Signals=======")
+        #print("=========Generating Buy/Sell Signals=======")
+        logger.info("=========Generating Buy/Sell Signals=======")
         # Run signal generations
         #strategy_name = 'argus_exact_mode'
         strategy = MR_STRATEGIES_0[kwargs['strategy_name']]
@@ -217,8 +212,10 @@ def run_seq_backtest(para_matrix: np.ndarray,
                             save_or_not=True,
                             merge_or_not=True)
         
-        
-        print("=========Running Back-Testing =============")
+        logger.info(f"{MASTER_SIGNAL_FILENAME} stored.")
+
+        #print("=========Running Back-Testing =============")
+        logger.info("=========Running Back-Testing =============")
         # Run Backtest
         MASTER_PNL_FILENAME = portfolio_filename
     
@@ -236,8 +233,11 @@ def run_seq_backtest(para_matrix: np.ndarray,
                           merge_or_not=True,
                           loop_type= LoopType.CROSSOVER,
                           selected_directions = ["Buy", "Sell"])
+        
+        logger.info(f"{MASTER_PNL_FILENAME} stored.")
+        #print("=========Running PNL EXCEL File =============")
+        logger.info("=========Running PNL EXCEL File =============")
 
-        print("=========Running PNL EXCEL File =============")
         # make tradebook files
         if kwargs['backtest_runtype'] == 'list':
             render_PNL_xlsx([MASTER_PNL_FILENAME], 
@@ -252,6 +252,8 @@ def run_seq_backtest(para_matrix: np.ndarray,
             PL.render_tradebook()
             PL.render_tradebook_xlsx()
             
+            logger.info(f"{tradebook_filename} stored.")
+
         if kwargs['plot_PNL_or_not']: pass
     return None
 
@@ -322,14 +324,20 @@ def run_seq_backtest_buysell_range():
     start_date = "2021-01-11"
     end_date = "2024-08-14"
     
-    start_buy_quant = 0.4
-    start_sell_quant = 0.6
+    
+    logger.info(f'Start running consecutive backtest from {start_date} to {end_date}')
+    logger.info('=============================================================')
+
+    start_buy_quant = 0.5
+    start_sell_quant = 0.5
     
     #loopover to get the right range
-    TP_range = [0.05, 0.1, 0.15, 0.2, 0.25, 0.30, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6] #loopover to get the right range
-    SL_range = [0.05, 0.1, 0.15, 0.2, 0.25, 0.30, 0.35, 0.4] #loopover to get the right range
+    TP_range = [0.05, 0.1, 0.15, 0.2, 0.25, 0.30, 0.35, 0.4, 0.45, 0.5] #loopover to get the right range
+    SL_range = [0.05, 0.1, 0.15, 0.2, 0.25, 0.30, 0.35, 0.4, 0.45, 0.5] #loopover to get the right range
 
-    
+    logger.info(f'Buy: Start_quantile = {start_buy_quant}, Interval: {TP_range[1]-TP_range[0]}')
+    logger.info(f'Sell: Start_quantile = {start_sell_quant}, Interval: {TP_range[1]-TP_range[0]}')
+
     TP_vals_buy = [start_buy_quant+val for val in TP_range]
     TP_vals_sell = [start_sell_quant-val for val in TP_range]
 
@@ -355,17 +363,17 @@ def run_seq_backtest_buysell_range():
     # Define output filenames        
     signal_filename_matrix = build_filename_matrix(profit_ranges_str, 
                                                    stoploss_ranges_str,
-                                                    folder_name='heatmap2',
+                                                    folder_name='heatmap3_buyQ50sellQ50',
                                                     file_prefix='20240813_argusexact_cross_',
                                                     file_suffix='_signal.csv')
     portfolio_filename_matrix = build_filename_matrix(profit_ranges_str, 
                                                       stoploss_ranges_str,
-                                                      folder_name='heatmap2',
+                                                      folder_name='heatmap3_buyQ50sellQ50',
                                                       file_prefix='20240813_argusexact_cross_',
                                                       file_suffix='_PNL.pkl')
     tradebook_filename_matrix = build_filename_matrix(profit_ranges_str, 
                                                       stoploss_ranges_str,
-                                                      folder_name='heatmap2',
+                                                      folder_name='heatmap3_buyQ50sellQ50',
                                                       file_prefix='20240813_argusexact_cross_',
                                                       file_suffix='_PNL.csv')
     

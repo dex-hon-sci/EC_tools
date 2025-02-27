@@ -341,7 +341,8 @@ def run_backtest_portfolio_preloaded(TradeMethod,
                                                   give_obj_name=kwargs['give_obj_name'],
                                                   get_obj_quantity=kwargs['get_obj_quantity'],
                                                   open_hr_dict=kwargs['open_hr_dict'],
-                                                  close_hr_dict=kwargs['close_hr_dict'])
+                                                  close_hr_dict=kwargs['close_hr_dict'],
+                                                  price_proxy=kwargs['price_proxy'])
                                             
     
     t2 = time.time()-t1

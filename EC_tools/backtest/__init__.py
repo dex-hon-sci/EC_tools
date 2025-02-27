@@ -80,7 +80,8 @@ __all__ = ['LoopType', 'prepare_signal_interest', 'extract_intraday_minute_data'
            'Loop']
 __author__="Dexter S.-H. Hon"
 
-DEFAULT_KWARGS= {'give_obj_name': 'USD',
+DEFAULT_KWARGS= {'price_proxy':'Open',
+                 'give_obj_name': 'USD',
                  'get_obj_quantity': 1,
                  'open_hr_dict': OPEN_HR_DICT, 
                  'close_hr_dict': CLOSE_HR_DICT, 
@@ -354,7 +355,8 @@ def gen_trunc_dict(loop_type: LoopType,
                    stop_exit: float, 
                    open_hr: datetime.datetime, 
                    close_hr: datetime.datetime, 
-                   direction: str) \
+                   direction: str,
+                   price_proxy:str='Open') \
                   -> tuple[dict[str,list|tuple], float, float, float]:
     """
     A function to choose what style of truncation dictionary to be generated.
@@ -403,7 +405,8 @@ def gen_trunc_dict(loop_type: LoopType,
                                           stop_exit,
                                           open_hr = open_hr, 
                                           close_hr = close_hr, 
-                                          direction = direction)
+                                          direction = direction,
+                                          price_proxy=price_proxy)
     elif loop_type == LoopType.RANGE:
   
         # Find the appropiate range of EES
@@ -413,7 +416,8 @@ def gen_trunc_dict(loop_type: LoopType,
                                                 stop_exit,
                                                 open_hr = open_hr, 
                                                 close_hr = close_hr, 
-                                                direction = direction)
+                                                direction = direction,
+                                                price_proxy=price_proxy)
         
         # target entry/exit are first estimations of the prices using
         # the mid point of the target range. The final entry/exit prices
@@ -658,7 +662,8 @@ class Loop(Protocol):
                                             target_entry, target_exit, stoploss_price,
                                             open_hr=open_hr_dt, 
                                             close_hr=close_hr_dt, 
-                                            direction = direction)
+                                            direction = direction,
+                                            price_proxy = kwargs['price_proxy'])
     
             # make the trade.
             trade_open, trade_close = trade_method(EES_dict)
@@ -766,7 +771,8 @@ class Loop(Protocol):
                                                                   stop_exit, 
                                                                   open_hr_dt, 
                                                                   close_hr_dt, 
-                                                                  direction)
+                                                                  direction,
+                                                                  price_proxy=kwargs['price_proxy'])
             
             print(day['Date'].iloc[0], direction, target_entry, \
                   target_exit, stop_exit)
@@ -887,7 +893,8 @@ class Loop(Protocol):
                                                                   stop_exit, 
                                                                   open_hr_dt, 
                                                                   close_hr_dt, 
-                                                                  direction)
+                                                                  direction,
+                                                                  price_proxy=kwargs['price_proxy'])
             #print('trunc_dict,target_entry, target_exit, stop_exit')
             #print(trunc_dict,target_entry, target_exit, stop_exit)
 
@@ -1072,7 +1079,8 @@ class Loop(Protocol):
                                                                 stop_exit, 
                                                                 open_hr_dt, 
                                                                 close_hr_dt, 
-                                                                direction)
+                                                                direction,
+                                                                price_proxy=kwargs['price_proxy'])
             print("trunc_dict", trunc_dict)
             print(target_entry, target_exit, stop_exit)
             # Run the trade itself

@@ -1469,6 +1469,8 @@ def group_trade(position_pool: list,
     while i < len(pos_pool):
         # loop through each position, if the pos_id == trade_id_now, save in 
         # a temp list
+        print(i, pos_pool[i].order_id, trade_id_now)
+
         if  pos_pool[i].order_id == trade_id_now:
             if select_func(i):
                 temp.append(pos_pool[i])
@@ -1477,7 +1479,7 @@ def group_trade(position_pool: list,
         elif pos_pool[i].order_id != trade_id_now: 
             # Otherwise, put the temp list into the overall bucket, restart 
             # the counter and make a new temp list to repeat the process
-            #print('switch')
+            print('switch')
             #print(i, pos_pool[i].pos_id)
             bucket.append(temp)
             trade_id_now = pos_pool[i].order_id
@@ -1485,7 +1487,12 @@ def group_trade(position_pool: list,
             temp.append(pos_pool[i])
             
             i = i + 1
+        
+        # for the last element,put temp in bucket
+        if i == len(pos_pool)-1:
+            bucket.append(temp)
 
+    
     return bucket
 
 # =============================================================================

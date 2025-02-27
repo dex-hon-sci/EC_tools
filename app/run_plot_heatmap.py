@@ -8,6 +8,7 @@ Created on Tue Sep 24 14:37:07 2024
 # Ptyhon import
 import datetime as datetime
 from pathlib import Path
+import logging
 
 # Common packages mport
 import pandas as pd
@@ -24,20 +25,16 @@ from crudeoil_future_const import APC_FILE_LOC, DATA_FILEPATH, RESULT_FILEPATH, 
 # application imports
 from app.run_PNL_plot import extract_PNLplot_input
 
-gain_quantile = [5,10,15,20,25,30,35,40,45,50,55,60]
-stoploss_quantile = [5,10,15,20,25,30,35,40]
+
+#gain_quantile = [5,10,15,20,25,30,35,40,45,50,55,60]
+#stoploss_quantile = [5,10,15,20,25,30,35,40]
+gain_quantile = [5,10,15,20,25,30,35,40,45,50]
+stoploss_quantile = [5,10,15,20,25,30,35,40,45,50]
+
 
 gain_quantile_str = ['P'+str(num) for num in gain_quantile]
 stoploss_quantile_str = ['S'+str(num) for num in stoploss_quantile]
 
-
-# =============================================================================
-# name = "PNL_argusexact_G10S10_.xlsx"
-# Q = make_path_list(folder_name = 'heatmap', 
-#                    file_prefix='PNL_argusexact_',
-#                    file_suffix='_.xlsx', 
-#                    syms=gain_quantile_str)
-# =============================================================================
 
 
 def build_filename_matrix(x_axis_list: list[str], 
@@ -130,6 +127,7 @@ def plot_heatmap(heatmap_data, **kwargs):
     default_kwargs = {'xticks': gain_quantile, 'yticks': stoploss_quantile,
                       'norm':1e6}
     kwargs = dict(default_kwargs, **kwargs)
+    plt.style.use('dark_background')
 
     # Start the plot
     fig, ax = plt.subplots()
@@ -237,16 +235,16 @@ if __name__ == "__main__":
                  norm = 1)
     
     
-    if False:
+    if True:
     # plot total cumulative returns (50 contract)
         run_main(gain_quantile_str,
                  stoploss_quantile_str,
-                 folder_name = 'heatmap2',
+                 folder_name = 'heatmap3_buyQ50sellQ50',
                  file_prefix ='20240813_argusexact_cross_',
                  file_suffix = '_PNL_.xlsx',
                  sheetname = 'Total',
                  date_col = 'Entry_Date',
-                 val_col = 'scaled returns from trades',#'cumulative P&L from trades for contracts (x 50)',
+                 val_col = 'cumulative P&L from trades for contracts (x 50)',#'cumulative P&L from trades for contracts (x 50)',
                  cbarlabel='USD (mil)', 
                  plot_title='Cumulative Return for \nArgus Exact strategy with fixed\nEntry quantile at Q0.4 for Buy\nand Q0.6 for Sell for Total (50 contracts)',
                  xlabel = "Quantile (in %) Range for Take Profit",
@@ -255,14 +253,14 @@ if __name__ == "__main__":
                  yticks = stoploss_quantile,
                  norm = 1e6)
     
-    if True:
+    if False:
         syms = list(APC_FILE_LOC.keys())
 
         for sym in syms:
             print(sym)
             run_main(gain_quantile_str,
                      stoploss_quantile_str,
-                     folder_name = 'heatmap2',
+                     folder_name = 'heatmap3_buyQ50sellQ50',
                      file_prefix ='20240813_argusexact_cross_',
                      file_suffix = '_PNL_.xlsx',
                      sheetname = sym,
@@ -286,7 +284,7 @@ if __name__ == "__main__":
             print(sym)
             run_main(gain_quantile_str,
                      stoploss_quantile_str,
-                     folder_name = 'heatmap2',
+                     folder_name = 'heatmap3_buyQ50sellQ50',
                      file_prefix ='20240813_argusexact_cross_',
                      file_suffix = '_PNL_.xlsx',
                      sheetname = sym,
@@ -300,81 +298,81 @@ if __name__ == "__main__":
                      yticks = stoploss_quantile,
                      func=np.median,
                      norm = 1e6)
-# =============================================================================
-#     openhr_str = ['Open0h0m','Open0h30m',
-#                   'Open1h0m','Open1h30m',
-#                   'Open2h0m']
-#     
-#     closehr_str = ['Close0h0m','Close0h30m',
-#                    'Close1h0m','Close1h30m',
-#                    'Close2h0m']
-#     openhr_str_ticks = dict()
-#     closehr_str_ticks = dict()
-#     openhr_str_ticks['CLc1'] = ['3:30','3:00', '2:30','2:00','1:00']
-#     openhr_str_ticks['CLc2'] = ['3:30','3:00', '2:30','2:00','1:00']
-#     openhr_str_ticks['HOc1'] = ['5:30','5:00', '4:30','4:00','3:30']
-#     openhr_str_ticks['HOc2'] = ['5:30','5:00', '4:30','4:00','3:30']
-#     openhr_str_ticks['RBc1'] = ['5:30','5:00', '4:30','4:00','3:30']
-#     openhr_str_ticks['RBc2'] = ['5:30','5:00', '4:30','4:00','3:30']
-#     openhr_str_ticks['QOc1'] = ['3:30','3:00', '2:30','2:00','1:00']
-#     openhr_str_ticks['QOc2'] = ['3:30','3:00', '2:30','2:00','1:00']
-#     openhr_str_ticks['QPc1'] = ['5:30','5:00', '4:30','4:00','3:30']
-#     openhr_str_ticks['QPc2'] = ['5:30','5:00', '4:30','4:00','3:30']
-#     
-#     closehr_str_ticks['CLc1'] = ['19:59','20:29', '20:59', '21:29','21:59']
-#     closehr_str_ticks['CLc2'] = ['19:59','20:29', '20:59', '21:29','21:59']
-#     closehr_str_ticks['HOc1'] = ['18:29','18:59', '19:29', '19:59', '20:29']
-#     closehr_str_ticks['HOc2'] = ['18:29','18:59', '19:29', '19:59', '20:29']
-#     closehr_str_ticks['RBc1'] = ['18:29','18:59', '19:29', '19:59', '20:29']
-#     closehr_str_ticks['RBc2'] = ['18:29','18:59', '19:29', '19:59', '20:29']
-#     closehr_str_ticks['QOc1'] = ['19:59','20:29', '20:59', '21:29','21:59']
-#     closehr_str_ticks['QOc2'] = ['19:59','20:29', '20:59', '21:29','21:59']
-#     closehr_str_ticks['QPc1'] = ['16:29','16:59', '17:29', '17:59','18:29']
-#     closehr_str_ticks['QPc2'] = ['16:29','16:59', '17:29', '17:59','18:29']
-#     
-# # =============================================================================
-# #     openhr_str_ticks['CLc1'] = ['3:30','3:00', '2:30','2:00','1:00']
-# #     openhr_str_ticks['CLc2'] = ['3:30','3:00', '2:30','2:00','1:00']
-# #     openhr_str_ticks['HOc1'] = ['13:00', '12:30', '12:00', '11:30', '11:00']
-# #     openhr_str_ticks['HOc2'] = ['13:00', '12:30', '12:00', '11:30', '11:00']
-# #     openhr_str_ticks['RBc1'] = ['13:00', '12:30', '12:00', '11:30', '11:00']
-# #     openhr_str_ticks['RBc2'] = ['13:00', '12:30', '12:00', '11:30', '11:00']
-# #     openhr_str_ticks['QOc1'] = ['3:30','3:00', '2:30','2:00','1:00']
-# #     openhr_str_ticks['QOc2'] = ['3:30','3:00', '2:30','2:00','1:00']
-# #     openhr_str_ticks['QPc1'] = ['8:00','7:30', '7:00','6:30','6:00']
-# #     openhr_str_ticks['QPc2'] = ['8:00','7:30', '7:00','6:30','6:00']
-# #     
-# #     closehr_str_ticks['CLc1'] = ['19:59','20:29', '20:59', '21:29','21:59']
-# #     closehr_str_ticks['CLc2'] = ['19:59','20:29', '20:59', '21:29','21:59']
-# #     closehr_str_ticks['HOc1'] = ['18:29','18:59', '19:29', '19:59', '20:29']
-# #     closehr_str_ticks['HOc2'] = ['18:29','18:59', '19:29', '19:59', '20:29']
-# #     closehr_str_ticks['RBc1'] = ['18:29','18:59', '19:29', '19:59', '20:29']
-# #     closehr_str_ticks['RBc2'] = ['18:29','18:59', '19:29', '19:59', '20:29']
-# #     closehr_str_ticks['QOc1'] = ['19:59','20:29', '20:59', '21:29','21:59']
-# #     closehr_str_ticks['QOc2'] = ['19:59','20:29', '20:59', '21:29','21:59']
-# #     closehr_str_ticks['QPc1'] = ['16:29','16:59', '17:29', '17:59','18:29']
-# #     closehr_str_ticks['QPc2'] = ['16:29','16:59', '17:29', '17:59','18:29']
-# # =============================================================================
-#     #openhr_str_ticks = ['0h','-0.5h', '-1h','-1.5h','-2h']
-#     #closehr_str_ticks = ['0h','+0.5h', '+1h','+1.5h','+2h']
-#     
-#     syms = list(APC_FILE_LOC.keys())
-#     
-#     for sym in syms:
-#         run_main(openhr_str,closehr_str,
-#                  folder_name = 'beyondmarketopen2',
-#                  file_prefix ='20240813_argusexact_cross_TP25SL10_',
-#                  file_suffix = '_PNL_.xlsx',
-#                  sheetname = sym,
-#                  date_col = 'Entry_Date',
-#                  val_col = 'cumulative P&L from trades for contracts (x 50)',
-#                  cbarlabel='USD (in mil)', 
-#                  plot_title='Argus Exact Strategy (50 contracts) for {}'.format(sym),
-#                  xlabel = "Open Hour (UTC)",
-#                  ylabel = "Close Hour (UTC)",
-#                  xticks = openhr_str_ticks[sym], 
-#                  yticks = closehr_str_ticks[sym])
-# =============================================================================
+            
+        if False:
+            openhr_str = ['Open0h0m','Open0h30m',
+                          'Open1h0m','Open1h30m',
+                          'Open2h0m']
+            
+            closehr_str = ['Close0h0m','Close0h30m',
+                           'Close1h0m','Close1h30m',
+                           'Close2h0m']
+            openhr_str_ticks = dict()
+            closehr_str_ticks = dict()
+            openhr_str_ticks['CLc1'] = ['3:30','3:00', '2:30','2:00','1:00']
+            openhr_str_ticks['CLc2'] = ['3:30','3:00', '2:30','2:00','1:00']
+            openhr_str_ticks['HOc1'] = ['5:30','5:00', '4:30','4:00','3:30']
+            openhr_str_ticks['HOc2'] = ['5:30','5:00', '4:30','4:00','3:30']
+            openhr_str_ticks['RBc1'] = ['5:30','5:00', '4:30','4:00','3:30']
+            openhr_str_ticks['RBc2'] = ['5:30','5:00', '4:30','4:00','3:30']
+            openhr_str_ticks['QOc1'] = ['3:30','3:00', '2:30','2:00','1:00']
+            openhr_str_ticks['QOc2'] = ['3:30','3:00', '2:30','2:00','1:00']
+            openhr_str_ticks['QPc1'] = ['5:30','5:00', '4:30','4:00','3:30']
+            openhr_str_ticks['QPc2'] = ['5:30','5:00', '4:30','4:00','3:30']
+            
+            closehr_str_ticks['CLc1'] = ['19:59','20:29', '20:59', '21:29','21:59']
+            closehr_str_ticks['CLc2'] = ['19:59','20:29', '20:59', '21:29','21:59']
+            closehr_str_ticks['HOc1'] = ['18:29','18:59', '19:29', '19:59', '20:29']
+            closehr_str_ticks['HOc2'] = ['18:29','18:59', '19:29', '19:59', '20:29']
+            closehr_str_ticks['RBc1'] = ['18:29','18:59', '19:29', '19:59', '20:29']
+            closehr_str_ticks['RBc2'] = ['18:29','18:59', '19:29', '19:59', '20:29']
+            closehr_str_ticks['QOc1'] = ['19:59','20:29', '20:59', '21:29','21:59']
+            closehr_str_ticks['QOc2'] = ['19:59','20:29', '20:59', '21:29','21:59']
+            closehr_str_ticks['QPc1'] = ['16:29','16:59', '17:29', '17:59','18:29']
+            closehr_str_ticks['QPc2'] = ['16:29','16:59', '17:29', '17:59','18:29']
+            
+        # =============================================================================
+        #     openhr_str_ticks['CLc1'] = ['3:30','3:00', '2:30','2:00','1:00']
+        #     openhr_str_ticks['CLc2'] = ['3:30','3:00', '2:30','2:00','1:00']
+        #     openhr_str_ticks['HOc1'] = ['13:00', '12:30', '12:00', '11:30', '11:00']
+        #     openhr_str_ticks['HOc2'] = ['13:00', '12:30', '12:00', '11:30', '11:00']
+        #     openhr_str_ticks['RBc1'] = ['13:00', '12:30', '12:00', '11:30', '11:00']
+        #     openhr_str_ticks['RBc2'] = ['13:00', '12:30', '12:00', '11:30', '11:00']
+        #     openhr_str_ticks['QOc1'] = ['3:30','3:00', '2:30','2:00','1:00']
+        #     openhr_str_ticks['QOc2'] = ['3:30','3:00', '2:30','2:00','1:00']
+        #     openhr_str_ticks['QPc1'] = ['8:00','7:30', '7:00','6:30','6:00']
+        #     openhr_str_ticks['QPc2'] = ['8:00','7:30', '7:00','6:30','6:00']
+        #     
+        #     closehr_str_ticks['CLc1'] = ['19:59','20:29', '20:59', '21:29','21:59']
+        #     closehr_str_ticks['CLc2'] = ['19:59','20:29', '20:59', '21:29','21:59']
+        #     closehr_str_ticks['HOc1'] = ['18:29','18:59', '19:29', '19:59', '20:29']
+        #     closehr_str_ticks['HOc2'] = ['18:29','18:59', '19:29', '19:59', '20:29']
+        #     closehr_str_ticks['RBc1'] = ['18:29','18:59', '19:29', '19:59', '20:29']
+        #     closehr_str_ticks['RBc2'] = ['18:29','18:59', '19:29', '19:59', '20:29']
+        #     closehr_str_ticks['QOc1'] = ['19:59','20:29', '20:59', '21:29','21:59']
+        #     closehr_str_ticks['QOc2'] = ['19:59','20:29', '20:59', '21:29','21:59']
+        #     closehr_str_ticks['QPc1'] = ['16:29','16:59', '17:29', '17:59','18:29']
+        #     closehr_str_ticks['QPc2'] = ['16:29','16:59', '17:29', '17:59','18:29']
+        # =============================================================================
+            #openhr_str_ticks = ['0h','-0.5h', '-1h','-1.5h','-2h']
+            #closehr_str_ticks = ['0h','+0.5h', '+1h','+1.5h','+2h']
+            
+            syms = list(APC_FILE_LOC.keys())
+            
+            for sym in syms:
+                run_main(openhr_str,closehr_str,
+                         folder_name = 'beyondmarketopen2',
+                         file_prefix ='20240813_argusexact_cross_TP25SL10_',
+                         file_suffix = '_PNL_.xlsx',
+                         sheetname = sym,
+                         date_col = 'Entry_Date',
+                         val_col = 'cumulative P&L from trades for contracts (x 50)',
+                         cbarlabel='USD (in mil)', 
+                         plot_title='Argus Exact Strategy (50 contracts) for {}'.format(sym),
+                         xlabel = "Open Hour (UTC)",
+                         ylabel = "Close Hour (UTC)",
+                         xticks = openhr_str_ticks[sym], 
+                         yticks = closehr_str_ticks[sym])
     
     
 

@@ -231,8 +231,8 @@ class OneTradePerDay(Trade):
             exit_pt = earliest_exit
             stop_pt = earliest_stop
             
-        #print('entry_pt, exit_pt, stop_pt, close_pt')
-        #print(entry_pt, exit_pt, stop_pt, close_pt)
+        print('entry_pt, exit_pt, stop_pt, close_pt')
+        print(entry_pt, exit_pt, stop_pt, close_pt)
         return entry_pt, exit_pt, stop_pt, close_pt
     
     def open_positions(self, 
@@ -370,7 +370,7 @@ class OneTradePerDay(Trade):
         # Run diagnosis to decide which outcome it is for the day
         # Case 1: No trade because entry is not hit
         if entry_pt == (np.nan,np.nan):
-            #print("No trade.")
+            print("No trade.")
             # Cancel all order 
             ExecuteOrder(entry_pos).cancel_pos(void_time=close_pt[0])
             ExecuteOrder(exit_pos).cancel_pos(void_time=close_pt[0])
@@ -383,7 +383,7 @@ class OneTradePerDay(Trade):
             # Case 2: No SL points, normal exit
             if exit_pt != (np.nan,np.nan) and stop_pt == (np.nan,np.nan):
             #elif entry_pt != (np.nan,np.nan) and (exit_pt[0]<stop_pt[0]):
-                #print("Noraml exit.")
+                print("Noraml exit. No Stop-loss crossing")
                 trade_open, trade_close = entry_pt, exit_pt
                 opening_pos, closing_pos = entry_pos, exit_pos
                 #print("Before price adjustment", opening_pos, closing_pos)
@@ -398,7 +398,7 @@ class OneTradePerDay(Trade):
             # Case 3: No exit points, noraml SL
             elif exit_pt == (np.nan,np.nan) and stop_pt != (np.nan,np.nan):
             #elif entry_pt != (np.nan,np.nan) and (exit_pt[0] > stop_pt[0]):
-                #print('Stop loss.')
+                print('Stop loss. No exit crossing')
                 trade_open, trade_close = entry_pt, stop_pt
                 opening_pos, closing_pos = entry_pos, stop_pos
                 #print("Before price adjustment", opening_pos, closing_pos)
@@ -414,6 +414,7 @@ class OneTradePerDay(Trade):
             elif exit_pt != (np.nan,np.nan) and stop_pt != (np.nan,np.nan):
                 # Case 4.1: Stop pt is before exit pt
                 if exit_pt[0] > stop_pt[0]: # SL happens first
+                    print('Stop loss. Stop-loss before exit hit.')
                     trade_open, trade_close = entry_pt, stop_pt
                     opening_pos, closing_pos = entry_pos, stop_pos
                     #print("Before price adjustment", opening_pos, closing_pos)
@@ -427,6 +428,8 @@ class OneTradePerDay(Trade):
                     
                 # Case 4.2 Exit pt is before Stop pt
                 elif exit_pt[0] < stop_pt[0]: # exit happens first
+                    print('Normal exit. exit before stop-loss hit.')
+
                     trade_open, trade_close = entry_pt, exit_pt
                     opening_pos, closing_pos = entry_pos, exit_pos
                     #print("Before price adjustment", opening_pos, closing_pos)
@@ -440,7 +443,7 @@ class OneTradePerDay(Trade):
                     
            # Case 5: Neither an exit or stop loss is hit, exit position at close time
             elif exit_pt== (np.nan,np.nan) and stop_pt == (np.nan,np.nan):
-                #print("Sell at close.")
+                print("Exit at market close. No exit and no SL")
                 trade_open, trade_close = entry_pt, close_pt
                 opening_pos, closing_pos = entry_pos, close_pos
                 #print("Before price adjustment", opening_pos, closing_pos)

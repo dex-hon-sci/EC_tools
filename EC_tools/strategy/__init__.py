@@ -22,6 +22,7 @@ from enum import Enum, auto
 
 import EC_tools.utility.math_func as mfunc
 from EC_tools.strategy.signal import SignalType
+
 __all__ = ["Strategy",
            "ArgusMRStrategy","ArgusMRStrategyMode",
            "ArgusMonthlyStrategy"]

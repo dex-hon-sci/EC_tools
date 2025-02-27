@@ -146,7 +146,7 @@ def loop_signal(strategy: type[Strategy],
     
         
     # loop through every forecast date and contract symbol 
-    for i in np.arange(start_index,end_index): 
+    for i in np.arange(start_index,end_index+1): 
         
         this_date = history_data["Date"][i]
         this_symbol = history_data["symbol"][i]

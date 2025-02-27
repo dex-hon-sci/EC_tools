@@ -685,14 +685,14 @@ def plot_minute(filename_minute: str, signal_filename: str,
     
     x, y = interest['Time'], interest[price_approx]
     print("x,y", x, y)
-    print(type(x.iloc[70]))
+#    print(type(x.iloc[70]))
     
     #read the APC file on the relevant date
     #curve = read.read_apc_data(signal_filename)
     curve = util.load_pkl(signal_filename)[sym]
     
     curve = curve[curve[APC_time_str] == date_interest]
-    
+    print("curve",curve.to_numpy())
     # Calculate the pdf from the cdf for plotting
     quant0 = np.arange(0.0025, 0.9975, 0.0025)
 
@@ -705,22 +705,22 @@ def plot_minute(filename_minute: str, signal_filename: str,
     #quant_price_list = [curve['0.05'], curve['0.4'], curve['0.5'], 
     #                    curve['0.6'], curve['0.95']]
     
-# =============================================================================
-#     #live trading range
-#     quant_list=['q0.3','q0.35', 'q0.4', 'q0.5', 'q0.6', 'q0.65', 'q0.7']
-#     quant_price_list = [curve['0.3'], 
-#                         curve['0.35'], curve['0.4'], 
-#                         curve['0.5'], 
-#                         curve['0.6'], curve['0.65'], 
-#                         curve['0.7']]
-# =============================================================================
-    #Test trading range
-    quant_list=['q0.05','q0.25', 'q0.4', 'q0.5', 'q0.6', 'q0.75', 'q0.95']
-    quant_price_list = [curve['0.05'], 
-                        curve['0.25'], curve['0.4'], 
+    #live trading range
+    quant_list=['q0.3','q0.35', 'q0.4', 'q0.5', 'q0.6', 'q0.65', 'q0.7']
+    quant_price_list = [curve['0.3'], 
+                        curve['0.35'], curve['0.4'], 
                         curve['0.5'], 
-                        curve['0.6'], curve['0.75'], 
-                        curve['0.95']]
+                        curve['0.6'], curve['0.65'], 
+                        curve['0.7']]
+# =============================================================================
+#     #Test trading range
+#     quant_list=['q0.05','q0.25', 'q0.4', 'q0.5', 'q0.6', 'q0.75', 'q0.95']
+#     quant_price_list = [curve['0.05'], 
+#                         curve['0.25'], curve['0.4'], 
+#                         curve['0.5'], 
+#                         curve['0.6'], curve['0.75'], 
+#                         curve['0.95']]
+# =============================================================================
 
     # Define the upper and lower bound of the pricing plot in the y-axis
     price_lower_limit = curve['0.03'].to_numpy()
@@ -789,7 +789,7 @@ if __name__ == "__main__":
     
     symbol = 'RBc2'
 
-    date_interest = "2024-05-01"
+    date_interest = "2025-01-28"
     first = datetime.datetime.combine(datetime.datetime(2025,2,4).date(), datetime.time(hour=6,minute=9))
     #plot_minute(HISTORY_MINTUE_FILE_LOC[symbol], APC_FILE_LOC[symbol], 
     #            date_interest = date_interest, title=symbol, direction="Buy",
@@ -857,6 +857,7 @@ if __name__ == "__main__":
                 title=symbol, 
                 direction="Buy", 
                 sym=symbol,
+                price_approx='Open',
                 open_hr= WRONG_OPEN_HR_DICT[symbol], 
                 close_hr = CLOSE_HR_DICT[symbol],
                 bppt_x1 =entry_time, bppt_y1 = entry_price,
