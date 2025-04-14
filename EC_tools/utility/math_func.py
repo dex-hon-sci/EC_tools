@@ -63,7 +63,7 @@ def find_quant(cdf: np.array,
     cdf : 1D numpy array
         A 1D array that contains a discrete number of cdf points.
     quant_list: 1D numpy array
-        
+        A 1D array of quantile numbers. This should match the dimension of cdf.
     val : float
         The given value (e.g. price).
 

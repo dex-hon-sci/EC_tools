@@ -125,8 +125,9 @@ def run_main(strategy_name,
     #SAVE_SIGNAL_FILENAME_LIST = list(FILE_LOC.values())
    
     #MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/consistency/Argus_sample_with_mybacktest_newcode/Argus_sample_signals_2.csv'
-    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/consistency/live_trade_vs_backtest_newcode/live_trade_compare_signals_TP25SL10_normalopen.csv'
+    #MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/consistency/live_trade_vs_backtest_newcode/live_trade_compare_signals_TP25SL10_normalopen.csv'
     #MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/EC_benchmark/20240814_argusexact_cross_P25S35_0330_entry_signal_full.csv'
+    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/MR_lag_roll/0330_entry/MR_3lag_10roll/20240814_argusexact_cross_P25S35_0330_entry_signal_full.csv'
     
     run_gen_signal_bulk(strategy,
                         start_date, end_date,
@@ -135,7 +136,7 @@ def run_main(strategy_name,
                         runtype = signal_gen_runtype,
                         master_signal_filename = MASTER_SIGNAL_FILENAME,
                         #histroy_intraday_data_pkl = HISTORY_MINUTE_PKL,
-                        open_hr_dict = OPEN_HR_DICT, 
+                        open_hr_dict = WRONG_OPEN_HR_DICT, 
                         close_hr_dict = CLOSE_HR_DICT, 
                         save_or_not=True,
                         merge_or_not=True)
@@ -144,8 +145,9 @@ def run_main(strategy_name,
     print("=========Running Back-Testing =============")
     
     #MASTER_PNL_FILENAME = RESULT_FILEPATH + '/consistency/Argus_sample_with_mybacktest_newcode/Argus_sample_PNL_with_mybacktest_newcode.pkl' 
-    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/consistency/live_trade_vs_backtest_newcode/live_trade_compare_portoflio_TP25SL10_normalopen.pkl' 
+    #MASTER_PNL_FILENAME = RESULT_FILEPATH + '/consistency/live_trade_vs_backtest_newcode/live_trade_compare_portoflio_TP25SL10_normalopen.pkl' 
     #MASTER_PNL_FILENAME = RESULT_FILEPATH + '/EC_benchmark/20240814_argusexact_cross_P25S35_0330_entry_PNL_full.pkl'
+    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/MR_lag_roll/0330_entry/MR_3lag_10roll/20240814_argusexact_cross_P25S35_0330_entry_PNL_full.pkl'
     
     #SAVE_PNL_FILENAME_LIST = FILE_PNL_LOC
     print("HISTORY_MINUTE_PKL", HISTORY_MINUTE_PKL)
@@ -158,7 +160,7 @@ def run_main(strategy_name,
                       histroy_intraday_data_pkl = HISTORY_MINUTE_PKL,
                       give_obj_name = give_obj_name,
                       get_obj_quantity = get_obj_quantity,
-                      open_hr_dict = OPEN_HR_DICT, 
+                      open_hr_dict = WRONG_OPEN_HR_DICT, 
                       close_hr_dict= CLOSE_HR_DICT,
                       save_or_not=True, 
                       merge_or_not=True,
@@ -177,8 +179,9 @@ def run_main(strategy_name,
         P = open_portfolio(MASTER_PNL_FILENAME)
         PL = PortfolioLog(P)
         #PL.tradebook_filename = RESULT_FILEPATH + "/consistency/Argus_sample_with_mybacktest_newcode/Argus_sample_PNL_with_mybacktest_newcode.csv"
-        PL.tradebook_filename = RESULT_FILEPATH + "/consistency/live_trade_vs_backtest_newcode/live_trade_compare_pnl_TP25SL10_normalopen.csv"
+        #PL.tradebook_filename = RESULT_FILEPATH + "/consistency/live_trade_vs_backtest_newcode/live_trade_compare_pnl_TP25SL10_normalopen.csv"
         #PL.tradebook_filename = RESULT_FILEPATH + "/EC_benchmark/20240814_argusexact_cross_P25S35_0330_entry_PNL_full.csv"
+        PL.tradebook_filename = RESULT_FILEPATH + "/MR_lag_roll/0330_entry/MR_3lag_10roll/20240814_argusexact_cross_P25S35_0330_entry_PNL_full.csv"
         
         PL.render_tradebook()
         PL.render_tradebook_xlsx()
@@ -195,20 +198,22 @@ if __name__ == "__main__":
     #end_date = "2024-06-28"
     
     # Total date range
-    #start_date = "2021-01-11"
-    #end_date = "2024-08-14"
+    start_date = "2021-01-11"
+    end_date = "2024-08-14"
     
     # live trade test date range
     #start_date = "2025-02-19"
-    end_date = "2025-02-25"
-    start_date = "2025-01-13"
     #end_date = "2025-02-18"
+    
+    #end_date = "2025-02-25"
+    #start_date = "2025-01-13"
+
 
     run_main('argus_exact', 
              OneTradePerDay, #OneTradePerDay, #onetrade_simple, #BiDirectionalTrade, 
              start_date, end_date,         
-             buy_range = ([0.25,0.4],[0.65,0.75],0.3),
-             sell_range = ([0.6,0.75],[0.25,0.35],0.7), 
+             buy_range = ([0.25,0.4],[0.65,0.75],0.05),
+             sell_range = ([0.6,0.75],[0.25,0.35],0.95), 
              give_obj_name = 'USD',
              get_obj_quantity = 1,
              preprocess = False, 

@@ -193,7 +193,8 @@ def loop_signal(strategy: type[Strategy],
                                                        apc_curve_lag5, 
                                                        buy_range=buy_range, 
                                                        sell_range=sell_range,   
-                                                       quantile = kwargs['quantile'])
+                                                       quantile = kwargs['quantile'],
+                                                       total_lag_days=2)
 
             print('====================================')
             print(forecast_date, full_contract_symbol,'MR signal generated!', 

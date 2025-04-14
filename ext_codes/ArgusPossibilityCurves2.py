@@ -692,7 +692,8 @@ def movecol(df, cols_to_move=[], ref_col='', place='After'):
 ##### Authentication
 # %%
 if False:    
-    apc = ArgusPossibilityCurves(username="user@domain.com", password="your_password")
+    #apc = ArgusPossibilityCurves(username="user@domain.com", password="your_password")
+    apc = ArgusPossibilityCurves(username="Leigh@eulercapital.com.au", password="Li@96558356")
     apc.authenticate()
 
     #set update_from_remote to false if you don't want to check for new metadata
@@ -731,8 +732,8 @@ if False:
 
     #categories = ['Argus Brent month 1, Daily', 
                   #'Argus WTI Houston front month average, Monthly']
-    start_date = datetime.date(2024, 1, 15)
-    end_date = datetime.date(2024, 1, 30)
+    start_date = datetime.date(2025, 3, 25)
+    end_date = datetime.date(2025, 3, 27)
     apc_data = apc.getPossibilityCurves(
         start_date=start_date, end_date=end_date, categories=categories)
     print(apc_data)
@@ -771,7 +772,7 @@ if False:
     end_date = datetime.date(2021, 1, 14)
     apc_data = apc.getPossibilityCurves(start_date=start_date, end_date=end_date, categories=categories)
     # Let's calculate both at the 0.5 and 0.75 quantile levels
-    entry_prices = list(apc_data['0.5'].to_numpy())
+    entry_prices = list(apc_data['0.75'].to_numpy())
     data_with_expected_shortfall = apc.calculate_expected_shortfall(data=apc_data, entry_prices=entry_prices, label="at 0.5 level")
     cols = ['Expected Shortfall (LONG) - at 0.5 level',
             'Expected Shortfall (SHORT) - at 0.5 level']
@@ -789,4 +790,5 @@ if False:
     cols=['IQR', 'IQR Moving Average', 'Central Skewness', 'Central Skewness Moving Average', 'Signal IQR', 'Signal IQR-Skewness']
 
     print(data_with_trading_signals[cols])
+    
 

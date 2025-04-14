@@ -18,8 +18,12 @@ from crudeoil_future_const import RESULT_FILEPATH
 #xl_filename = "/home/dexter/Euler_Capital_codes/EC_tools/results/EC_benchmark/20250210_argusexact_cross_P25S10_PNL_.xlsx"#EC_benchmark_prime.xlsx"
 #xl_filename = "/home/dexter/Euler_Capital_codes/EC_tools/results/EC_benchmark/20250210_argusexact_cross_P10S35_PNL_full_righttime_.xlsx"
 #xl_filename = '/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/live_trade_vs_backtest_newcode/live_trade_compare_pnl_Jan13Feb18_.xlsx'
-xl_filename = '/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap2/20240813_argusexact_cross_P25S20_PNL_.xlsx'
+#xl_filename = '/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap2/20240813_argusexact_cross_P25S20_PNL_.xlsx'
 #xl_filename = '/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/live_trade_vs_backtest_newcode/live_trade_compare_pnl_TP25SL40_normalopen_.xlsx'
+
+#xl_filename = RESULT_FILEPATH + '/MR_lag_roll/0330_entry/MR_3lag_10roll/20240814_argusexact_cross_P25S35_0330_entry_PNL_full_.xlsx'
+#xl_filename = RESULT_FILEPATH +'/heatmap3_buyQ50sellQ50/20240813_argusexact_cross_P15S45_PNL_.xlsx'
+xl_filename = RESULT_FILEPATH +'/heatmap2/20240813_argusexact_cross_P60S40_PNL_.xlsx'
 
 
 wb_obj = openpyxl.load_workbook(xl_filename, keep_vba=True)
@@ -70,7 +74,7 @@ def draw_down(df, date_col ='Entry_Date',
         if cum_return > current_max:
             current_max = cum_return
             
-        draw_down= 100*(cum_return - current_max)/current_max
+        draw_down= np.log(cum_return/current_max)
         
         date_bucket.append(date)
         draw_down_bucket.append(draw_down)
@@ -246,6 +250,9 @@ if __name__ == "__main__":
     TP25SL10 = RESULT_FILEPATH + filepath + 'live_trade_compare_pnl_TP25SL10_.xlsx'
     TP25SL10_normalopen = RESULT_FILEPATH + filepath + 'live_trade_compare_pnl_TP25SL10_normalopen_.xlsx'
 
+
+
+
     if False:
         live_xl_filename = RESULT_FILEPATH + '/trading_operation/live_record.xlsx'
         syms = ['CLc1', 'CLc2', 'HOc1', 'HOc2',
@@ -294,6 +301,7 @@ if __name__ == "__main__":
     
     
     if False:
+        # Compare live trades and backtest, plot 4 panels 
         filepath = '/consistency/live_trade_vs_backtest_newcode/'
         TP25SL35 = RESULT_FILEPATH + filepath + 'live_trade_compare_pnl_TP25SL35_.xlsx'
         TP25SL35_normalopen = RESULT_FILEPATH + filepath + 'live_trade_compare_pnl_TP25SL35_normalopen_.xlsx'

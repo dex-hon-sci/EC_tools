@@ -103,6 +103,20 @@ class Bookkeep(object):
                          'Q_mode-0.1', 'Q_mode','Q_mode+0.1',  
                         'Entry_Price', 'Exit_Price', 'StopLoss_Price',
                         'strategy_name']
+    
+    argus_IQR_skewdness_format = ['Date', 'Price_Code', 'Direction', 'Commodity_name',
+                        'Contract_Month','Timezone', 
+                        'Valid_From_localtz_timestr', 'Valid_To_localtz_timestr', 
+                        'Target_Lower_Entry_Price', 'Target_Upper_Entry_Price',
+                        'Target_Lower_Exit_Price', 'Target_Upper_Exit_Price',
+                        'Stop_Exit_Price',
+                        'IQR_CON', 'CRT_SKW_CON', 'Signal_IQR','Signal_SKW',
+                        'IQR_MA', 'CRT_SKW_MA', 'Window_IQR','Window_SKW',
+                        'IQR', 'CRT_SKW', 'TAIL_SKW', 'Down_tail_risk', 'Up_tail_risk',
+                        'OB_LV1', 'OB_LV2', 'OB_LV3', 
+                        'OS_LV1', 'OS_LV2', 'OS_LV3',
+                        'Entry_Price', 'Exit_Price', 'StopLoss_Price',
+                        'strategy_name']
 
     argus_PNL = ['Trade_Id', 'Direction', 'Commodity', 'Price_Code', 
                  'Contract_Month',
@@ -117,6 +131,7 @@ class Bookkeep(object):
             "argus_exact_amb": argus_exact_amb_format,
             "argus_exact_mode": argus_exact_mode_format,
             "argus_exact_roll3":argus_exact_roll3_format,
+            "argus_IQR_CRTSKW" :argus_IQR_skewdness_format,
             "None": dict()
                    }
     

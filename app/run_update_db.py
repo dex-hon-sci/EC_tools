@@ -11,6 +11,7 @@ It pulls data from external servers to the local directory.
 """
 # Python import
 import os
+import sys 
 from dotenv import load_dotenv 
 import datetime as datetime
 from pathlib import Path
@@ -45,13 +46,14 @@ from crudeoil_future_const import DAILY_APC_PKL, DAILY_DATA_PKL, \
 # Get the base directory
 basepath = Path()
 basedir = str(basepath.cwd())
+sys.path.append(os.path.abspath('/home/dexter/Euler_Capital_codes/EC_tools/'))
+print('sys.path',sys.path)
 # Load the environment variables
 envars = basepath.cwd() / '.env'
+print(envars)
 load_dotenv(envars)
 # Read an environment variable.
-SECRET_KEY = os.getenv('SECRET_KEY')
 
-print(envars)
 # loading local global environment file
 load_dotenv()
 ARGUS_USR = os.environ.get("ARGUS_USRX")
@@ -67,13 +69,17 @@ __all__ = ['download_latest_APC', 'download_latest_APC_fast',
 AUTH_PACK = {'username': ARGUS_USR,
              'password': ARGUS_PW}
 
-DATE_PACK = {"start_date": "2021-01-01",
+DATE_PACK = {"start_date": "2015-01-01",
              "end_date": "2024-06-18"}
 
-ASSET_PACK = {'categories': 'Argus Nymex WTI month 1, Daily',
-               'keywords': "WTI",
-               'symbol': "CL"}
-
+# =============================================================================
+# ASSET_PACK = {'categories': 'Argus Nymex WTI month 2, Daily',
+#                'keywords': "WTI",
+#                'symbol': "CL"}
+# =============================================================================
+ASSET_PACK = {'categories': 'Argus Nymex Heating oil month 1, Daily',
+               'keywords': "Heating",
+               'symbol': "HO"}
 categories_monthly_30avg_list = [ 
                     'Argus Nymex WTI front month average 30-day interval, Weekly',
                     'Nymex Heating oil front month average 30-day interval, Weekly',
@@ -115,6 +121,7 @@ def download_latest_APC(auth_pack: dict,
         The APC data in a data frame.
 
     """
+    print("AUTH_PACK", AUTH_PACK)
 
     # input is a dictionary or json file
     username = auth_pack['username']
@@ -188,7 +195,7 @@ def download_latest_APC_fast(auth_pack: dict,
     
     return signal_data
 
-@util.time_it
+#@util.time_it
 def download_latest_APC_list(auth_pack: dict, 
                              save_filename_list: list, 
                              categories_list: list, 
@@ -370,7 +377,8 @@ def update_pkl(old_pkl_filename: str,
         temp = read_func(file_loc_dict[symbol])
 
         cond_list = []
-        for time_ele in range(time_proxies):
+        for time_ele in time_proxies:
+            print('time_ele', time_ele)
             #Find the date of the latest entry
             latest_entry = old_data[time_ele].iloc[-1]
             cond_list.append(temp[time_ele]>latest_entry)
@@ -410,8 +418,8 @@ def main():
     
     # Second update the source data
     # update APC,
-    #download_latest_APC_list(AUTH_PACK, list(APC_FILE_LOC.values()), CAT_LIST, 
-    #                         KEYWORDS_LIST, SYMBOL_LIST, fast_dl=True)   
+    download_latest_APC_list(AUTH_PACK, list(APC_FILE_LOC.values()), CAT_LIST, 
+                             KEYWORDS_LIST, SYMBOL_LIST, fast_dl=False)   
     # update Portara
     # Roll Portara data # new just used to roll function in Portara
     # Copy all new continuous data from Portara to the master data folder.
@@ -419,8 +427,8 @@ def main():
     
     # Third update the pkl data
     # Update APC pkl
-    #update_pkl(DAILY_APC_PKL, APC_FILE_LOC, ["PERIOD"], 
-    #           read.read_reformat_APC_data)
+    ##update_pkl(DAILY_APC_PKL, APC_FILE_LOC, ["PERIOD"], 
+     ##          read.read_reformat_APC_data)
     # Update Portara Daily data (crudeoil futures) pkl
     #update_pkl(DAILY_DATA_PKL, HISTORY_DAILY_FILE_LOC, ["Date"], 
     #           read.read_reformat_Portara_daily_data)
@@ -453,8 +461,13 @@ if __name__ == "__main__":
 #     keywords_list = ["WTI","Heating", "Gasoline",'Brent', "gasoil"]
 #     symbol_list = ['CLc2', 'HOc2', 'RBc2', 'QOc2', 'QPc2']
 # =============================================================================
-    main()
+    print(AUTH_PACK)
 
+    #main()
+    
+    # Pure Slow download
+    Q = download_latest_APC(AUTH_PACK,ASSET_PACK,start_date="2010-01-01")
+    Q.to_csv(DATA_FILEPATH+"/HOc1_APC_long.csv", index=False)
     # fast download on the 10 main crudeoil future contracts
     #download_latest_APC_list(AUTH_PACK, SAVE_FILENAME_LIST, CAT_LIST, 
     #                         KEYWORDS_LIST, SYMBOL_LIST, fast_dl=True)   

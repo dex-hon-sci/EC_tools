@@ -93,8 +93,8 @@ def plot_price_return_hist(x,y,**kwargs):
 
 def run_main():
     #argusexact_cross_PS_PNL = "/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap/PNL_argusexact_G40S10_.xlsx"
-    argusexact_cross_PS_PNL = '/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap2/20240813_argusexact_cross_P35S15_PNL_.xlsx'
-
+    #argusexact_cross_PS_PNL = '/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap2/20240813_argusexact_cross_P35S15_PNL_.xlsx'
+    argusexact_cross_PS_PNL ='/home/dexter/Euler_Capital_codes/EC_tools/results/MR_1lag/20240814_argusexact_cross_P25S35_0330_entry_PNL_full_.xlsx'
 
     big_price_diff, big_trade_return = [], []
 

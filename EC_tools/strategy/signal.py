@@ -14,9 +14,11 @@ class SignalType(Enum):
     A simple class that contains the avaliable status for signals.
     
     """
-    BUY = "Buy" # When the position is added but not filled
-    SELL = "Sell" # When the position is executed
-    NEUTRAL = "Neutral" # When the position is cancelled
+    BUY = "Buy" # Good for Long Call 
+    SELL = "Sell" # Good for Long Put
+    NEUTRAL = "Neutral" # Good for Long Butterfly/Iron Condor or collar
+    BIDIR_INWARD = "BiDirectional_Inward" # Good for Long Butterfly/Iron Condor
+    BIDIR_OUTWARD = "BiDierctional_Outward" # Good for Long Straddle/strangle
     
 class SignalStatus(Enum):
      ACTIVE = "Active"
@@ -29,7 +31,12 @@ class Signal(object):
     typ: SignalType
     status: SignalStatus
     duration: tuple | list#(start_time, end_time), The effective duration of the signal
-    EES: tuple | list#(entry_price, exit_price, stoploss_price)
-    time_window: tuple | list#(start_time, end_time) The time window in which 
-    conditions: dict[str]
+    EES: tuple | list #(entry_price, exit_price, stoploss_price), EES with time tag
+    time_window: tuple | list#(start_time, end_time) The time window in which this signal is active
+    decay_factor: float 
+    conditions: dict[str] #trigger condition for a trade based on this signal
+    actions: dict[str] # What to do, trade what concepts?
 
+
+if __name__ == "__main__":
+    entry_list = []

@@ -490,7 +490,12 @@ class ArgusMRStrategy(Strategy):
         
         return {'data': data, 'direction': direction.value}
     
-
+    
+    
+    
+    
+    
+#%%
 class ArgusMRStrategyMode(Strategy):
     
     def __init__(self, curve_today: NDArray, 
@@ -1469,7 +1474,7 @@ class ArgusMonthlyStrategy(Strategy):
         
         return {'data': data, 'direction': direction.value}
 
-
+#%%
 
 MR_STRATEGIES_0 = {"argus_exact": ArgusMRStrategy,
                    "argus_exact_mode": ArgusMRStrategyMode,

@@ -21,7 +21,6 @@ import EC_tools.base.read as read
 from crudeoil_future_const import DATA_FILEPATH, RESULT_FILEPATH
 
 
-
 FILENAME_MINUTE = DATA_FILEPATH +"/history_data/Minute/CL.001"
 FILENSME_BUYSELL_SIGNALS = RESULT_FILEPATH + "/argus_exact_signal/argus_exact_signal_CLc1_full.csv"
 SIGNAL_FILENAME = DATA_FILEPATH + "/APC_latest/APC_latest_CLc1.csv"   
