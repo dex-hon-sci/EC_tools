@@ -143,7 +143,6 @@ def loop_signal(strategy: type[Strategy],
     print(history_data.index[history_data['Date'] == end_date],end_date)
     end_index = history_data.index[history_data['Date'] == end_date].item()
     
-    
         
     # loop through every forecast date and contract symbol 
     for i in np.arange(start_index,end_index+1): 

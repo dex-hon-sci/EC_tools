@@ -787,9 +787,9 @@ if __name__ == "__main__":
     #FILENSME_BUYSELL_SIGNALS = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_CLc1_full.csv"
     #SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_CLc1.csv"   
     
-    symbol = 'RBc2'
+    symbol = 'QPc2'
 
-    date_interest = "2025-03-05"
+    date_interest = "2022-03-08"
     first = datetime.datetime.combine(datetime.datetime(2025,2,4).date(), datetime.time(hour=6,minute=9))
     #plot_minute(HISTORY_MINTUE_FILE_LOC[symbol], APC_FILE_LOC[symbol], 
     #            date_interest = date_interest, title=symbol, direction="Buy",

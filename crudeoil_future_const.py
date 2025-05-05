@@ -54,6 +54,27 @@ ASSET_DICT = {"USD": {"unit":'dollars', "asset_type":'Cash'},
               "QPc2": {"unit":'contracts',"asset_type":'Future'}
               }
 
+ASSET_ARGUS_DICT = {"CLc1": {"categories":'Argus Nymex WTI month 1, Daily',
+                             "key_words":'WTI'},
+                    "CLc2": {"categories":'Argus Nymex WTI month 2, Daily', 
+                             "key_words":'WTI'},
+                    "HOc1": {"categories":'Argus Nymex Heating oil month 1, Daily',
+                             "key_words":'Heating'},
+                    "HOc2": {"categories":'Argus Nymex Heating oil month 2, Daily',
+                             "key_words":'Heating'},
+                    "RBc1": {"categories":'Argus Nymex RBOB Gasoline month 1, Daily',
+                             "key_words":'Gasoline'},
+                    "RBc2": {"categories":'Argus Nymex RBOB Gasoline month 2, Daily',
+                             "key_words":'Gasoline'},
+                    "QOc1": {"categories":'Argus Brent month 1, Daily',
+                             "key_words":'Brent'},
+                    "QOc2": {"categories":'Argus Brent month 2, Daily',
+                             "key_words":'Brent'},
+                    "QPc1": {"categories":'Argus ICE gasoil month 1, Daily',
+                             "key_words":'gasoil'},
+                    "QPc2": {"categories":'Argus ICE gasoil month 2, Daily',"key_words":
+                             'gasoil'}}
+
 CAT_LIST = [ 'Argus Nymex WTI month 1, Daily', 
              'Argus Nymex WTI month 2, Daily', 
              'Argus Nymex Heating oil month 1, Daily', 

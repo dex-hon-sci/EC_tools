@@ -759,7 +759,7 @@ def find_closest_price(day_minute_data: pd.DataFrame,
 
     Returns
     -------
-    target_hr_dt : datetime.datetime
+    target_hr_dt : datetime.time
         The datetime of the closest hour to the target.
     float
         The target price.
@@ -782,13 +782,13 @@ def find_closest_price(day_minute_data: pd.DataFrame,
             delta = datetime.timedelta(minutes = step)
             
             # Note that the datetime.datetime.today() is a place holder, it does  
-            # not affect the target_hr_dt vatriables.
+            # not affect the target_hr_dt variables.
             target_hr_dt = (datetime.datetime.combine(datetime.datetime.today(), 
                             target_hr_dt) + delta).time()
             #print(i, target_hr_dt)
 
             target_price = day_minute_data[day_minute_data[time_proxy] == target_hr_dt][price_proxy]
-            
+            #print('target_price', target_price)
     target_price = [float(target_price.iloc[0])] # make sure that this is float
             
     return target_hr_dt, target_price[0]
@@ -987,6 +987,7 @@ def find_crossover(input_array: np.ndarray,
         points that drop below the the threshold.
 
     """
+    # Turn input into a numpy array
     if type(threshold) == float:
         # make a numpy array of the threshold value    
         threshold = np.repeat(threshold, len(input_array)) 
@@ -1013,10 +1014,16 @@ def find_crossover(input_array: np.ndarray,
 
     # IF delta[i] < delta_lag[i], then the price drop below threshold
     indices_drop_below = np.where(np.sign(delta) < np.sign(delta_lag))
+    
+    # IF delta[i] != delta_lag[i], the price crosses the threshold regardless 
+    # of the direction of rise-above or drop-below.
+    # Tuple to ensure the same format as the one before
+    indices_all = (np.where(np.sign(delta) != np.sign(delta_lag))[0][1:],)
 
     # Produce a dict of indicies for below and above
     return {'rise': indices_rise_above, 
-            'drop': indices_drop_below}
+            'drop': indices_drop_below,
+            'all': indices_all}
 #tested
 def find_minute_EES(histroy_data_intraday: pd.DataFrame, 
                     target_entry: float, target_exit: float, stop_exit: float,

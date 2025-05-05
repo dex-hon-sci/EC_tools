@@ -21,9 +21,9 @@ from crudeoil_future_const import RESULT_FILEPATH
 #xl_filename = '/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap2/20240813_argusexact_cross_P25S20_PNL_.xlsx'
 #xl_filename = '/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/live_trade_vs_backtest_newcode/live_trade_compare_pnl_TP25SL40_normalopen_.xlsx'
 
-#xl_filename = RESULT_FILEPATH + '/MR_lag_roll/0330_entry/MR_3lag_10roll/20240814_argusexact_cross_P25S35_0330_entry_PNL_full_.xlsx'
+xl_filename = RESULT_FILEPATH + '/MR_lag_roll/0330_entry/MR_2lag_5roll/20240814_argusexact_cross_P25S35_0330_entry_PNL_full_.xlsx'
 #xl_filename = RESULT_FILEPATH +'/heatmap3_buyQ50sellQ50/20240813_argusexact_cross_P15S45_PNL_.xlsx'
-xl_filename = RESULT_FILEPATH +'/heatmap2/20240813_argusexact_cross_P60S40_PNL_.xlsx'
+#xl_filename = RESULT_FILEPATH +'/heatmap2/20240813_argusexact_cross_P60S40_PNL_.xlsx'
 
 
 wb_obj = openpyxl.load_workbook(xl_filename, keep_vba=True)

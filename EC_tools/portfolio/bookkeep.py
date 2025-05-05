@@ -62,6 +62,31 @@ class Bookkeep(object):
                         'Entry_Price', 'Exit_Price', 'StopLoss_Price',
                         'strategy_name']
     
+    argus_exact_4dSL_format = ['Date', 'Price_Code', 'Direction', 'Commodity_name',
+                        'Contract_Month','Timezone', 
+                        'Valid_From_localtz_timestr', 'Valid_To_localtz_timestr', 
+                        'Target_Lower_Entry_Price', 'Target_Upper_Entry_Price',
+                        'Target_Lower_Exit_Price', 'Target_Upper_Exit_Price',
+                        'Stop_Exit_Price',
+                        'NCONS',	'NROLL', 'Signal_NCONS', 'Signal_NROLL',	
+                        'Quant_Close_Price_Lag_1', 'Quant_Close_Price_Lag_2',	
+                        'Quant_Close_Price_Lag_3', 'Quant_Close_Price_Lag_4',	
+                        'Quant_Close_Price_Lag_5', 'Quant_Close_Price_Lag_1_rm_5',	
+                        'Q0.05', 'Q0.1','Q0.25', 'Q0.4', 'Q0.5', 
+                        'Q0.6', 'Q0.75', 'Q0.9', 'Q0.95',
+                        'Entry_Price', 'Exit_Price', 'StopLoss_Price',
+                        'strategy_name',
+                        'Target_Entry_Price', 
+                        'TE_start_time', 'TE_end_time',
+                        'Take_Profit_Price',
+                        'TP_start_time', 'TP_end_time',
+                        'StopLoss_Price_1', 'StopLoss_Price_2', 
+                        'StopLoss_Price_3', 'StopLoss_Price_4',
+                        'SL1_start_time', 'SL1_end_time',
+                        'SL2_start_time', 'SL2_end_time',
+                        'SL3_start_time', 'SL3_end_time',
+                        'SL4_start_time', 'SL4_end_time']
+
     argus_exact_amb_format = ['Date', 'Price_Code', 'Direction', 'Commodity_name',
                         'Contract_Month','Timezone', 
                         'Valid_From_localtz_timestr', 'Valid_To_localtz_timestr', 
@@ -132,6 +157,7 @@ class Bookkeep(object):
             "argus_exact_mode": argus_exact_mode_format,
             "argus_exact_roll3":argus_exact_roll3_format,
             "argus_IQR_CRTSKW" :argus_IQR_skewdness_format,
+            "argus_exact_4dSL": argus_exact_4dSL_format,
             "None": dict()
                    }
     
