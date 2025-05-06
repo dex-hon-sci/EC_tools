@@ -59,6 +59,24 @@ DEFAULT_KWARGS= {'price_proxy':'Open',
                  'selected_directions': ["Buy", "Sell"],
                  'method': "preload"}
 
+def cross_section_choice(cross_decision: str, 
+                         this_SL_price, next_SL, close_pt,
+                         trail_price_delta = 0):
+    # Check the closing price of this section,
+    # Case 1: close_price > next_SL_price, -> continue
+ 
+    if cross_decision == 'SL_A':
+        # scenario A
+        #dyn_list[num+1] = this_SL_price
+        next_SL = this_SL_price
+    elif cross_decision == 'SL_B':
+        # scenario B
+        #self._SL_pt = trunc_dicts_val[num]['close']
+        self._SL_pt = close_pt
+    elif cross_decision == 'SL_C':
+        # scenario C
+        next_SL = close_pt[1]+ trail_price_delta
+    return
 
 class OneTradePerDay_DYNSL(Trade):
     """
@@ -94,11 +112,17 @@ class OneTradePerDay_DYNSL(Trade):
         else:
             self._trail_price_delta = 0
             
+        # scenario for cross-sections decision]
+        self._cross_decision = 'SL_B'
+            
+            
     def choose_EES_values(self, 
                           trunc_dicts: dict, 
                           dyn_list: list) ->\
                           tuple[tuple, tuple, tuple, tuple]: 
         # dyn_list: Dynamic list of SL for reference
+        # Goal. To get a set of pt for further evaluation:
+        # (entry_pt, exit_pt, stop_pt, close_pt)
         
         # A method that search for correct EES points from a EES_dict
         #print("trunc_dicts", trunc_dicts)
@@ -106,12 +130,13 @@ class OneTradePerDay_DYNSL(Trade):
         entry_pt, exit_pt = (np.nan,np.nan), (np.nan,np.nan)
         stop_pt, close_pt = (np.nan,np.nan), (np.nan,np.nan)
         
-        earliest_exit, earliest_stop = exit_pt, stop_pt
+        earliest_exit, earliest_stop = (np.nan,np.nan), (np.nan,np.nan)
         
         # closr_pt always exist so we do it outside of the switch cases
         close_pt = trunc_dicts['close']
         trunc_dicts_val = list(trunc_dicts.values())
         
+        # Loop through each section
         num = 0
         while num < len(trunc_dicts_val):
             if len(trunc_dicts_val[num]['entry']) == 0: # entry price not hit. No trade that section.
@@ -119,8 +144,9 @@ class OneTradePerDay_DYNSL(Trade):
             else: 
               # choose the entry point
               entry_pt = trunc_dicts_val[num]['entry'][0]
-              self._TE_pt = entry_pt # Save it as a defacto entry point
+              #self._TE_pt = entry_pt # Save it as a defacto entry point
               
+              # Search for the earliest exit pt after entry
               if len(trunc_dicts_val[num]['exit']) > 0:
                  # Find exit point candidates
                  for i, exit_cand in enumerate(trunc_dicts_val[num]['exit']):  
@@ -128,7 +154,8 @@ class OneTradePerDay_DYNSL(Trade):
                          earliest_exit = exit_cand
                          #print('earliest_exit', earliest_exit)
                          break
-            
+                     
+              # Search for the earliest stop pt after entry
               if len(trunc_dicts_val[num]['stop']) > 0:
                  # Finde stop loss point candidates
                  for i, stop_cand in enumerate(trunc_dicts_val[num]['stop']):
@@ -143,30 +170,32 @@ class OneTradePerDay_DYNSL(Trade):
               
               this_SL_price = dyn_list[num]
               next_SL_price = dyn_list[num+1]
-
-              # Check the closing price of this section,
-              # Case 1: close_price > next_SL_price, -> continue
-              if trunc_dicts_val[num]['close'] > next_SL_price:
+              
+              # Process the cross sections decisions
+              # For the section that is not the last. 
+              if num < len(trunc_dicts_val) - 1: 
+                  # Check the closing price of this section,
+                  # Case 1: close_price > next_SL_price, -> continue
+                  if trunc_dicts_val[num]['close'] > next_SL_price:
+                      pass
+                  # Case 2: close_price > this_SL_price and close_price < next_SL_price, 
+                  # -> either (A.replace new with old, B.close, C.Trail_dyn, tbc)
+                  elif trunc_dicts_val[num]['close'] > this_SL_price and \
+                       trunc_dicts_val[num]['close'] < next_SL_price:
+                           
+                      self.cross_section_choice(this_SL_price, 
+                                                next_SL_price,
+                                                trunc_dicts_val[num]['close'])
+                      
+                  # Case 3: close_price < this_SL_price -> SL
+                  elif trunc_dicts_val[num]['close'] < this_SL_price:
+                      pass # no need to do anything because the earliest_stop 
+                           # should already capture this
+                     #self._SL_pt = earliest_stop
+                     
+              # For the last section
+              else:
                   pass
-              # Case 2: close_price > this_SL_price and close_price < next_SL_price, 
-              # -> either (A.replace new with old, B.close, C.Trail_dyn, tbc)
-              elif trunc_dicts_val[num]['close'] > this_SL_price and \
-                   trunc_dicts_val[num]['close'] < next_SL_price:
-                       
-                  cross_sections_decision= {'SL_A': this_SL_price,
-                                            'SL_B': trunc_dicts_val[num]['close'],
-                                            'SL_C': trunc_dicts_val[num]['close']+\
-                                                    self._trail_price_delta}
-                  dyn_list[num+1] = this_SL_price # scenario A
-                  self._SL_pt = trunc_dicts_val[num]['close'] # scenario B
-                  dyn_list[num+1] = trunc_dicts_val[num]['close']+\
-                                    self._trail_price_delta# scenario C
-                  
-                  #self._SL_pt = dyn_list[]
-              # Case 3: close_price < this_SL_price -> SL
-              elif trunc_dicts_val[num]['close'] < this_SL_price:
-                  self._SL_pt = earliest_stop
-
               
             
         print('entry_pt, exit_pt, stop_pt, close_pt')
@@ -643,8 +672,8 @@ def loop_portfolio_preloaded_dSL(portfo: Portfolio,
         # Setup trade ##########
         trade_id = i #direction + str(i)
         
-        trunc_dicts = {}
-        EESs = {}
+        trunc_dicts = {} # the container of truncation dicts for all sections
+        EESs = {} # The EES for each sections
         for num in sections:
             # Isolate day_section from day data according to the time range
             # of the EES
