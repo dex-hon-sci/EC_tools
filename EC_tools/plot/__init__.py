@@ -789,7 +789,7 @@ if __name__ == "__main__":
     
     symbol = 'QPc2'
 
-    date_interest = "2022-03-08"
+    date_interest = "2022-02-01"
     first = datetime.datetime.combine(datetime.datetime(2025,2,4).date(), datetime.time(hour=6,minute=9))
     #plot_minute(HISTORY_MINTUE_FILE_LOC[symbol], APC_FILE_LOC[symbol], 
     #            date_interest = date_interest, title=symbol, direction="Buy",

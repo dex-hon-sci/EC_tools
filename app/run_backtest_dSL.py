@@ -60,7 +60,7 @@ DEFAULT_KWARGS= {'price_proxy':'Open',
                  'method': "preload"}
 
 
-class OneTradePerDay_SIMPLE(Trade):
+class OneTradePerDay_DYNSL(Trade):
     """
     A class that perform one trade per day, the simplest form of trading.
     
@@ -72,14 +72,36 @@ class OneTradePerDay_SIMPLE(Trade):
         at the closing hour.
         
     """
-    def __init__(self, portfolio, trade_id: int = 0):
+    def __init__(self, portfolio, 
+                 trade_id: int = 0, 
+                 trail_price_delta: float = 0,
+                 direction: str ='Neutral'):
         super().__init__(portfolio)
         self.trade_id = trade_id
-
-    @staticmethod
-    def choose_EES_values(EES_dict: dict) -> tuple[tuple, tuple, tuple, tuple]:
+        
+        # A set of points for execute_position function to take record. 
+        # Only the final decision is taken as class variables
+        self._TE_pt = (np.nan,np.nan)
+        self._TP_pt = (np.nan,np.nan)
+        self._SL_pt = (np.nan,np.nan)
+        self._close_pt = (np.nan,np.nan)
+        
+        # the price difference for the trailing differences for dynamic SL
+        if direction == 'Buy':
+            self._trail_price_delta = trail_price_delta 
+        elif direction =='Sell':
+            self._trail_price_delta = -1.0*trail_price_delta
+        else:
+            self._trail_price_delta = 0
+            
+    def choose_EES_values(self, 
+                          trunc_dicts: dict, 
+                          dyn_list: list) ->\
+                          tuple[tuple, tuple, tuple, tuple]: 
+        # dyn_list: Dynamic list of SL for reference
+        
         # A method that search for correct EES points from a EES_dict
-        #print("EES_dict", EES_dict)
+        #print("trunc_dicts", trunc_dicts)
         # initialise
         entry_pt, exit_pt = (np.nan,np.nan), (np.nan,np.nan)
         stop_pt, close_pt = (np.nan,np.nan), (np.nan,np.nan)
@@ -87,34 +109,65 @@ class OneTradePerDay_SIMPLE(Trade):
         earliest_exit, earliest_stop = exit_pt, stop_pt
         
         # closr_pt always exist so we do it outside of the switch cases
-        close_pt = EES_dict['close']
-
-        # To get the correct EES and close time and price
-        if len(EES_dict['entry']) == 0: # entry price not hit. No trade that day.
-            pass
-        else:
-            # choose the entry point
-            entry_pt = EES_dict['entry'][0]
+        close_pt = trunc_dicts['close']
+        trunc_dicts_val = list(trunc_dicts.values())
+        
+        num = 0
+        while num < len(trunc_dicts_val):
+            if len(trunc_dicts_val[num]['entry']) == 0: # entry price not hit. No trade that section.
+               pass
+            else: 
+              # choose the entry point
+              entry_pt = trunc_dicts_val[num]['entry'][0]
+              self._TE_pt = entry_pt # Save it as a defacto entry point
+              
+              if len(trunc_dicts_val[num]['exit']) > 0:
+                 # Find exit point candidates
+                 for i, exit_cand in enumerate(trunc_dicts_val[num]['exit']):  
+                     if exit_cand[0] > entry_pt[0]:
+                         earliest_exit = exit_cand
+                         #print('earliest_exit', earliest_exit)
+                         break
             
-            if len(EES_dict['exit']) > 0:
-                # Find exit point candidates
-                for i, exit_cand in enumerate(EES_dict['exit']):  
-                    if exit_cand[0] > entry_pt[0]:
-                        earliest_exit = exit_cand
-                        #print('earliest_exit', earliest_exit)
-                        break
+              if len(trunc_dicts_val[num]['stop']) > 0:
+                 # Finde stop loss point candidates
+                 for i, stop_cand in enumerate(trunc_dicts_val[num]['stop']):
+                     if stop_cand[0] > entry_pt[0]:
+                         earliest_stop = stop_cand
+                         #print('earliest_stop', earliest_stop)
+                         break
+                     
+              # put in the new exit and stop
+              exit_pt = earliest_exit
+              stop_pt = earliest_stop
+              
+              this_SL_price = dyn_list[num]
+              next_SL_price = dyn_list[num+1]
 
-            if len(EES_dict['stop']) > 0:
-                # Finde stop loss point candidates
-                for i, stop_cand in enumerate(EES_dict['stop']):
-                    if stop_cand[0] > entry_pt[0]:
-                        earliest_stop = stop_cand
-                        #print('earliest_stop', earliest_stop)
-                        break
-            
-            # put in the new exit and stop
-            exit_pt = earliest_exit
-            stop_pt = earliest_stop
+              # Check the closing price of this section,
+              # Case 1: close_price > next_SL_price, -> continue
+              if trunc_dicts_val[num]['close'] > next_SL_price:
+                  pass
+              # Case 2: close_price > this_SL_price and close_price < next_SL_price, 
+              # -> either (A.replace new with old, B.close, C.Trail_dyn, tbc)
+              elif trunc_dicts_val[num]['close'] > this_SL_price and \
+                   trunc_dicts_val[num]['close'] < next_SL_price:
+                       
+                  cross_sections_decision= {'SL_A': this_SL_price,
+                                            'SL_B': trunc_dicts_val[num]['close'],
+                                            'SL_C': trunc_dicts_val[num]['close']+\
+                                                    self._trail_price_delta}
+                  dyn_list[num+1] = this_SL_price # scenario A
+                  self._SL_pt = trunc_dicts_val[num]['close'] # scenario B
+                  dyn_list[num+1] = trunc_dicts_val[num]['close']+\
+                                    self._trail_price_delta# scenario C
+                  
+                  #self._SL_pt = dyn_list[]
+              # Case 3: close_price < this_SL_price -> SL
+              elif trunc_dicts_val[num]['close'] < this_SL_price:
+                  self._SL_pt = earliest_stop
+
+              
             
         print('entry_pt, exit_pt, stop_pt, close_pt')
         print(entry_pt, exit_pt, stop_pt, close_pt)
@@ -181,7 +234,7 @@ class OneTradePerDay_SIMPLE(Trade):
                           trunc_dict: dict, 
                           pos_list: list, 
                           order_type: str = "Long"):
-
+        # Do things in the portfolio
         if order_type == 'Long':
             order_type1 = 'Long-Buy'
             order_type2 = 'Long-Sell'
@@ -248,7 +301,7 @@ class OneTradePerDay_SIMPLE(Trade):
                 ExecuteOrder(exit_pos).cancel_pos(void_time= trade_close[0])
                 ExecuteOrder(close_pos).cancel_pos(void_time= trade_close[0]) 
                 
-            # Case 4: Both SL and exit points exit:
+            # Case 4: Both SL and exit points exist:
             elif exit_pt != (np.nan,np.nan) and stop_pt != (np.nan,np.nan):
                 # Case 4.1: Stop pt is before exit pt
                 if exit_pt[0] > stop_pt[0]: # SL happens first
@@ -317,7 +370,7 @@ class OneTradePerDay_SIMPLE(Trade):
         return trade_open, trade_close, pos_list, exec_pos_list
     
     def run_trade(self, 
-                  trunc_dict: dict, #day: pd.DataFrame, 
+                  trunc_dict: dict, #truncation_dicts with multi_Sections #day: pd.DataFrame, 
                   give_obj_name: str, 
                   get_obj_name: str, 
                   get_obj_quantity: float | int,
@@ -330,41 +383,6 @@ class OneTradePerDay_SIMPLE(Trade):
                   fee: dict =  OIL_FUTURES_FEE,
                   open_time: datetime.datetime = None) -> \
                   tuple[tuple, tuple, list, list]: 
-        """
-
-        Note that run_trade method is agnoistic to the loop type, i.e.,
-        You can use LoopType.CROSSOVER, LoopType.RANGE, or LoopType.FULL
-
-        Parameters
-        ----------
-        trunc_dict : dict
-            Truncation dictionary. It contains the relevant points selected 
-            by some given EES values or EES ranges.
-            This assume you are running a crossover or range loop.
-        give_obj_name : str
-            The name of the give_obj, e.g. 'USD'.
-        get_obj_name : str
-            The name of the get_obj, e.g. 'CLc1'.
-        get_obj_quantity : int or float
-            The quanity of get_obj you wish to order.
-        target_entry : float
-            The target entry time and price.
-        target_exit : float
-            The exit entry time and price.
-        stop_exit : float
-            The stop loss time and price.
-        open_hr : str
-            The opening hour of the trade
-        close_hr : str
-            The closing hour of the trade
-        direction : str
-            The default is "Buy"
-
-        Returns
-        -------
-        EES_dict, trade_open, trade_close, pos_list, exec_pos_list
-
-        """
         
         #Find the minute that the price crosses the EES values
         # Input the position type
@@ -389,7 +407,6 @@ class OneTradePerDay_SIMPLE(Trade):
                                        size=SIZE_DICT[get_obj_name],
                                        fee=fee, 
                                        open_time = open_time)
-                                       #trade_id= self.trade_id)
 
         # Execute the positions. As the function is ran, it chooses the 
         # appropiate EES values based on the choose_EES_values method of 
@@ -579,8 +596,9 @@ def loop_portfolio_preloaded_dSL(portfo: Portfolio,
                                  signal_table: pd.DataFrame, 
                                  histroy_intraday_data_pkl: dict[str, pd.DataFrame], 
                                  **kwargs):
-
-
+    # Loop through signal master table and execute trade in the intraday data
+    # Within this custom loop, there is another loop that go through a series of
+    # sections and calculate entry point and exit point individually.
     default_kwargs = DEFAULT_KWARGS
     kwargs = dict(default_kwargs,**kwargs)
 
@@ -615,7 +633,7 @@ def loop_portfolio_preloaded_dSL(portfo: Portfolio,
         pos_open_dt = datetime.datetime.combine(date_interest.date(), open_hr_dt)
         
         print('===============================')
-        #print(i, section, pos_open_dt, direction, symbol)
+        print(i, pos_open_dt, symbol)
         #print('day', day)
         #print('Time', day['Time'].iloc[0], type(day['Time'].iloc[0]))
 
@@ -625,6 +643,8 @@ def loop_portfolio_preloaded_dSL(portfo: Portfolio,
         # Setup trade ##########
         trade_id = i #direction + str(i)
         
+        trunc_dicts = {}
+        EESs = {}
         for num in sections:
             # Isolate day_section from day data according to the time range
             # of the EES
@@ -635,8 +655,10 @@ def loop_portfolio_preloaded_dSL(portfo: Portfolio,
             target_exit = sections[num]['target_exit'][1]
             stop_exit = sections[num]['stop_exit'][1]
             direction = sections[num]['direction'][1]
-            print(f'----section {num}: {start_time} to {end_time}----')
+            print(f'--------section {num}: {start_time} to {end_time}, "{direction}"--------')
             print(f'TE: {target_entry}, TP: {target_exit}, SL: {stop_exit}')
+            print('---------------------------------------------------------')
+
             # set the open_hr to the time specific to this section
             open_hr_dt = start_time
             close_hr_dt = end_time
@@ -655,26 +677,21 @@ def loop_portfolio_preloaded_dSL(portfo: Portfolio,
                                                             close_hr_dt, 
                                                             direction)
             print(trunc_dict)
-            print(target_entry, \
-                  target_exit, stop_exit)
+            
+            trunc_dicts[num] = trunc_dict
+            EESs[num] = (target_entry, target_exit, stop_exit)
+                
+        #trade_open, trade_close,\
+        #pos, exec_pos = trade_method(portfo, trade_id = trade_id).\
+        #                run_trade(trunc_dicts, kwargs['give_obj_name'], #Take-in a dict of trunc_dict
+        #                          get_obj_name,
+        #                          kwargs['get_obj_quantity'],
+        #                          EESs, )
+        
+        #         backtest.plot_in_backtest(date_interest,get_obj_name, trunc_dict, direction, 
+        #                          plot_or_not=kwargs['plot_or_not'])
+
 # =============================================================================
-#         for section in sections:
-#         
-#             print('===============================')
-#             print(i, section, pos_open_dt, direction, symbol)
-#     
-#             # Find the truncation dict and the modified target entry and exit
-#             trunc_dict, \
-#             target_entry, target_exit, stop_exit = backtest.gen_trunc_dict(self._loop_type, 
-#                                                                   day, 
-#                                                                   target_entry, 
-#                                                                   target_exit, 
-#                                                                   stop_exit, 
-#                                                                   open_hr_dt, 
-#                                                                   close_hr_dt, 
-#                                                                   direction,
-#                                                                   price_proxy=kwargs['price_proxy'])
-#             
 #             # Run the trade itself
 #             trade_open, trade_close, \
 #             pos, exec_pos = trade_method(portfo, trade_id = trade_id).\
@@ -690,12 +707,9 @@ def loop_portfolio_preloaded_dSL(portfo: Portfolio,
 #                                                            direction = direction,
 #                                                            fee=kwargs['fee_dict'][symbol],
 #                                                            open_time= pos_open_dt)
-#                     
-#         # plotting mid-backtest
-#         backtest.plot_in_backtest(date_interest,get_obj_name, trunc_dict, direction, 
-#                          plot_or_not=kwargs['plot_or_not'])
-# 
 # =============================================================================
+                                                 
+
     return portfo
 
 def run_backtest_portfolio_preloaded(TradeMethod,
@@ -801,7 +815,7 @@ if __name__ == "__main__":
                    'asset_type': "Cash", 'misc':{}} # initial fund
     P1.add(USD_initial,datetime=datetime.datetime(2020,12,31))
     
-    P1 = loop_portfolio_preloaded_dSL(P1, OneTradePerDay_SIMPLE,
+    P1 = loop_portfolio_preloaded_dSL(P1, OneTradePerDay_DYNSL,
                                       trade_date_table,
                                       HISTORY_MINUTE_PKL)
 
