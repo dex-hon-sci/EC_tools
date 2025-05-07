@@ -44,6 +44,8 @@ class NewTrade(Trade):
         self._cross_decision = 'SL_B'
         
     def choose_EES_values(EES_dict: dict) -> tuple[tuple, tuple, tuple, tuple]:
+        
+        
         return 
 
     def open_positions():

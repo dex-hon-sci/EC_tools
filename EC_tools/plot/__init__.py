@@ -706,12 +706,12 @@ def plot_minute(filename_minute: str, signal_filename: str,
     #                    curve['0.6'], curve['0.95']]
     
     #live trading range
-    quant_list=['q0.3','q0.35', 'q0.4', 'q0.5', 'q0.6', 'q0.65', 'q0.7']
-    quant_price_list = [curve['0.3'], 
+    quant_list=['q0.05','q0.35', 'q0.4', 'q0.5', 'q0.6', 'q0.65', 'q0.95']
+    quant_price_list = [curve['0.05'], 
                         curve['0.35'], curve['0.4'], 
                         curve['0.5'], 
                         curve['0.6'], curve['0.65'], 
-                        curve['0.7']]
+                        curve['0.95']]
 # =============================================================================
 #     #Test trading range
 #     quant_list=['q0.05','q0.25', 'q0.4', 'q0.5', 'q0.6', 'q0.75', 'q0.95']
@@ -787,9 +787,9 @@ if __name__ == "__main__":
     #FILENSME_BUYSELL_SIGNALS = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_CLc1_full.csv"
     #SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_CLc1.csv"   
     
-    symbol = 'QPc2'
+    symbol = 'QOc2'
 
-    date_interest = "2022-02-01"
+    date_interest = "2022-02-02"
     first = datetime.datetime.combine(datetime.datetime(2025,2,4).date(), datetime.time(hour=6,minute=9))
     #plot_minute(HISTORY_MINTUE_FILE_LOC[symbol], APC_FILE_LOC[symbol], 
     #            date_interest = date_interest, title=symbol, direction="Buy",
