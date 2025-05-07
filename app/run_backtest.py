@@ -493,8 +493,6 @@ def run_backtest_bulk(TradeMethod,
     """
     default_kwargs = DEFAULT_KWARGS
     kwargs = dict(default_kwargs,**kwargs)
-    
-
             
     if kwargs['method'] == "list":
         SAVE_FILENAME_LIST = list(kwargs['save_file_loc'].values())
