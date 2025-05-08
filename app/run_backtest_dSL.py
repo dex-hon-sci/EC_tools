@@ -36,7 +36,8 @@ from crudeoil_future_const import OPEN_HR_DICT, CLOSE_HR_DICT, SIZE_DICT, \
                                   TEST_FILE_LOC, TEST_FILE_PNL_LOC,\
                                   DAILY_MINUTE_DATA_PKL, MINUTE_CUMAVG_MONTH_PKL,\
                                   DAILY_MINUTE_DATA_INDI_PKL,\
-                                  OIL_FUTURES_FEE, OIL_FUTURES_FEES
+                                  OIL_FUTURES_FEE, OIL_FUTURES_FEES, \
+                                  TRAIL_PRICE_DELTA
 
 DEFAULT_KWARGS= {'price_proxy':'Open',
                  'give_obj_name': 'USD',
@@ -78,7 +79,9 @@ class OneTradePerDay_DYNSL(Trade):
     def __init__(self, portfolio, 
                  trade_id: int = 0, 
                  trail_price_delta: float = 0,
-                 direction: str ='Neutral'):
+                 direction: str ='Neutral',
+                 cross_decision: str = 'SL_B',
+                 dyn_list: list[float] = [0,0,0,0]):
         super().__init__(portfolio)
         self.trade_id = trade_id
         
@@ -98,38 +101,42 @@ class OneTradePerDay_DYNSL(Trade):
             self._trail_price_delta = 0
             
         # scenario for cross-sections decision]
-        self._cross_decision = 'SL_B'
+        self._cross_decision = cross_decision
+        self._dyn_list = dyn_list
         
-    def cross_section_choice(self,  
-                             this_SL_price, next_SL, close_pt,
+    def cross_section_choice(self, num: int,
+                             this_SL_price: float, 
+                             close_pt: tuple[datetime.datetime, float],
                              trail_price_delta = 0):
-        # Check the closing price of this section,
-        # Case 1: close_price > next_SL_price, -> continue
      
         if self._cross_decision == 'SL_A':
             # scenario A
-            #dyn_list[num+1] = this_SL_price
-            next_SL = this_SL_price
+            self._dyn_list[num+1] = this_SL_price
+            #next_SL_price = this_SL_price
         elif self._cross_decision == 'SL_B':
             # scenario B
             #self._SL_pt = trunc_dicts_val[num]['close']
             self._SL_pt = close_pt
         elif self._cross_decision == 'SL_C':
             # scenario C
-            next_SL = close_pt[1]+ trail_price_delta
+            #next_SL_price = close_pt[1]+ trail_price_delta
+            self._dyn_list[num+1] = close_pt[1]+ trail_price_delta
         return
             
     def choose_EES_values(self, 
                           trunc_dict: dict, 
                           dyn_list: list,
-                          num: int) ->\
+                          num: int,**kwargs) ->\
                           tuple[tuple, tuple, tuple, tuple]: 
+            
         # trunc_dict: truncation dict for this section (singular)
         # dyn_list: Dynamic list of SL for reference
         # num: the index for the current value of the dyn_list
         # Goal. To get a set of pt for further evaluation:
         # (entry_pt, exit_pt, stop_pt, close_pt)
-        
+        default_kwargs = DEFAULT_KWARGS
+        kwargs = dict(default_kwargs,**kwargs)
+
         # A method that search for correct EES points from a EES_dict
         #print("trunc_dicts", trunc_dicts)
         # initialise
@@ -171,12 +178,12 @@ class OneTradePerDay_DYNSL(Trade):
               self._SL_pt = earliest_stop
                             
           # For the section that is not the last. 
-          if num < len(dyn_list) - 1: 
+          if num < len(self._dyn_list) - 1: 
               print(f'Cross Section {num}')
 
               # Process the cross sections decisions
-              this_SL_price = dyn_list[num]
-              next_SL_price = dyn_list[num+1]
+              this_SL_price = self._dyn_list[num]
+              next_SL_price = self._dyn_list[num+1]
               
               print('this_SL_price', this_SL_price, 
                     'next_SL_price', next_SL_price)
@@ -191,13 +198,16 @@ class OneTradePerDay_DYNSL(Trade):
                    trunc_dict['close'][1] < next_SL_price:
                   print(f'next_SL_price > close_price > this_SL_price: \
                         {self._cross_decision}')
-
+                  print(self._dyn_list)
+                  print('section cross', trunc_dict['close'])
                   # This function control the cross-section choices
-                  self.cross_section_choice(this_SL_price, 
-                                            next_SL_price,
-                                            trunc_dict['close'])
+                  self.cross_section_choice(num, 
+                                            this_SL_price,
+                                            trunc_dict['close'],
+                                            trail_price_delta=kwargs['trail_price_delta'])
                   print('this_SL_price',  dyn_list[num], 
                         'next_SL_price', dyn_list[num+1])
+                  print(self._dyn_list)
 
               # Case 3: close_price < this_SL_price -> SL
               # no need to do anything because the earliest_stop 
@@ -294,7 +304,7 @@ class OneTradePerDay_DYNSL(Trade):
         # and close time for the trade                                    
         #entry_pt, exit_pt, stop_pt, close_pt = self.choose_EES_values(trunc_dict)
         entry_pt, exit_pt, stop_pt, close_pt = EES_pt_list[0], EES_pt_list[1],\
-                                               EES_pt_list[2], EES_pt_list[2]
+                                               EES_pt_list[2], EES_pt_list[3]
 
         # initialise trade_open and trade_close time and prices
         trade_open, trade_close = (np.nan,np.nan), (np.nan,np.nan)
@@ -319,7 +329,7 @@ class OneTradePerDay_DYNSL(Trade):
             # Case 2: No SL points, normal exit
             if exit_pt != (np.nan,np.nan) and stop_pt == (np.nan,np.nan):
             #elif entry_pt != (np.nan,np.nan) and (exit_pt[0]<stop_pt[0]):
-                print("Noraml exit. No Stop-loss crossing")
+                print("Noraml exit. No Stop-loss hit")
                 trade_open, trade_close = entry_pt, exit_pt
                 opening_pos, closing_pos = entry_pos, exit_pos
                 #print("Before price adjustment", opening_pos, closing_pos)
@@ -334,7 +344,7 @@ class OneTradePerDay_DYNSL(Trade):
             # Case 3: No exit points, noraml SL
             elif exit_pt == (np.nan,np.nan) and stop_pt != (np.nan,np.nan):
             #elif entry_pt != (np.nan,np.nan) and (exit_pt[0] > stop_pt[0]):
-                print('Stop loss. No exit crossing')
+                print('Stop loss. No exit hit')
                 trade_open, trade_close = entry_pt, stop_pt
                 opening_pos, closing_pos = entry_pos, stop_pos
                 #print("Before price adjustment", opening_pos, closing_pos)
@@ -383,7 +393,7 @@ class OneTradePerDay_DYNSL(Trade):
                 trade_open, trade_close = entry_pt, close_pt
                 opening_pos, closing_pos = entry_pos, close_pos
                 #print("Before price adjustment", opening_pos, closing_pos)
-    
+                
                 # change the closing price
                 closing_pos.price = round(close_pt[1],9)
                 
@@ -393,7 +403,6 @@ class OneTradePerDay_DYNSL(Trade):
         
         # change the price for the open position
         opening_pos.price = entry_pt[1]
-        
 
         # Execute the positions
         ExecuteOrder(opening_pos).fill_pos(fill_time = trade_open[0], 
@@ -684,21 +693,24 @@ def loop_portfolio_preloaded_dSL(portfo: Portfolio,
         # Build up sections, the output is a dict containing the EES for each 
         # section
         sections = load_EES_from_signal_dynamic(item)
-        print('sections', sections)
+        #print('sections', sections)
         # Setup trade ##########
         trade_id = i #direction + str(i)
         direction = sections['0']['direction'][1]
+        # Make a list of SL for universal access
+        dyn_list = item[['StopLoss_Price_1', 'StopLoss_Price_2', 
+                         'StopLoss_Price_3','StopLoss_Price_4']].to_list()
 
         # Initialise trade 
         T = trade_method(portfo, trade_id, 
                          trail_price_delta=kwargs['trail_price_delta'], 
-                         direction=direction)
+                         direction=direction,
+                         cross_decision='SL_C',
+                         dyn_list = dyn_list)
         
-        # Setup the close hour exit point
-        T._close_pt = (close_hr_dt, close_price)
-        # Make a list of SL for universal access
-        dyn_list = item[['StopLoss_Price_1', 'StopLoss_Price_2', 
-                         'StopLoss_Price_3','StopLoss_Price_4']].to_list()
+        # Setup the close hour exit point (remember to change the close_hr_dt 
+        # from time to datetime)
+        T._close_pt = (datetime.datetime.combine(date_interest, close_hr_dt), close_price)
         
         # Loop Through each section to find the suitable EES point, 
         # Store them in the class variable in the Trade object
@@ -739,8 +751,10 @@ def loop_portfolio_preloaded_dSL(portfo: Portfolio,
             
                 
             # Choose the earliest EES for this section
-            T.choose_EES_values(trunc_dict, dyn_list, int(num))
+            T.choose_EES_values(trunc_dict, dyn_list, int(num),
+                                trail_price_delta = TRAIL_PRICE_DELTA[symbol])
             print('------------------------------------------------------')
+        print('------------------------------------------------------')
 
         # Export the trade object defacto EES points
         # A list of initial target prices for opening position, it will be 
@@ -752,7 +766,7 @@ def loop_portfolio_preloaded_dSL(portfo: Portfolio,
         EES_pt_list = [T._TE_pt, T._TP_pt, T._SL_pt, T._close_pt]
         
         ORDER_TYPE = {'Buy': 'Long', 'Sell':'Short'}
-        print('EES_target_list', EES_target_price_list)
+        #print('EES_target_list', EES_target_price_list)
         print('EES_pt_list', EES_pt_list)
         
         # Open position and add them in the portfolio
@@ -764,7 +778,7 @@ def loop_portfolio_preloaded_dSL(portfo: Portfolio,
                                     size=SIZE_DICT[get_obj_name],
                                     fee=OIL_FUTURES_FEE, 
                                     open_time = open_hr_dt)
-        print('pos_list', pos_list)
+        #print('pos_list', pos_list)
         print('------------------------------------------------------')
 
         # Execute and exit position in the portfolio
@@ -774,7 +788,7 @@ def loop_portfolio_preloaded_dSL(portfo: Portfolio,
                                                       order_type = \
                                                       ORDER_TYPE[direction])
         
-        print('pos_list', pos_list)
+        #print('pos_list', pos_list)
         print('------------------------------------------------------')
 
         #backtest.plot_in_backtest(date_interest,get_obj_name, trunc_dict, direction, 
@@ -817,26 +831,6 @@ def run_backtest_portfolio_preloaded(TradeMethod,
                                       close_hr_dict=kwargs['close_hr_dict'],
                                       price_proxy=kwargs['price_proxy'])
                                             
-    #     start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
-    #     end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
-    # 
-    #     # Find the date for trading, only "Buy" or "Sell" date are taken.
-    #     trade_date_table = backtest.prepare_signal_interest(MASTER_SIGNAL_FILENAME,
-    #                                                         trim = False)
-    #     
-    #     print(trade_date_table)
-    #     trade_date_table = trade_date_table[(trade_date_table['Date'] >= start_date) & 
-    #                                         (trade_date_table['Date'] <= end_date)]
-    #     
-    #     # Initialise Portfolio
-    #     P1 = Portfolio()
-    #     USD_initial = {'name':"USD", 'quantity': 10_000_000, 'unit':"dollars", 
-    #                    'asset_type': "Cash", 'misc':{}} # initial fund
-    #     P1.add(USD_initial,datetime=datetime.datetime(2020,12,31))
-    #     
-    #     P1 = loop_portfolio_preloaded_dSL(P1, OneTradePerDay_DYNSL,
-    #                                       trade_date_table,
-    #                                       HISTORY_MINUTE_PKL)
     t2 = time.time()-t1
     print("It takes {} seconds to run the backtest".format(t2))
 
@@ -882,44 +876,13 @@ if __name__ == "__main__":
     
     start_date = "2022-02-01"
     end_date = "2022-02-02"
+
+    #end_date = "2024-06-28"
     
     MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + "/test_results/test_master_signal_file.csv"
     MASTER_PNL_FILENAME = RESULT_FILEPATH + "/test_results/test_pnl.csv"
     HISTORY_MINUTE_PKL = load_source_data_bt(list(DAILY_MINUTE_DATA_INDI_PKL.values()))
 
-# =============================================================================
-#     start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
-#     end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
-#
-#     # Find the date for trading, only "Buy" or "Sell" date are taken.
-#     trade_date_table = backtest.prepare_signal_interest(MASTER_SIGNAL_FILENAME,
-#                                                         trim = False)
-#     
-#     print(trade_date_table)
-#     trade_date_table = trade_date_table[(trade_date_table['Date'] >= start_date) & 
-#                                         (trade_date_table['Date'] <= end_date)]
-#     
-#     # Initialise Portfolio
-#     P1 = Portfolio()
-#     USD_initial = {'name':"USD", 'quantity': 10_000_000, 'unit':"dollars", 
-#                    'asset_type': "Cash", 'misc':{}} # initial fund
-#     P1.add(USD_initial,datetime=datetime.datetime(2020,12,31))
-#     
-#     P1 = loop_portfolio_preloaded_dSL(P1, OneTradePerDay_DYNSL,
-#                                       trade_date_table,
-#                                       HISTORY_MINUTE_PKL)
-# =============================================================================
-# =============================================================================
-#     run_backtest_portfolio_preloaded(OneTradePerDay_DYNSL,
-#                                      start_date, end_date,
-#                                      master_signal_filename = MASTER_SIGNAL_FILENAME,
-#                                      histroy_intraday_data_pkl = HISTORY_MINUTE_PKL,
-#                                      give_obj_name='USD',
-#                                      get_obj_quantity=1,
-#                                      open_hr_dict = WRONG_OPEN_HR_DICT, 
-#                                      close_hr_dict = CLOSE_HR_DICT, 
-#                                      selected_directions = ['Buy', 'Sell'])
-# =============================================================================
 
     run_backtest_bulk(OneTradePerDay_DYNSL, 
                       start_date, end_date, 

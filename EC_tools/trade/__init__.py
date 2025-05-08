@@ -11,7 +11,6 @@ Trade class
 
  
 """
-
 # import base python
 from dataclasses import dataclass
 from typing import Protocol # use protocol for trade class
@@ -72,7 +71,6 @@ class Trade(Protocol):
     @auto_unload_all.setter
     def auto_unload_all(self, bool_val: bool):
         self._auto_unload_all = bool_val
-    
     
     # time speciised order type
     # duration limited order type

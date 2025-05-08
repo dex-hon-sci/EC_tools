@@ -328,6 +328,7 @@ if __name__ == "__main__":
                 (datetime.time(8,0,0), datetime.time(11,0,0)),
                 (datetime.time(11,0,0), datetime.time(13,0,0)),
                 (datetime.time(13,0,0), datetime.time(23,0,0))] 
+    
     # A list of float in the form of quant distance from the entry
     dSL = [0.0,0.05,0.1,0.25] 
 

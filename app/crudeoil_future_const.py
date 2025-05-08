@@ -215,6 +215,12 @@ SYMBOL_KEYWORDS_DICT = {"CLc1": "WTI", "CLc2": "WTI",
 OIL_FUTURES_FEE = {'name':'USD', 'quantity': 15.0, 
                    'unit':'dollars', 'asset_type': 'Cash'}
 
+TRAIL_PRICE_DELTA = {"CLc1": 0.5, "CLc2": 0.5,
+                     "HOc1": 0.01, "HOc2": 0.01,
+                     "RBc1": 0.01, "RBc2": 0.01,
+                     "QOc1": 0.4, "QOc2": 0.4, 
+                     "QPc1": 0.5, "QPc2": 0.5}
+
 def make_path_dict(folder_name: str, file_prefix: str, 
                    file_suffix: str = '.csv',  
                    path: str = RESULT_FILEPATH,

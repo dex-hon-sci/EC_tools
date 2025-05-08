@@ -54,27 +54,6 @@ ASSET_DICT = {"USD": {"unit":'dollars', "asset_type":'Cash'},
               "QPc2": {"unit":'contracts',"asset_type":'Future'}
               }
 
-ASSET_ARGUS_DICT = {"CLc1": {"categories":'Argus Nymex WTI month 1, Daily',
-                             "key_words":'WTI'},
-                    "CLc2": {"categories":'Argus Nymex WTI month 2, Daily', 
-                             "key_words":'WTI'},
-                    "HOc1": {"categories":'Argus Nymex Heating oil month 1, Daily',
-                             "key_words":'Heating'},
-                    "HOc2": {"categories":'Argus Nymex Heating oil month 2, Daily',
-                             "key_words":'Heating'},
-                    "RBc1": {"categories":'Argus Nymex RBOB Gasoline month 1, Daily',
-                             "key_words":'Gasoline'},
-                    "RBc2": {"categories":'Argus Nymex RBOB Gasoline month 2, Daily',
-                             "key_words":'Gasoline'},
-                    "QOc1": {"categories":'Argus Brent month 1, Daily',
-                             "key_words":'Brent'},
-                    "QOc2": {"categories":'Argus Brent month 2, Daily',
-                             "key_words":'Brent'},
-                    "QPc1": {"categories":'Argus ICE gasoil month 1, Daily',
-                             "key_words":'gasoil'},
-                    "QPc2": {"categories":'Argus ICE gasoil month 2, Daily',"key_words":
-                             'gasoil'}}
-
 CAT_LIST = [ 'Argus Nymex WTI month 1, Daily', 
              'Argus Nymex WTI month 2, Daily', 
              'Argus Nymex Heating oil month 1, Daily', 
@@ -235,6 +214,12 @@ SYMBOL_KEYWORDS_DICT = {"CLc1": "WTI", "CLc2": "WTI",
 
 OIL_FUTURES_FEE = {'name':'USD', 'quantity': 15.0, 
                    'unit':'dollars', 'asset_type': 'Cash'}
+
+TRAIL_PRICE_DELTA = {"CLc1": 0.5, "CLc2": 0.5,
+                     "HOc1": 0.01, "HOc2": 0.01,
+                     "RBc1": 0.01, "RBc2": 0.01,
+                     "QOc1": 0.4, "QOc2": 0.4, 
+                     "QPc1": 0.5, "QPc2": 0.5}
 
 def make_path_dict(folder_name: str, file_prefix: str, 
                    file_suffix: str = '.csv',  
