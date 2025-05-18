@@ -782,7 +782,7 @@ class PortfolioLog(Portfolio):
         PP = read.group_trade(order_pool,
                               select_func=select_func_fill)
         
-        print('PP',PP)
+        #print('PP',PP)
         
         for i, ele in enumerate(PP):
             #print(i)
@@ -806,7 +806,7 @@ class PortfolioLog(Portfolio):
                 trade_return = entry_price - exit_price
                 trade_return_fraction = (entry_price - exit_price) / exit_price
                 
-            print(i,trade_id,symbol,entry_date)
+            #print(i,trade_id,symbol,entry_date)
 
             data = [trade_id, direction, commodity_name, symbol,
                     entry_date, entry_datetime, entry_price,

@@ -75,5 +75,6 @@ class Signal(object):
         # Decay_factor a function of feature
         
         return np.exp(-1.0*self.decay_factor*time)
+    
 if __name__ == "__main__":
     entry_list = []

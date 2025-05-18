@@ -409,7 +409,6 @@ class ArgusMRStrategy(Strategy):
     def apply_strategy(self, 
                        history_data_lag: pd.DataFrame, 
                        apc_curve_lag: pd.DataFrame, 
-                       #open_price: float, 
                        buy_range: tuple[list|tuple,float] = 
                                    ([0.25,0.4],[0.6,0.75],0.05), 
                        sell_range: tuple[list|tuple,float] = 
@@ -489,9 +488,6 @@ class ArgusMRStrategy(Strategy):
                 quantile_info + EES_val + [self.strategy_name]
         
         return {'data': data, 'direction': direction.value}
-    
-    
-    
     
     
     

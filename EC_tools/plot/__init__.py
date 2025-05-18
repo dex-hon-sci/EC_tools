@@ -102,7 +102,7 @@ class AxisLimit(object):
                                                                  minute=59))
 
     
-class ExtSubplot(object):
+class SubPlot(object):
     # A class that control added external subplots
     def __inti__(self):
         self._add_pdf_panel = False
@@ -158,14 +158,6 @@ class PlotPricing(object):
         self.add_subpot = False
         self._color_mode = color_dict_dark_mode
         #super().__init__()
-        
-
-        
-    def controller(self, ax, *args, **kwargs):
-        # A function that control which subcomponents and subplots are turned on      
-        # Add subcomponents  
-        return None
-
 
     def plot_price(self, x,y, events, pdf, 
                    quant_list, quant_price_list, direction="Neutral",
@@ -789,7 +781,7 @@ if __name__ == "__main__":
     
     symbol = 'QOc2'
 
-    date_interest = "2022-02-02"
+    date_interest = "2022-11-18"
     first = datetime.datetime.combine(datetime.datetime(2025,2,4).date(), datetime.time(hour=6,minute=9))
     #plot_minute(HISTORY_MINTUE_FILE_LOC[symbol], APC_FILE_LOC[symbol], 
     #            date_interest = date_interest, title=symbol, direction="Buy",

@@ -216,10 +216,10 @@ OIL_FUTURES_FEE = {'name':'USD', 'quantity': 15.0,
                    'unit':'dollars', 'asset_type': 'Cash'}
 
 TRAIL_PRICE_DELTA = {"CLc1": 0.5, "CLc2": 0.5,
-                     "HOc1": 0.01, "HOc2": 0.01,
-                     "RBc1": 0.01, "RBc2": 0.01,
-                     "QOc1": 0.4, "QOc2": 0.4, 
-                     "QPc1": 0.5, "QPc2": 0.5}
+                     "HOc1": 0.05, "HOc2": 0.05,
+                     "RBc1": 0.05, "RBc2": 0.05,
+                     "QOc1": 0.5, "QOc2": 0.5, 
+                     "QPc1": 1.0, "QPc2": 1.0}
 
 def make_path_dict(folder_name: str, file_prefix: str, 
                    file_suffix: str = '.csv',  

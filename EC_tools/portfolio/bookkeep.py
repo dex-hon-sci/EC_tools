@@ -158,6 +158,7 @@ class Bookkeep(object):
             "argus_exact_roll3":argus_exact_roll3_format,
             "argus_IQR_CRTSKW" :argus_IQR_skewdness_format,
             "argus_exact_4dSL": argus_exact_4dSL_format,
+            'argus_trend': argus_exact_format,
             "None": dict()
                    }
     

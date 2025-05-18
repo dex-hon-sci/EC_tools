@@ -773,7 +773,8 @@ def find_closest_price(day_minute_data: pd.DataFrame,
         step = -1* step
         
     target_hr_dt= datetime.time(hour=int(target_hr[0:2]),minute=int(target_hr[2:4]))
-    
+    print('target_hr_before', target_hr_dt)
+
     #initial estimation of the target price
     target_price = day_minute_data[day_minute_data[time_proxy] == target_hr_dt][price_proxy]
     #loop through the next 30 minutes to find the opening price    
@@ -789,6 +790,10 @@ def find_closest_price(day_minute_data: pd.DataFrame,
 
             target_price = day_minute_data[day_minute_data[time_proxy] == target_hr_dt][price_proxy]
             #print('target_price', target_price)
+    print('target_hr_after', target_hr_dt)
+
+    print(day_minute_data[day_minute_data[time_proxy] == target_hr_dt])
+    print('target_price', target_price)
     target_price = [float(target_price.iloc[0])] # make sure that this is float
             
     return target_hr_dt, target_price[0]
@@ -1537,7 +1542,7 @@ def group_trade(position_pool: list,
     while i < len(pos_pool):
         # loop through each position, if the pos_id == trade_id_now, save in 
         # a temp list
-        print(i, pos_pool[i].order_id, trade_id_now)
+        #print(i, pos_pool[i].order_id, trade_id_now)
 
         if  pos_pool[i].order_id == trade_id_now:
             if select_func(i):
@@ -1547,7 +1552,7 @@ def group_trade(position_pool: list,
         elif pos_pool[i].order_id != trade_id_now: 
             # Otherwise, put the temp list into the overall bucket, restart 
             # the counter and make a new temp list to repeat the process
-            print('switch')
+            #print('switch')
             #print(i, pos_pool[i].pos_id)
             bucket.append(temp)
             trade_id_now = pos_pool[i].order_id
