@@ -327,6 +327,10 @@ def run_backtest_portfolio_preloaded(TradeMethod,
     trade_date_table = trade_date_table[(trade_date_table['Date'] >= start_date) & 
                                         (trade_date_table['Date'] <= end_date)]
     
+    # Additional conditions 1) Select only for the avg_roll5 > 0.8 (sell) or roll5 <=0.2 (Buy)
+    #trade_date_table = trade_date_table[(trade_date_table['Quant_Close_Price_Lag_1_rm_5'] >=0.6) |
+    #                                    (trade_date_table['Quant_Close_Price_Lag_1_rm_5'] <=0.4)]
+    
     # Initialise Portfolio
     P1 = Portfolio()
     USD_initial = {'name':"USD", 'quantity': 10_000_000, 'unit':"dollars", 

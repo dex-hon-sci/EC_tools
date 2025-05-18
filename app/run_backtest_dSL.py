@@ -49,7 +49,6 @@ DEFAULT_KWARGS= {'price_proxy':'Open',
                  'fee_dict': OIL_FUTURES_FEES,
                  'strategy_name': "Unamed Strategy",
                  'save_or_not': False,
-                 'merge_or_not': True,
                  'plot_or_not' : False,
                  'open_hr': '0000', # assume the whole duration of the trading day
                  'close_hr': '2359',
@@ -60,7 +59,8 @@ DEFAULT_KWARGS= {'price_proxy':'Open',
                  'histroy_intraday_data_pkl': dict(),
                  'selected_directions': ["Buy", "Sell"],
                  'method': "preload",
-                 'trail_price_delta':15}
+                 'trail_price_delta':15,
+                 'cross_decision':'SL_A'}
 
 
 
@@ -126,7 +126,8 @@ class OneTradePerDay_DYNSL(Trade):
     def choose_EES_values(self, 
                           trunc_dict: dict, 
                           dyn_list: list,
-                          num: int,**kwargs) ->\
+                          num: int, 
+                          direction: str, **kwargs) ->\
                           tuple[tuple, tuple, tuple, tuple]: 
             
         # trunc_dict: truncation dict for this section (singular)
@@ -185,17 +186,30 @@ class OneTradePerDay_DYNSL(Trade):
               this_SL_price = self._dyn_list[num]
               next_SL_price = self._dyn_list[num+1]
               
+              # calculate the boolean value for all possibilities
+              CROSS_compare= {"Buy": {'case_1':trunc_dict['close'][1] > next_SL_price,
+                                      'case_2':trunc_dict['close'][1] > this_SL_price and \
+                                       trunc_dict['close'][1] < next_SL_price,
+                                      'case_3': trunc_dict['close'][1] < this_SL_price},
+                              "Sell": {'case_1':trunc_dict['close'][1] < next_SL_price,
+                                       'case_2':trunc_dict['close'][1] < this_SL_price and \
+                                        trunc_dict['close'][1] > next_SL_price,
+                                       'case_3': trunc_dict['close'][1] > this_SL_price}}
+              
               print('this_SL_price', this_SL_price, 
                     'next_SL_price', next_SL_price)
               # Check the closing price of this section,
-              # Case 1: close_price > next_SL_price, -> continue
-              if trunc_dict['close'][1] > next_SL_price:
+              # Case 1: close_price > next_SL_price, (for Buy) -> continue
+              # Case 1: close_price < next_SL_price, (for Sell) -> continue
+              if CROSS_compare[direction]['case_1']:
                   print('close_price > next_SL_price: continue')
                   pass
-              # Case 2: close_price > this_SL_price and close_price < next_SL_price, 
-              # -> either (A.replace new with old, B.close, C.Trail_dyn, tbc)
-              elif trunc_dict['close'][1] > this_SL_price and \
-                   trunc_dict['close'][1] < next_SL_price:
+              # Case 2: close_price > this_SL_price & close_price < next_SL_price, 
+              #         (for Buy)
+              # Case 2: close_price < this_SL_price & close_price < next_SL_price, 
+              #         (for Sell)              
+              # ->  (A.replace new with old, B.close, C.Trail_dyn, tbc)
+              elif CROSS_compare[direction]['case_2']:
                   print(f'next_SL_price > close_price > this_SL_price: \
                         {self._cross_decision}')
                   print(self._dyn_list)
@@ -209,11 +223,12 @@ class OneTradePerDay_DYNSL(Trade):
                         'next_SL_price', dyn_list[num+1])
                   print(self._dyn_list)
 
-              # Case 3: close_price < this_SL_price -> SL
+              # Case 3: close_price < this_SL_price -> SL (for Buy)
+              # Case 3: close_price > this_SL_price -> SL (for Sell)
               # no need to do anything because the earliest_stop 
               # should already capture this. This switch case is 
               # written only for clarity
-              elif trunc_dict['close'][1] < this_SL_price:
+              elif CROSS_compare[direction]['case_3']:
                   print('this_SL_price > close_price: SL')
                   pass 
                  #self._SL_pt = earliest_stop
@@ -705,7 +720,7 @@ def loop_portfolio_preloaded_dSL(portfo: Portfolio,
         T = trade_method(portfo, trade_id, 
                          trail_price_delta=kwargs['trail_price_delta'], 
                          direction=direction,
-                         cross_decision='SL_C',
+                         cross_decision=kwargs['cross_decision'],
                          dyn_list = dyn_list)
         
         # Setup the close hour exit point (remember to change the close_hr_dt 
@@ -724,7 +739,11 @@ def loop_portfolio_preloaded_dSL(portfo: Portfolio,
             
             day_section = day[(day['Time']>=start_time) & (day['Time']<=end_time)]
             #print('day_section', day_section)
-
+            
+            if len(day_section) == 0:
+                print('day_section is empty!')
+                break
+            
             # The EES for this section
             target_entry = sections[num]['target_entry'][1]
             target_exit = sections[num]['target_exit'][1]
@@ -749,10 +768,11 @@ def loop_portfolio_preloaded_dSL(portfo: Portfolio,
                                                              direction)
             #print(trunc_dict)
             
-                
+            
             # Choose the earliest EES for this section
             T.choose_EES_values(trunc_dict, dyn_list, int(num),
-                                trail_price_delta = TRAIL_PRICE_DELTA[symbol])
+                                trail_price_delta = TRAIL_PRICE_DELTA[symbol],
+                                direction=direction)
             print('------------------------------------------------------')
         print('------------------------------------------------------')
 
@@ -829,7 +849,8 @@ def run_backtest_portfolio_preloaded(TradeMethod,
                                       get_obj_quantity=kwargs['get_obj_quantity'],
                                       open_hr_dict=kwargs['open_hr_dict'],
                                       close_hr_dict=kwargs['close_hr_dict'],
-                                      price_proxy=kwargs['price_proxy'])
+                                      price_proxy=kwargs['price_proxy'],
+                                      cross_decision=kwargs['cross_decision'])
                                             
     t2 = time.time()-t1
     print("It takes {} seconds to run the backtest".format(t2))
@@ -854,7 +875,8 @@ def run_backtest_bulk(TradeMethod,
                                               get_obj_quantity=kwargs['get_obj_quantity'],
                                               open_hr_dict = kwargs['open_hr_dict'], 
                                               close_hr_dict = kwargs['close_hr_dict'], 
-                                              selected_directions = kwargs['selected_directions'])
+                                              selected_directions = kwargs['selected_directions'],
+                                              cross_decision=kwargs['cross_decision'])
 
 
         backtest_result = PP
@@ -895,7 +917,6 @@ if __name__ == "__main__":
                       open_hr_dict = WRONG_OPEN_HR_DICT, 
                       close_hr_dict= CLOSE_HR_DICT,
                       loop_type = LoopType.CROSSOVER,
-                      save_or_not=False, 
-                      merge_or_not=True)
+                      save_or_not=False)
     
 

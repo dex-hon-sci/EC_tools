@@ -21,10 +21,13 @@ from crudeoil_future_const import RESULT_FILEPATH
 #xl_filename = '/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap2/20240813_argusexact_cross_P25S20_PNL_.xlsx'
 #xl_filename = '/home/dexter/Euler_Capital_codes/EC_tools/results/consistency/live_trade_vs_backtest_newcode/live_trade_compare_pnl_TP25SL40_normalopen_.xlsx'
 
-xl_filename = RESULT_FILEPATH + '/MR_lag_roll/0330_entry/MR_2lag_5roll/20240814_argusexact_cross_P25S35_0330_entry_PNL_full_.xlsx'
+#xl_filename = RESULT_FILEPATH + '/MR_lag_roll/0330_entry/MR_2lag_5roll/20240814_argusexact_cross_P25S35_0330_entry_PNL_full_.xlsx'
 #xl_filename = RESULT_FILEPATH +'/heatmap3_buyQ50sellQ50/20240813_argusexact_cross_P15S45_PNL_.xlsx'
-#xl_filename = RESULT_FILEPATH +'/heatmap2/20240813_argusexact_cross_P60S40_PNL_.xlsx'
-
+#xl_filename = RESULT_FILEPATH +'/heatmap2/20240813_argusexact_cross_P30S15_PNL_.xlsx'
+#xl_filename = RESULT_FILEPATH + '/test_results/test_master_pnl_8_SLB_.xlsx'
+#xl_filename = RESULT_FILEPATH +'/strong_MR_signal/20240814_argusexact_cross_P25S35_0330_entry_PNL_full_.xlsx'
+#xl_filename = RESULT_FILEPATH +'/MR_signal_study/20240814_argustrend_cross_P40S20_0330_entry_PNL_full_.xlsx'
+xl_filename = RESULT_FILEPATH +'/MR_signal_study/test_master_pnl_EES_window_.xlsx'
 
 wb_obj = openpyxl.load_workbook(xl_filename, keep_vba=True)
 
@@ -349,7 +352,6 @@ if __name__ == "__main__":
         
             #ax1.bar(date_bucket1, return_bucket, color="g")
             ax1.plot(date_bucket1, cum_return_bucket, color="g")
-            
             
             ax1.hlines(0,datetime.datetime(2020,11,22),
                        datetime.datetime(2024,9,10), lw = 2.5,color='orange')

@@ -18,6 +18,7 @@ import numpy as np
 # EC_tools imports
 from EC_tools.strategy import ArgusMRStrategy, ArgusMRStrategyMode, \
                               Strategy, APC_LENGTH
+from EC_tools.strategy.ArgusTrendStrategy import ArgusTrendStrategy
 import EC_tools.base.read as read
 import EC_tools.utility as util
 from EC_tools.portfolio.bookkeep import Bookkeep
@@ -194,6 +195,8 @@ def loop_signal(strategy: type[Strategy],
                                                        sell_range=sell_range,   
                                                        quantile = kwargs['quantile'],
                                                        total_lag_days=2)
+                                                       #apc_mid_Q={'Buy':(0.05,0.5),
+                                                       #           'Sell':(0.5,0.95)})
 
             print('====================================')
             print(forecast_date, full_contract_symbol,'MR signal generated!', 
@@ -537,7 +540,6 @@ def run_gen_MR_signals_preloaded(strategy: type[Strategy],
             dict_contracts_quant_signals = loop_signal(strategy, book, 
                                                        signal_file, 
                                                        history_daily_file, 
-                                                       #open_price,
                                                        start_date, end_date,
                                                        buy_range=buy_range,
                                                        sell_range=sell_range,
@@ -628,7 +630,7 @@ def run_gen_MR_signals_preloaded_single(strategy: type[Strategy],
             strategy_output = strategy(curve_this_date).\
                                         apply_strategy(history_data_lag5, 
                                                        apc_curve_lag5, 
-                                                       0,
+                                                       #0,
                                                        buy_range=buy_range, 
                                                        sell_range=sell_range,   
                                                        quantile = quantile)
@@ -784,7 +786,8 @@ def run_gen_signal_bulk(strategy: type[Strategy],
 
 
 MR_STRATEGIES_0 = {"argus_exact": ArgusMRStrategy,
-                   "argus_exact_mode": ArgusMRStrategyMode}
+                   "argus_exact_mode": ArgusMRStrategyMode,
+                   "argus_trend": ArgusTrendStrategy}
 
 if __name__ == "__main__":
     

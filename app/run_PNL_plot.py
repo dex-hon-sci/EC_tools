@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 
 # EC_tools import
 import EC_tools.utility as util
-from crudeoil_future_const import APC_FILE_LOC, DATA_FILEPATH
+from crudeoil_future_const import APC_FILE_LOC, DATA_FILEPATH, RESULT_FILEPATH
 
 #FILENAME = './data/profits_and_losses_data_benchmark_11_.xlsx'
 #FILENAME = '/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_PNL_xlsx/benchmark_PNL_full_.xlsx'
@@ -147,172 +147,173 @@ if __name__=='__main__':
     
     # PLot PNL for the cumulative return for a specific strategy as well as 
     # the PNL for inidividual assets
-    
-    # (1) One plot that try to get the exact same PNL plot as the Argus reference Data
-    FILENAME = PORTFOLIO_ARGUSEXACT_SHORT_SR #OLD_BENCHMARK
-    date_col = 'Entry_Date'
-    # Extract the cumulative PNL of the strategy
-    date_all, cumPNL_all = extract_PNLplot_input(FILENAME, date_col=date_col)
-    
-    # Extract the trade_return of the strategy
-    date_all2, return_all = extract_PNLplot_input(FILENAME,
-                                                  val_col='scaled returns from trades', 
-                                                  date_col=date_col,
-                                                  fill_or_not=False)
-    
-    
-    # Extract the individual asset PNL and dates
-    date_list = [extract_PNLplot_input(FILENAME, 
-                                       sheet_name=symbol_list[i], \
-                                       date_col = date_col)[0] \
-                                       for i in range(len(symbol_list))]
-    data_list = [extract_PNLplot_input(FILENAME, 
-                                       sheet_name=symbol_list[i], 
-                                       date_col = date_col)[1] \
-                                       for i in range(len(symbol_list))]
-    return_list = [extract_PNLplot_input(FILENAME, 
-                                         sheet_name=symbol_list[i], 
-                                         val_col='scaled returns from trades', 
-                                         date_col = date_col,
-                                         fill_or_not=False)[1] \
-                                         for i in range(len(symbol_list))]
-    
-    #date_list = [date_CLc1, date_HOc1, date_RBc1, date_QOc1, date_QPc1]
-    #data_list = [cumPNL_50_CLc1, cumPNL_50_HOc1, cumPNL_50_RBc1, cumPNL_50_QOc1, cumPNL_50_QPc1]
-    #cumPNL_plot(date_all, cumPNL_all, label='All (x50)')
-    
+    if False:
+        # (1) One plot that try to get the exact same PNL plot as the Argus reference Data
+        FILENAME = PORTFOLIO_ARGUSEXACT_SHORT_SR #OLD_BENCHMARK
+        date_col = 'Entry_Date'
+        # Extract the cumulative PNL of the strategy
+        date_all, cumPNL_all = extract_PNLplot_input(FILENAME, date_col=date_col)
+        
+        # Extract the trade_return of the strategy
+        date_all2, return_all = extract_PNLplot_input(FILENAME,
+                                                      val_col='scaled returns from trades', 
+                                                      date_col=date_col,
+                                                      fill_or_not=False)
+        
+        
+        # Extract the individual asset PNL and dates
+        date_list = [extract_PNLplot_input(FILENAME, 
+                                           sheet_name=symbol_list[i], \
+                                           date_col = date_col)[0] \
+                                           for i in range(len(symbol_list))]
+        data_list = [extract_PNLplot_input(FILENAME, 
+                                           sheet_name=symbol_list[i], 
+                                           date_col = date_col)[1] \
+                                           for i in range(len(symbol_list))]
+        return_list = [extract_PNLplot_input(FILENAME, 
+                                             sheet_name=symbol_list[i], 
+                                             val_col='scaled returns from trades', 
+                                             date_col = date_col,
+                                             fill_or_not=False)[1] \
+                                             for i in range(len(symbol_list))]
+        
+        #date_list = [date_CLc1, date_HOc1, date_RBc1, date_QOc1, date_QPc1]
+        #data_list = [cumPNL_50_CLc1, cumPNL_50_HOc1, cumPNL_50_RBc1, cumPNL_50_QOc1, cumPNL_50_QPc1]
+        #cumPNL_plot(date_all, cumPNL_all, label='All (x50)')
+        
+        # =============================================================================
+        twopanel_plot(date_all, cumPNL_all, return_all, label='All (x50)',
+                      sub_x_list=date_list, 
+                      sub_y1_list=data_list,
+                      sub_label_list = label_list,
+                      sub_col_list = col_list, 
+                      sub_line_list =line_list)
+        # =============================================================================
+        # =============================================================================
+        # twopanel_plot([], [], [], label='All (x50)',
+        #               sub_date_list=date_list, sub_data_list=data_list,
+        #               sub_label_list = label_list,
+        #               sub_col_list = col_list, 
+        #               sub_line_list =line_list)
+        # =============================================================================
+        
+        
     # =============================================================================
-    twopanel_plot(date_all, cumPNL_all, return_all, label='All (x50)',
-                  sub_x_list=date_list, 
-                  sub_y1_list=data_list,
-                  sub_label_list = label_list,
-                  sub_col_list = col_list, 
-                  sub_line_list =line_list)
+    #     twopanel_plot([], [], [], label='CLc1',
+    #                    sub_x_list=date_list, 
+    #                    sub_y1_list=data_list,
+    #                    sub_label_list = label_list,
+    #                    sub_col_list = col_list, 
+    #                    sub_line_list =line_list)
     # =============================================================================
+        
+        
+        # Plot comparison between multiple different strategies
     # =============================================================================
-    # twopanel_plot([], [], [], label='All (x50)',
-    #               sub_date_list=date_list, sub_data_list=data_list,
-    #               sub_label_list = label_list,
-    #               sub_col_list = col_list, 
-    #               sub_line_list =line_list)
+    # Massive comparison
+    #     strategy_date_list = [extract_PNLplot_input(ARGUS_EXACT_PNL_FILENAME)[0],
+    #                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB_FILENAME)[0], 
+    #                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB2_FILENAME)[0],
+    #                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB3_FILENAME)[0],
+    #                           extract_PNLplot_input(ARGUS_EXACT_MODE_PNL_FILENAME)[0],
+    #                           extract_PNLplot_input(OLD_MODE_FILENAME,date_col='date')[0],
+    #                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB4_ROLL3_FILENAME)[0],
+    #                           extract_PNLplot_input(ARGUS_EXACT_MODE_WRONGTIME_FILENAME)[0],
+    #                           extract_PNLplot_input(test_FILENAME)[0],
+    #                           extract_PNLplot_input(ARGUS_EXACT_PNL_EARLY)[0],
+    #                           extract_PNLplot_input(ARGUS_EXACT_PNL_Port_test)[0]
+    #                           ]
+    #     strategy_data_list = [extract_PNLplot_input(ARGUS_EXACT_PNL_FILENAME)[1],
+    #                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB_FILENAME)[1], 
+    #                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB2_FILENAME)[1],
+    #                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB3_FILENAME)[1],
+    #                           extract_PNLplot_input(ARGUS_EXACT_MODE_PNL_FILENAME)[1],
+    #                           extract_PNLplot_input(OLD_MODE_FILENAME, date_col='date')[1],
+    #                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB4_ROLL3_FILENAME)[1],
+    #                           extract_PNLplot_input(ARGUS_EXACT_MODE_WRONGTIME_FILENAME)[1],
+    #                           extract_PNLplot_input(test_FILENAME)[1],
+    #                           extract_PNLplot_input(ARGUS_EXACT_PNL_EARLY)[1],
+    #                           extract_PNLplot_input(ARGUS_EXACT_PNL_Port_test)[1]
+    #                           ]
+    #     strategy_label_list = ['Argus_Exact', 'Ambituous', 'Ambituous2', 
+    #                            'Ambituous3', 'Argus_Exact_Mode', 'old_mode',
+    #                            'amb4_roll3', 'argus_exact_wrongtime','test_op_mode', 
+    #                            'argus_exact_early', 'Port_test']
+    #     strategy_col_list = ['b','w','w', 'y', 'r', 'g', 'w', '#b3c27a', 
+    #                          '#c32b2b', '#919191', '#c509c8']
+    #     strategy_line_list = ['solid','dotted', 'dashed', 'dashdot', 'dashdot', 
+    #                           'dashdot', 'solid', 'dashed', 'solid', 'solid', 'solid']
+    #     
+    #     # Plot different strategies cumulative PNL
+    #     twopanel_plot([], [], [], label='',
+    #                   sub_x_list=strategy_date_list,
+    #                   sub_y1_list=strategy_data_list,
+    #                   sub_label_list = strategy_label_list,
+    #                   sub_col_list = strategy_col_list, 
+    #                   sub_line_list =strategy_line_list)
     # =============================================================================
+    if False:
+        # (2) Compare the different backtest method between different scripts 
+        # within the time frame Argus reference data
     
-    
-# =============================================================================
-#     twopanel_plot([], [], [], label='CLc1',
-#                    sub_x_list=date_list, 
-#                    sub_y1_list=data_list,
-#                    sub_label_list = label_list,
-#                    sub_col_list = col_list, 
-#                    sub_line_list =line_list)
-# =============================================================================
-    
-    
-    # Plot comparison between multiple different strategies
-# =============================================================================
-# Massive comparison
-#     strategy_date_list = [extract_PNLplot_input(ARGUS_EXACT_PNL_FILENAME)[0],
-#                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB_FILENAME)[0], 
-#                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB2_FILENAME)[0],
-#                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB3_FILENAME)[0],
-#                           extract_PNLplot_input(ARGUS_EXACT_MODE_PNL_FILENAME)[0],
-#                           extract_PNLplot_input(OLD_MODE_FILENAME,date_col='date')[0],
-#                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB4_ROLL3_FILENAME)[0],
-#                           extract_PNLplot_input(ARGUS_EXACT_MODE_WRONGTIME_FILENAME)[0],
-#                           extract_PNLplot_input(test_FILENAME)[0],
-#                           extract_PNLplot_input(ARGUS_EXACT_PNL_EARLY)[0],
-#                           extract_PNLplot_input(ARGUS_EXACT_PNL_Port_test)[0]
-#                           ]
-#     strategy_data_list = [extract_PNLplot_input(ARGUS_EXACT_PNL_FILENAME)[1],
-#                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB_FILENAME)[1], 
-#                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB2_FILENAME)[1],
-#                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB3_FILENAME)[1],
-#                           extract_PNLplot_input(ARGUS_EXACT_MODE_PNL_FILENAME)[1],
-#                           extract_PNLplot_input(OLD_MODE_FILENAME, date_col='date')[1],
-#                           extract_PNLplot_input(ARGUS_EXACT_PNL_AMB4_ROLL3_FILENAME)[1],
-#                           extract_PNLplot_input(ARGUS_EXACT_MODE_WRONGTIME_FILENAME)[1],
-#                           extract_PNLplot_input(test_FILENAME)[1],
-#                           extract_PNLplot_input(ARGUS_EXACT_PNL_EARLY)[1],
-#                           extract_PNLplot_input(ARGUS_EXACT_PNL_Port_test)[1]
-#                           ]
-#     strategy_label_list = ['Argus_Exact', 'Ambituous', 'Ambituous2', 
-#                            'Ambituous3', 'Argus_Exact_Mode', 'old_mode',
-#                            'amb4_roll3', 'argus_exact_wrongtime','test_op_mode', 
-#                            'argus_exact_early', 'Port_test']
-#     strategy_col_list = ['b','w','w', 'y', 'r', 'g', 'w', '#b3c27a', 
-#                          '#c32b2b', '#919191', '#c509c8']
-#     strategy_line_list = ['solid','dotted', 'dashed', 'dashdot', 'dashdot', 
-#                           'dashdot', 'solid', 'dashed', 'solid', 'solid', 'solid']
-#     
-#     # Plot different strategies cumulative PNL
-#     twopanel_plot([], [], [], label='',
-#                   sub_x_list=strategy_date_list,
-#                   sub_y1_list=strategy_data_list,
-#                   sub_label_list = strategy_label_list,
-#                   sub_col_list = strategy_col_list, 
-#                   sub_line_list =strategy_line_list)
-# =============================================================================
-    # (2) Compare the different backtest method between different scripts 
-    # within the time frame Argus reference data
-
-    strategy_date_list = [extract_PNLplot_input(OLD_BENCHMARK_SHORT, date_col="date",
-                                                val_col="cumulative P&L from trades")[0],
-                          extract_PNLplot_input(OLD_BENCHMARK_FINENTRY_SHORT, date_col="date",
-                                                val_col="cumulative P&L from trades")[0],
-                          extract_PNLplot_input(PORTFOLIO_ARGUSEXACT_SHORT_SR3,
-                                                val_col="cumulative P&L from trades")[0], 
-                          extract_PNLplot_input(ARGUS_SAMPLE_SHORT,
-                                                val_col="cumulative P&L from trades")[0],
-                          extract_PNLplot_input(ARGUS_SAMPLE_SHORT_MYBACKTEST,
-                                                val_col="cumulative P&L from trades")[0],
-                          extract_PNLplot_input(ARGUS_SAMPLE_SHORT_MYBACKTEST_newcode,
-                                                val_col="cumulative P&L from trades")[0],
-                          extract_PNLplot_input(PORTFOLIO_ARGUSEXACT_SHORT_SR_range,
-                                                val_col="cumulative P&L from trades")[0],
-                          extract_PNLplot_input(TEST_NEWLOOP_PORTFOLIO_ARGUSEXACT_SHORT_SR,
-                                                val_col="cumulative P&L from trades")[0],
-                          extract_PNLplot_input(TEST_NEWLOOP_PORTFOLIO_ARGUSEXACT_SHORT_SR_range,
-                                                val_col="cumulative P&L from trades")[0]
-                          ]
-    strategy_data_list = [extract_PNLplot_input(OLD_BENCHMARK_SHORT, date_col="date",
-                                                val_col="cumulative P&L from trades")[1],
-                          extract_PNLplot_input(OLD_BENCHMARK_FINENTRY_SHORT, date_col="date",
-                                                val_col="cumulative P&L from trades")[1],
-                          extract_PNLplot_input(PORTFOLIO_ARGUSEXACT_SHORT_SR3,
-                                                val_col="cumulative P&L from trades")[1],
-                          extract_PNLplot_input(ARGUS_SAMPLE_SHORT,
-                                                val_col="cumulative P&L from trades")[1],
-                          extract_PNLplot_input(ARGUS_SAMPLE_SHORT_MYBACKTEST,
-                                                val_col="cumulative P&L from trades")[1],
-                          extract_PNLplot_input(ARGUS_SAMPLE_SHORT_MYBACKTEST_newcode,
-                                                val_col="cumulative P&L from trades")[1],
-                          extract_PNLplot_input(PORTFOLIO_ARGUSEXACT_SHORT_SR_range,
-                                                val_col="cumulative P&L from trades")[1],
-                          extract_PNLplot_input(TEST_NEWLOOP_PORTFOLIO_ARGUSEXACT_SHORT_SR,
-                                                val_col="cumulative P&L from trades")[1],
-                          extract_PNLplot_input(TEST_NEWLOOP_PORTFOLIO_ARGUSEXACT_SHORT_SR_range,
-                                                val_col="cumulative P&L from trades")[1]
-                          ]
-    strategy_label_list = ['Old_Benchmark_Short (Abbe-Signal, Abbe-Backtest)', 
-                           'Old_Benchmark_finiteentry_short (Abbe-Signal, Abbe-Backtest)',
-                           'Portfolio_ArgusExact_Short (Dex-Signal, Dex-Backtest)',
-                           'Argus_Sample (Argus-Signal, Argus-Backtest)',
-                           'Argus_Sample (Argus-Signal, Dex-Backtest)',
-                           'Argus_Sample (Argus-Signal, Dex-Backtest-newcode)',
-                           'Portfolio_ArgusExact_Short_range (Dex-Signal, Dex-Backtest)',
-                           'test_newloop_crossover',
-                           'test_newloop_range'
-                           ]
-    strategy_col_list = ['r','r', 'w', 'b', '#fd7911', '#28ebee', 'g', 'yellow', '#c509c8']
-    strategy_line_list = ['solid','dashed','solid', 'solid', 'solid','solid', 'solid', 'dotted', 'dotted']
-    
-    # Plot different strategies cumulative PNL
-    twopanel_plot([], [], [], label='',
-                  sub_x_list=strategy_date_list,
-                  sub_y1_list=strategy_data_list,
-                  sub_label_list = strategy_label_list,
-                  sub_col_list = strategy_col_list, 
-                  sub_line_list =strategy_line_list)
+        strategy_date_list = [extract_PNLplot_input(OLD_BENCHMARK_SHORT, date_col="date",
+                                                    val_col="cumulative P&L from trades")[0],
+                              extract_PNLplot_input(OLD_BENCHMARK_FINENTRY_SHORT, date_col="date",
+                                                    val_col="cumulative P&L from trades")[0],
+                              extract_PNLplot_input(PORTFOLIO_ARGUSEXACT_SHORT_SR3,
+                                                    val_col="cumulative P&L from trades")[0], 
+                              extract_PNLplot_input(ARGUS_SAMPLE_SHORT,
+                                                    val_col="cumulative P&L from trades")[0],
+                              extract_PNLplot_input(ARGUS_SAMPLE_SHORT_MYBACKTEST,
+                                                    val_col="cumulative P&L from trades")[0],
+                              extract_PNLplot_input(ARGUS_SAMPLE_SHORT_MYBACKTEST_newcode,
+                                                    val_col="cumulative P&L from trades")[0],
+                              extract_PNLplot_input(PORTFOLIO_ARGUSEXACT_SHORT_SR_range,
+                                                    val_col="cumulative P&L from trades")[0],
+                              extract_PNLplot_input(TEST_NEWLOOP_PORTFOLIO_ARGUSEXACT_SHORT_SR,
+                                                    val_col="cumulative P&L from trades")[0],
+                              extract_PNLplot_input(TEST_NEWLOOP_PORTFOLIO_ARGUSEXACT_SHORT_SR_range,
+                                                    val_col="cumulative P&L from trades")[0]
+                              ]
+        strategy_data_list = [extract_PNLplot_input(OLD_BENCHMARK_SHORT, date_col="date",
+                                                    val_col="cumulative P&L from trades")[1],
+                              extract_PNLplot_input(OLD_BENCHMARK_FINENTRY_SHORT, date_col="date",
+                                                    val_col="cumulative P&L from trades")[1],
+                              extract_PNLplot_input(PORTFOLIO_ARGUSEXACT_SHORT_SR3,
+                                                    val_col="cumulative P&L from trades")[1],
+                              extract_PNLplot_input(ARGUS_SAMPLE_SHORT,
+                                                    val_col="cumulative P&L from trades")[1],
+                              extract_PNLplot_input(ARGUS_SAMPLE_SHORT_MYBACKTEST,
+                                                    val_col="cumulative P&L from trades")[1],
+                              extract_PNLplot_input(ARGUS_SAMPLE_SHORT_MYBACKTEST_newcode,
+                                                    val_col="cumulative P&L from trades")[1],
+                              extract_PNLplot_input(PORTFOLIO_ARGUSEXACT_SHORT_SR_range,
+                                                    val_col="cumulative P&L from trades")[1],
+                              extract_PNLplot_input(TEST_NEWLOOP_PORTFOLIO_ARGUSEXACT_SHORT_SR,
+                                                    val_col="cumulative P&L from trades")[1],
+                              extract_PNLplot_input(TEST_NEWLOOP_PORTFOLIO_ARGUSEXACT_SHORT_SR_range,
+                                                    val_col="cumulative P&L from trades")[1]
+                              ]
+        strategy_label_list = ['Old_Benchmark_Short (Abbe-Signal, Abbe-Backtest)', 
+                               'Old_Benchmark_finiteentry_short (Abbe-Signal, Abbe-Backtest)',
+                               'Portfolio_ArgusExact_Short (Dex-Signal, Dex-Backtest)',
+                               'Argus_Sample (Argus-Signal, Argus-Backtest)',
+                               'Argus_Sample (Argus-Signal, Dex-Backtest)',
+                               'Argus_Sample (Argus-Signal, Dex-Backtest-newcode)',
+                               'Portfolio_ArgusExact_Short_range (Dex-Signal, Dex-Backtest)',
+                               'test_newloop_crossover',
+                               'test_newloop_range'
+                               ]
+        strategy_col_list = ['r','r', 'w', 'b', '#fd7911', '#28ebee', 'g', 'yellow', '#c509c8']
+        strategy_line_list = ['solid','dashed','solid', 'solid', 'solid','solid', 'solid', 'dotted', 'dotted']
+        
+        # Plot different strategies cumulative PNL
+        twopanel_plot([], [], [], label='',
+                      sub_x_list=strategy_date_list,
+                      sub_y1_list=strategy_data_list,
+                      sub_label_list = strategy_label_list,
+                      sub_col_list = strategy_col_list, 
+                      sub_line_list =strategy_line_list)
     
 # =============================================================================
 # 
@@ -321,72 +322,73 @@ if __name__=='__main__':
 #         cumPNL_plot(date_list[i], data_list[i], return_list[i], label=label_list[i],
 #                 line_color = col_list[i])
 # =============================================================================
-    # (3) plot the optimised EES for argus exact strategy backtest PNL from 
-    # 2021-1-11 to 2024-8-13
-    
-    #argusexact_cross_P20S10_PNL = "/home/dexter/Euler_Capital_codes/EC_tools/results/routine_updates/20241007_argusexact_cross_P20S35_PNL_.xlsx"
-    argusexact_cross_P20S10_PNL = "/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap/PNL_argusexact_G25S10_.xlsx"
-    
-    date_all_new, cumPNL_all_new = extract_PNLplot_input(argusexact_cross_P20S10_PNL, 
-                                                         val_col = 'cumulative P&L from trades for contracts (x 50)')
-    
-    # Extract the trade_return of the strategy
-    date_all2_new, return_all_new = extract_PNLplot_input(argusexact_cross_P20S10_PNL,
-                                                  val_col='scaled returns from trades', 
-                                                  #date_col=date_col,
-                                                  fill_or_not=False)
-    
-    
-    # Extract the individual asset PNL and dates
-    date_list_new = [extract_PNLplot_input(argusexact_cross_P20S10_PNL, 
-                                       sheet_name=symbol_list[i], \
-                                       #date_col = date_col,
-                                       val_col = 'cumulative P&L from trades for contracts (x 50)')[0] \
-                                       for i in range(len(symbol_list))]
-    data_list_new = [extract_PNLplot_input(argusexact_cross_P20S10_PNL, 
-                                       sheet_name=symbol_list[i], 
-                                       #date_col = date_col,
-                                       val_col = 'cumulative P&L from trades for contracts (x 50)')[1] \
-                                       for i in range(len(symbol_list))]
-    return_list_new = [extract_PNLplot_input(argusexact_cross_P20S10_PNL, 
-                                         sheet_name=symbol_list[i], 
-                                         val_col='cumulative P&L from trades for contracts (x 50)', 
-                                         #date_col = date_col,
-                                         fill_or_not=False)[1] \
-                                         for i in range(len(symbol_list))]
-    
-    # add the ten assets manually for validation
-    date_list_new_last = date_list_new[-1]
-    
-    # add the last 100 entries manualy to see if 
-    lastdate100 = date_list_new[-1][-101:-1]
-    last100 = [data_list_new[i][-101:-1] for i,_ in enumerate(data_list_new)]
-    date_list_new.append(lastdate100)
-    data_list_new.append(sum(last100))
-    label_list.append("TESTx10")
-    col_list.append('w')
-    line_list.append('--')
-    
-    # =============================================================================
-    # strategy_date_list2 = [extract_PNLplot_input(argusexact_cross_P20S10_PNL, date_col="Entry_Date",
-    #                                             val_col="cumulative P&L from trades")[0]]
-    # 
-    # strategy_data_list2 = [extract_PNLplot_input(argusexact_cross_P20S10_PNL, date_col="Entry_Date",
-    #                                             val_col="cumulative P&L from trades")[1]]
-    # 
-    # strategy_label_list2 = ['argusexact_cross_P20S10_PNL (2024-10-07)'
-    #                        ]
-    # strategy_col_list2 = ['w']
-    # strategy_line_list2 = ['solid']
-    # =============================================================================
+    if False:
+        # (3) plot the optimised EES for argus exact strategy backtest PNL from 
+        # 2021-1-11 to 2024-8-13
         
-    twopanel_plot(date_all_new, cumPNL_all_new, return_all_new, label='All',
-                  sub_x_list=date_list_new, 
-                  sub_y1_list=data_list_new,
-                  sub_label_list = label_list,
-                  sub_col_list = col_list, 
-                  sub_line_list =line_list)
-    
+        #argusexact_cross_P20S10_PNL = "/home/dexter/Euler_Capital_codes/EC_tools/results/routine_updates/20241007_argusexact_cross_P20S35_PNL_.xlsx"
+        argusexact_cross_P20S10_PNL = "/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap/PNL_argusexact_G25S10_.xlsx"
+        
+        date_all_new, cumPNL_all_new = extract_PNLplot_input(argusexact_cross_P20S10_PNL, 
+                                                             val_col = 'cumulative P&L from trades for contracts (x 50)')
+        
+        # Extract the trade_return of the strategy
+        date_all2_new, return_all_new = extract_PNLplot_input(argusexact_cross_P20S10_PNL,
+                                                      val_col='scaled returns from trades', 
+                                                      #date_col=date_col,
+                                                      fill_or_not=False)
+        
+        
+        # Extract the individual asset PNL and dates
+        date_list_new = [extract_PNLplot_input(argusexact_cross_P20S10_PNL, 
+                                           sheet_name=symbol_list[i], \
+                                           #date_col = date_col,
+                                           val_col = 'cumulative P&L from trades for contracts (x 50)')[0] \
+                                           for i in range(len(symbol_list))]
+        data_list_new = [extract_PNLplot_input(argusexact_cross_P20S10_PNL, 
+                                           sheet_name=symbol_list[i], 
+                                           #date_col = date_col,
+                                           val_col = 'cumulative P&L from trades for contracts (x 50)')[1] \
+                                           for i in range(len(symbol_list))]
+        return_list_new = [extract_PNLplot_input(argusexact_cross_P20S10_PNL, 
+                                             sheet_name=symbol_list[i], 
+                                             val_col='cumulative P&L from trades for contracts (x 50)', 
+                                             #date_col = date_col,
+                                             fill_or_not=False)[1] \
+                                             for i in range(len(symbol_list))]
+        
+        # add the ten assets manually for validation
+        date_list_new_last = date_list_new[-1]
+        
+        # add the last 100 entries manualy to see if 
+        lastdate100 = date_list_new[-1][-101:-1]
+        last100 = [data_list_new[i][-101:-1] for i,_ in enumerate(data_list_new)]
+        date_list_new.append(lastdate100)
+        data_list_new.append(sum(last100))
+        label_list.append("TESTx10")
+        col_list.append('w')
+        line_list.append('--')
+        
+        # =============================================================================
+        # strategy_date_list2 = [extract_PNLplot_input(argusexact_cross_P20S10_PNL, date_col="Entry_Date",
+        #                                             val_col="cumulative P&L from trades")[0]]
+        # 
+        # strategy_data_list2 = [extract_PNLplot_input(argusexact_cross_P20S10_PNL, date_col="Entry_Date",
+        #                                             val_col="cumulative P&L from trades")[1]]
+        # 
+        # strategy_label_list2 = ['argusexact_cross_P20S10_PNL (2024-10-07)'
+        #                        ]
+        # strategy_col_list2 = ['w']
+        # strategy_line_list2 = ['solid']
+        # =============================================================================
+            
+        twopanel_plot(date_all_new, cumPNL_all_new, return_all_new, label='All',
+                      sub_x_list=date_list_new, 
+                      sub_y1_list=data_list_new,
+                      sub_label_list = label_list,
+                      sub_col_list = col_list, 
+                      sub_line_list =line_list)
+        
     # =============================================================================
     # twopanel_plot([], [], [], label='',
     #               sub_x_list=strategy_date_list2,
@@ -395,51 +397,145 @@ if __name__=='__main__':
     #               sub_col_list = strategy_col_list2, 
     #               sub_line_list =strategy_line_list2)
     # =============================================================================
+    if False:
+        # (4) 
+        argusexact_cross_P25S10_PNL = "/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap/PNL_argusexact_G25S10_.xlsx"
+        argusexact_cross_P25S10_PNL_early = "/home/dexter/Euler_Capital_codes/EC_tools/results/beyondmarketopen/20240813_argusexact_cross_TP25SL10_Open2h0mClose0h0m_PNL_.xlsx"
+        argusexact_cross_P25S10_PNL_early2 = "/home/dexter/Euler_Capital_codes/EC_tools/results/beyondmarketopen2/20240813_argusexact_cross_TP25SL10_Open2h0mClose0h0m_PNL_.xlsx"
+        
+        strategy_date_list2 = [extract_PNLplot_input(argusexact_cross_P25S10_PNL, 
+                                                     date_col="Entry_Date",
+                                                     sheet_name='QPc2',
+                                                     val_col='cumulative P&L from trades for contracts (x 50)')[0],
+                              extract_PNLplot_input(argusexact_cross_P25S10_PNL_early, 
+                                                    date_col="Entry_Date",
+                                                    sheet_name='QPc2',
+                                                    val_col='cumulative P&L from trades for contracts (x 50)')[0],
+                              extract_PNLplot_input(argusexact_cross_P25S10_PNL_early2, 
+                                                    date_col="Entry_Date",
+                                                    sheet_name='QPc2',
+                                                    val_col='cumulative P&L from trades for contracts (x 50)')[0]
     
-    # (4) 
-    argusexact_cross_P25S10_PNL = "/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap/PNL_argusexact_G25S10_.xlsx"
-    argusexact_cross_P25S10_PNL_early = "/home/dexter/Euler_Capital_codes/EC_tools/results/beyondmarketopen/20240813_argusexact_cross_TP25SL10_Open2h0mClose0h0m_PNL_.xlsx"
-    argusexact_cross_P25S10_PNL_early2 = "/home/dexter/Euler_Capital_codes/EC_tools/results/beyondmarketopen2/20240813_argusexact_cross_TP25SL10_Open2h0mClose0h0m_PNL_.xlsx"
+                              ]
+        strategy_data_list2 = [extract_PNLplot_input(argusexact_cross_P25S10_PNL, 
+                                                     date_col="Entry_Date",
+                                                     sheet_name='QPc2',
+                                                     val_col='cumulative P&L from trades for contracts (x 50)')[1],
+                              extract_PNLplot_input(argusexact_cross_P25S10_PNL_early, 
+                                                    date_col="Entry_Date",
+                                                    sheet_name='QPc2',
+                                                    val_col='cumulative P&L from trades for contracts (x 50)')[1],
+                              extract_PNLplot_input(argusexact_cross_P25S10_PNL_early2, 
+                                                    date_col="Entry_Date",
+                                                    sheet_name='QPc2',
+                                                    val_col='cumulative P&L from trades for contracts (x 50)')[1]
     
-    strategy_date_list2 = [extract_PNLplot_input(argusexact_cross_P25S10_PNL, 
-                                                 date_col="Entry_Date",
-                                                 sheet_name='QPc2',
-                                                 val_col='cumulative P&L from trades for contracts (x 50)')[0],
-                          extract_PNLplot_input(argusexact_cross_P25S10_PNL_early, 
-                                                date_col="Entry_Date",
-                                                sheet_name='QPc2',
-                                                val_col='cumulative P&L from trades for contracts (x 50)')[0],
-                          extract_PNLplot_input(argusexact_cross_P25S10_PNL_early2, 
-                                                date_col="Entry_Date",
-                                                sheet_name='QPc2',
-                                                val_col='cumulative P&L from trades for contracts (x 50)')[0]
-
-                          ]
-    strategy_data_list2 = [extract_PNLplot_input(argusexact_cross_P25S10_PNL, 
-                                                 date_col="Entry_Date",
-                                                 sheet_name='QPc2',
-                                                 val_col='cumulative P&L from trades for contracts (x 50)')[1],
-                          extract_PNLplot_input(argusexact_cross_P25S10_PNL_early, 
-                                                date_col="Entry_Date",
-                                                sheet_name='QPc2',
-                                                val_col='cumulative P&L from trades for contracts (x 50)')[1],
-                          extract_PNLplot_input(argusexact_cross_P25S10_PNL_early2, 
-                                                date_col="Entry_Date",
-                                                sheet_name='QPc2',
-                                                val_col='cumulative P&L from trades for contracts (x 50)')[1]
-
-                          ]
-    strategy_label_list2 = ['Market open at 8:00 UTC', 
-                           'Market open at 6:00 UTC',
-                           'Market open at 3:30 UTC'
-                           ]
-    strategy_col_list2 = ['w','r','b']
-    strategy_line_list2 = ['solid','solid','solid']                      
-    # Plot different strategies cumulative PNL
-    twopanel_plot([], [], [], label='',
-                  plot_title = 'Cumulative PNL for QPc2',
-                  sub_x_list=strategy_date_list2,
-                  sub_y1_list=strategy_data_list2,
-                  sub_label_list = strategy_label_list2,
-                  sub_col_list = strategy_col_list2, 
-                  sub_line_list =strategy_line_list2)
+                              ]
+        strategy_label_list2 = ['Market open at 8:00 UTC', 
+                               'Market open at 6:00 UTC',
+                               'Market open at 3:30 UTC'
+                               ]
+        strategy_col_list2 = ['w','r','b']
+        strategy_line_list2 = ['solid','solid','solid']                      
+        # Plot different strategies cumulative PNL
+        twopanel_plot([], [], [], label='',
+                      plot_title = 'Cumulative PNL for QPc2',
+                      sub_x_list=strategy_date_list2,
+                      sub_y1_list=strategy_data_list2,
+                      sub_label_list = strategy_label_list2,
+                      sub_col_list = strategy_col_list2, 
+                      sub_line_list =strategy_line_list2)
+        
+    if True:
+        revised_PNL_filename = RESULT_FILEPATH +'/MR_signal_study/Good_MR_model/20240814_argustrend_cross_P40S20_0330_entry_PNL_full_.xlsx'
+        revised_PNL_filename_SLA = RESULT_FILEPATH + '/MR_signal_study/SLA/test_master_pnl_SLA_.xlsx'
+        revised_PNL_filename_SLB = RESULT_FILEPATH + '/MR_signal_study/SLB/test_master_pnl_SLB_.xlsx'
+        revised_PNL_filename_SLC = RESULT_FILEPATH + '/MR_signal_study/SLC/test_master_pnl_SLC_.xlsx'
+        original = RESULT_FILEPATH + '/MR_signal_study/20240813_argusexact_cross_P25S35_PNL_.xlsx'
+        new_inf = RESULT_FILEPATH + '/MR_signal_study/test_master_pnl_SLB_.xlsx'
+        new_confirm_main = RESULT_FILEPATH +'/MR_signal_study/20240814_argustrend_cross_P40S20_0330_entry_PNL_full_.xlsx'
+        new_confirm_dSL = RESULT_FILEPATH +'/MR_signal_study/test_master_pnl_confirmation_.xlsx'
+        new_trial_restrictEntry = RESULT_FILEPATH +'/MR_signal_study/test_master_pnl_EES_window_.xlsx'
+        
+        strategy_date_list = [extract_PNLplot_input(revised_PNL_filename, 
+                                                     date_col="Entry_Date",
+                                                     sheet_name='Total',
+                                                     val_col='cumulative P&L from trades')[0], 
+                              extract_PNLplot_input(revised_PNL_filename_SLA, 
+                                                    date_col="Entry_Date",
+                                                    sheet_name='Total',
+                                                    val_col='cumulative P&L from trades')[0], 
+                              extract_PNLplot_input(revised_PNL_filename_SLB, 
+                                                    date_col="Entry_Date",
+                                                    sheet_name='Total',
+                                                    val_col='cumulative P&L from trades')[0], 
+                              extract_PNLplot_input(original, 
+                                                    date_col="Entry_Date",
+                                                    sheet_name='Total',
+                                                    val_col='cumulative P&L from trades')[0], 
+                              extract_PNLplot_input(new_inf, 
+                                                    date_col="Entry_Date",
+                                                    sheet_name='Total',
+                                                    val_col='cumulative P&L from trades')[0], 
+                              extract_PNLplot_input(new_confirm_main, 
+                                                    date_col="Entry_Date",
+                                                    sheet_name='Total',
+                                                    val_col='cumulative P&L from trades')[0], 
+                              extract_PNLplot_input(new_confirm_dSL, 
+                                                    date_col="Entry_Date",
+                                                    sheet_name='Total',
+                                                    val_col='cumulative P&L from trades')[0], 
+                              extract_PNLplot_input(new_trial_restrictEntry, 
+                                                    date_col="Entry_Date",
+                                                    sheet_name='Total',
+                                                    val_col='cumulative P&L from trades')[0], 
+                              ]
+        strategy_data_list = [extract_PNLplot_input(revised_PNL_filename, 
+                                                     date_col="Entry_Date",
+                                                     sheet_name='Total',
+                                                     val_col='cumulative P&L from trades')[1],    
+                              extract_PNLplot_input(revised_PNL_filename_SLA, 
+                                                    date_col="Entry_Date",
+                                                    sheet_name='Total',
+                                                    val_col='cumulative P&L from trades')[1], 
+                              extract_PNLplot_input(revised_PNL_filename_SLB, 
+                                                    date_col="Entry_Date",
+                                                    sheet_name='Total',
+                                                    val_col='cumulative P&L from trades')[1], 
+                              extract_PNLplot_input(original, 
+                                                    date_col="Entry_Date",
+                                                    sheet_name='Total',
+                                                    val_col='cumulative P&L from trades')[1],
+                              extract_PNLplot_input(new_inf, 
+                                                    date_col="Entry_Date",
+                                                    sheet_name='Total',
+                                                    val_col='cumulative P&L from trades')[1], 
+                              extract_PNLplot_input(new_confirm_main, 
+                                                    date_col="Entry_Date",
+                                                    sheet_name='Total',
+                                                    val_col='cumulative P&L from trades')[1], 
+                              extract_PNLplot_input(new_confirm_dSL, 
+                                                    date_col="Entry_Date",
+                                                    sheet_name='Total',
+                                                    val_col='cumulative P&L from trades')[1], 
+                              extract_PNLplot_input(new_trial_restrictEntry, 
+                                                    date_col="Entry_Date",
+                                                    sheet_name='Total',
+                                                    val_col='cumulative P&L from trades')[1], 
+                              ]
+        strategy_label_list = ['good_model', 'DynSL_earlyEntry(SL_A)', 'SLB', 'original', 'new', 
+                               'new_confirm_main',  'new_confirm_dSL', 
+                               'DynSL_earlyEntry(SL_B)'
+                               ]
+        strategy_col_list = ['w', 'r','b','w','purple','yellow','r', 
+                             'g']
+        strategy_line_list = ['solid', 'solid', 'dashed','dotted','solid', 'solid', 'dashed',
+                              'solid']    
+        twopanel_plot([], [], [], label='',
+                      plot_title = 'Revised MR Strategies',
+                      sub_x_list=strategy_date_list,
+                      sub_y1_list=strategy_data_list,
+                      sub_label_list = strategy_label_list,
+                      sub_col_list = strategy_col_list, 
+                      sub_line_list =strategy_line_list)
+        

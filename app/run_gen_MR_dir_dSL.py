@@ -27,6 +27,8 @@ import numpy as np
 # EC_tools imports
 from EC_tools.strategy import ArgusMRStrategy, ArgusMRStrategyMode, \
                               Strategy, APC_LENGTH
+from EC_tools.strategy.ArgusTrendStrategy import ArgusTrendStrategy
+
 import EC_tools.base.read as read
 import EC_tools.utility as util
 from EC_tools.portfolio.bookkeep import Bookkeep
@@ -138,7 +140,9 @@ def loop_signal(strategy: type[Strategy],
                                                        buy_range=buy_range, 
                                                        sell_range=sell_range,   
                                                        quantile = kwargs['quantile'],
-                                                       total_lag_days=2)
+                                                       total_lag_days=2,
+                                                       apc_mid_Q={'Buy':(-np.inf,0.5),
+                                                                  'Sell':(0.5,np.inf)})
             print('====================================')
             print(forecast_date, full_contract_symbol,'MR signal generated!', 
                    strategy_output['direction'],i)
@@ -310,7 +314,8 @@ def run_gen_signal_bulk(strategy: type[Strategy],
 
 if __name__ == "__main__":
     MR_STRATEGIES_0 = {"argus_exact": ArgusMRStrategy,
-                   "argus_exact_mode": ArgusMRStrategyMode}
+                       "argus_exact_mode": ArgusMRStrategyMode,
+                       'argus_trend':ArgusTrendStrategy}
     
     start_date = "2022-01-05"
     end_date = "2024-06-28"
@@ -322,12 +327,12 @@ if __name__ == "__main__":
     sell_range = ([0.6,0.75],[0.25,0.4],0.95) # (0.1,-0.1,0.45)
     
     TE_time = (datetime.time(3,30,0), datetime.time(16,0,0)) 
-    TP_time = (datetime.time(3,30,0), datetime.time(23,0,0))
-    # A list of pairs of datetime in a tuple
+    TP_time = (datetime.time(3,30,0), datetime.time(19,59,0))
+    # A list of pairs of datetime in a tuple #1959
     dSL_time = [(datetime.time(3,30,0), datetime.time(8,0,0)),
                 (datetime.time(8,0,0), datetime.time(11,0,0)),
-                (datetime.time(11,0,0), datetime.time(13,0,0)),
-                (datetime.time(13,0,0), datetime.time(23,0,0))] 
+                (datetime.time(11,0,0), datetime.time(14,0,0)),
+                (datetime.time(14,0,0), datetime.time(19,59,0))] 
     
     # A list of float in the form of quant distance from the entry
     dSL = [0.0,0.05,0.1,0.25] 

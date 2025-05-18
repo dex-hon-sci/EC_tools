@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt
 import EC_tools.utility as util
 
 from crudeoil_future_const import APC_FILE_LOC, DATA_FILEPATH, DAILY_DATA_PKL, \
-                                  make_path_list
+                                  make_path_list, RESULT_FILEPATH
 
 # application import
 from app.run_PNL_plot import extract_PNLplot_input
@@ -94,8 +94,8 @@ def plot_price_return_hist(x,y,**kwargs):
 def run_main():
     #argusexact_cross_PS_PNL = "/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap/PNL_argusexact_G40S10_.xlsx"
     #argusexact_cross_PS_PNL = '/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap2/20240813_argusexact_cross_P35S15_PNL_.xlsx'
-    argusexact_cross_PS_PNL ='/home/dexter/Euler_Capital_codes/EC_tools/results/MR_1lag/20240814_argusexact_cross_P25S35_0330_entry_PNL_full_.xlsx'
-
+    #argusexact_cross_PS_PNL ='/home/dexter/Euler_Capital_codes/EC_tools/results/MR_1lag/20240814_argusexact_cross_P25S35_0330_entry_PNL_full_.xlsx'
+    argusexact_cross_PS_PNL = RESULT_FILEPATH + '/MR_signal_study/test_master_pnl_EES_window_.xlsx'
     big_price_diff, big_trade_return = [], []
 
     symbols = ['CLc1', 'CLc2', 'HOc1', 'HOc2','RBc1','RBc2','QOc1','QOc2','QPc1','QPc2']
