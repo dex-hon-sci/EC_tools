@@ -93,7 +93,7 @@ def run_main(strategy_name,
     
     default_kwargs = {'give_obj_name':'USD',
                       'get_obj_quantity': 1,
-                      'open_hr_dict': OPEN_HR_DICT, 
+                      'open_hr_dict': WRONG_OPEN_HR_DICT, 
                       'close_hr_dict': CLOSE_HR_DICT, 
                       'preprocess': False, 
                       'signal_gen_runtype': "preload", 
@@ -102,7 +102,6 @@ def run_main(strategy_name,
     
     kwargs = dict(default_kwargs, **kwargs)
 
-    
     FILE_LOC = TEST_FILE_LOC
     FILE_PNL_LOC = TEST_FILE_PNL_LOC
     #FILE_LOC = ARGUS_EXACT_SIGNAL_EARLY_FILE_LOC# ARGUS_EXACT_SIGNAL_AMB4_3ROLL_FILE_LOC
@@ -127,7 +126,7 @@ def run_main(strategy_name,
     #MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/consistency/Argus_sample_with_mybacktest_newcode/Argus_sample_signals_2.csv'
     #MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/consistency/live_trade_vs_backtest_newcode/live_trade_compare_signals_TP25SL10_normalopen.csv'
     #MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/EC_benchmark/20240814_argusexact_cross_P25S35_0330_entry_signal_full.csv'
-    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/MR_lag_roll/0330_entry/MR_3lag_10roll/20240814_argusexact_cross_P25S35_0330_entry_signal_full.csv'
+    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/MR_signal_study/20240814_argustrend_cross_P40S20_0330_entry_signal_full.csv'
     
     run_gen_signal_bulk(strategy,
                         start_date, end_date,
@@ -135,7 +134,6 @@ def run_main(strategy_name,
                         sell_range = sell_range,
                         runtype = signal_gen_runtype,
                         master_signal_filename = MASTER_SIGNAL_FILENAME,
-                        #histroy_intraday_data_pkl = HISTORY_MINUTE_PKL,
                         open_hr_dict = WRONG_OPEN_HR_DICT, 
                         close_hr_dict = CLOSE_HR_DICT, 
                         save_or_not=True,
@@ -147,12 +145,11 @@ def run_main(strategy_name,
     #MASTER_PNL_FILENAME = RESULT_FILEPATH + '/consistency/Argus_sample_with_mybacktest_newcode/Argus_sample_PNL_with_mybacktest_newcode.pkl' 
     #MASTER_PNL_FILENAME = RESULT_FILEPATH + '/consistency/live_trade_vs_backtest_newcode/live_trade_compare_portoflio_TP25SL10_normalopen.pkl' 
     #MASTER_PNL_FILENAME = RESULT_FILEPATH + '/EC_benchmark/20240814_argusexact_cross_P25S35_0330_entry_PNL_full.pkl'
-    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/MR_lag_roll/0330_entry/MR_3lag_10roll/20240814_argusexact_cross_P25S35_0330_entry_PNL_full.pkl'
+    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/MR_signal_study/20240814_argustrend_cross_P40S20_0330_entry_PNL_full.pkl'
     
     #SAVE_PNL_FILENAME_LIST = FILE_PNL_LOC
     print("HISTORY_MINUTE_PKL", HISTORY_MINUTE_PKL)
     run_backtest_bulk(trade_method, 
-                      #FILE_LOC, FILE_PNL_LOC, 
                       start_date, end_date, 
                       method = backtest_runtype, 
                       master_signal_filename = MASTER_SIGNAL_FILENAME,
@@ -181,7 +178,7 @@ def run_main(strategy_name,
         #PL.tradebook_filename = RESULT_FILEPATH + "/consistency/Argus_sample_with_mybacktest_newcode/Argus_sample_PNL_with_mybacktest_newcode.csv"
         #PL.tradebook_filename = RESULT_FILEPATH + "/consistency/live_trade_vs_backtest_newcode/live_trade_compare_pnl_TP25SL10_normalopen.csv"
         #PL.tradebook_filename = RESULT_FILEPATH + "/EC_benchmark/20240814_argusexact_cross_P25S35_0330_entry_PNL_full.csv"
-        PL.tradebook_filename = RESULT_FILEPATH + "/MR_lag_roll/0330_entry/MR_3lag_10roll/20240814_argusexact_cross_P25S35_0330_entry_PNL_full.csv"
+        PL.tradebook_filename = RESULT_FILEPATH + "/MR_signal_study/20240814_argustrend_cross_P40S20_0330_entry_PNL_full.csv"
         
         PL.render_tradebook()
         PL.render_tradebook_xlsx()

@@ -9,7 +9,6 @@ import datetime
 
 from EC_tools.base.read import render_PNL_xlsx, open_portfolio
 import EC_tools.utility as util
-from EC_tools.trade import OneTradePerDay
 #from EC_tools.simple_trade import onetrade_simple
 from EC_tools.backtest import LoopType
 from EC_tools.portfolio import PortfolioMetrics, PortfolioLog, PortfolioLog
@@ -32,8 +31,10 @@ from crudeoil_future_const import OPEN_HR_DICT, CLOSE_HR_DICT, SIZE_DICT, \
 @util.time_it
 def load_source_data_signal() -> tuple:
     #load the pkl 
-    SIGNAL_PKL = util.load_pkl(DATA_FILEPATH+"/pkl_vault/crudeoil_future_APC_full.pkl")
-    HISTORY_DAILY_PKL = util.load_pkl(DATA_FILEPATH+"/pkl_vault/crudeoil_future_daily_full.pkl")
+    SIGNAL_PKL = util.load_pkl(DATA_FILEPATH+\
+                               "/pkl_vault/crudeoil_future_APC_full.pkl")
+    HISTORY_DAILY_PKL = util.load_pkl(DATA_FILEPATH\
+                                      +"/pkl_vault/crudeoil_future_daily_full.pkl")
     
     return SIGNAL_PKL, HISTORY_DAILY_PKL
 
@@ -46,6 +47,7 @@ def load_source_data_bt(filenames_loc) -> dict:
         
     return master_dict
 
+@util.time_it
 def run_main(strategy_name, 
              trade_method,
              start_date: str, end_date: str,         
@@ -54,7 +56,7 @@ def run_main(strategy_name,
              TE_time: tuple[datetime.time] = (), # A pair of datetime in a tuple
              TP_time: tuple[datetime.time] = (), # A pair of datetime in a tuple
              dSL_time: list[datetime.time] = [], # A list of pairs of datetime in a tuple
-             dSL: list[float] = [], # A list of float in the form of quant distance from the entry
+             dSL: list[float] = [], #  A list of float in the form of quant distance from the entry
              give_obj_name: str = 'USD',
              get_obj_quantity: int = 1,
              preprocess: bool = False, 
@@ -70,11 +72,11 @@ def run_main(strategy_name,
                       'preprocess': False, 
                       'signal_gen_runtype': "preload", 
                       'backtest_runtype': "preload", 
-                      'plot_PNL_or_not':False}
+                      'plot_PNL_or_not':False,
+                      'cross_decision':'SL_A'}
     
     kwargs = dict(default_kwargs, **kwargs)
 
-    
     FILE_LOC = TEST_FILE_LOC
     FILE_PNL_LOC = TEST_FILE_PNL_LOC
     #FILE_LOC = ARGUS_EXACT_SIGNAL_EARLY_FILE_LOC# ARGUS_EXACT_SIGNAL_AMB4_3ROLL_FILE_LOC
@@ -83,7 +85,7 @@ def run_main(strategy_name,
     if preprocess:
         print("===============Data Preprocessing=============")
         # preprocess merge raw CSV data into pkl format 
-        #run_preprocess()
+        run_preprocess()
     elif load:
         SIGNAL_PKL, HISTORY_DAILY_PKL = load_source_data_signal()
         HISTORY_MINUTE_PKL = load_source_data_bt(list(DAILY_MINUTE_DATA_INDI_PKL.values()))
@@ -99,7 +101,7 @@ def run_main(strategy_name,
     #MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/consistency/Argus_sample_with_mybacktest_newcode/Argus_sample_signals_2.csv'
     #MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/consistency/live_trade_vs_backtest_newcode/live_trade_compare_signals_TP25SL10_normalopen.csv'
     #MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/EC_benchmark/20240814_argusexact_cross_P25S35_0330_entry_signal_full.csv'
-    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/test_results/test_master_signal_file.csv'
+    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/MR_signal_study/test_master_signal_file_EES_window.csv'
     
     run_gen_signal_bulk(strategy,
                         start_date, end_date,
@@ -122,7 +124,7 @@ def run_main(strategy_name,
     #MASTER_PNL_FILENAME = RESULT_FILEPATH + '/consistency/Argus_sample_with_mybacktest_newcode/Argus_sample_PNL_with_mybacktest_newcode.pkl' 
     #MASTER_PNL_FILENAME = RESULT_FILEPATH + '/consistency/live_trade_vs_backtest_newcode/live_trade_compare_portoflio_TP25SL10_normalopen.pkl' 
     #MASTER_PNL_FILENAME = RESULT_FILEPATH + '/EC_benchmark/20240814_argusexact_cross_P25S35_0330_entry_PNL_full.pkl'
-    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/test_results/test_master_pnl.pkl'
+    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/MR_signal_study/test_master_pnl_EES_window.pkl'
     
     #SAVE_PNL_FILENAME_LIST = FILE_PNL_LOC
     print("HISTORY_MINUTE_PKL", HISTORY_MINUTE_PKL)
@@ -141,7 +143,8 @@ def run_main(strategy_name,
                       merge_or_not=True,
                       loop_type= LoopType.CROSSOVER,
                       selected_directions = ["Buy", "Sell"],
-                      price_proxy='High')
+                      price_proxy='High',
+                      cross_decision=kwargs['cross_decision'])
     
     print("=========Running PNL EXCEL File =============")
     if backtest_runtype == 'list':
@@ -156,7 +159,7 @@ def run_main(strategy_name,
         #PL.tradebook_filename = RESULT_FILEPATH + "/consistency/Argus_sample_with_mybacktest_newcode/Argus_sample_PNL_with_mybacktest_newcode.csv"
         #PL.tradebook_filename = RESULT_FILEPATH + "/consistency/live_trade_vs_backtest_newcode/live_trade_compare_pnl_TP25SL10_normalopen.csv"
         #PL.tradebook_filename = RESULT_FILEPATH + "/EC_benchmark/20240814_argusexact_cross_P25S35_0330_entry_PNL_full.csv"
-        PL.tradebook_filename = RESULT_FILEPATH + "/test_results/test_master_pnl.csv"
+        PL.tradebook_filename = RESULT_FILEPATH + "/MR_signal_study/test_master_pnl_EES_window.csv"
         
         PL.render_tradebook()
         PL.render_tradebook_xlsx()
@@ -166,21 +169,22 @@ def run_main(strategy_name,
 
 if __name__ == "__main__":
     # Total date range
-    start_date = "2021-01-19"
-    end_date = "2021-01-21"
+    start_date = "2021-01-11"
+    end_date = "2024-08-14"
     
     TE_TIME = (datetime.time(3,30,0), datetime.time(16,0,0)) 
-    TP_TIME = (datetime.time(3,30,0), datetime.time(23,0,0))
+    TP_TIME = (datetime.time(3,30,0), datetime.time(19,59,0))
     # A list of pairs of datetime in a tuple
     dSL_TIME = [(datetime.time(3,30,0), datetime.time(8,0,0)),
-                (datetime.time(8,0,0), datetime.time(11,0,0)),
-                (datetime.time(11,0,0), datetime.time(13,0,0)),
-                (datetime.time(13,0,0), datetime.time(23,0,0))] 
+                (datetime.time(8,0,0), datetime.time(14,0,0)),
+                (datetime.time(14,0,0), datetime.time(16,0,0)),
+                (datetime.time(16,0,0), datetime.time(19,59,0))] 
     # A list of float in the form of quant distance from the entry
-    dSL = [0.0,0.05,0.1,0.25] 
+    dSL = [0.0,0.1,0.25,0.4] 
+    #dSL = [0.0,0.0,0.0,0.0] 
 
-    
-    run_main('argus_exact', 
+    # SL_A: delay, SL_B: instant-close, SL_C: Trail
+    run_main('argus_trend', 
              OneTradePerDay_DYNSL, #OneTradePerDay, #onetrade_simple, #BiDirectionalTrade, 
              start_date, end_date,         
              buy_range = ([0.25,0.4],[0.65,0.75],0.05),
@@ -193,4 +197,5 @@ if __name__ == "__main__":
              get_obj_quantity = 1,
              preprocess = False, 
              signal_gen_runtype='preload',
-             backtest_runtype = "preload")
+             backtest_runtype = "preload",
+             cross_decision = 'SL_B')
