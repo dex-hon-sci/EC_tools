@@ -120,7 +120,7 @@ def run_main():
 
     print(len(big_price_diff), len(big_trade_return))
     plot_price_return_hist(big_trade_return, big_price_diff, 
-                           plot_title="Benchmark MR Returns (TP 40%, SL 10%)", 
+                           plot_title="Benchmark MR Returns (TE 0.4|0.6 TP , SL 0.05|0.95)", 
                            ylabel = "Daily Price Changes [%]",
                            xlabel = "Scaled Returns per Trade [USD]")
 
