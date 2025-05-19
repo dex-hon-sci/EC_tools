@@ -105,6 +105,7 @@ class SubPlot(object):
     nrows: int
     ncols: int
     width_ratios: list[float|int]
+    #height_ratios: list[float|int]
     figsize: tuple[float|int]
     
     def __post_init__(self, **kwargs):
@@ -114,21 +115,56 @@ class SubPlot(object):
         self.fig = plt.figure(figsize=self.figsize)
         self.gs = self.fig.add_gridspec(nrows=self.nrows, 
                                         ncols = self.ncols, 
-                                        width_ratios = self.figsize)
+                                        width_ratios = self.width_ratios)
         
         # The subplot has to have a main panel. All other things are add on
-        panel_names_list = kwargs['panel_names_list']
+        self.panel_names_list = kwargs['panel_names_list']
         
         # Generate a list of panel names that matches the gridspec setting
-        while len(kwargs['panel_names_list']) < len(list(self.gs)):
-            panel_names_list = panel_names_list + ['None']
+        while len(self.panel_names_list) < len(list(self.gs)):
+            self.panel_names_list = self.panel_names_list + ['None']
+            
         if len(kwargs['panel_names_list']) > len(list(self.gs)):
             raise Exception('There are more panel names than panels.')
             
         # Generate dictionary for settings in each sublots
-        self.panel_dict = {panel_names_list[i]: list(self.gs)[i] 
+        self.panel_dict = {self.panel_names_list[i]: list(self.gs)[i] 
                            for i in range(len(list(self.gs)))}
         
+# =============================================================================
+# class SubPlot(object):
+#     # A class that serve as the configuration for plotting functions
+#     def __init__(self, nrows, ncols, width_ratios, figsize, **kwargs):
+#         self.nrows = nrows
+#         self.ncols = ncols
+#         self.width_ratios = width_ratios
+#         #height_ratios: list[float|int]
+#         self.figsize = figsize
+#     
+#         default_kwargs = {'panel_names_list':['main_panel']}
+#         kwargs = dict(default_kwargs,**kwargs)
+# 
+#         self.fig = plt.figure(figsize=self.figsize)
+#         self.gs = self.fig.add_gridspec(nrows = self.nrows, 
+#                                         ncols = self.ncols, 
+#                                         width_ratios = self.width_ratios)
+#         
+#         # The subplot has to have a main panel. All other things are add on
+#         self.panel_names_list = kwargs['panel_names_list']
+#         
+#         # Generate a list of panel names that matches the gridspec setting
+#         while len(self.panel_names_list) < len(list(self.gs)):
+#             print(len(self.panel_names_list), list(self.gs))
+#             self.panel_names_list = self.panel_names_list + ['None']
+#             
+#         if len(kwargs['panel_names_list']) > len(list(self.gs)):
+#             raise Exception('There are more panel names than panels.')
+#             
+#         # Generate dictionary for settings in each sublots
+#         self.panel_dict = {self.panel_names_list[i]: list(self.gs)[i] 
+#                            for i in range(len(list(self.gs)))}
+# =============================================================================
+
 class SubComponents(object):
     # A class that add the pre-made subcomponents to the designated subplot
     # All subcomponents for Price plotting. This can be inheretance class
@@ -400,44 +436,6 @@ class SubComponents(object):
                             sell_time: str = "1900", sell_price: float = 85.70):
         
         return None
-
-# =============================================================================
-# class SubPlot(object):
-#     # A class that control added external subplots
-#     def __inti__(self):
-#         self._add_pdf_panel = False
-# 
-#     @property
-#     def add_pdf_panel(self):
-#         return self._add_pdf_panel
-#     
-#     @add_pdf_panel.setter
-#     def add_pdf_panel(self, value):
-#         self._add_pdf_panel = value
-# 
-#     def add_pdf_panel(self, sharey, pdf, events, quant_list, 
-#                       quant_price_list,
-#                       title='APC', pt_col='orange'):
-#         
-#         
-#         # define the pixels of shift for the texts in both x and y axis
-#         txt_shift_x, txt_shift_y = np.std(pdf)/2, np.std(events)/20
-#         #define the shift in dates
-#         txt_shift_x_date = datetime.timedelta(hours = round(np.std(pdf)/2))
-#     
-#         ax_apc = self.fig.add_subplot(self.gs[1], sharey=sharey)
-#         ax_apc.plot(pdf, events, 'o', c = pt_col, ms =2)
-#         
-#         SubComponents(ax_apc).quant_lines(quant_list, quant_price_list, 
-#                                           txt_shift_x, txt_shift_y)
-# 
-#     
-#         ax_apc.set_xlim([-0.005, max(pdf)+ np.std(pdf)/4])
-#         ax_apc.set_title(title)
-#         ax_apc.set_xlabel("Probability")
-#         ax_apc.invert_xaxis()
-#         ax_apc.grid()  
-# =============================================================================
 
 class PlotPricing(object):
     # A clss that control the state of the pricing plots.
@@ -821,7 +819,7 @@ if __name__ == "__main__":
     #FILENSME_BUYSELL_SIGNALS = "/home/dexter/Euler_Capital_codes/EC_tools/results/benchmark_signals/benchmark_signal_CLc1_full.csv"
     #SIGNAL_FILENAME = "/home/dexter/Euler_Capital_codes/EC_tools/data/APC_latest/APC_latest_CLc1.csv"   
     
-    symbol = 'QOc2'
+    symbol = 'CLc1'
 
     date_interest = "2022-11-18"
     first = datetime.datetime.combine(datetime.datetime(2025,2,4).date(), datetime.time(hour=6,minute=9))
