@@ -8,18 +8,15 @@ Intraday price plotting functions
 """
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from dataclasses import dataclass
+import datetime as datetime
 
 import numpy as np
-
-from plotly.offline import iplot
-from plotly.offline import plot, init_notebook_mode
-import datetime as datetime
 
 import matplotlib.dates as mdates
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 
-import plotly.graph_objects as go
 
 # import EC_tools
 import EC_tools.base.read as read
@@ -29,11 +26,11 @@ import EC_tools.utility as util
 from crudeoil_future_const import HISTORY_MINTUE_FILE_LOC, APC_FILE_LOC, \
                                   OPEN_HR_DICT, CLOSE_HR_DICT, APC_LENGTH,\
                                   WRONG_OPEN_HR_DICT, DAILY_APC_PKL, DAILY_MINUTE_DATA_INDI_PKL
+                                  
 color_dict_light_mode = {'data_col':'k','bg_col':'white', 'col':'g'}
 color_dict_dark_mode = {'data_col':'white','bg_col':'k', 'col':'g'}
 
 pt_col='w'
-
 
 class XObject(object):
     def __init__(self, x, date_interest):
@@ -45,7 +42,8 @@ class XObject(object):
         return self._x
     
     @x.setter
-    def x(self, value:str): # set the array of x axis to datetime format
+    def x(self, value:str): 
+    # Set the array of x axis to datetime format
     # This function convert all x-axis objects to the format of datetime
     
         # Trigger keyword to perform setter action
@@ -86,57 +84,360 @@ class XObject(object):
         self._x = [datetime.datetime.combine(self._date_interest.date(), t) 
                    for t in self._x]
         return self._x
-    
+   
+@dataclass
 class AxisLimit(object):
     # make functions that check what datetime format we are operating in
-    def __init__(self, date_interest=datetime.datetime.today()):
-        # These attributes define the frame of the plot
-        self.price_lower_limit = 70.0 
-        self.price_upper_limit = 78.0
-        self._date_interest = date_interest
-        self.start_line = datetime.datetime.combine(self._date_interest.date(), 
-                                                     datetime.time(hour=0,
-                                                                   minute=0))
-        self.end_line = datetime.datetime.combine(self._date_interest.date(),
-                                                   datetime.time(hour=23, 
-                                                                 minute=59))
-
+    # These attributes define the frame of the plot
+    price_lower_limit: float = 70.0 
+    price_upper_limit: float = 78.0
+    date_interest: datetime.datetime = datetime.datetime.today()
     
+    def __post_init__(self):
+        self.start_line = datetime.datetime.combine(self.date_interest.date(), 
+                                            datetime.time(hour=0, minute=0))
+        self.end_line = datetime.datetime.combine(self.date_interest.date(),
+                                            datetime.time(hour=23, minute=59))
+
+@dataclass
 class SubPlot(object):
-    # A class that control added external subplots
-    def __inti__(self):
-        self._add_pdf_panel = False
-
-    @property
-    def add_pdf_panel(self):
-        return self._add_pdf_panel
+    # A class that serve as the configuration for plotting functions
+    nrows: int
+    ncols: int
+    width_ratios: list[float|int]
+    figsize: tuple[float|int]
     
-    @add_pdf_panel.setter
-    def add_pdf_panel(self, value):
-        self._add_pdf_panel = value
+    def __post_init__(self, **kwargs):
+        default_kwargs = {'panel_names_list':['main_panel']}
+        kwargs = dict(default_kwargs,**kwargs)
 
-    def add_pdf_panel(self, sharey, pdf, events, quant_list, 
-                      quant_price_list,
-                      title='APC', pt_col='orange'):
+        self.fig = plt.figure(figsize=self.figsize)
+        self.gs = self.fig.add_gridspec(nrows=self.nrows, 
+                                        ncols = self.ncols, 
+                                        width_ratios = self.figsize)
         
+        # The subplot has to have a main panel. All other things are add on
+        panel_names_list = kwargs['panel_names_list']
         
-        # define the pixels of shift for the texts in both x and y axis
-        txt_shift_x, txt_shift_y = np.std(pdf)/2, np.std(events)/20
-        #define the shift in dates
-        txt_shift_x_date = datetime.timedelta(hours = round(np.std(pdf)/2))
-    
-        ax_apc = self.fig.add_subplot(self.gs[1], sharey=sharey)
-        ax_apc.plot(pdf, events, 'o', c = pt_col, ms =2)
+        # Generate a list of panel names that matches the gridspec setting
+        while len(kwargs['panel_names_list']) < len(list(self.gs)):
+            panel_names_list = panel_names_list + ['None']
+        if len(kwargs['panel_names_list']) > len(list(self.gs)):
+            raise Exception('There are more panel names than panels.')
+            
+        # Generate dictionary for settings in each sublots
+        self.panel_dict = {panel_names_list[i]: list(self.gs)[i] 
+                           for i in range(len(list(self.gs)))}
         
-        SubComponents(ax_apc).quant_lines(quant_list, quant_price_list, 
-                                          txt_shift_x, txt_shift_y)
+class SubComponents(object):
+    # A class that add the pre-made subcomponents to the designated subplot
+    # All subcomponents for Price plotting. This can be inheretance class
+    def __init__(self, ax, axis_limit = AxisLimit()):
+        self.ax = ax # the location that these things should be added
+        self._quant_lines = False
+        self._add_EES_region = False
+        self._add_trade_region = False
+        self._add_crossover_pts = False
+        
+        self._add_entry_exit_points = False
+        self._add_bol_band = False
+        self._add_fibo_retract_lines = False
 
+        self.txt_shift_x = None
+        self.txt_shift_y = None
+        self.axis_limit = axis_limit # WIP
+
+       # super().__init__()
+       
+    def quant_lines(self, 
+                    quant_list: list, quant_price_list: list, 
+                    txt_shift_x: float, txt_shift_y: float, 
+                    start_x: float = 0.0, end_x: float = 100, 
+                    alpha: float = 0.5):
+        """
+        A function that add the quantile lines to a plot.
     
-        ax_apc.set_xlim([-0.005, max(pdf)+ np.std(pdf)/4])
-        ax_apc.set_title(title)
-        ax_apc.set_xlabel("Probability")
-        ax_apc.invert_xaxis()
-        ax_apc.grid()  
+        Parameters
+        ----------
+        ax : <class 'matplotlib.axes._axes.Axes'>
+            The figure.
+        quant_list : list
+            A list of quantile name for text marking on the plot.
+        quant_price_list : list
+            The price of the horizontal lines corresponding to quant_list.
+        txt_shift_x : float
+            The shift in x-axis for the text.
+        txt_shift_y : float
+            The shift in y-axis for the text.
+        start_x: float, or datetime.time
+            The starting position for the text in x-axis
+        end_x: float, or datetime.time
+            The ending position for the text in x-axis
+        alpha : float, optional
+            The transparency of the quantile line. The default is 0.5.
+    
+        """
+
+        for quant, price in zip(quant_list, quant_price_list):
+            self.ax.hlines(float(price.iloc[0]), start_x, end_x, color='#C26F05', 
+                           alpha = alpha)
+            self.ax.text(start_x + txt_shift_x, float(price.iloc[0]) + txt_shift_y, quant, 
+                     color=pt_col, bbox=dict(boxstyle="round",
+                     ec= pt_col, fc='#C26F05'))        
+            
+    def EES_region_step(self, entry_price, exit_price, stop_loss, txt_shift_x, 
+                        txt_shift_y, start_x = 0.0, end_x = 2150, 
+                        direction="Neutral"):
+        return 
+    
+    def EES_range_region_step():
+        return 
+    
+    def EES_region(self, 
+                   entry_price: float, exit_price: float, stop_loss: float, 
+                   txt_shift_x: float, txt_shift_y: float, 
+                   start_x: float = 0.0, end_x: float = 2150, 
+                   direction: str ="Neutral"):
+        """
+        A function that add the Entry, Exit, and Stop Loss regions to a plot.
+        It plot only in horizontal line. I will change this to np.arrage later.
+    
+        Parameters
+        ----------
+        ax : <class 'matplotlib.axes._axes.Axes'>
+            The figure.
+        entry_price : float
+            entry_price.
+        exit_price : float
+            exit_price.
+        stop_loss : float
+            stop_loss.
+        txt_shift_x : float
+            The shift in x-axis for the text.
+        txt_shift_y : float
+            The shift in y-axis for the text.
+        direction : str, optional
+            "Buy", "Sell", or "Neutral" signal. The default is "Neutral".
+    
+        """
+        # dashed line is the entry line, solid line is the exit line
+        # dashed red line is the stop loss
+        
+        if direction == "Buy":
+            limit = -10000
+        elif direction == "Sell":
+            limit = 10000
+        elif direction == "Neutral":
+            limit = np.nan
+            
+        entry_price = float(entry_price.iloc[0])
+        exit_price = float(exit_price.iloc[0])
+        stop_loss = float(stop_loss.iloc[0])
+
+        # The EES lines
+        self.ax.hlines(entry_price, self.axis_limit.start_line, 
+                       self.axis_limit.end_line, color='#18833D', 
+                       ls="dashed", lw = 2)
+        self.ax.hlines(exit_price, self.axis_limit.start_line, 
+                       self.axis_limit.end_line, color='#18833D', 
+                       ls="solid", lw = 2 )
+        self.ax.hlines(stop_loss, self.axis_limit.start_line, 
+                       self.axis_limit.end_line, color='#E5543D', 
+                       ls = "dashed", lw = 2)
+        
+        # Green shade is the target region.
+        self.ax.fill_between([self.axis_limit.start_line, 
+                              self.axis_limit.end_line], 
+                             entry_price, exit_price, 
+                             color='green', alpha=0.3)
+        # Red shade is the stop loss region. 
+        self.ax.fill_between([self.axis_limit.start_line, 
+                              self.axis_limit.end_line], 
+                             stop_loss, limit, 
+                             color='red', alpha=0.3)
+        
+        # The texts that indicate the regions
+        self.ax.text(start_x + txt_shift_x, entry_price + txt_shift_y, 
+                     "Entry Price", 
+                      fontsize=8, color = pt_col, bbox=dict(boxstyle="round",
+                       ec= pt_col,fc='#206829'))
+                      
+                     # facecolor='#206829')
+        self.ax.text(start_x + txt_shift_x, exit_price + txt_shift_y, 
+                     "Exit Price", 
+                      fontsize=8, color= pt_col, bbox=dict(boxstyle="round",
+                       ec= pt_col,fc='#206829'))
+                      
+        self.ax.text(start_x + txt_shift_x, stop_loss + txt_shift_y, 
+                     "Stop Loss", 
+                      fontsize=8, color=pt_col, bbox=dict(boxstyle="round",
+                       ec= pt_col,fc='#80271B'))
+
+
+    def EES_range_region(self, 
+                         entry_price_range, exit_price_range, stop_loss, 
+                         txt_shift_x: float, txt_shift_y: float, 
+                         start_x: float = 0.0, end_x: float = 2150, 
+                         direction: str ="Neutral"):
+        """
+        A function that add the Entry, Exit, and Stop Loss regions to a plot.
+        It plot only in horizontal line. I will change this to np.arrage later.
+    
+        Parameters
+        ----------
+        ax : <class 'matplotlib.axes._axes.Axes'>
+            The figure.
+        entry_price : float
+            entry_price.
+        exit_price : float
+            exit_price.
+        stop_loss : float
+            stop_loss.
+        txt_shift_x : float
+            The shift in x-axis for the text.
+        txt_shift_y : float
+            The shift in y-axis for the text.
+        direction : str, optional
+            "Buy", "Sell", or "Neutral" signal. The default is "Neutral".
+    
+        """
+        # dashed line is the entry line, solid line is the exit line
+        # dashed red line is the stop loss
+        
+        if direction == "Buy":
+            limit = -10000
+        elif direction == "Sell":
+            limit = 10000
+        elif direction == "Neutral":
+            limit = np.nan
+            
+        entry_price_lower = float(entry_price_range[0].iloc[0])
+        entry_price_upper = float(entry_price_range[1].iloc[0])
+        
+        exit_price_lower = float(exit_price_range[0].iloc[0])
+        exit_price_upper = float(exit_price_range[1].iloc[0])
+        
+        stop_loss = float(stop_loss.iloc[0])
+
+        # The EES lines
+        self.ax.hlines(entry_price_lower, self.axis_limit.start_line, 
+                       self.axis_limit.end_line, color='#18833D', 
+                       ls="dashed", lw = 2)
+        self.ax.hlines(entry_price_upper, self.axis_limit.start_line, 
+                       self.axis_limit.end_line, color='#18833D', 
+                       ls="dashed", lw = 2)
+        self.ax.hlines(exit_price_lower, self.axis_limit.start_line, 
+                       self.axis_limit.end_line, color='#18833D', 
+                       ls="solid", lw = 2)
+        self.ax.hlines(exit_price_upper, self.axis_limit.start_line, 
+                       self.axis_limit.end_line, color='#18833D', 
+                       ls="solid", lw = 2)
+        self.ax.hlines(stop_loss, self.axis_limit.start_line, 
+                       self.axis_limit.end_line, color='#E5543D', 
+                       ls = "dashed", lw = 2)
+        
+        # Green shade is the target region.
+        self.ax.fill_between([self.axis_limit.start_line, 
+                              self.axis_limit.end_line], 
+                              entry_price_lower, entry_price_upper, 
+                              color='green', alpha=0.3)
+        self.ax.fill_between([self.axis_limit.start_line, 
+                              self.axis_limit.end_line], 
+                              exit_price_lower, exit_price_upper, 
+                              color='green', alpha=0.3)
+        
+        # Red shade is the stop loss region. 
+        self.ax.fill_between([self.axis_limit.start_line, 
+                              self.axis_limit.end_line], 
+                             stop_loss, limit, 
+                             color='red', alpha=0.3)
+        
+        # The texts that indicate the regions
+        self.ax.text(start_x + txt_shift_x, entry_price_upper + txt_shift_y, 
+                     "Entry Price", 
+                      fontsize=8, color = pt_col, bbox=dict(boxstyle="round",
+                      ec= pt_col,fc='#206829'))
+                      
+                     # facecolor='#206829')
+        self.ax.text(start_x + txt_shift_x, exit_price_upper + txt_shift_y, 
+                     "Exit Price", 
+                      fontsize=8, color= pt_col, bbox=dict(boxstyle="round",
+                       ec= pt_col,fc='#206829'))
+                      
+        self.ax.text(start_x + txt_shift_x, stop_loss + txt_shift_y, 
+                     "Stop Loss", 
+                      fontsize=8, color=pt_col, bbox=dict(boxstyle="round",
+                       ec= pt_col,fc='#80271B'))
+
+        
+    def trade_region(self, open_hr: float, close_hr: float):
+        # fill the closed trading hours with shade
+        # the vertical lines that
+        self.ax.vlines(open_hr, 0, 2000, 'w')
+        self.ax.vlines(close_hr, 0, 2000, 'w')
+        
+        self.ax.fill_between([self.axis_limit.start_line, open_hr], 0, 2000, 
+                             color='grey', alpha=0.3)
+        self.ax.fill_between([close_hr, self.axis_limit.end_line], 0, 2000, 
+                             color='grey', alpha=0.3)
+        
+        # the vertical lines that
+        self.ax.vlines(open_hr, 0, 2000, 'k')
+        self.ax.vlines(close_hr, 0, 2000, 'k')
+    
+    def crossover_pts(self, 
+                      bppt_x1: list, bppt_y1: list, 
+                      bppt_x2: list, bppt_y2: list, 
+                      bppt_x3: list, bppt_y3: list):
+        print("crossover_pts")
+        #print(bppt_x1, bppt_y1, bppt_x2, bppt_y2, bppt_x3, bppt_y3)
+        # crossover points set 1 
+        self.ax.plot(bppt_x1, bppt_y1,'o', ms=6, c='blue')
+        self.ax.plot(bppt_x2, bppt_y2,'o', ms=6, c='green')
+        self.ax.plot(bppt_x3, bppt_y3,'o', ms=6, c='red')
+        
+    def buysellpoints(self, buy_time: str = "1201", buy_price: float =  86.05,
+                            sell_time: str = "1900", sell_price: float = 85.70):
+        
+        return None
+
+# =============================================================================
+# class SubPlot(object):
+#     # A class that control added external subplots
+#     def __inti__(self):
+#         self._add_pdf_panel = False
+# 
+#     @property
+#     def add_pdf_panel(self):
+#         return self._add_pdf_panel
+#     
+#     @add_pdf_panel.setter
+#     def add_pdf_panel(self, value):
+#         self._add_pdf_panel = value
+# 
+#     def add_pdf_panel(self, sharey, pdf, events, quant_list, 
+#                       quant_price_list,
+#                       title='APC', pt_col='orange'):
+#         
+#         
+#         # define the pixels of shift for the texts in both x and y axis
+#         txt_shift_x, txt_shift_y = np.std(pdf)/2, np.std(events)/20
+#         #define the shift in dates
+#         txt_shift_x_date = datetime.timedelta(hours = round(np.std(pdf)/2))
+#     
+#         ax_apc = self.fig.add_subplot(self.gs[1], sharey=sharey)
+#         ax_apc.plot(pdf, events, 'o', c = pt_col, ms =2)
+#         
+#         SubComponents(ax_apc).quant_lines(quant_list, quant_price_list, 
+#                                           txt_shift_x, txt_shift_y)
+# 
+#     
+#         ax_apc.set_xlim([-0.005, max(pdf)+ np.std(pdf)/4])
+#         ax_apc.set_title(title)
+#         ax_apc.set_xlabel("Probability")
+#         ax_apc.invert_xaxis()
+#         ax_apc.grid()  
+# =============================================================================
 
 class PlotPricing(object):
     # A clss that control the state of the pricing plots.
@@ -206,12 +507,12 @@ class PlotPricing(object):
             The figure.
     
         """
-        x_o = XObject(x,date_interest)
+        x_o = XObject(x,date_interest) #input data
         x_o.x = 'datetime'
         x_datetime = x_o.x
         
-        o_hr = XObject(open_hr,date_interest)
-        c_hr = XObject(close_hr,date_interest)
+        o_hr = XObject(open_hr,date_interest) # open hour
+        c_hr = XObject(close_hr,date_interest) # close hour
         o_hr.x = 'datetime'
         c_hr.x = 'datetime'
         open_hr = o_hr.x[0] 
@@ -379,271 +680,7 @@ class PlotPricing(object):
     def add_volume_panel(self):
         return None
     
-class SubComponents(object):
-
-    # All subcomponents for Price plotting. This can be inheretance class
-    def __init__(self, ax, axis_limit = AxisLimit()):
-        self.ax = ax # the location that these things should be added
-        self._quant_lines = False
-        self._add_EES_region = False
-        self._add_trade_region = False
-        self._add_crossover_pts = False
         
-        self._add_entry_exit_points = False
-        self._add_bol_band = False
-        self._add_fibo_retract_lines = False
-
-        self.txt_shift_x = None
-        self.txt_shift_y = None
-        self.axis_limit = axis_limit # WIP
-
-       # super().__init__()
-       
-    def quant_lines(self, quant_list, quant_price_list, txt_shift_x, 
-                    txt_shift_y, start_x = 0.0, end_x= 100, alpha = 0.5):
-        """
-        A function that add the quantile lines to a plot.
-    
-        Parameters
-        ----------
-        ax : <class 'matplotlib.axes._axes.Axes'>
-            The figure.
-        quant_list : list
-            A list of quantile name for text marking on the plot.
-        quant_price_list : list
-            The price of the horizontal lines corresponding to quant_list.
-        txt_shift_x : float
-            The shift in x-axis for the text.
-        txt_shift_y : float
-            The shift in y-axis for the text.
-        start_x: float, or datetime.time
-            The starting position for the text in x-axis
-        end_x: float, or datetime.time
-            The ending position for the text in x-axis
-        alpha : float, optional
-            The transparency of the quantile line. The default is 0.5.
-    
-        """
-
-        for quant, price in zip(quant_list, quant_price_list):
-            self.ax.hlines(float(price.iloc[0]), start_x, end_x, color='#C26F05', 
-                           alpha = alpha)
-            self.ax.text(start_x + txt_shift_x, float(price.iloc[0]) + txt_shift_y, quant, 
-                     color=pt_col, bbox=dict(boxstyle="round",
-                     ec= pt_col, fc='#C26F05'))        
-    
-    def EES_region(self, entry_price, exit_price, stop_loss, txt_shift_x, 
-                   txt_shift_y, start_x = 0.0, end_x = 2150, 
-                   direction="Neutral"):
-        """
-        A function that add the Entry, Exit, and Stop Loss regions to a plot.
-        It plot only in horizontal line. I will change this to np.arrage later.
-    
-        Parameters
-        ----------
-        ax : <class 'matplotlib.axes._axes.Axes'>
-            The figure.
-        entry_price : float
-            entry_price.
-        exit_price : float
-            exit_price.
-        stop_loss : float
-            stop_loss.
-        txt_shift_x : float
-            The shift in x-axis for the text.
-        txt_shift_y : float
-            The shift in y-axis for the text.
-        direction : str, optional
-            "Buy", "Sell", or "Neutral" signal. The default is "Neutral".
-    
-        """
-        # dashed line is the entry line, solid line is the exit line
-        # dashed red line is the stop loss
-        
-        if direction == "Buy":
-            limit = -10000
-        elif direction == "Sell":
-            limit = 10000
-        elif direction == "Neutral":
-            limit = np.nan
-            
-        entry_price = float(entry_price.iloc[0])
-        exit_price = float(exit_price.iloc[0])
-        stop_loss = float(stop_loss.iloc[0])
-
-        # The EES lines
-        self.ax.hlines(entry_price, self.axis_limit.start_line, 
-                       self.axis_limit.end_line, color='#18833D', 
-                       ls="dashed", lw = 2)
-        self.ax.hlines(exit_price, self.axis_limit.start_line, 
-                       self.axis_limit.end_line, color='#18833D', 
-                       ls="solid", lw = 2 )
-        self.ax.hlines(stop_loss, self.axis_limit.start_line, 
-                       self.axis_limit.end_line, color='#E5543D', 
-                       ls = "dashed", lw = 2)
-        
-        # Green shade is the target region.
-        self.ax.fill_between([self.axis_limit.start_line, 
-                              self.axis_limit.end_line], 
-                             entry_price, exit_price, 
-                             color='green', alpha=0.3)
-        # Red shade is the stop loss region. 
-        self.ax.fill_between([self.axis_limit.start_line, 
-                              self.axis_limit.end_line], 
-                             stop_loss, limit, 
-                             color='red', alpha=0.3)
-        
-        # The texts that indicate the regions
-        self.ax.text(start_x + txt_shift_x, entry_price + txt_shift_y, 
-                     "Entry Price", 
-                      fontsize=8, color = pt_col, bbox=dict(boxstyle="round",
-                       ec= pt_col,fc='#206829'))
-                      
-                     # facecolor='#206829')
-        self.ax.text(start_x + txt_shift_x, exit_price + txt_shift_y, 
-                     "Exit Price", 
-                      fontsize=8, color= pt_col, bbox=dict(boxstyle="round",
-                       ec= pt_col,fc='#206829'))
-                      
-        self.ax.text(start_x + txt_shift_x, stop_loss + txt_shift_y, 
-                     "Stop Loss", 
-                      fontsize=8, color=pt_col, bbox=dict(boxstyle="round",
-                       ec= pt_col,fc='#80271B'))
-
-
-    def EES_range_region(self, 
-                         entry_price_range, exit_price_range, stop_loss, 
-                         txt_shift_x, txt_shift_y, 
-                         start_x = 0.0, end_x = 2150, 
-                         direction="Neutral"):
-        """
-        A function that add the Entry, Exit, and Stop Loss regions to a plot.
-        It plot only in horizontal line. I will change this to np.arrage later.
-    
-        Parameters
-        ----------
-        ax : <class 'matplotlib.axes._axes.Axes'>
-            The figure.
-        entry_price : float
-            entry_price.
-        exit_price : float
-            exit_price.
-        stop_loss : float
-            stop_loss.
-        txt_shift_x : float
-            The shift in x-axis for the text.
-        txt_shift_y : float
-            The shift in y-axis for the text.
-        direction : str, optional
-            "Buy", "Sell", or "Neutral" signal. The default is "Neutral".
-    
-        """
-        # dashed line is the entry line, solid line is the exit line
-        # dashed red line is the stop loss
-        
-        if direction == "Buy":
-            limit = -10000
-        elif direction == "Sell":
-            limit = 10000
-        elif direction == "Neutral":
-            limit = np.nan
-            
-        entry_price_lower = float(entry_price_range[0].iloc[0])
-        entry_price_upper = float(entry_price_range[1].iloc[0])
-        
-        exit_price_lower = float(exit_price_range[0].iloc[0])
-        exit_price_upper = float(exit_price_range[1].iloc[0])
-        
-        stop_loss = float(stop_loss.iloc[0])
-
-        # The EES lines
-        self.ax.hlines(entry_price_lower, self.axis_limit.start_line, 
-                       self.axis_limit.end_line, color='#18833D', 
-                       ls="dashed", lw = 2)
-        self.ax.hlines(entry_price_upper, self.axis_limit.start_line, 
-                       self.axis_limit.end_line, color='#18833D', 
-                       ls="dashed", lw = 2)
-        self.ax.hlines(exit_price_lower, self.axis_limit.start_line, 
-                       self.axis_limit.end_line, color='#18833D', 
-                       ls="solid", lw = 2)
-        self.ax.hlines(exit_price_upper, self.axis_limit.start_line, 
-                       self.axis_limit.end_line, color='#18833D', 
-                       ls="solid", lw = 2)
-        self.ax.hlines(stop_loss, self.axis_limit.start_line, 
-                       self.axis_limit.end_line, color='#E5543D', 
-                       ls = "dashed", lw = 2)
-        
-        # Green shade is the target region.
-        self.ax.fill_between([self.axis_limit.start_line, 
-                              self.axis_limit.end_line], 
-                              entry_price_lower, entry_price_upper, 
-                              color='green', alpha=0.3)
-        self.ax.fill_between([self.axis_limit.start_line, 
-                              self.axis_limit.end_line], 
-                              exit_price_lower, exit_price_upper, 
-                              color='green', alpha=0.3)
-        
-        # Red shade is the stop loss region. 
-        self.ax.fill_between([self.axis_limit.start_line, 
-                              self.axis_limit.end_line], 
-                             stop_loss, limit, 
-                             color='red', alpha=0.3)
-        
-        # The texts that indicate the regions
-        self.ax.text(start_x + txt_shift_x, entry_price_upper + txt_shift_y, 
-                     "Entry Price", 
-                      fontsize=8, color = pt_col, bbox=dict(boxstyle="round",
-                      ec= pt_col,fc='#206829'))
-                      
-                     # facecolor='#206829')
-        self.ax.text(start_x + txt_shift_x, exit_price_upper + txt_shift_y, 
-                     "Exit Price", 
-                      fontsize=8, color= pt_col, bbox=dict(boxstyle="round",
-                       ec= pt_col,fc='#206829'))
-                      
-        self.ax.text(start_x + txt_shift_x, stop_loss + txt_shift_y, 
-                     "Stop Loss", 
-                      fontsize=8, color=pt_col, bbox=dict(boxstyle="round",
-                       ec= pt_col,fc='#80271B'))
-
-        
-    def trade_region(self, open_hr, close_hr):
-        # fill the closed trading hours with shade
-        # the vertical lines that
-        self.ax.vlines(open_hr, 0, 2000, 'w')
-        self.ax.vlines(close_hr, 0, 2000, 'w')
-        
-        self.ax.fill_between([self.axis_limit.start_line, open_hr], 0, 2000, 
-                             color='grey', alpha=0.3)
-        self.ax.fill_between([close_hr, self.axis_limit.end_line], 0, 2000, 
-                             color='grey', alpha=0.3)
-        
-        # the vertical lines that
-        self.ax.vlines(open_hr, 0, 2000, 'k')
-        self.ax.vlines(close_hr, 0, 2000, 'k')
-    
-    def crossover_pts(self, 
-                      bppt_x1, bppt_y1, 
-                      bppt_x2, bppt_y2, 
-                      bppt_x3, bppt_y3):
-        print("crossover_pts")
-        #print(bppt_x1, bppt_y1, bppt_x2, bppt_y2, bppt_x3, bppt_y3)
-        # crossover points set 1 
-        self.ax.plot(bppt_x1, bppt_y1,'o', ms=6, c='blue')
-        self.ax.plot(bppt_x2, bppt_y2,'o', ms=6, c='green')
-        self.ax.plot(bppt_x3, bppt_y3,'o', ms=6, c='red')
-        
-    def buysellpoints(self, buy_time = "1201", buy_price =  86.05,
-                            sell_time = "1900", sell_price = 85.70):
-        
-        return None
-        
-        
-        
-# plot PNL
-# plot minute 
-# plot HeatMap
-
 def plot_minute(filename_minute: str, signal_filename: str, 
                 price_approx: str = 'Open',
                 date_interest: str = "2022-05-19", 
@@ -742,6 +779,11 @@ def plot_minute(filename_minute: str, signal_filename: str,
     
     
 if __name__ == "__main__":
+        
+# plot PNL
+# plot minute 
+# plot HeatMap
+
 # =============================================================================
 #     HISTORY_MINUTE_PKL_CLc1 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_CLc1.pkl')
 #     HISTORY_MINUTE_PKL_CLc2 = util.load_pkl('/home/dexter/Euler_Capital_codes/EC_tools/data/pkl_vault/crudeoil_future_minute_CLc2.pkl')
