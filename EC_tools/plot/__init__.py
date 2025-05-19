@@ -110,16 +110,13 @@ class SubPlot(object):
     panel_names_list: list[str] = field(default_factory=lambda: ['main_panel'])
     
     def __post_init__(self, **kwargs):
-        #default_kwargs = {'panel_names_list':['main_panel']}
-        #kwargs = dict(default_kwargs,**kwargs)
-
+        # The subplot has to have a main panel. All other things are add on
         self.fig = plt.figure(figsize=self.figsize)
         self.gs = self.fig.add_gridspec(nrows=self.nrows, 
                                         ncols = self.ncols, 
-                                        width_ratios = self.width_ratios)
+                                        width_ratios = self.width_ratios,
+                                        height_ratios = self.height_ratios)
         
-        # The subplot has to have a main panel. All other things are add on
-        #self.panel_names_list = kwargs['panel_names_list']
         
         # Generate a list of panel names that matches the gridspec setting
         i = 0
@@ -189,9 +186,62 @@ class SubComponents(object):
                      color=pt_col, bbox=dict(boxstyle="round",
                      ec= pt_col, fc='#C26F05'))        
             
-    def EES_region_step(self, ax, entry_price, exit_price, stop_loss, txt_shift_x, 
-                        txt_shift_y, start_x = 0.0, end_x = 2150, 
+    def EES_region_step(self, ax, 
+                        TE_time_list, TE_price_list, 
+                        TP_time_list, TP_price_list, 
+                        SL_time_list, SL_price_list, 
+                        txt_shift_x, txt_shift_y, 
+                        EES_start_x = 0.0, EES_end_x = 2150, 
                         direction="Neutral"):
+        
+        if direction == "Buy":
+            limit = -10000
+        elif direction == "Sell":
+            limit = 10000
+        elif direction == "Neutral":
+            limit = np.nan
+            
+        print(TE_time_list, TE_price_list, 
+              TP_time_list, TP_price_list, 
+              SL_time_list, SL_price_list)
+        #ax.hlines(entry_price, self.axis_limit.start_line, 
+        #               self.axis_limit.end_line, color='#18833D', 
+        #               ls="dashed", lw = 2)
+
+        # The EES lines
+        ax.plot(TE_time_list, TE_price_list, drawstyle='steps-post', color='#18833D', 
+                ls="dashed", lw = 2)
+        ax.plot(TP_time_list, TP_price_list, drawstyle='steps-post', color='#18833D', 
+                ls="solid", lw = 2)
+        ax.plot(SL_time_list, SL_price_list, drawstyle='steps-post', color='#E5543D', 
+                ls="solid", lw = 2)
+
+        # Green shade is the target region.
+        ax.fill_between([TE_time_list[0], TP_time_list[-1]], 
+                         TE_price_list[0], TP_price_list[0], 
+                         color='green', alpha=0.3)
+        # Red shade is the stop loss region. 
+        ax.fill_between(SL_time_list, 
+                        SL_price_list, limit, 
+                        color='red', alpha=0.3)
+                
+        # The texts that indicate the regions
+        ax.text(EES_start_x+txt_shift_x, TE_price_list[-1] + txt_shift_y, 
+                     "Entry Price", 
+                      fontsize=8, color = pt_col, bbox=dict(boxstyle="round",
+                       ec= pt_col,fc='#206829'))
+                      
+                     # facecolor='#206829')
+        ax.text(EES_start_x+ txt_shift_x, TP_price_list[-1] + txt_shift_y, 
+                     "Exit Price", 
+                      fontsize=8, color= pt_col, bbox=dict(boxstyle="round",
+                       ec= pt_col,fc='#206829'))
+                      
+        ax.text(EES_start_x+txt_shift_x, SL_price_list[-2*3] + txt_shift_y, 
+                     "Stop Loss", 
+                      fontsize=8, color=pt_col, bbox=dict(boxstyle="round",
+                       ec= pt_col,fc='#80271B'))
+
         return 
     
     def EES_range_region_step():
@@ -381,9 +431,9 @@ class SubComponents(object):
         ax.vlines(close_hr, 0, 2000, 'w')
         
         ax.fill_between([self.axis_limit.start_line, open_hr], 0, 2000, 
-                             color='grey', alpha=0.3)
+                             color='grey', alpha=0.5)
         ax.fill_between([close_hr, self.axis_limit.end_line], 0, 2000, 
-                             color='grey', alpha=0.3)
+                             color='grey', alpha=0.5)
         
         # the vertical lines that
         ax.vlines(open_hr, 0, 2000, 'k')

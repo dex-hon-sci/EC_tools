@@ -20,7 +20,7 @@ import EC_tools.utility.math_func as mfunc
 
 from crudeoil_future_const import DAILY_MINUTE_DATA_INDI_PKL, DAILY_APC_PKL, APC_LENGTH
 
-DEFAULT_KWARGS = {'subplot': SubPlot(1, 2, [4,1], [1,1], (10,4)),
+DEFAULT_KWARGS = {'subplot': SubPlot(1, 1, [1], [1], (10,4)),
                   'axis_limit': AxisLimit(),
                   'subcompt': SubComponents(),
                   'add_pdf_panel': False,
@@ -28,15 +28,16 @@ DEFAULT_KWARGS = {'subplot': SubPlot(1, 2, [4,1], [1,1], (10,4)),
 
 DEFAULT_KWARGS_main = {'open_hr':'0330', 
                        'close_hr':'1930',
-                       'xlabel': "Time (minutes)",
-                       'x_format': '%H:%M',
-                       'price_chart_title': ""} 
+                       'main_panel_xlabel': "Time (minutes)",
+                       'main_panel_x_format': '%H:%M',
+                       'price_chart_title': ""
+                       'main_panel_title'} 
 
 DEFAULT_KWARGS_pdf = {'pdf':[0.0], 
                       'events': [1.0], 
                       'pt_col':'orange',
-                      'title': "",
-                      'xlabel': "Probability"} 
+                      'pdf_panel_title': "",
+                      'pdf_panel_xlabel': "Probability"} 
 
 COLOR_DICT_LIGHT_MODE = {'data_col':'k','bg_col':'white', 'col':'g'}
 COLOR_DICT_DARK_MODE= {'data_col':'white','bg_col':'k', 'col':'g'}
@@ -56,25 +57,24 @@ class PlotIntraDay(object):
         # later change this to autocalculate how many panels are needed        
         self.axis_limit = kwargs['axis_limit'] 
         self.subcompt = kwargs['subcompt']
-        self.subplot = subplot
-        
         # Add other subplot panels
         self.add_pdf_panel = kwargs['add_pdf_panel']
         self.add_vol_panel = kwargs['add_vol_panel']
         
-        self._color_mode = COLOR_DICT_DARK_MODE
-        
+        self.subplot = subplot
+        print('subplot', subplot, self.add_pdf_panel, self.add_vol_panel)
+
         if self.subplot == None:
             if not self.add_pdf_panel and not self.add_vol_panel:
                 self.subplot = SubPlot()
-            elif self.add_pdf_panel:
+            elif self.add_pdf_panel and not self.add_vol_panel:
                 self.subplot = SubPlot(nrows=1, ncols=2, 
                                        width_ratios=[4,1],
                                        height_ratios=[1,1], 
                                        figsize = (10,4),
                                        panel_names_list=\
                                            ['main_panel', 'pdf_panel'])
-            elif self.add_vol_panel:
+            elif self.add_vol_panel and not self.add_pdf_panel:
                 self.subplot = SubPlot(nrows=2, ncols=1, 
                                        width_ratios = [1,1], 
                                        height_ratios=[3,1], 
@@ -82,6 +82,7 @@ class PlotIntraDay(object):
                                        panel_names_list=\
                                            ['main_panel', 'vol_panel'])
             elif self.add_pdf_panel and self.add_vol_panel:
+                print("add pdf and vol")
                 self.subplot = SubPlot(nrows=2, ncols=2, 
                                        width_ratios =[4,1], 
                                        height_ratios=[3,1], 
@@ -94,6 +95,10 @@ class PlotIntraDay(object):
         # The main instance of matplotlib.axes._base._AxesBase.
         # Define here for sharing attributes
         self.ax_main = None
+        
+        # Stylistic choice
+        self._color_mode = COLOR_DICT_DARK_MODE
+
         # Subplots: # Volume plot. # PDF
         # Subcompt: #Directions #EES lines, #EES range,#Tradinghours #point highlights
         
@@ -133,15 +138,14 @@ class PlotIntraDay(object):
         self.ax_main.set_ylim([self.axis_limit.price_lower_limit, 
                           self.axis_limit.price_upper_limit])
         
-        self.ax_main.set_xlabel(kwargs['xlabel'])
+        self.ax_main.set_xlabel(kwargs['main_panel_xlabel'])
         self.ax_main.set_ylabel("Price (USD)")
         self.ax_main.set_title(kwargs['price_chart_title'])
         
-        fmt = mdates.DateFormatter(kwargs['x_format'])
+        fmt = mdates.DateFormatter(kwargs['main_panel_x_format'])
         self.ax_main.xaxis.set_major_formatter(fmt)
         self.ax_main.grid()
         
-        #return self.fig
         # define the pixels of shift for the texts in both x and y axis
         txt_shift_x = 0.1/2
         txt_shift_y =  (max(y)-min(y))/20
@@ -159,14 +163,26 @@ class PlotIntraDay(object):
                                       start_x = self.axis_limit.start_line, 
                                       end_x = self.axis_limit.end_line, 
                                       alpha = 0.5)
+            
+        if self.subcompt._add_EES_region_step:
+            self.subcompt.EES_region_step(self.ax_main, 
+                                          kwargs['TE_time_list'], 
+                                          kwargs['TE_price_list'], 
+                                          kwargs['TP_time_list'], 
+                                          kwargs['TP_price_list'], 
+                                          kwargs['SL_time_list'], 
+                                          kwargs['SL_loss_list'], 
+                                          txt_shift_x_date, txt_shift_y,
+                                          EES_start_x = kwargs['EES_start_x'], 
+                                          EES_end_x = kwargs['EES_end_x'], 
+                                          direction=kwargs['direction'])
 
 
     def plot_pdf_panel(self, **kwargs):
+        # A Function that plot the pdf panel
         default_kwargs = DEFAULT_KWARGS_pdf
         kwargs = dict(default_kwargs,**kwargs)
         
-        
-        print('pdf and events', kwargs['pdf'], kwargs['events'])
         # Define subplots
         ax_pdf = self.subplot.fig.add_subplot(self.subplot.panel_dict['pdf_panel'],
                                               sharey=self.ax_main)
@@ -185,13 +201,20 @@ class PlotIntraDay(object):
 
     
         ax_pdf.set_xlim([-0.005, max(kwargs['pdf'])+ np.std(kwargs['pdf'])/4])
-        ax_pdf.set_title(kwargs['title'])
-        ax_pdf.set_xlabel(kwargs['xlabel'])
+        ax_pdf.set_title(kwargs['pdf_panel_title'])
+        ax_pdf.set_xlabel(kwargs['pdf_panel_xlabel'])
         ax_pdf.invert_xaxis()
         ax_pdf.grid() 
         return 
     
     def plot_vol_panel(self):
+        ax_vol = self.subplot.fig.add_subplot(self.subplot.panel_dict['vol_panel'],
+                                              sharex=self.ax_main)
+        ax_vol.plot([],[], ms =2)
+        ax_vol.set_xlabel('Time (Minutes)')
+
+        ax_vol.grid() 
+
         return 
 
     def plot_all(self, x,y,date_interest_dt, **kwargs):
@@ -208,7 +231,6 @@ class PlotIntraDay(object):
 
 
 def make_plot(symbol, date_interest):
-    
     # Import Historical Data
     filename_minute = DAILY_MINUTE_DATA_INDI_PKL[symbol]
     price_approx = 'Open'
@@ -242,7 +264,60 @@ def make_plot(symbol, date_interest):
     
     price_lower_limit = curve['0.03'].to_numpy()
     price_upper_limit = curve['0.97'].to_numpy()
+    
+    # Define the Dynamic EES time and prices
+    TE_time = [datetime.time(3,30,0), datetime.time(16,0,0)] 
+    TP_time = [datetime.time(3,30,0), datetime.time(19,59,0)]
+    # A list of pairs of datetime in a tuple #1959
+    dSL_time = [datetime.time(3,30,0), datetime.time(8,0,0),
+                datetime.time(8,0,0), datetime.time(11,0,0),
+                datetime.time(11,0,0), datetime.time(14,0,0),
+                datetime.time(14,0,0), datetime.time(19,59,0)] 
+    
+    TE_time_list =[datetime.datetime.combine(date_interest_dt.date(),ele) 
+                   for ele in TE_time] 
+    TE_price_list = [curve['0.4'].iloc[0] for ele in TE_time]  
+    TP_time_list = [datetime.datetime.combine(date_interest_dt.date(),ele)
+                    for ele in TP_time] 
+    TP_price_list = [curve['0.6'].iloc[0] for ele in TP_time] 
+    SL_time_list = [datetime.datetime.combine(date_interest_dt.date(), ele) 
+                    for ele in dSL_time] 
+    SL_loss_list = [curve['0.05'].iloc[0], curve['0.05'].iloc[0],
+                    curve['0.15'].iloc[0], curve['0.15'].iloc[0], 
+                    curve['0.3'].iloc[0], curve['0.3'].iloc[0], 
+                    curve['0.38'].iloc[0], curve['0.38'].iloc[0]] 
+    
+    EES_txt_start_time = datetime.time(hour = 20, minute = 50)
+    EES_txt_start_time = datetime.datetime.combine(date_interest_dt.date(), 
+                                                   EES_txt_start_time)
 
+# =============================================================================
+#     # Define the Dynamic EES time and prices
+#     TE_time = (datetime.time(3,30,0), datetime.time(16,0,0)) 
+#     TP_time = (datetime.time(3,30,0), datetime.time(19,59,0))
+#     # A list of pairs of datetime in a tuple #1959
+#     dSL_time = [(datetime.time(3,30,0), datetime.time(8,0,0)),
+#                 (datetime.time(8,0,0), datetime.time(11,0,0)),
+#                 (datetime.time(11,0,0), datetime.time(14,0,0)),
+#                 (datetime.time(14,0,0), datetime.time(19,59,0))] 
+#     
+#     TE_time_list =[datetime.datetime.combine(date_interest_dt.date(),TE_time[0]),
+#                    datetime.datetime.combine(date_interest_dt.date(),TE_time[1])] 
+#     TE_price_list = [curve['0.4'].iloc[0], curve['0.4'].iloc[0]]  
+#     TP_time_list = [datetime.datetime.combine(date_interest_dt.date(),TP_time[0]),
+#                     datetime.datetime.combine(date_interest_dt.date(),TP_time[1])] 
+#     TP_price_list = [curve['0.6'].iloc[0], curve['0.6'].iloc[0]] 
+#     SL_time_list = [datetime.datetime.combine(date_interest_dt.date(), ele[0]) 
+#                     for ele in dSL_time] + \
+#                     [datetime.datetime.combine(date_interest_dt.date(),dSL_time[-1][1])]
+#     SL_loss_list = [curve['0.05'].iloc[0], curve['0.15'].iloc[0], 
+#                     curve['0.3'].iloc[0], curve['0.38'].iloc[0], curve['0.38'].iloc[0]] 
+#     
+# =============================================================================
+    print(SL_time_list, SL_loss_list)
+    # A list of float in the form of quant distance from the entry
+    dSL = [0.0,0.05,0.1,0.25] 
+    
     # Define input time-series
     x, y = interest['Time'], interest[price_approx]
     
@@ -264,13 +339,23 @@ def make_plot(symbol, date_interest):
     PID = PlotIntraDay(axis_limit = AxL, 
                        subcompt = subcomp_main,
                        add_pdf_panel=True,
-                       add_vol_panel=False)
+                       add_vol_panel=True)
     
     PID.plot_all(x, y, date_interest_dt, # Essential Parameters
                  quant_list=quant_list, # Parameters for quannlines
                  quant_price_list=quant_price_list, # Parameters for quannlines
                  events = even_spaced_prices, # Parameters for PDF panel
-                 pdf=pdf) # Parameters for PDF panel
+                 pdf=pdf, # Parameters for PDF panel
+                 direction = 'Buy',
+                 TE_time_list = TE_time_list,
+                 TE_price_list = TE_price_list, 
+                 TP_time_list = TP_time_list, 
+                 TP_price_list = TP_price_list,
+                 SL_time_list = SL_time_list,
+                 SL_loss_list = SL_loss_list,
+                 EES_start_x = EES_txt_start_time,
+                 EES_end_x = AxL.end_line
+                 ) 
 
 
         
