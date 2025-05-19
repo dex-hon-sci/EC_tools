@@ -8,7 +8,7 @@ Intraday price plotting functions
 """
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import datetime as datetime
 
 import numpy as np
@@ -102,15 +102,16 @@ class AxisLimit(object):
 @dataclass
 class SubPlot(object):
     # A class that serve as the configuration for plotting functions
-    nrows: int
-    ncols: int
-    width_ratios: list[float|int]
-    #height_ratios: list[float|int]
-    figsize: tuple[float|int]
+    nrows: int = 1
+    ncols: int = 1
+    width_ratios: list[float|int] = field(default_factory=lambda: [1])
+    height_ratios: list[float|int] = field(default_factory=lambda: [1])
+    figsize: tuple[float|int] = field(default_factory=lambda: (10,4))
+    panel_names_list: list[str] = field(default_factory=lambda: ['main_panel'])
     
     def __post_init__(self, **kwargs):
-        default_kwargs = {'panel_names_list':['main_panel']}
-        kwargs = dict(default_kwargs,**kwargs)
+        #default_kwargs = {'panel_names_list':['main_panel']}
+        #kwargs = dict(default_kwargs,**kwargs)
 
         self.fig = plt.figure(figsize=self.figsize)
         self.gs = self.fig.add_gridspec(nrows=self.nrows, 
@@ -118,59 +119,26 @@ class SubPlot(object):
                                         width_ratios = self.width_ratios)
         
         # The subplot has to have a main panel. All other things are add on
-        self.panel_names_list = kwargs['panel_names_list']
+        #self.panel_names_list = kwargs['panel_names_list']
         
         # Generate a list of panel names that matches the gridspec setting
+        i = 0
         while len(self.panel_names_list) < len(list(self.gs)):
-            self.panel_names_list = self.panel_names_list + ['None']
+            self.panel_names_list = self.panel_names_list + ['Panel_'+str(i)]
+            i+=1
             
-        if len(kwargs['panel_names_list']) > len(list(self.gs)):
+        if len(self.panel_names_list) > len(list(self.gs)):
             raise Exception('There are more panel names than panels.')
             
         # Generate dictionary for settings in each sublots
         self.panel_dict = {self.panel_names_list[i]: list(self.gs)[i] 
                            for i in range(len(list(self.gs)))}
-        
-# =============================================================================
-# class SubPlot(object):
-#     # A class that serve as the configuration for plotting functions
-#     def __init__(self, nrows, ncols, width_ratios, figsize, **kwargs):
-#         self.nrows = nrows
-#         self.ncols = ncols
-#         self.width_ratios = width_ratios
-#         #height_ratios: list[float|int]
-#         self.figsize = figsize
-#     
-#         default_kwargs = {'panel_names_list':['main_panel']}
-#         kwargs = dict(default_kwargs,**kwargs)
-# 
-#         self.fig = plt.figure(figsize=self.figsize)
-#         self.gs = self.fig.add_gridspec(nrows = self.nrows, 
-#                                         ncols = self.ncols, 
-#                                         width_ratios = self.width_ratios)
-#         
-#         # The subplot has to have a main panel. All other things are add on
-#         self.panel_names_list = kwargs['panel_names_list']
-#         
-#         # Generate a list of panel names that matches the gridspec setting
-#         while len(self.panel_names_list) < len(list(self.gs)):
-#             print(len(self.panel_names_list), list(self.gs))
-#             self.panel_names_list = self.panel_names_list + ['None']
-#             
-#         if len(kwargs['panel_names_list']) > len(list(self.gs)):
-#             raise Exception('There are more panel names than panels.')
-#             
-#         # Generate dictionary for settings in each sublots
-#         self.panel_dict = {self.panel_names_list[i]: list(self.gs)[i] 
-#                            for i in range(len(list(self.gs)))}
-# =============================================================================
 
 class SubComponents(object):
     # A class that add the pre-made subcomponents to the designated subplot
     # All subcomponents for Price plotting. This can be inheretance class
-    def __init__(self, ax, axis_limit = AxisLimit()):
-        self.ax = ax # the location that these things should be added
-        self._quant_lines = False
+    def __init__(self, axis_limit = AxisLimit()):
+        self._add_quant_lines = False
         self._add_EES_region = False
         self._add_trade_region = False
         self._add_crossover_pts = False
@@ -185,7 +153,7 @@ class SubComponents(object):
 
        # super().__init__()
        
-    def quant_lines(self, 
+    def quant_lines(self, ax, 
                     quant_list: list, quant_price_list: list, 
                     txt_shift_x: float, txt_shift_y: float, 
                     start_x: float = 0.0, end_x: float = 100, 
@@ -215,13 +183,13 @@ class SubComponents(object):
         """
 
         for quant, price in zip(quant_list, quant_price_list):
-            self.ax.hlines(float(price.iloc[0]), start_x, end_x, color='#C26F05', 
+            ax.hlines(float(price.iloc[0]), start_x, end_x, color='#C26F05', 
                            alpha = alpha)
-            self.ax.text(start_x + txt_shift_x, float(price.iloc[0]) + txt_shift_y, quant, 
+            ax.text(start_x + txt_shift_x, float(price.iloc[0]) + txt_shift_y, quant, 
                      color=pt_col, bbox=dict(boxstyle="round",
                      ec= pt_col, fc='#C26F05'))        
             
-    def EES_region_step(self, entry_price, exit_price, stop_loss, txt_shift_x, 
+    def EES_region_step(self, ax, entry_price, exit_price, stop_loss, txt_shift_x, 
                         txt_shift_y, start_x = 0.0, end_x = 2150, 
                         direction="Neutral"):
         return 
@@ -229,7 +197,7 @@ class SubComponents(object):
     def EES_range_region_step():
         return 
     
-    def EES_region(self, 
+    def EES_region(self, ax,
                    entry_price: float, exit_price: float, stop_loss: float, 
                    txt_shift_x: float, txt_shift_y: float, 
                    start_x: float = 0.0, end_x: float = 2150, 
@@ -271,46 +239,46 @@ class SubComponents(object):
         stop_loss = float(stop_loss.iloc[0])
 
         # The EES lines
-        self.ax.hlines(entry_price, self.axis_limit.start_line, 
+        ax.hlines(entry_price, self.axis_limit.start_line, 
                        self.axis_limit.end_line, color='#18833D', 
                        ls="dashed", lw = 2)
-        self.ax.hlines(exit_price, self.axis_limit.start_line, 
+        ax.hlines(exit_price, self.axis_limit.start_line, 
                        self.axis_limit.end_line, color='#18833D', 
                        ls="solid", lw = 2 )
-        self.ax.hlines(stop_loss, self.axis_limit.start_line, 
+        ax.hlines(stop_loss, self.axis_limit.start_line, 
                        self.axis_limit.end_line, color='#E5543D', 
                        ls = "dashed", lw = 2)
         
         # Green shade is the target region.
-        self.ax.fill_between([self.axis_limit.start_line, 
+        ax.fill_between([self.axis_limit.start_line, 
                               self.axis_limit.end_line], 
                              entry_price, exit_price, 
                              color='green', alpha=0.3)
         # Red shade is the stop loss region. 
-        self.ax.fill_between([self.axis_limit.start_line, 
+        ax.fill_between([self.axis_limit.start_line, 
                               self.axis_limit.end_line], 
                              stop_loss, limit, 
                              color='red', alpha=0.3)
         
         # The texts that indicate the regions
-        self.ax.text(start_x + txt_shift_x, entry_price + txt_shift_y, 
+        ax.text(start_x + txt_shift_x, entry_price + txt_shift_y, 
                      "Entry Price", 
                       fontsize=8, color = pt_col, bbox=dict(boxstyle="round",
                        ec= pt_col,fc='#206829'))
                       
                      # facecolor='#206829')
-        self.ax.text(start_x + txt_shift_x, exit_price + txt_shift_y, 
+        ax.text(start_x + txt_shift_x, exit_price + txt_shift_y, 
                      "Exit Price", 
                       fontsize=8, color= pt_col, bbox=dict(boxstyle="round",
                        ec= pt_col,fc='#206829'))
                       
-        self.ax.text(start_x + txt_shift_x, stop_loss + txt_shift_y, 
+        ax.text(start_x + txt_shift_x, stop_loss + txt_shift_y, 
                      "Stop Loss", 
                       fontsize=8, color=pt_col, bbox=dict(boxstyle="round",
                        ec= pt_col,fc='#80271B'))
 
 
-    def EES_range_region(self, 
+    def EES_range_region(self, ax,
                          entry_price_range, exit_price_range, stop_loss, 
                          txt_shift_x: float, txt_shift_y: float, 
                          start_x: float = 0.0, end_x: float = 2150, 
@@ -356,81 +324,81 @@ class SubComponents(object):
         stop_loss = float(stop_loss.iloc[0])
 
         # The EES lines
-        self.ax.hlines(entry_price_lower, self.axis_limit.start_line, 
+        ax.hlines(entry_price_lower, self.axis_limit.start_line, 
                        self.axis_limit.end_line, color='#18833D', 
                        ls="dashed", lw = 2)
-        self.ax.hlines(entry_price_upper, self.axis_limit.start_line, 
+        ax.hlines(entry_price_upper, self.axis_limit.start_line, 
                        self.axis_limit.end_line, color='#18833D', 
                        ls="dashed", lw = 2)
-        self.ax.hlines(exit_price_lower, self.axis_limit.start_line, 
+        ax.hlines(exit_price_lower, self.axis_limit.start_line, 
                        self.axis_limit.end_line, color='#18833D', 
                        ls="solid", lw = 2)
-        self.ax.hlines(exit_price_upper, self.axis_limit.start_line, 
+        ax.hlines(exit_price_upper, self.axis_limit.start_line, 
                        self.axis_limit.end_line, color='#18833D', 
                        ls="solid", lw = 2)
-        self.ax.hlines(stop_loss, self.axis_limit.start_line, 
+        ax.hlines(stop_loss, self.axis_limit.start_line, 
                        self.axis_limit.end_line, color='#E5543D', 
                        ls = "dashed", lw = 2)
         
         # Green shade is the target region.
-        self.ax.fill_between([self.axis_limit.start_line, 
+        ax.fill_between([self.axis_limit.start_line, 
                               self.axis_limit.end_line], 
                               entry_price_lower, entry_price_upper, 
                               color='green', alpha=0.3)
-        self.ax.fill_between([self.axis_limit.start_line, 
+        ax.fill_between([self.axis_limit.start_line, 
                               self.axis_limit.end_line], 
                               exit_price_lower, exit_price_upper, 
                               color='green', alpha=0.3)
         
         # Red shade is the stop loss region. 
-        self.ax.fill_between([self.axis_limit.start_line, 
+        ax.fill_between([self.axis_limit.start_line, 
                               self.axis_limit.end_line], 
                              stop_loss, limit, 
                              color='red', alpha=0.3)
         
         # The texts that indicate the regions
-        self.ax.text(start_x + txt_shift_x, entry_price_upper + txt_shift_y, 
+        ax.text(start_x + txt_shift_x, entry_price_upper + txt_shift_y, 
                      "Entry Price", 
                       fontsize=8, color = pt_col, bbox=dict(boxstyle="round",
                       ec= pt_col,fc='#206829'))
                       
                      # facecolor='#206829')
-        self.ax.text(start_x + txt_shift_x, exit_price_upper + txt_shift_y, 
+        ax.text(start_x + txt_shift_x, exit_price_upper + txt_shift_y, 
                      "Exit Price", 
                       fontsize=8, color= pt_col, bbox=dict(boxstyle="round",
                        ec= pt_col,fc='#206829'))
                       
-        self.ax.text(start_x + txt_shift_x, stop_loss + txt_shift_y, 
+        ax.text(start_x + txt_shift_x, stop_loss + txt_shift_y, 
                      "Stop Loss", 
                       fontsize=8, color=pt_col, bbox=dict(boxstyle="round",
                        ec= pt_col,fc='#80271B'))
 
         
-    def trade_region(self, open_hr: float, close_hr: float):
+    def trade_region(self, ax, open_hr: float, close_hr: float):
         # fill the closed trading hours with shade
         # the vertical lines that
-        self.ax.vlines(open_hr, 0, 2000, 'w')
-        self.ax.vlines(close_hr, 0, 2000, 'w')
+        ax.vlines(open_hr, 0, 2000, 'w')
+        ax.vlines(close_hr, 0, 2000, 'w')
         
-        self.ax.fill_between([self.axis_limit.start_line, open_hr], 0, 2000, 
+        ax.fill_between([self.axis_limit.start_line, open_hr], 0, 2000, 
                              color='grey', alpha=0.3)
-        self.ax.fill_between([close_hr, self.axis_limit.end_line], 0, 2000, 
+        ax.fill_between([close_hr, self.axis_limit.end_line], 0, 2000, 
                              color='grey', alpha=0.3)
         
         # the vertical lines that
-        self.ax.vlines(open_hr, 0, 2000, 'k')
-        self.ax.vlines(close_hr, 0, 2000, 'k')
+        ax.vlines(open_hr, 0, 2000, 'k')
+        ax.vlines(close_hr, 0, 2000, 'k')
     
-    def crossover_pts(self, 
+    def crossover_pts(self, ax,
                       bppt_x1: list, bppt_y1: list, 
                       bppt_x2: list, bppt_y2: list, 
                       bppt_x3: list, bppt_y3: list):
         print("crossover_pts")
         #print(bppt_x1, bppt_y1, bppt_x2, bppt_y2, bppt_x3, bppt_y3)
         # crossover points set 1 
-        self.ax.plot(bppt_x1, bppt_y1,'o', ms=6, c='blue')
-        self.ax.plot(bppt_x2, bppt_y2,'o', ms=6, c='green')
-        self.ax.plot(bppt_x3, bppt_y3,'o', ms=6, c='red')
+        ax.plot(bppt_x1, bppt_y1,'o', ms=6, c='blue')
+        ax.plot(bppt_x2, bppt_y2,'o', ms=6, c='green')
+        ax.plot(bppt_x3, bppt_y3,'o', ms=6, c='red')
         
     def buysellpoints(self, buy_time: str = "1201", buy_price: float =  86.05,
                             sell_time: str = "1900", sell_price: float = 85.70):
@@ -553,7 +521,7 @@ class PlotPricing(object):
         # define the pixels of shift for the texts in both x and y axis
         txt_shift_x, txt_shift_y = np.std(pdf)/2, np.std(events)/20
         #define the shift in dates
-        txt_shift_x_date = datetime.timedelta(hours = round(np.std(pdf)/2))
+        txt_shift_x_date = datetime.timedelta(hours = round(txt_shift_x))
     
         # Add sub plots
         self._add_pdf_panel = True
@@ -565,8 +533,8 @@ class PlotPricing(object):
                       quant_list, quant_price_list)
             
         # Add subcomponents  
-        subcomp = SubComponents(ax1,axis_limit=self.axis_limit)
-        subcomp._quant_lines = True
+        subcomp = SubComponents(axis_limit=self.axis_limit)
+        subcomp._add_quant_lines = True
         subcomp._add_EES_region = False
         subcomp._add_EES_range_region = True
         subcomp._add_crossover_pts = True
@@ -588,7 +556,7 @@ class PlotPricing(object):
                 exit_price = np.nan
                 stop_loss = np.nan
                 
-            subcomp.EES_region(entry_price, exit_price ,stop_loss, 
+            subcomp.EES_region(ax1, entry_price, exit_price ,stop_loss, 
                                 txt_shift_x_date, txt_shift_y, 
                                 start_x = EES_txt_start_time,
                                 end_x = self.axis_limit.end_line, 
@@ -609,7 +577,7 @@ class PlotPricing(object):
                 exit_price = [np.nan, np.nan]
                 stop_loss = np.nan
                 
-            subcomp.EES_range_region(entry_price, exit_price ,stop_loss, 
+            subcomp.EES_range_region(ax1, entry_price, exit_price ,stop_loss, 
                                      txt_shift_x_date, txt_shift_y, 
                                      start_x = EES_txt_start_time,
                                      end_x = self.axis_limit.end_line, 
@@ -617,8 +585,8 @@ class PlotPricing(object):
                             
             
         # add quantile lines to the plot
-        if subcomp._quant_lines:
-            subcomp.quant_lines(quant_list, quant_price_list, 
+        if subcomp._add_quant_lines:
+            subcomp.quant_lines(ax1, quant_list, quant_price_list, 
                                 txt_shift_x_date, txt_shift_y, 
                                 start_x = self.axis_limit.start_line, 
                                 end_x = self.axis_limit.end_line, 
@@ -638,11 +606,11 @@ class PlotPricing(object):
 
             print("subcomp._add_crossover_pts", subcomp._add_crossover_pts,
                   bppt_x1, bppt_y1, bppt_x2, bppt_y2, bppt_x3, bppt_y3)
-            subcomp.crossover_pts(bppt_x1, bppt_y1, bppt_x2, bppt_y2, 
+            subcomp.crossover_pts(ax1,bppt_x1, bppt_y1, bppt_x2, bppt_y2, 
                                   bppt_x3, bppt_y3)
             
         if subcomp._add_trade_region:
-            subcomp.trade_region(open_hr, close_hr)
+            subcomp.trade_region(ax1,open_hr, close_hr)
             
         # add the buying and selling points
         #add_buysell_points(ax1, buy_time, buy_price, sell_time, sell_price)
@@ -664,7 +632,7 @@ class PlotPricing(object):
         ax_apc = self.fig.add_subplot(self.gs[1], sharey=sharey)
         ax_apc.plot(pdf, events, 'o', c = pt_col, ms =2)
         
-        SubComponents(ax_apc).quant_lines(quant_list, quant_price_list, 
+        SubComponents().quant_lines(ax_apc,quant_list, quant_price_list, 
                                           txt_shift_x, txt_shift_y)
 
     
