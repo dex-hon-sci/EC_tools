@@ -116,11 +116,13 @@ class OneTradePerDay_DYNSL(Trade):
         elif self._cross_decision == 'SL_B':
             # scenario B
             #self._SL_pt = trunc_dicts_val[num]['close']
-            self._SL_pt = close_pt
+            # Only update this if defacto SL is null
+            if self._SL_pt == (np.nan,np.nan):
+                self._SL_pt = close_pt
         elif self._cross_decision == 'SL_C':
             # scenario C
             #next_SL_price = close_pt[1]+ trail_price_delta
-            self._dyn_list[num+1] = close_pt[1]+ trail_price_delta
+            self._dyn_list[num+1] = close_pt[1] + trail_price_delta
         return
             
     def choose_EES_values(self, 
@@ -145,8 +147,7 @@ class OneTradePerDay_DYNSL(Trade):
             
         # entry price not hit in that sections and position is not entred before
         # Then No trade that section.
-        if len(trunc_dict['entry']) == 0 and\
-           self._TE_pt == (np.nan,np.nan): 
+        if len(trunc_dict['entry']) == 0 and self._TE_pt == (np.nan,np.nan): 
            pass
         else:           
           # Save it as a defacto entry point only if it is empty
@@ -160,7 +161,7 @@ class OneTradePerDay_DYNSL(Trade):
                  #print('exit_cand', exit_cand, self._TE_pt)
                  if exit_cand[0] > self._TE_pt[0]:
                      earliest_exit = exit_cand
-                     #print('earliest_exit', earliest_exit)
+                     print('earliest_exit', earliest_exit)
                      break
                  
           # Search for the earliest stop pt after entry
@@ -169,7 +170,7 @@ class OneTradePerDay_DYNSL(Trade):
              for i, stop_cand in enumerate(trunc_dict['stop']):
                  if stop_cand[0] > self._TE_pt[0]:
                      earliest_stop = stop_cand
-                     #print('earliest_stop', earliest_stop)
+                     print('earliest_stop', earliest_stop)
                      break
                  
           # Put in the new exit and stop
@@ -206,7 +207,7 @@ class OneTradePerDay_DYNSL(Trade):
                   pass
               # Case 2: close_price > this_SL_price & close_price < next_SL_price, 
               #         (for Buy)
-              # Case 2: close_price < this_SL_price & close_price < next_SL_price, 
+              # Case 2: close_price < this_SL_price & close_price > next_SL_price, 
               #         (for Sell)              
               # ->  (A.replace new with old, B.close, C.Trail_dyn, tbc)
               elif CROSS_compare[direction]['case_2']:
@@ -219,8 +220,8 @@ class OneTradePerDay_DYNSL(Trade):
                                             this_SL_price,
                                             trunc_dict['close'],
                                             trail_price_delta=kwargs['trail_price_delta'])
-                  print('this_SL_price',  dyn_list[num], 
-                        'next_SL_price', dyn_list[num+1])
+                  print('this_SL_price',  self._dyn_list[num], 
+                        'next_SL_price', self._dyn_list[num+1])
                   print(self._dyn_list)
 
               # Case 3: close_price < this_SL_price -> SL (for Buy)
@@ -526,7 +527,9 @@ def find_minute_EES_dyn(histroy_data_intraday: pd.DataFrame,
     entry_pt_dict = read.find_crossover(price_list, target_entry)
     exit_pt_dict = read.find_crossover(price_list, target_exit)
     stop_pt_dict = read.find_crossover(price_list, stop_exit)
-    
+    print('entry_pt_dict', entry_pt_dict)
+    print('exit_pt_dict', exit_pt_dict)
+    print('stop_pt_dict', stop_pt_dict)
     if direction == "Neitral":
         #print("Neutral day")
         # for 'Neutral' action, all info are empty
@@ -587,7 +590,6 @@ def find_minute_EES_dyn(histroy_data_intraday: pd.DataFrame,
     close_date = date_list[np.where(time_list==close_date_new)[0]][0]
     close_datetime = datetime.datetime.combine(pd.to_datetime(close_date).date(), 
                                                close_date_new)
-
     # storage
     EES_dict = {'entry': list(zip(entry_times,entry_pts)),
                 'exit': list(zip(exit_times,exit_pts)),
@@ -749,8 +751,10 @@ def loop_portfolio_preloaded_dSL(portfo: Portfolio,
             target_exit = sections[num]['target_exit'][1]
             stop_exit = sections[num]['stop_exit'][1]
             
+            print_SL_price = T._dyn_list[int(num)]
+            
             print(f'--------section {num}: {start_time} to {end_time}, "{direction}"--------')
-            print(f'TE: {target_entry}, TP: {target_exit}, SL: {stop_exit}')
+            print(f'TE: {target_entry}, TP: {target_exit}, SL: {print_SL_price}')
             print('------------------------------------------------------')
 
             # set the open_hr to the time specific to this section
