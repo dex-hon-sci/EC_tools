@@ -101,7 +101,7 @@ def run_main(strategy_name,
     #MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/consistency/Argus_sample_with_mybacktest_newcode/Argus_sample_signals_2.csv'
     #MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/consistency/live_trade_vs_backtest_newcode/live_trade_compare_signals_TP25SL10_normalopen.csv'
     #MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/EC_benchmark/20240814_argusexact_cross_P25S35_0330_entry_signal_full.csv'
-    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/MR_signal_study/test_master_signal_file_EES_window.csv'
+    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/MR_signal_study/SLD4/test_master_signal_file_SLD4.csv'
     
     run_gen_signal_bulk(strategy,
                         start_date, end_date,
@@ -124,12 +124,11 @@ def run_main(strategy_name,
     #MASTER_PNL_FILENAME = RESULT_FILEPATH + '/consistency/Argus_sample_with_mybacktest_newcode/Argus_sample_PNL_with_mybacktest_newcode.pkl' 
     #MASTER_PNL_FILENAME = RESULT_FILEPATH + '/consistency/live_trade_vs_backtest_newcode/live_trade_compare_portoflio_TP25SL10_normalopen.pkl' 
     #MASTER_PNL_FILENAME = RESULT_FILEPATH + '/EC_benchmark/20240814_argusexact_cross_P25S35_0330_entry_PNL_full.pkl'
-    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/MR_signal_study/test_master_pnl_EES_window.pkl'
+    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/MR_signal_study/SLD4/test_master_pnl_SLD4.pkl'
     
     #SAVE_PNL_FILENAME_LIST = FILE_PNL_LOC
     print("HISTORY_MINUTE_PKL", HISTORY_MINUTE_PKL)
     run_backtest_bulk(trade_method, 
-                      #FILE_LOC, FILE_PNL_LOC, 
                       start_date, end_date, 
                       method = backtest_runtype, 
                       master_signal_filename = MASTER_SIGNAL_FILENAME,
@@ -159,7 +158,8 @@ def run_main(strategy_name,
         #PL.tradebook_filename = RESULT_FILEPATH + "/consistency/Argus_sample_with_mybacktest_newcode/Argus_sample_PNL_with_mybacktest_newcode.csv"
         #PL.tradebook_filename = RESULT_FILEPATH + "/consistency/live_trade_vs_backtest_newcode/live_trade_compare_pnl_TP25SL10_normalopen.csv"
         #PL.tradebook_filename = RESULT_FILEPATH + "/EC_benchmark/20240814_argusexact_cross_P25S35_0330_entry_PNL_full.csv"
-        PL.tradebook_filename = RESULT_FILEPATH + "/MR_signal_study/test_master_pnl_EES_window.csv"
+        #PL.tradebook_filename = RESULT_FILEPATH + "/MR_signal_study/SLD/test_master_pnl_SLD.csv"
+        PL.tradebook_filename = RESULT_FILEPATH + "/MR_signal_study/SLD4/test_master_pnl_SLD4.csv"
         
         PL.render_tradebook()
         PL.render_tradebook_xlsx()
@@ -171,19 +171,37 @@ if __name__ == "__main__":
     # Total date range
     start_date = "2021-01-11"
     end_date = "2024-08-14"
-    
+    #start_date = "2022-11-30"
+    #end_date = "2022-11-30"
+
     TE_TIME = (datetime.time(3,30,0), datetime.time(16,0,0)) 
     TP_TIME = (datetime.time(3,30,0), datetime.time(19,59,0))
     # A list of pairs of datetime in a tuple
+# =============================================================================
+#     dSL_TIME = [(datetime.time(3,30,0), datetime.time(8,0,0)),
+#                 (datetime.time(8,0,0), datetime.time(14,0,0)),
+#                 (datetime.time(14,0,0), datetime.time(16,0,0)),
+#                 (datetime.time(16,0,0), datetime.time(19,59,0))] # Setting 1 and 2
+# # =============================================================================
+# =============================================================================
+#     dSL_TIME = [(datetime.time(3,30,0), datetime.time(8,0,0)),
+#                 (datetime.time(8,0,0), datetime.time(14,30,0)),
+#                 (datetime.time(14,30,0), datetime.time(16,0,0)),
+#                 (datetime.time(16,0,0), datetime.time(19,59,0))] # Setting 3
+# =============================================================================
     dSL_TIME = [(datetime.time(3,30,0), datetime.time(8,0,0)),
-                (datetime.time(8,0,0), datetime.time(14,0,0)),
-                (datetime.time(14,0,0), datetime.time(16,0,0)),
-                (datetime.time(16,0,0), datetime.time(19,59,0))] 
-    # A list of float in the form of quant distance from the entry
-    dSL = [0.0,0.1,0.25,0.4] 
-    #dSL = [0.0,0.0,0.0,0.0] 
+                (datetime.time(8,0,0), datetime.time(12,0,0)),
+                (datetime.time(12,0,0), datetime.time(16,0,0)),
+                (datetime.time(16,0,0), datetime.time(19,59,0))] # Setting 4
 
-    # SL_A: delay, SL_B: instant-close, SL_C: Trail
+    # A list of float in the form of quant distance from the entry
+    #dSL = [0.0,0.1,0.25,0.4] # setting1
+    #dSL = [0.0,0.05,0.1,0.25] # setting 2
+    #dSL = [0.0,0.0,0.0,0.0]# validation
+    #dSL = [0.0,0.05,0.25,0.4]  # setting3
+    dSL = [0.0,0.0,0.4,0.4] # setting4
+
+    # SL_A: Delay, SL_B: Instant-Brake, SL_C: Trail, SL_D: Seek_Bail
     run_main('argus_trend', 
              OneTradePerDay_DYNSL, #OneTradePerDay, #onetrade_simple, #BiDirectionalTrade, 
              start_date, end_date,         
@@ -198,4 +216,4 @@ if __name__ == "__main__":
              preprocess = False, 
              signal_gen_runtype='preload',
              backtest_runtype = "preload",
-             cross_decision = 'SL_B')
+             cross_decision = 'SL_D')

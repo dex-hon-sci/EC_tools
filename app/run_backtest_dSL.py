@@ -110,19 +110,25 @@ class OneTradePerDay_DYNSL(Trade):
                              trail_price_delta = 0):
      
         if self._cross_decision == 'SL_A':
-            # scenario A
+            # scenario A: DelayDoom
             self._dyn_list[num+1] = this_SL_price
             #next_SL_price = this_SL_price
         elif self._cross_decision == 'SL_B':
-            # scenario B
+            # scenario B: Instant_Brake
             #self._SL_pt = trunc_dicts_val[num]['close']
             # Only update this if defacto SL is null
             if self._SL_pt == (np.nan,np.nan):
                 self._SL_pt = close_pt
         elif self._cross_decision == 'SL_C':
-            # scenario C
+            # scenario C: TrailingSL
             #next_SL_price = close_pt[1]+ trail_price_delta
             self._dyn_list[num+1] = close_pt[1] + trail_price_delta
+            
+        elif self._cross_decision == 'SL_D':
+            # scneario D: SeekBail
+            # Do Nothing and see if the price goes back to the nextSL, exit if so.
+            pass
+            
         return
             
     def choose_EES_values(self, 
@@ -527,9 +533,7 @@ def find_minute_EES_dyn(histroy_data_intraday: pd.DataFrame,
     entry_pt_dict = read.find_crossover(price_list, target_entry)
     exit_pt_dict = read.find_crossover(price_list, target_exit)
     stop_pt_dict = read.find_crossover(price_list, stop_exit)
-    print('entry_pt_dict', entry_pt_dict)
-    print('exit_pt_dict', exit_pt_dict)
-    print('stop_pt_dict', stop_pt_dict)
+
     if direction == "Neitral":
         #print("Neutral day")
         # for 'Neutral' action, all info are empty
@@ -766,7 +770,7 @@ def loop_portfolio_preloaded_dSL(portfo: Portfolio,
                                                              day_section, 
                                                              target_entry, 
                                                              target_exit, 
-                                                             stop_exit, 
+                                                             print_SL_price, 
                                                              open_hr_dt, 
                                                              close_hr_dt, 
                                                              direction)
@@ -813,6 +817,7 @@ def loop_portfolio_preloaded_dSL(portfo: Portfolio,
                                                       ORDER_TYPE[direction])
         
         #print('pos_list', pos_list)
+        #print(exec_pos_list)
         print('------------------------------------------------------')
 
         #backtest.plot_in_backtest(date_interest,get_obj_name, trunc_dict, direction, 

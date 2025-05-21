@@ -27,7 +27,7 @@ from crudeoil_future_const import RESULT_FILEPATH
 #xl_filename = RESULT_FILEPATH + '/test_results/test_master_pnl_8_SLB_.xlsx'
 #xl_filename = RESULT_FILEPATH +'/strong_MR_signal/20240814_argusexact_cross_P25S35_0330_entry_PNL_full_.xlsx'
 #xl_filename = RESULT_FILEPATH +'/MR_signal_study/20240814_argustrend_cross_P40S20_0330_entry_PNL_full_.xlsx'
-xl_filename = RESULT_FILEPATH +'/MR_signal_study/SLB/test_master_pnl_SLB_.xlsx'
+xl_filename = RESULT_FILEPATH +'/MR_signal_study/SLD4/test_master_pnl_SLD4_.xlsx'
 
 wb_obj = openpyxl.load_workbook(xl_filename, keep_vba=True)
 

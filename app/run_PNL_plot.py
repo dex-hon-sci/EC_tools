@@ -448,19 +448,30 @@ if __name__=='__main__':
         
     if True:
         revised_PNL_filename = RESULT_FILEPATH +'/MR_signal_study/Good_MR_model/20240814_argustrend_cross_P40S20_0330_entry_PNL_full_.xlsx'
-        revised_PNL_filename_SLA = RESULT_FILEPATH + '/MR_signal_study/SLA/test_master_pnl_SLA_.xlsx'
-        revised_PNL_filename_SLB = RESULT_FILEPATH + '/MR_signal_study/SLB/test_master_pnl_SLB_.xlsx'
-        revised_PNL_filename_SLC = RESULT_FILEPATH + '/MR_signal_study/SLC/test_master_pnl_SLC_.xlsx'
+        revised_PNL_filename_SLA = RESULT_FILEPATH + '/MR_signal_study/SLA3/test_master_pnl_SLA_.xlsx'
+        revised_PNL_filename_SLB = RESULT_FILEPATH + '/MR_signal_study/SLB3/test_master_pnl_SLB_.xlsx'
+        #revised_PNL_filename_SLC = RESULT_FILEPATH + '/MR_signal_study/SLC/test_master_pnl_SLC_.xlsx'
         original = RESULT_FILEPATH + '/MR_signal_study/20240813_argusexact_cross_P25S35_PNL_.xlsx'
-        new_inf = RESULT_FILEPATH + '/MR_signal_study/test_master_pnl_SLB_.xlsx'
-        new_confirm_main = RESULT_FILEPATH +'/MR_signal_study/20240814_argustrend_cross_P40S20_0330_entry_PNL_full_.xlsx'
-        new_confirm_dSL = RESULT_FILEPATH +'/MR_signal_study/test_master_pnl_confirmation_.xlsx'
-        new_trial_restrictEntry = RESULT_FILEPATH +'/MR_signal_study/test_master_pnl_EES_window_.xlsx'
-        
-        strategy_date_list = [extract_PNLplot_input(revised_PNL_filename, 
-                                                     date_col="Entry_Date",
-                                                     sheet_name='Total',
-                                                     val_col='cumulative P&L from trades')[0], 
+        revised_PNL_filename_SLD = RESULT_FILEPATH + '/MR_signal_study/SLD/test_master_pnl_SLD_.xlsx'
+        revised_PNL_filename_SLD_block = RESULT_FILEPATH + '/MR_signal_study/SLD4/test_master_pnl_SLD4_.xlsx'
+
+        #new_inf = RESULT_FILEPATH + '/MR_signal_study/test_master_pnl_SLB_.xlsx'
+        #new_confirm_main = RESULT_FILEPATH +'/MR_signal_study/20240814_argustrend_cross_P40S20_0330_entry_PNL_full_.xlsx'
+        confirm_dSL = RESULT_FILEPATH +'/MR_signal_study/validation/test_master_pnl_validation_.xlsx'
+        #new_trial_restrictEntry = RESULT_FILEPATH +'/MR_signal_study/test_master_pnl_EES_window_.xlsx'
+        crazy_idea = RESULT_FILEPATH +'/MR_signal_study/validation/test_master_pnl_crazy_idea_.xlsx'
+        strategy_date_list = [extract_PNLplot_input(original, 
+                                                    date_col="Entry_Date",
+                                                    sheet_name='Total',
+                                                    val_col='cumulative P&L from trades')[0], 
+                              extract_PNLplot_input(confirm_dSL, 
+                                                    date_col="Entry_Date",
+                                                    sheet_name='Total',
+                                                    val_col='cumulative P&L from trades')[0], 
+                              #extract_PNLplot_input(revised_PNL_filename, 
+                              #                       date_col="Entry_Date",
+                              #                       sheet_name='Total',
+                              #                       val_col='cumulative P&L from trades')[0], 
                               extract_PNLplot_input(revised_PNL_filename_SLA, 
                                                     date_col="Entry_Date",
                                                     sheet_name='Total',
@@ -469,31 +480,45 @@ if __name__=='__main__':
                                                     date_col="Entry_Date",
                                                     sheet_name='Total',
                                                     val_col='cumulative P&L from trades')[0], 
-                              extract_PNLplot_input(original, 
+                              extract_PNLplot_input(revised_PNL_filename_SLD, 
                                                     date_col="Entry_Date",
                                                     sheet_name='Total',
                                                     val_col='cumulative P&L from trades')[0], 
-                              extract_PNLplot_input(new_inf, 
+                              extract_PNLplot_input(revised_PNL_filename_SLD_block, 
                                                     date_col="Entry_Date",
                                                     sheet_name='Total',
                                                     val_col='cumulative P&L from trades')[0], 
-                              extract_PNLplot_input(new_confirm_main, 
-                                                    date_col="Entry_Date",
-                                                    sheet_name='Total',
-                                                    val_col='cumulative P&L from trades')[0], 
-                              extract_PNLplot_input(new_confirm_dSL, 
-                                                    date_col="Entry_Date",
-                                                    sheet_name='Total',
-                                                    val_col='cumulative P&L from trades')[0], 
-                              extract_PNLplot_input(new_trial_restrictEntry, 
-                                                    date_col="Entry_Date",
-                                                    sheet_name='Total',
-                                                    val_col='cumulative P&L from trades')[0], 
+
+                              #extract_PNLplot_input(new_inf, 
+                              #                     date_col="Entry_Date",
+                              #                      sheet_name='Total',
+                              #                      val_col='cumulative P&L from trades')[0], 
+                              #extract_PNLplot_input(new_confirm_main, 
+                              #                      date_col="Entry_Date",
+                              #                      sheet_name='Total',
+                              #                      val_col='cumulative P&L from trades')[0], 
+                              #extract_PNLplot_input(new_trial_restrictEntry, 
+                              #                      date_col="Entry_Date",
+                              #                      sheet_name='Total',
+                              #                      val_col='cumulative P&L from trades')[0], 
+                              #extract_PNLplot_input(crazy_idea, 
+                              #                      date_col="Entry_Date",
+                              #                      sheet_name='Total',
+                              #                      val_col='cumulative P&L from trades')[0], 
+
                               ]
-        strategy_data_list = [extract_PNLplot_input(revised_PNL_filename, 
-                                                     date_col="Entry_Date",
-                                                     sheet_name='Total',
-                                                     val_col='cumulative P&L from trades')[1],    
+        strategy_data_list = [extract_PNLplot_input(original, 
+                                                    date_col="Entry_Date",
+                                                    sheet_name='Total',
+                                                    val_col='cumulative P&L from trades')[1],
+                              extract_PNLplot_input(confirm_dSL, 
+                                                    date_col="Entry_Date",
+                                                    sheet_name='Total',
+                                                    val_col='cumulative P&L from trades')[1], 
+                              #extract_PNLplot_input(revised_PNL_filename, 
+                              #                       date_col="Entry_Date",
+                              #                       sheet_name='Total',
+                              #                       val_col='cumulative P&L from trades')[1],    
                               extract_PNLplot_input(revised_PNL_filename_SLA, 
                                                     date_col="Entry_Date",
                                                     sheet_name='Total',
@@ -506,30 +531,41 @@ if __name__=='__main__':
                                                     date_col="Entry_Date",
                                                     sheet_name='Total',
                                                     val_col='cumulative P&L from trades')[1],
-                              extract_PNLplot_input(new_inf, 
+                              extract_PNLplot_input(revised_PNL_filename_SLD, 
                                                     date_col="Entry_Date",
                                                     sheet_name='Total',
                                                     val_col='cumulative P&L from trades')[1], 
-                              extract_PNLplot_input(new_confirm_main, 
+                              extract_PNLplot_input(revised_PNL_filename_SLD_block, 
                                                     date_col="Entry_Date",
                                                     sheet_name='Total',
                                                     val_col='cumulative P&L from trades')[1], 
-                              extract_PNLplot_input(new_confirm_dSL, 
-                                                    date_col="Entry_Date",
-                                                    sheet_name='Total',
-                                                    val_col='cumulative P&L from trades')[1], 
-                              extract_PNLplot_input(new_trial_restrictEntry, 
-                                                    date_col="Entry_Date",
-                                                    sheet_name='Total',
-                                                    val_col='cumulative P&L from trades')[1], 
+
+                              #extract_PNLplot_input(new_inf, 
+                              #                      date_col="Entry_Date",
+                              #                      sheet_name='Total',
+                              #                      val_col='cumulative P&L from trades')[1], 
+                              #extract_PNLplot_input(new_confirm_main, 
+                              #                      date_col="Entry_Date",
+                              #                      sheet_name='Total',
+                              #                      val_col='cumulative P&L from trades')[1], 
+                              #extract_PNLplot_input(new_trial_restrictEntry, 
+                              #                      date_col="Entry_Date",
+                              #                      sheet_name='Total',
+                              #                      val_col='cumulative P&L from trades')[1], 
+                              #extract_PNLplot_input(crazy_idea, 
+                              #                      date_col="Entry_Date",
+                              #                      sheet_name='Total',
+                              #                      val_col='cumulative P&L from trades')[1], 
                               ]
-        strategy_label_list = ['good_model', 'DynSL_earlyEntry(SL_A)', 'SLB', 'original', 'new', 
-                               'new_confirm_main',  'new_confirm_dSL', 
-                               'DynSL_earlyEntry(SL_B)'
+        strategy_label_list = ['original','validation (dSL_script)', 
+                               'DynSL (SL_A)', 'DynSL (SL_B)',  'DynSL (SL_D)', 
+                               'DynSL (SL_D_block)'                               
+                               #'crazy_idea',
+                               #'DynSL_earlyEntry(SL_B)'
                                ]
-        strategy_col_list = ['w', 'r','b','w','purple','yellow','r', 
+        strategy_col_list = ['yellow', 'w','r','b','purple','green','r', 
                              'g']
-        strategy_line_list = ['solid', 'solid', 'dashed','dotted','solid', 'solid', 'dashed',
+        strategy_line_list = ['solid', 'dashed', 'dashed','dotted','solid', 'solid', 'dashed',
                               'solid']    
         twopanel_plot([], [], [], label='',
                       plot_title = 'Revised MR Strategies',
