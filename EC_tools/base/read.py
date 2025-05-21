@@ -16,6 +16,8 @@ import numpy as np
 import pandas as pd
 import datetime
 import pickle
+import openpyxl
+from itertools import islice
 
 from typing import Union, Callable
 
@@ -1121,7 +1123,10 @@ def find_minute_EES(histroy_data_intraday: pd.DataFrame,
     entry_pt_dict = find_crossover(price_list, target_entry)
     exit_pt_dict = find_crossover(price_list, target_exit)
     stop_pt_dict = find_crossover(price_list, stop_exit)
-    
+    #print('entry_pt_dict', entry_pt_dict)
+    #print('exit_pt_dict', exit_pt_dict)
+    #print('stop_pt_dict', stop_pt_dict)
+
     if direction == "Neitral":
         #print("Neutral day")
         # for 'Neutral' action, all info are empty
@@ -1508,6 +1513,21 @@ def render_PNL_xlsx(listfiles: list[str],
                     datpc.to_excel(excel_writer=excel_writer, sheet_name=pc)         
     return datpc 
            
+def read_xl_file(xl_filename, sheet_name='Sheet1'):
+    wb_obj = openpyxl.load_workbook(xl_filename, keep_vba=True)
+    #sheet_obj = wb_obj.active
+    ws = wb_obj[sheet_name]
+
+    data = ws.values
+    cols = next(data)[1:]
+    data = list(data)
+    idx = [r[0] for r in data]
+    data = (islice(r, 1, None) for r in data)
+    df = pd.DataFrame(data, columns=cols, index=idx)
+    
+    print(df)
+    return df
+
 
 def group_trade(position_pool: list, 
                 select_func: Callable[[int], bool] = lambda x: True) -> list: #

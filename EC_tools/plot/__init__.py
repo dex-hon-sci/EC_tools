@@ -138,9 +138,11 @@ class SubComponents(object):
         self._add_quant_lines = False
         self._add_EES_region = False
         self._add_trade_region = False
-        self._add_crossover_pts = False
+        self._add_entryexitpoints = False
+        self._add_EES_region_step = False
         
-        self._add_entry_exit_points = False
+        self._add_crossover_pts = False
+
         self._add_bol_band = False
         self._add_fibo_retract_lines = False
 
@@ -180,9 +182,9 @@ class SubComponents(object):
         """
 
         for quant, price in zip(quant_list, quant_price_list):
-            ax.hlines(float(price.iloc[0]), start_x, end_x, color='#C26F05', 
+            ax.hlines(float(price), start_x, end_x, color='#C26F05', 
                            alpha = alpha)
-            ax.text(start_x + txt_shift_x, float(price.iloc[0]) + txt_shift_y, quant, 
+            ax.text(start_x + txt_shift_x, float(price) + txt_shift_y, quant, 
                      color=pt_col, bbox=dict(boxstyle="round",
                      ec= pt_col, fc='#C26F05'))        
             
@@ -201,13 +203,6 @@ class SubComponents(object):
         elif direction == "Neutral":
             limit = np.nan
             
-        print(TE_time_list, TE_price_list, 
-              TP_time_list, TP_price_list, 
-              SL_time_list, SL_price_list)
-        #ax.hlines(entry_price, self.axis_limit.start_line, 
-        #               self.axis_limit.end_line, color='#18833D', 
-        #               ls="dashed", lw = 2)
-
         # The EES lines
         ax.plot(TE_time_list, TE_price_list, drawstyle='steps-post', color='#18833D', 
                 ls="dashed", lw = 2)
@@ -365,13 +360,13 @@ class SubComponents(object):
         elif direction == "Neutral":
             limit = np.nan
             
-        entry_price_lower = float(entry_price_range[0].iloc[0])
-        entry_price_upper = float(entry_price_range[1].iloc[0])
+        entry_price_lower = float(entry_price_range[0])
+        entry_price_upper = float(entry_price_range[1])
         
-        exit_price_lower = float(exit_price_range[0].iloc[0])
-        exit_price_upper = float(exit_price_range[1].iloc[0])
+        exit_price_lower = float(exit_price_range[0])
+        exit_price_upper = float(exit_price_range[1])
         
-        stop_loss = float(stop_loss.iloc[0])
+        stop_loss = float(stop_loss)
 
         # The EES lines
         ax.hlines(entry_price_lower, self.axis_limit.start_line, 
@@ -450,10 +445,24 @@ class SubComponents(object):
         ax.plot(bppt_x2, bppt_y2,'o', ms=6, c='green')
         ax.plot(bppt_x3, bppt_y3,'o', ms=6, c='red')
         
-    def buysellpoints(self, buy_time: str = "1201", buy_price: float =  86.05,
-                            sell_time: str = "1900", sell_price: float = 85.70):
+    def entryexitpoints(self, ax, 
+                        entry_time: datetime.datetime = datetime.datetime.today(), 
+                        exit_time: datetime.datetime = datetime.datetime.today(), 
+                        entry_price: float =  86.05,
+                        exit_price: float = 85.70):
         
-        return None
+        print(entry_time, entry_price)
+        print(exit_time, exit_price)
+        ax.scatter(entry_time, entry_price, s=80, facecolors='none', 
+                   edgecolors='b', zorder=10)
+        ax.plot(entry_time, entry_price, '+', ms=16, c='blue', zorder=10, 
+                label = 'Entry_Point')
+
+        ax.scatter(exit_time, exit_price, s=80, facecolors='none', 
+                   edgecolors='g', zorder=10)
+        ax.plot(exit_time, exit_price, '+', ms=16, c='green', zorder=10,
+                label = 'Exit_Point')
+
 
 class PlotPricing(object):
     # A clss that control the state of the pricing plots.
@@ -742,6 +751,8 @@ def plot_minute(filename_minute: str, signal_filename: str,
     quant0 = np.arange(0.0025, 0.9975, 0.0025)
 
     even_spaced_prices, pdf = mfunc.cal_pdf(quant0, curve.to_numpy()[0][-1-APC_LENGTH:-1])
+    curve_spline =  mfunc.generic_spline(quant0,  curve.to_numpy()[0][-1-APC_LENGTH:-1])
+
     #print("find_quant", mfunc.find_quant(curve.to_numpy()[0][1:-1], quant0, 97.9366))
     print(len(curve.to_numpy()[0][-1-APC_LENGTH:-1]), len(pdf))
     # Define the quantile list of interest based on a strategy
@@ -751,12 +762,15 @@ def plot_minute(filename_minute: str, signal_filename: str,
     #                    curve['0.6'], curve['0.95']]
     
     #live trading range
+    print('curve_spline', curve_spline(0.5), curve_spline(0.1))
+    # Define the quantile list of interest based on a strategy
+    # The lists are for marking the lines only. #live trading range
     quant_list=['q0.05','q0.35', 'q0.4', 'q0.5', 'q0.6', 'q0.65', 'q0.95']
-    quant_price_list = [curve['0.05'], 
-                        curve['0.35'], curve['0.4'], 
-                        curve['0.5'], 
-                        curve['0.6'], curve['0.65'], 
-                        curve['0.95']]
+    quant_price_list = [curve_spline(0.05), 
+                        curve_spline(0.35), curve_spline(0.4), 
+                        curve_spline(0.5),
+                        curve_spline(0.6), curve_spline(0.65),
+                        curve_spline(0.95)]
 # =============================================================================
 #     #Test trading range
 #     quant_list=['q0.05','q0.25', 'q0.4', 'q0.5', 'q0.6', 'q0.75', 'q0.95']
@@ -777,7 +791,7 @@ def plot_minute(filename_minute: str, signal_filename: str,
     new_axis_limit.price_upper_limit = price_upper_limit
     
     
-    # Then choose the subcomponents to be added
+    # Then choose the subcompons to be added
     #subcomp = SubComponents(new_axis_limit)
 
     # Plot the pricing chart.
