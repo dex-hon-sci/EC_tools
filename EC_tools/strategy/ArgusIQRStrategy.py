@@ -18,7 +18,7 @@ import EC_tools.utility.math_func as mfunc
 from EC_tools.strategy import Strategy, APC_LENGTH
 from EC_tools.strategy.signal import SignalType
 from ext_codes.ArgusPossibilityCurves2 import ArgusPossibilityCurves
-from crudeoil_future_const import ASSET_ARGUS_DICT, DAILY_APC_PKL
+from crudeoil_future_const import DAILY_APC_PKL
 
 #extract_lag_data
 def gen_apc_stat(apc_curve_data):
@@ -45,14 +45,21 @@ def gen_apc_stat(apc_curve_data):
                                          'Tail_SKW', 'Downside_Tail_Risk', 
                                          'Upside_Tail_Risk']]
     return apc_curve_data_c
-    
+import os
+from dotenv import load_dotenv 
+
+load_dotenv()
+ARGUS_USR = os.environ.get("ARGUS_USRX")
+ARGUS_PW = os.environ.get("ARGUS_PWX")
+
     
 def pull_ArgusIQR_signals(start_date, end_date, categories):
-    apc = ArgusPossibilityCurves(username="Leigh@eulercapital.com.au", password="Li@96558356")
+    apc = ArgusPossibilityCurves(username=ARGUS_USR, password=ARGUS_PW)
     apc.authenticate()
 
     #set update_from_remote to false if you don't want to check for new metadata
-    apc.getMetadataCSV(filepath="argus_latest_meta.csv", force_update_from_remote=True)
+    apc.getMetadataCSV(filepath="argus_latest_meta.csv", 
+                       force_update_from_remote=True)
 
     apc_data = apc.getPossibilityCurves(start_date=start_date, 
                                         end_date=end_date, 
@@ -221,11 +228,11 @@ class ArgusIQRStrategy(Strategy):
                        Window_SKW: int = 10):
 
         
-        data =  EES + cond_info + strategy_info_list + \
-                quantile_info + EES_val + [self.strategy_name]
+        #data =  EES + cond_info + strategy_info_list + \
+        #        quantile_info + EES_val + [self.strategy_name]
         
-        return {'data': data, 'direction': direction.value}
-
+        #return {'data': data, 'direction': direction.value}
+        return
     
     
 if __name__ == "__main__":
@@ -240,5 +247,12 @@ if __name__ == "__main__":
 #     print(data)
 # =============================================================================
     APC = util.load_pkl(DAILY_APC_PKL)
+    import datetime
+    start_date = datetime.date(2025, 5, 21)
+    end_date = datetime.date(2025, 5, 22)
 
     apc_curve_data_c = gen_apc_stat(APC['CLc1'])
+    data = pull_ArgusIQR_signals(start_date,end_date,
+                          ['Argus Nymex WTI month 1, Daily'])
+    
+    print(data)

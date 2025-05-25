@@ -125,7 +125,6 @@ class ArgusTrendStrategy(Strategy):
         
     
     def run_cond(self, data: dict, 
-                 #open_price: float, 
                  total_lag_days: int = 2, 
                  apc_mid_Q: tuple[float] = {'Buy':(0.5,0.7), 'Sell':(0.3,0.5)}): 
         """

@@ -255,23 +255,36 @@ class ArgusMRStrategy(Strategy):
         rollingaverage_q = data['rollingaverage']
 
         lag_close_q_list = [data['lag_list'][i] for i in range(total_lag_days)]
-        mid_Q_list = [apc_mid_Q for i in range(total_lag_days)]
-        
+        #mid_Q_list = [apc_mid_Q for i in range(total_lag_days)]
+        mid_Q_list_buy_low = [apc_mid_Q['Buy'][0] for i in range(total_lag_days)]
+        mid_Q_list_buy_up = [apc_mid_Q['Buy'][1] for i in range(total_lag_days)]
+        mid_Q_list_sell_low = [apc_mid_Q['Sell'][0] for i in range(total_lag_days)]
+        mid_Q_list_sell_up = [apc_mid_Q['Sell'][1] for i in range(total_lag_days)]
+
         # "BUY" condition
         # (1) create a list of Boolean value for evaluating if the last two 
         # consecutive days of closing price lower than the signal median
-        cond_buy_list_1 = list(map(lambda x, y: x < y, lag_close_q_list, mid_Q_list))
+        cond_buy_list_1 = list(map(lambda x, y1, y2: y1 < x < y2, 
+                                   lag_close_q_list, 
+                                   mid_Q_list_buy_low, 
+                                   mid_Q_list_buy_up))
+
+        #cond_buy_list_1 = list(map(lambda x, y: x < y, lag_close_q_list, mid_Q_list))
         # (2) rolling 5 days average lower than the median apc 
-        cond_buy_list_2 = [(rollingaverage_q < apc_mid_Q)]
+        cond_buy_list_2 = [(rollingaverage_q < 0.5)]
         # (3) price at today's opening hour above the 0.1 quantile of today's apc
         #cond_buy_list_3 = [(open_price >= self._curve_today_spline([
         #                                            apc_trade_Qlimit[0]])[0])]
         
         # "SELL" condition
         # (1) Two consecutive days of closing price higher than the signal median
-        cond_sell_list_1 = list(map(lambda x, y: x > y, lag_close_q_list, mid_Q_list))
+        cond_sell_list_1 = list(map(lambda x,  y1, y2: y1 < x < y2, 
+                                    lag_close_q_list, 
+                                    mid_Q_list_sell_low, 
+                                    mid_Q_list_sell_up))
+        #cond_sell_list_1 = list(map(lambda x, y: x > y, lag_close_q_list, mid_Q_list))
         # (2) rolling 5 days average higher than the median apc 
-        cond_sell_list_2 = [(rollingaverage_q > apc_mid_Q)]
+        cond_sell_list_2 = [(rollingaverage_q > 0.5)]
         # (3) price at today's opening hour below the 0.9 quantile of today's apc
         #cond_sell_list_3 = [(open_price <= self._curve_today_spline([
         #                                            apc_trade_Qlimit[1]])[0])]
