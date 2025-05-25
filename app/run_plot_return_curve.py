@@ -95,7 +95,10 @@ def run_main():
     #argusexact_cross_PS_PNL = "/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap/PNL_argusexact_G40S10_.xlsx"
     #argusexact_cross_PS_PNL = '/home/dexter/Euler_Capital_codes/EC_tools/results/heatmap2/20240813_argusexact_cross_P35S15_PNL_.xlsx'
     #argusexact_cross_PS_PNL ='/home/dexter/Euler_Capital_codes/EC_tools/results/MR_1lag/20240814_argusexact_cross_P25S35_0330_entry_PNL_full_.xlsx'
-    argusexact_cross_PS_PNL = RESULT_FILEPATH + '/MR_signal_study/test_master_pnl_EES_window_.xlsx'
+    #argusexact_cross_PS_PNL = RESULT_FILEPATH + '/MR_signal_study/test_master_pnl_EES_window_.xlsx'
+    argusexact_cross_PS_PNL = RESULT_FILEPATH +'/ArgusTailStrangle/20240814_argutailstrangle_cross_TE40SL30_0330_entry_PNL_full_.xlsx'
+
+    
     big_price_diff, big_trade_return = [], []
 
     symbols = ['CLc1', 'CLc2', 'HOc1', 'HOc2','RBc1','RBc2','QOc1','QOc2','QPc1','QPc2']

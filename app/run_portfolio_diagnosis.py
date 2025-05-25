@@ -23,11 +23,12 @@ from crudeoil_future_const import RESULT_FILEPATH
 
 #xl_filename = RESULT_FILEPATH + '/MR_lag_roll/0330_entry/MR_2lag_5roll/20240814_argusexact_cross_P25S35_0330_entry_PNL_full_.xlsx'
 #xl_filename = RESULT_FILEPATH +'/heatmap3_buyQ50sellQ50/20240813_argusexact_cross_P15S45_PNL_.xlsx'
-#xl_filename = RESULT_FILEPATH +'/heatmap2/20240813_argusexact_cross_P30S15_PNL_.xlsx'
+#xl_filename = RESULT_FILEPATH +'/heatmap2/20240813_argusexact_cross_P35S25_PNL_.xlsx'
 #xl_filename = RESULT_FILEPATH + '/test_results/test_master_pnl_8_SLB_.xlsx'
 #xl_filename = RESULT_FILEPATH +'/strong_MR_signal/20240814_argusexact_cross_P25S35_0330_entry_PNL_full_.xlsx'
-#xl_filename = RESULT_FILEPATH +'/MR_signal_study/20240814_argustrend_cross_P40S20_0330_entry_PNL_full_.xlsx'
-xl_filename = RESULT_FILEPATH +'/MR_signal_study/SLD4/test_master_pnl_SLD4_.xlsx'
+#xl_filename = RESULT_FILEPATH +'/strong_MR_signal/1lag5roll/20240814_argustrend_cross_P40S20_0330_entry_PNL_full_.xlsx'
+#xl_filename = RESULT_FILEPATH +'/MR_signal_study/SLD4/test_master_pnl_SLD4_.xlsx'
+xl_filename = RESULT_FILEPATH +'/ArgusTailStrangle/20240814_argutailstrangle_cross_TE30SL20_0330_entry_PNL_full_.xlsx'
 
 wb_obj = openpyxl.load_workbook(xl_filename, keep_vba=True)
 
