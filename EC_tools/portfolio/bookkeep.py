@@ -159,6 +159,7 @@ class Bookkeep(object):
             "argus_IQR_CRTSKW" :argus_IQR_skewdness_format,
             "argus_exact_4dSL": argus_exact_4dSL_format,
             'argus_trend': argus_exact_format,
+            "argus_tailstrangle":dict(), 
             "None": dict()
                    }
     

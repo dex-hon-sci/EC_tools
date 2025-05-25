@@ -16,7 +16,8 @@ import findiff as fd
 __all__ = ['generic_spline','find_quant','cal_pdf']
 __author__="Dexter S.-H. Hon"
 
-def generic_spline(x,y, method="cubic", s = 0):
+def generic_spline(x: np.ndarray, y: np.ndarray, 
+                   method: str ="cubic", s:int = 0):
     """
     A generic method to interpolate data.
 
