@@ -587,15 +587,17 @@ if __name__ == "__main__":
 #     FILEPATH = "/home/dexter/Euler_Capital_codes/EC_tools/results/"
 #     MASTER_PNL_FILENAME = FILEPATH+'argus_exact_PNL_amb3_full.csv'
 # =============================================================================
-    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + "/consistency/Argus_sample_with_mybacktest_newcode/Argus_sample_signals_2.csv"
-    MASTER_PNL_FILENAME = RESULT_FILEPATH + "/consistency/Argus_sample_with_mybacktest_newcode/Argus_sample_PNL_with_mybacktest_newcode.pkl"
-    
+    #MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + "/consistency/Argus_sample_with_mybacktest_newcode/Argus_sample_signals_2.csv"
+    #MASTER_PNL_FILENAME = RESULT_FILEPATH + "/consistency/Argus_sample_with_mybacktest_newcode/Argus_sample_PNL_with_mybacktest_newcode.pkl"
+    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + "/ArgusTailStrangle/20240814_argutailstrangle_cross_TE20SL10_0330_entry_signal_full.csv"
+    MASTER_PNL_FILENAME = RESULT_FILEPATH + "/ArgusTailStrangle/20240814_argutailstrangle_cross_TE20SL10_0330_entry_PNL_full.pkl"
+
     #HISTORY_MINUTE_PKL = util.load_pkl(DAILY_MINUTE_DATA_PKL)
     #HISTORY_MINUTE_CUMAVG_IN_MONTH_PKL = util.load_pkl(MINUTE_CUMAVG_MONTH_PKL)
     
     
     start_date = "2022-02-01"
-    end_date = "2022-02-02"
+    end_date = "2022-03-02"
 
     #end_date = "2024-06-28"
     
@@ -635,7 +637,6 @@ if __name__ == "__main__":
     HISTORY_MINUTE_PKL = load_source_data_bt(list(DAILY_MINUTE_DATA_INDI_PKL.values()))
     
     run_backtest_bulk(OneTradePerDay, 
-                      #TEST_FILE_LOC, TEST_FILE_PNL_LOC, 
                       start_date, end_date, 
                       method = "preload", 
                       master_signal_filename = MASTER_SIGNAL_FILENAME,
@@ -645,19 +646,17 @@ if __name__ == "__main__":
                       get_obj_quantity = 1,
                       open_hr_dict = OPEN_HR_DICT, 
                       close_hr_dict= CLOSE_HR_DICT,
-                      loop_type = LoopType.RANGE,
+                      loop_type = LoopType.CROSSOVER,
                       save_or_not=True, 
                       merge_or_not=True)
     
-# =============================================================================
-#     from EC_tools.portfolio import PortfolioLog
-#     
-#     P = read.open_portfolio(MASTER_PNL_FILENAME)
-#     PL = PortfolioLog(P)
-#     PL.tradebook_filename = RESULT_FILEPATH + "/monthly_test/test_PNL_tradebook.csv"
-#     PL.render_tradebook()
-#     PL.render_tradebook_xlsx()
-# =============================================================================
+    from EC_tools.portfolio import PortfolioLog
+    
+    P = read.open_portfolio(MASTER_PNL_FILENAME)
+    PL = PortfolioLog(P)
+    PL.tradebook_filename = RESULT_FILEPATH + "/ArgusTailStrangle/20240814_argutailstrangle_cross_TE20SL10_0330_entry_PNL_full.csv"
+    PL.render_tradebook()
+    PL.render_tradebook_xlsx()
     
     #run_backtest(trade_choice_simple_2,FILENAME_MINUTE, FILENAME_BUYSELL_SIGNALS, 
     #             "2022-01-03", "2024-06-17")

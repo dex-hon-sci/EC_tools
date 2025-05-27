@@ -27,7 +27,7 @@ class SignalStatus(Enum):
      INACTIVE = "Inactive"
     
 class SignalCond(Enum):
-    # It is a feature paried with a condition with a type
+    # It is a feature paired with a condition with a type
     # al conditions are some logical operation or a function, although 
     # we encourage selecting feature before using the func option
 

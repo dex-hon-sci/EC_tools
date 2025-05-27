@@ -85,7 +85,7 @@ class ArgusTailStrangleStrategy(Strategy):
     def run_cond(self, 
                  price_data: list[float], 
                  breakout_quant: dict[str|float] = \
-                                 {'Buy': 0.05, 'Sell':0.95}): 
+                                 {'Buy': 0.95, 'Sell':0.05}): 
         #print(self._curve_today_spline(breakout_quant['Buy']))
         #print('length',len(price_data),self._curve_today_spline(
         #                                    breakout_quant['Buy']),
@@ -93,8 +93,8 @@ class ArgusTailStrangleStrategy(Strategy):
         #    type(price_data))
         #print(breakout_quant['Buy'], breakout_quant['Sell'])
         
-        threshold_low = self._curve_today_spline(float(breakout_quant['Buy']))
-        threshold_high = self._curve_today_spline(float(breakout_quant['Sell']))
+        threshold_low = self._curve_today_spline(float(breakout_quant['Sell']))
+        threshold_high = self._curve_today_spline(float(breakout_quant['Buy']))
         
         #print(type(threshold_low), type(threshold_high), threshold_low, threshold_high)
         
@@ -102,12 +102,13 @@ class ArgusTailStrangleStrategy(Strategy):
         higher_breach_index = find_crossover(price_data, float(threshold_high))
 
         # Run conditions to determine direction
-        cond_buy_list_1 = [(len(higher_breach_index['all'][0]) >0)]
+        cond_buy_list_1 = [(len(higher_breach_index['all'][0]) > 0)]
         cond_sell_list_1 = [(len(lower_breach_index['all'][0]) > 0)]
-        #print(len(higher_breach_index['all'][0]), 
-        #      len(lower_breach_index['all'][0]))
-        #print(lower_breach_index,higher_breach_index)
-        #print(cond_buy_list_1, cond_sell_list_1)
+        
+        print(len(higher_breach_index['all'][0]), 
+              len(lower_breach_index['all'][0]))
+        print(higher_breach_index, lower_breach_index)
+        print(cond_buy_list_1, cond_sell_list_1)
         
         # save the condtion boolean value to the sub-condition dictionary
         self._sub_buy_cond_dict = {'CONS': [cond_buy_list_1]}
@@ -117,7 +118,7 @@ class ArgusTailStrangleStrategy(Strategy):
         self.sub_cond_dict = {'Buy':[sum(self._sub_buy_cond_dict[key],[]) 
                                 for key in self._sub_buy_cond_dict], 
                               'Sell':[sum(self._sub_sell_cond_dict[key],[]) 
-                                 for key in self._sub_buy_cond_dict]}
+                                 for key in self._sub_sell_cond_dict]}
         
         # flatten the sub-conditoion list and sotre them in the condition list
         self.flatten_sub_cond_dict()
@@ -206,7 +207,7 @@ class ArgusTailStrangleStrategy(Strategy):
                        buy_range: tuple[float] = (0.95,1.0,0.9), 
                        sell_range: tuple[float] = (0.05,0.0,0.1),
                        quantile: list[float] = [0.25,0.4,0.6,0.75],
-                       breakout_quant: dict[str|float] = {'Buy':0.05, 'Sell':0.95}):
+                       breakout_quant: dict[str|float] = {'Buy':0.95, 'Sell':0.05}):
                     
         price_data, quantile_info = self.gen_data(history_intraday,
                                                   quantile = quantile)

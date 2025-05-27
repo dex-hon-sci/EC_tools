@@ -501,7 +501,7 @@ if __name__=='__main__':
                       sub_col_list = strategy_col_list, 
                       sub_line_list =strategy_line_list)
         
-    if True: 
+    if False: 
         SL_lv = '5'
         curve1 = RESULT_FILEPATH +f'/heatmap2/20240813_argusexact_cross_P15S{SL_lv}_PNL_.xlsx'
         curve2 = RESULT_FILEPATH +f'/heatmap2/20240813_argusexact_cross_P25S{SL_lv}_PNL_.xlsx'
@@ -534,6 +534,38 @@ if __name__=='__main__':
  
         twopanel_plot([], [], [], label='',
                       plot_title = f'MR SL{SL_lv} comparison',
+                      sub_x_list=strategy_date_list,
+                      sub_y1_list=strategy_data_list,
+                      sub_label_list = strategy_label_list,
+                      sub_col_list = strategy_col_list, 
+                      sub_line_list =strategy_line_list)
+        
+    if True:
+        MR_curve = RESULT_FILEPATH + "/ArgusTailStrangle/original/20240814_argusexact_cross_P25S35_0330_entry_PNL_full_.xlsx"
+        TS_curve = RESULT_FILEPATH + "/ArgusTailStrangle/20240814_argutailstrangle_cross_TE45SL35_0330_entry_PNL_full_.xlsx"
+        sub_TS_PNL = RESULT_FILEPATH + "/ArgusTailStrangle/Hybrid/sub_PNL2_.xlsx"
+        hybrid_select = RESULT_FILEPATH + "/ArgusTailStrangle/Hybrid/hybrid_select2_.xlsx"
+        hybrid_full = RESULT_FILEPATH + "/ArgusTailStrangle/Hybrid/hybrid_full_.xlsx"
+        
+        strategy_filename_list = [MR_curve, TS_curve, sub_TS_PNL,
+                                  hybrid_select, hybrid_full]
+        strategy_label_list = ['Original_MR','TailStrangle', 'sub_TS_PNL',
+                               'Hybrid_select', 'hybrid_full']
+        strategy_col_list = ['green', 'yellow', 'r', 'w','purple']
+        strategy_line_list = ['solid', 'solid', 'solid','solid','solid']   
+        
+        strategy_result_list = [extract_PNLplot_input(ele, 
+                                        date_col="Entry_Date",
+                                        sheet_name='Total',
+                                        val_col='cumulative P&L from trades')
+                                for ele in strategy_filename_list]
+        
+        strategy_date_list = [ele[0] for ele in strategy_result_list]
+        strategy_data_list = [ele[1] for ele in strategy_result_list]
+               
+ 
+        twopanel_plot([], [], [], label='',
+                      plot_title = 'MR+TS Hybrid Strategy',
                       sub_x_list=strategy_date_list,
                       sub_y1_list=strategy_data_list,
                       sub_label_list = strategy_label_list,

@@ -55,6 +55,7 @@ DEFAULT_KWARGS= {'signal_list': list(APC_FILE_LOC.values()),
                  'close_hr_dict': CLOSE_HR_DICT, 
                  'timezone_dict': TIMEZONE_DICT,
                  'save_filenames_loc':TEST_FILE_LOC,
+                 'breakout_quant': {'Buy':0.95, 'Sell':0.05},
                  'quantile': [0.05,0.1,0.25,0.4,0.5,0.6,0.75,0.9,0.95],
                  'master_signal_filename': "master_signal.csv",
                  'save_or_not': False,
@@ -125,16 +126,15 @@ def loop_signal(strategy: type[Strategy],
                 full_contract_symbol = history_data['Contract Code'][i]
             
             history_intraday_data = history_data_minute[history_data_minute['Date'] 
-                                                        == this_date]            
+                                                        == this_date]     
+            print('breakout_quant', kwargs['breakout_quant'])
             # Apply the strategy, The Strategy is variable
             strategy_output = strategy(curve_this_date).\
                                         apply_strategy(history_intraday_data, 
                                                        buy_range=buy_range, 
                                                        sell_range=sell_range,   
                                                        quantile = kwargs['quantile'],
-                                                       breakout_quant ={
-                                                           'Buy':0.05,
-                                                           'Sell':0.95})
+                                                       breakout_quant = kwargs['breakout_quant'])
 
             print('====================================')
             print(forecast_date, full_contract_symbol,'MR signal generated!', 
@@ -172,52 +172,7 @@ def run_gen_MR_signals_preloaded(strategy: Strategy,
                                  sell_range: tuple[float] = (0.05,0.0,0.1),
                                   **kwargs) -> pd.DataFrame:
     """
-    A method that run Mean Reversion signal generation form a preloaded 
-    dictionary. The dictionary contains a key-value pairs with the asset name 
-    as keys and a dataframe as value. 
-    
-    This method depends upon the function run_gen_MR_signals to iterate over
-    the input lists and calculate the signal for each assets independently.
 
-    Parameters
-    ----------
-    Strategy : strategy object
-        The strategy function in use in generating the signal.
-    filename_list : list
-        The saved filename list.
-    signal_pkl : dict
-        A dictionary read from a pkl file that contains the signal data in 
-        a dataframe as values and keywords as key.
-    history_daily_pkl : dict
-        A dictionary read from a pkl file that contains the daily historical 
-        data in a dataframe as values and keywords as key.
-    openprice_pkl : dict
-        A dictionary read from a pkl file that contains the daily openning price 
-        data in a dataframe as values and keywords as key..
-    start_date : str
-        The starting date.
-    end_date : str
-        The ending date.
-    open_hr_dict : dict
-        A dictionary for the input opening hour strings.
-    close_hr_dict : dict
-        A dictionary for the input closing hour strings.
-    timezone_dict : dict
-        A dictionary for the Time Zone name strings.
-    buy_range : tuple, optional
-        The buy range in the format of (entry, exit, stop loss). 
-        The default is ([0.25,0.4],[0.6,0.75],0.05).
-    sell_range : tuple, optional
-        The sell range in the format of (entry, exit, stop loss). 
-        The default is ([0.6,0.75],[0.25,0.4],0.95).
-    save_or_not : bool, optional
-        A boolean value to indicate whether to save the result in a file or not. 
-        The default is False.
-
-    Returns
-    -------
-    dataframe
-        signal data.
 
     """
     default_kwargs = DEFAULT_KWARGS
@@ -262,7 +217,8 @@ def run_gen_MR_signals_preloaded(strategy: Strategy,
                                                        quantile = kwargs['quantile'],
                                                        asset_name = symbol, 
                                                        Timezone= Timezone,
-                                                       loop_symbol=symbol)
+                                                       loop_symbol=symbol,
+                                                       breakout_quant = kwargs['breakout_quant'])
             return dict_contracts_quant_signals
         
 
@@ -300,8 +256,8 @@ def run_gen_signal_bulk(strategy: type[Strategy],
                                      timezone_dict = kwargs['timezone_dict'],
                                      save_filenames = kwargs['save_filenames_loc'],
                                      quantile = kwargs['quantile'],
-                                     save_or_not = kwargs['save_or_not'])
-
+                                     save_or_not = kwargs['save_or_not'],
+                                     breakout_quant = kwargs['breakout_quant'])
     if kwargs['merge_or_not']:
         #SAVE_FILENAME_LIST = list(kwargs['save_filenames_loc'].values())
         MASTER_SIGNAL_FILENAME = kwargs['master_signal_filename']       
@@ -321,7 +277,7 @@ if __name__ == "__main__":
     #start_date = "2024-03-04"
     #start_date = "2021-01-11"
     start_date = "2022-01-05"
-    end_date = "2024-06-28"
+    end_date = "2022-06-28"
     SAVE_FILENAME_LIST = list(TEST_FILE_LOC.values())
     
     HISTORY_MINUTE_PKL= load_source_data_bt(list(DAILY_MINUTE_DATA_INDI_PKL.values()))
@@ -331,6 +287,7 @@ if __name__ == "__main__":
     buy_range = (0.95,1.0,0.9)
     sell_range =(0.05,0.0,0.1)
     
+    breakout_quant = {'Buy':0.95, 'Sell':0.05}
     # master function in running everything
     run_gen_signal_bulk(strategy, 
                         start_date, end_date,
@@ -339,5 +296,6 @@ if __name__ == "__main__":
                         runtype = 'preload',
                         save_filenames_loc = TEST_FILE_LOC,
                         history_minute_pkl = HISTORY_MINUTE_PKL,
+                        breakout_quant = breakout_quant,
                         merge_or_not= True,
                         save_or_not=True)
