@@ -23,6 +23,7 @@ import pickle
 # EC_tools import
 import EC_tools.base.read as read
 import EC_tools.utility as util
+from ext_codes.ArgusPossibilityCurves2 import ArgusPossibilityCurves
 from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST,\
                                   APC_FILE_COMPLETE_LOC,\
                                   APC_CAT_LIST_ALL, APC_KEYWORDS_LIST_ALL, \
@@ -31,7 +32,8 @@ from crudeoil_future_const import CAT_LIST, KEYWORDS_LIST, SYMBOL_LIST,\
                                   MONTHLY_SYMBOL_LIST,\
                                   WEEKLY_30AVG_CAT_LIST, WEEKLY_30AVG_KEYWORDS_LIST,\
                                   WEEKLY_30AVG_SYMBOL_LIST,\
-                                  APC_FILE_MONTHLY_LOC, APC_FILE_WEEKLY_30AVG_LOC
+                                  APC_FILE_MONTHLY_LOC, APC_FILE_WEEKLY_30AVG_LOC,\
+                                  OBOS_LIST
                                   
 from crudeoil_future_const import DAILY_APC_PKL, DAILY_DATA_PKL, \
                                   DAILY_MINUTE_DATA_PKL, APC_FILE_LOC, \
@@ -46,7 +48,7 @@ from crudeoil_future_const import DAILY_APC_PKL, DAILY_DATA_PKL, \
 # Get the base directory
 basepath = Path()
 basedir = str(basepath.cwd())
-sys.path.append(os.path.abspath('/home/dexter/Euler_Capital_codes/EC_tools/'))
+#sys.path.append(os.path.abspath('/home/dexter/Euler_Capital_codes/EC_tools/'))
 print('sys.path',sys.path)
 # Load the environment variables
 envars = basepath.cwd() / '.env'
@@ -71,15 +73,36 @@ AUTH_PACK = {'username': ARGUS_USR,
 
 DATE_PACK = {"start_date": "2015-01-01",
              "end_date": "2024-06-18"}
+ASSET_PACK = {'categories': 'Argus ICE gasoil month 2, Daily',
+              'keywords': "Brent",
+              'symbol': "QP",
+              'obos': 'Argus ICE gasoil month 2'}
 
+# =============================================================================
+# ASSET_PACK = {'categories': 'Argus Brent month 2, Daily',
+#               'keywords': "Brent",
+#               'symbol': "QO",
+#               'obos': 'Argus Brent month 2'}
+# =============================================================================
+# =============================================================================
+# ASSET_PACK = {'categories': 'Argus Nymex RBOB Gasoline month 2, Daily',
+#               'keywords': "Gasoline",
+#               'symbol': "RB",
+#               'obos': 'Argus Nymex RBOB Gasoline month 2'}
+# =============================================================================
 # =============================================================================
 # ASSET_PACK = {'categories': 'Argus Nymex WTI month 2, Daily',
 #                'keywords': "WTI",
-#                'symbol': "CL"}
+#                'symbol': "CL",
+#                'obos': 'Argus Nymex WTI month 2'
+#                }
 # =============================================================================
-ASSET_PACK = {'categories': 'Argus Nymex Heating oil month 1, Daily',
-               'keywords': "Heating",
-               'symbol': "HO"}
+# =============================================================================
+# ASSET_PACK = {'categories': 'Argus Nymex Heating oil month 2, Daily',
+#                'keywords': "Heating",
+#                'symbol': "HO",
+#                'obos':'Argus Nymex Heating oil month 2'}
+# =============================================================================
 categories_monthly_30avg_list = [ 
                     'Argus Nymex WTI front month average 30-day interval, Weekly',
                     'Nymex Heating oil front month average 30-day interval, Weekly',
@@ -95,6 +118,7 @@ categories_monthly_list = ['Argus Nymex WTI front month average, Monthly',
 
 # checking function to see if the table is up to date
 
+    
 
 def download_latest_APC(auth_pack: dict, 
                         asset_pack: dict, 
@@ -340,6 +364,44 @@ def create_rolling_futures_Portara(start_date: datetime.datetime,
 #     print("Copy Complete!!")
 # =============================================================================
 
+def pull_ArgusOBOS(start_date: datetime.date, 
+                   end_date: datetime.date, 
+                   obos: list[str])->pd.DataFrame:
+    apc = ArgusPossibilityCurves(username=ARGUS_USR, password=ARGUS_PW)
+    apc.authenticate()
+
+    #set update_from_remote to false if you don't want to check for new metadata
+    apc.getMetadataCSV(filepath="argus_latest_meta.csv", 
+                       force_update_from_remote=True)
+
+    ava_obos = apc.get_available_obos()
+    print(ava_obos, len(ava_obos))
+    obos_data = apc.getOBOS(start_date, end_date, obos)
+    print("obos_data", obos_data, type(obos_data))
+    return obos_data
+
+def donwload_latest_Argus_OBOS(auth_pack: dict, 
+                               asset_pack: dict, 
+                               start_date: str = "2021-01-01") -> pd.DataFrame:
+    print("AUTH_PACK", AUTH_PACK)
+
+
+    # input is a dictionary or json file
+    username = auth_pack['username']
+    password = auth_pack['password']
+    
+    obos = [asset_pack['obos']]
+    keywords = asset_pack['keywords']
+    symbol = asset_pack['symbol']
+    end_date = datetime.datetime.today().strftime("%Y-%m-%d")
+    
+    start_date_dt = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
+    end_date_dt = datetime.datetime.today().date()
+    print(start_date_dt, end_date_dt)
+    
+    obos_data = pull_ArgusOBOS(start_date_dt, end_date_dt, obos)
+    print("All Argus OBOS files downloaded!")
+    return obos_data
 
 # =============================================================================
 #         
@@ -358,6 +420,7 @@ def create_rolling_futures_Portara(start_date: datetime.datetime,
 #     return None
 # 
 # =============================================================================
+
 @util.time_it
 def update_pkl(old_pkl_filename: str,
                file_loc_dict: dict,
@@ -418,12 +481,18 @@ def main():
     
     # Second update the source data
     # update APC,
-    download_latest_APC_list(AUTH_PACK, list(APC_FILE_LOC.values()), CAT_LIST, 
-                             KEYWORDS_LIST, SYMBOL_LIST, fast_dl=False)   
+    #download_latest_APC_list(AUTH_PACK, list(APC_FILE_LOC.values()), CAT_LIST, 
+    #                         KEYWORDS_LIST, SYMBOL_LIST, fast_dl=False)   
     # update Portara
     # Roll Portara data # new just used to roll function in Portara
     # Copy all new continuous data from Portara to the master data folder.
     #copy_Portara_data()
+    
+    # Download the Argus OBOS file
+    data = donwload_latest_Argus_OBOS(AUTH_PACK, ASSET_PACK)
+    
+    print(data, type(data))
+    data.to_csv(DATA_FILEPATH+"/Argus_OBOS/QPc2_Argus_OBOS.csv", index=False)
     
     # Third update the pkl data
     # Update APC pkl
@@ -435,7 +504,8 @@ def main():
     # Update Portara Intraday minute data (crudeoil futures) pkl
     #update_pkl(DAILY_MINUTE_DATA_PKL, HISTORY_MINTUE_FILE_LOC, ["Date"], 
     #           read.read_reformat_Portara_minute_data)
-    
+    # Update the Argus OBOS pkl
+
     
     # Fourth update the data base
     return "Update Complete"
@@ -461,13 +531,14 @@ if __name__ == "__main__":
 #     keywords_list = ["WTI","Heating", "Gasoline",'Brent', "gasoil"]
 #     symbol_list = ['CLc2', 'HOc2', 'RBc2', 'QOc2', 'QPc2']
 # =============================================================================
+
     print(AUTH_PACK)
 
-    #main()
+    main()
     
     # Pure Slow download
-    Q = download_latest_APC(AUTH_PACK,ASSET_PACK,start_date="2010-01-01")
-    Q.to_csv(DATA_FILEPATH+"/HOc1_APC_long.csv", index=False)
+    #Q = download_latest_APC(AUTH_PACK,ASSET_PACK,start_date="2010-01-01")
+    #Q.to_csv(DATA_FILEPATH+"/HOc1_APC_long.csv", index=False)
     # fast download on the 10 main crudeoil future contracts
     #download_latest_APC_list(AUTH_PACK, SAVE_FILENAME_LIST, CAT_LIST, 
     #                         KEYWORDS_LIST, SYMBOL_LIST, fast_dl=True)   

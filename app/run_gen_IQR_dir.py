@@ -7,6 +7,8 @@ Created on Wed Apr  9 20:16:53 2025
 
 The IQR Strategy signal can be pulled directly from the APC server.
 Or, alternatively, we can calculate it ourself.
+
+
 """
 
 # Python import
@@ -21,6 +23,8 @@ import numpy as np
 # EC_tools imports
 from EC_tools.strategy import ArgusMRStrategy, ArgusMRStrategyMode, \
                               Strategy, APC_LENGTH
+from EC_tools.strategy.ArgusIQRStrategy import  ArgusIQRStrategy, gen_apc_stat, \
+                                                argus_IQRSKW_format
 import EC_tools.base.read as read
 import EC_tools.utility as util
 from EC_tools.portfolio.bookkeep import Bookkeep
@@ -45,6 +49,7 @@ DEFAULT_KWARGS= {'signal_list': list(APC_FILE_LOC.values()),
                  'history_minute_list': list(HISTORY_MINTUE_FILE_LOC.values()),
                  'signal_pkl': DAILY_APC_PKL,
                  'history_daily_pkl': DAILY_DATA_PKL,
+                 'argus_OBOS_pkl': None,
                  'open_hr_dict': OPEN_HR_DICT, 
                  'close_hr_dict': CLOSE_HR_DICT, 
                  'timezone_dict': TIMEZONE_DICT,
@@ -109,15 +114,17 @@ def loop_signal(strategy: type[Strategy],
           history_data.index[history_data['Date'] == start_date],
           history_data.index[history_data['Date'] == end_date])
     
+    # Make stat data for signal data
+    signal_data_stat = gen_apc_stat(signal_data)
+    print('signal_data_stat',signal_data_stat)
     # Find the index of the start_date and end_date here.
     start_index = history_data.index[history_data['Date'] == start_date].item()  
     
     print(history_data.index[history_data['Date'] == end_date],end_date)
     end_index = history_data.index[history_data['Date'] == end_date].item()
     
-    
     # loop through every forecast date and contract symbol 
-    for i in np.arange(start_index,end_index+1): 
+    for i in np.arange(start_index, end_index+1): 
         
         this_date = history_data["Date"][i]
         this_symbol = history_data["symbol"][i]
@@ -125,6 +132,10 @@ def loop_signal(strategy: type[Strategy],
         # cross reference the APC list to get the APC of this date and symbol
         APCs_this_date = signal_data[(signal_data['PERIOD']==this_date)]
 #                                  & (APCs_dat['symbol']== this_symbol)] #<-- here add a condition matching the symbols
+        APC_stat_this_date = signal_data_stat[(signal_data_stat['PERIOD']==this_date)]
+        
+        OB_this_date = 0
+        OS_this_date = 0
         
         if len(APCs_this_date) == 0:
             print("APC data of {} from the date {} is missing".\
@@ -188,3 +199,132 @@ def loop_signal(strategy: type[Strategy],
                                     dict_contracts_quant_signals.columns.values[0])
     
     return dict_contracts_quant_signals
+
+@util.time_it
+def run_gen_MR_signals_preloaded(strategy: Strategy, 
+                                 signal_pkl: dict, 
+                                 history_daily_pkl: dict, 
+                                 #history_minute_pkl: dict,
+                                 start_date: str, end_date: str,
+                                 buy_range: tuple[float] = (0.95,1.0,0.9), 
+                                 sell_range: tuple[float] = (0.05,0.0,0.1),
+                                  **kwargs) -> pd.DataFrame:
+    """
+
+
+    """
+    default_kwargs = DEFAULT_KWARGS
+    kwargs = dict(default_kwargs,**kwargs)
+    
+    # run meanreversion signal generation on the basis of individual programme  
+    # Loop the whole list in one go with all the contracts or Loop it one contract at a time?
+    master_dict, symbol_list = dict(), list(signal_pkl.keys())
+     
+    print(symbol_list, kwargs['save_filenames_loc'])
+    for symbol in symbol_list:
+        filename = kwargs['save_filenames_loc'][symbol]
+        # The reading part takes the longest time: 13 seconds. The loop itself takes 
+        # input 1, APC. Load the master table in memory and test multple strategies  
+        @util.save_csv("{}".format(filename), save_or_not=kwargs['save_or_not'])
+        def run_gen_MR_indi():
+            
+            book = Bookkeep(custom_keywords_list = argus_IQRSKW_format)
+            
+            print("symbol",symbol)
+            #signal file input
+            signal_file = signal_pkl[symbol]
+           
+            # input 2, Portara history file.
+            history_daily_data = history_daily_pkl[symbol]
+            #history_minute_data = kwargs['history_minute_pkl'][symbol]
+            
+            open_hr = kwargs['open_hr_dict'][symbol]
+            close_hr = kwargs['close_hr_dict'][symbol]
+            Timezone= kwargs['timezone_dict'][symbol]
+            
+            # The strategy will be ran in loop_signal decorator
+            dict_contracts_quant_signals = loop_signal(strategy, book, 
+                                                       signal_file, 
+                                                       history_daily_data, # Daily data
+                                                       #history_minute_data, # minute data
+                                                       start_date, end_date,
+                                                       buy_range=buy_range,
+                                                       sell_range=sell_range,
+                                                       open_hr=open_hr, 
+                                                       close_hr=close_hr,
+                                                       quantile = kwargs['quantile'],
+                                                       asset_name = symbol, 
+                                                       Timezone= Timezone,
+                                                       loop_symbol=symbol,
+                                                       #breakout_quant = kwargs['breakout_quant']
+                                                       )
+            return dict_contracts_quant_signals
+        
+
+        master_dict[symbol] = run_gen_MR_indi()
+
+    return master_dict
+
+def run_gen_signal_bulk(strategy: type[Strategy], 
+                        start_date: str, end_date: str,
+                        buy_range: tuple[float] = (0.4,0.6,0.1), 
+                        sell_range: tuple[float] = (0.6,0.4,0.9),
+                        runtype: str = 'preload', 
+                        **kwargs) -> None:
+
+    default_kwargs = DEFAULT_KWARGS
+    kwargs = dict(default_kwargs,**kwargs)
+    
+    SAVE_FILENAME_LIST = list(kwargs['save_filenames_loc'].values())
+    
+    if runtype=='preload':
+        # Fixed input filename from constant variables
+        SIGNAL_PKL = util.load_pkl(kwargs['signal_pkl'])
+        HISTORY_DAILY_PKL = util.load_pkl(kwargs['history_daily_pkl'])
+        
+        # Run signal generation in a preloaded format
+        run_gen_MR_signals_preloaded(strategy, 
+                                     SIGNAL_PKL, 
+                                     HISTORY_DAILY_PKL, 
+                                     start_date, end_date,
+                                     buy_range = buy_range, 
+                                     sell_range = sell_range,
+                                     #history_minute_pkl = kwargs['history_minute_pkl'], 
+                                     open_hr_dict = kwargs['open_hr_dict'],
+                                     close_hr_dict = kwargs['close_hr_dict'], 
+                                     timezone_dict = kwargs['timezone_dict'],
+                                     save_filenames = kwargs['save_filenames_loc'],
+                                     quantile = kwargs['quantile'],
+                                     save_or_not = kwargs['save_or_not'],
+                                     #breakout_quant = kwargs['breakout_quant']
+                                     )
+    if kwargs['merge_or_not']:
+        #SAVE_FILENAME_LIST = list(kwargs['save_filenames_loc'].values())
+        MASTER_SIGNAL_FILENAME = kwargs['master_signal_filename']       
+        
+        read.merge_raw_data(SAVE_FILENAME_LIST, 
+                            MASTER_SIGNAL_FILENAME, sort_by="Date")
+
+if __name__ == "__main__":
+    print("====")
+    start_date = "2022-01-05"
+    end_date = "2022-06-28"
+    SAVE_FILENAME_LIST = list(TEST_FILE_LOC.values())
+    
+    #HISTORY_MINUTE_PKL= load_source_data_bt(list(DAILY_MINUTE_DATA_INDI_PKL.values()))
+
+    strategy_name = 'argus_IQR_SKW'
+    strategy = ArgusIQRStrategy
+    buy_range = (0.95,1.0,0.9)
+    sell_range =(0.05,0.0,0.1)
+    
+    # master function in running everything
+    run_gen_signal_bulk(strategy, 
+                        start_date, end_date,
+                        buy_range = buy_range, 
+                        sell_range = sell_range,
+                        runtype = 'preload',
+                        save_filenames_loc = TEST_FILE_LOC,
+                        #breakout_quant = breakout_quant,
+                        merge_or_not= True,
+                        save_or_not=True)
