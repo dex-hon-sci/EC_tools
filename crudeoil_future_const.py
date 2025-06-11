@@ -65,6 +65,17 @@ CAT_LIST = [ 'Argus Nymex WTI month 1, Daily',
              'Argus ICE gasoil month 1, Daily',
              'Argus ICE gasoil month 2, Daily']
 
+OBOS_LIST = ['Argus Nymex WTI month 1', 
+             'Argus Nymex WTI month 2',
+             'Argus Nymex Heating oil month 1',
+             'Argus Nymex Heating oil month 2',
+             'Argus Nymex RBOB Gasoline month 1',
+             'Argus Nymex RBOB Gasoline month 2',
+             'Argus Brent month 1',
+             'Argus Brent month 2', 
+             'Argus ICE gasoil month 1', 
+             'Argus ICE gasoil month 2']
+
 KEYWORDS_LIST = ["WTI","WTI","Heating", "Heating","Gasoline","Gasoline",
                  'Brent', 'Brent',"gasoil", 'gasoil']
 

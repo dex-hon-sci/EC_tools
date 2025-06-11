@@ -13,7 +13,7 @@ from EC_tools.base.read import render_PNL_xlsx, open_portfolio
 import EC_tools.utility as util
 from EC_tools.trade import OneTradePerDay, BiDirectionalTrade
 from EC_tools.backtest import LoopType
-from EC_tools.portfolio import PortfolioMetrics, PortfolioLog, PortfolioLog
+from EC_tools.portfolio import PortfolioLog
 from EC_tools.strategy.ArgusTailStrangleStrategy import ArgusTailStrangleStrategy
 #from EC_tools.strategy.ArgusTailStrangleStrategy import ArgusTailStrangleStrategy,\
 #                                                        argus_tailstrangle_format
@@ -101,7 +101,8 @@ def run_main(strategy_name,
                       'preprocess': False, 
                       'signal_gen_runtype': "preload", 
                       'backtest_runtype': "preload", 
-                      'plot_PNL_or_not':False}
+                      'plot_PNL_or_not':False,
+                      'breakout_quant':{'Buy':0.8, 'Sell':0.2}}
     
     kwargs = dict(default_kwargs, **kwargs)
 
@@ -131,7 +132,8 @@ def run_main(strategy_name,
     #MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/consistency/Argus_sample_with_mybacktest_newcode/Argus_sample_signals_2.csv'
     #MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/consistency/live_trade_vs_backtest_newcode/live_trade_compare_signals_TP25SL10_normalopen.csv'
     #MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/EC_benchmark/20240814_argusexact_cross_P25S35_0330_entry_signal_full.csv'
-    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/ArgusTailStrangle/20240814_argutailstrangle_cross_TE30SL20_0330_entry_signal_full.csv'
+    #MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/ArgusTailStrangle/20240814_argutailstrangle_cross_TE45SL35_0330_entry_signal_full.csv'
+    MASTER_SIGNAL_FILENAME = RESULT_FILEPATH + '/ArgusTailStrangle/test_signal.csv'
     
     run_gen_signal_bulk(strategy,
                         start_date, end_date,
@@ -143,7 +145,8 @@ def run_main(strategy_name,
                         close_hr_dict = CLOSE_HR_DICT, 
                         save_or_not=True,
                         merge_or_not=True,
-                        history_minute_pkl = HISTORY_MINUTE_PKL)
+                        history_minute_pkl = HISTORY_MINUTE_PKL,
+                        breakout_quant = kwargs['breakout_quant'])
     
 
     print("=========Running Back-Testing =============")
@@ -151,7 +154,8 @@ def run_main(strategy_name,
     #MASTER_PNL_FILENAME = RESULT_FILEPATH + '/consistency/Argus_sample_with_mybacktest_newcode/Argus_sample_PNL_with_mybacktest_newcode.pkl' 
     #MASTER_PNL_FILENAME = RESULT_FILEPATH + '/consistency/live_trade_vs_backtest_newcode/live_trade_compare_portoflio_TP25SL10_normalopen.pkl' 
     #MASTER_PNL_FILENAME = RESULT_FILEPATH + '/EC_benchmark/20240814_argusexact_cross_P25S35_0330_entry_PNL_full.pkl'
-    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/ArgusTailStrangle/20240814_argutailstrangle_cross_TE30SL20_0330_entry_PNL_full.pkl'
+    #MASTER_PNL_FILENAME = RESULT_FILEPATH + '/ArgusTailStrangle/20240814_argutailstrangle_cross_TE45SL35_0330_entry_PNL_full.pkl'
+    MASTER_PNL_FILENAME = RESULT_FILEPATH + '/ArgusTailStrangle/test_PNL.pkl'
     
     #SAVE_PNL_FILENAME_LIST = FILE_PNL_LOC
     print("HISTORY_MINUTE_PKL", HISTORY_MINUTE_PKL)
@@ -184,7 +188,8 @@ def run_main(strategy_name,
         #PL.tradebook_filename = RESULT_FILEPATH + "/consistency/Argus_sample_with_mybacktest_newcode/Argus_sample_PNL_with_mybacktest_newcode.csv"
         #PL.tradebook_filename = RESULT_FILEPATH + "/consistency/live_trade_vs_backtest_newcode/live_trade_compare_pnl_TP25SL10_normalopen.csv"
         #PL.tradebook_filename = RESULT_FILEPATH + "/EC_benchmark/20240814_argusexact_cross_P25S35_0330_entry_PNL_full.csv"
-        PL.tradebook_filename = RESULT_FILEPATH + "/ArgusTailStrangle/20240814_argutailstrangle_cross_TE30SL20_0330_entry_PNL_full.csv"
+        #PL.tradebook_filename = RESULT_FILEPATH + "/ArgusTailStrangle/20240814_argutailstrangle_cross_TE45SL35_0330_entry_PNL_full.csv"
+        PL.tradebook_filename = RESULT_FILEPATH + "/ArgusTailStrangle/test_PNL.csv"
         
         PL.render_tradebook()
         PL.render_tradebook_xlsx()
@@ -210,13 +215,14 @@ if __name__ == "__main__":
     
     #end_date = "2025-02-25"
     #start_date = "2025-01-13"
-
+    breakout_quant = {'Buy':0.95,'Sell':0.05}
 
     run_main('argus_exact', 
              OneTradePerDay, #OneTradePerDay, #onetrade_simple, #BiDirectionalTrade, 
              start_date, end_date,        
-             buy_range = (0.8,1.0,0.7),
-             sell_range =(0.2,0.0,0.3),
+             buy_range = (0.95,1.0,0.85),
+             sell_range =(0.05,0.0,0.15),
+             breakout_quant = breakout_quant,
              #buy_range = ([0.25,0.4],[0.8,0.75],0.05),
              #sell_range = ([0.6,0.75],[0.25,0.2],0.95), 
              give_obj_name = 'USD',
