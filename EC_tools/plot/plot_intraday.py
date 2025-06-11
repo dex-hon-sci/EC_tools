@@ -286,8 +286,8 @@ def make_plot(symbol, date_interest, direction):
     # Define the Dynamic EES time and prices
     #buy_range = ([0.25,0.4],[0.65,0.75],0.05) # (-0.1,0.1,-0.45)
     #sell_range = ([0.6,0.75],[0.25,0.35],0.95) # (0.1,-0.1,0.45)
-    buy_range = (0.8,1.0,0.7)
-    sell_range =(0.2,0.0,0.3)
+    buy_range = (0.9,1.0,0.8)
+    sell_range =(0.1,0.0,0.2)
 
     TE_time = [datetime.time(3,30,0), datetime.time(16,0,0)]
     TP_time = [datetime.time(3,30,0), datetime.time(19,59,0)]
@@ -356,7 +356,7 @@ def make_plot(symbol, date_interest, direction):
     # Get the data from Trade files and define Entry and Exit points
     
     #TRADE_FILENAME = RESULT_FILEPATH +'/MR_signal_study/SLD4/test_master_pnl_SLD4_.xlsx'
-    TRADE_FILENAME = RESULT_FILEPATH +'/ArgusTailStrangle/20240814_argutailstrangle_cross_TE30SL20_0330_entry_PNL_full_.xlsx'
+    TRADE_FILENAME = RESULT_FILEPATH +'/ArgusTailStrangle/20240814_argutailstrangle_cross_TE20SL10_0330_entry_PNL_full_.xlsx'
     XL_df = read.read_xl_file(TRADE_FILENAME, sheet_name = symbol)
     XL_date_interest = XL_df[XL_df['Entry_Date'] == date_interest]
     print('XL_date_interest', date_interest, XL_date_interest)
@@ -423,7 +423,7 @@ def make_plot(symbol, date_interest, direction):
 if __name__ == "__main__":
     #make_plot('HOc2', '2022-01-31', 'Buy') #'2022-11-18'
     #make_plot('RBc1', '2023-03-16', 'Buy') #"2022-11-30' clearly wrong
-    make_plot('QPc2', '2021-03-04', 'Buy')
+    make_plot('HOc1', '2021-02-26', 'Sell')
     
 
 # =============================================================================

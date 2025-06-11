@@ -19,7 +19,7 @@ Backtest Loop Type:
             breaches these threshold. This loop type contains the least details
             but is also the fastest.
         (2) RangeLoop
-            Looping over a subset of data point given a boundary of intervals
+            Looping over a subset of data point defined by a boundary of intervals
         (3) FullLoop
             Looping through every single data point. It contains the most 
             grandnuality and details but is also the slowest (by a large margin).
@@ -882,6 +882,9 @@ class Loop(Protocol):
                                                         self._loop_type, item)
             print('===============================')
             print(i, pos_open_dt, direction, symbol)
+            print(target_entry, target_exit, stop_exit)
+            print(type(target_entry), type(target_exit), type(stop_exit))
+
             #print(self._loop_type, day, target_entry,
             #      target_exit, stop_exit, open_hr_dt, close_hr_dt, direction)
             # Find the truncation dict and the modified target entry and exit
@@ -895,8 +898,8 @@ class Loop(Protocol):
                                                                   close_hr_dt, 
                                                                   direction,
                                                                   price_proxy=kwargs['price_proxy'])
-            #print('trunc_dict,target_entry, target_exit, stop_exit')
-            #print(trunc_dict,target_entry, target_exit, stop_exit)
+            print('trunc_dict, target_entry, target_exit, stop_exit')
+            print(trunc_dict, target_entry, target_exit, stop_exit)
 
             # Run the trade itself
             trade_open, trade_close, \

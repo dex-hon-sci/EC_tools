@@ -995,7 +995,7 @@ def find_crossover(input_array: np.ndarray,
 
     """
     # Turn input into a numpy array
-    if type(threshold) == float:
+    if type(threshold) == float or type(threshold) == int:
         # make a numpy array of the threshold value    
         threshold = np.repeat(threshold, len(input_array)) 
     elif (type(threshold) == list or type(threshold) == np.ndarray) and \
@@ -1018,14 +1018,21 @@ def find_crossover(input_array: np.ndarray,
     # np.sign(delta) = +1, while np.sign(delta_lag) = -1 means yesterday the value 
     # is lower than threshold and today's value is higher than the threshold-> rise above
     indices_rise_above  = np.where(np.sign(delta) > np.sign(delta_lag))
-
     # IF delta[i] < delta_lag[i], then the price drop below threshold
     indices_drop_below = np.where(np.sign(delta) < np.sign(delta_lag))
-    
+
     # IF delta[i] != delta_lag[i], the price crosses the threshold regardless 
     # of the direction of rise-above or drop-below.
     # Tuple to ensure the same format as the one before
     indices_all = (np.where(np.sign(delta) != np.sign(delta_lag))[0][1:],)
+    
+    #print('delta', np.sign(delta), np.sign(delta_lag))
+    #print('delta', np.sign(delta) != np.sign(delta_lag))
+    #print('indices_rise_above',indices_rise_above)
+    #print('indices_drop_below',indices_drop_below)
+
+    #print('indices_all',indices_all)
+    #print('indices_all', np.where(np.sign(delta) != np.sign(delta_lag))[0][1:])
 
     # Produce a dict of indicies for below and above
     return {'rise': indices_rise_above, 
@@ -1120,12 +1127,12 @@ def find_minute_EES(histroy_data_intraday: pd.DataFrame,
         time_proxy_list = datetime_list
         
     # Find the crossover indices
-    entry_pt_dict = find_crossover(price_list, target_entry)
-    exit_pt_dict = find_crossover(price_list, target_exit)
-    stop_pt_dict = find_crossover(price_list, stop_exit)
-    #print('entry_pt_dict', entry_pt_dict)
-    #print('exit_pt_dict', exit_pt_dict)
-    #print('stop_pt_dict', stop_pt_dict)
+    entry_pt_dict = find_crossover(price_list, float(target_entry))
+    exit_pt_dict = find_crossover(price_list, float(target_exit))
+    stop_pt_dict = find_crossover(price_list, float(stop_exit))
+    #print('entry_pt_dict', entry_pt_dict, type(float(target_entry)))
+    #print('exit_pt_dict', exit_pt_dict, type(float(target_exit)))
+    #print('stop_pt_dict', stop_pt_dict, type(float(stop_exit)))
 
     if direction == "Neitral":
         #print("Neutral day")
@@ -1134,29 +1141,29 @@ def find_minute_EES(histroy_data_intraday: pd.DataFrame,
         exit_pts, exit_times = [], []
         stop_pts, stop_times = [], []
     
-    elif direction == "Buy":
+    elif direction == "Buy": #drop->rise->drop
         #print("Finding Buy points.")
         # for 'Buy' action EES sequence is drop,rise,drop
-        entry_pts = price_list[entry_pt_dict['drop'][0]]
-        entry_times = time_proxy_list[entry_pt_dict['drop'][0]]
+        entry_pts = price_list[entry_pt_dict['all'][0]]
+        entry_times = time_proxy_list[entry_pt_dict['all'][0]]
             
-        exit_pts = price_list[exit_pt_dict['rise'][0]]
-        exit_times = time_proxy_list[exit_pt_dict['rise'][0]]
+        exit_pts = price_list[exit_pt_dict['all'][0]]
+        exit_times = time_proxy_list[exit_pt_dict['all'][0]]
         
-        stop_pts = price_list[stop_pt_dict['drop'][0]]
-        stop_times = time_proxy_list[stop_pt_dict['drop'][0]]
+        stop_pts = price_list[stop_pt_dict['all'][0]]
+        stop_times = time_proxy_list[stop_pt_dict['all'][0]]
             
-    elif direction == "Sell":
+    elif direction == "Sell": #rise->drop->rise
         #print("Finding Sell points.")
         # for 'Sell' action EES sequence is rise,drop,rise
-        entry_pts = price_list[entry_pt_dict['rise'][0]]
-        entry_times = time_proxy_list[entry_pt_dict['rise'][0]]
+        entry_pts = price_list[entry_pt_dict['all'][0]]
+        entry_times = time_proxy_list[entry_pt_dict['all'][0]]
             
-        exit_pts = price_list[exit_pt_dict['drop'][0]]
-        exit_times = time_proxy_list[exit_pt_dict['drop'][0]]
+        exit_pts = price_list[exit_pt_dict['all'][0]]
+        exit_times = time_proxy_list[exit_pt_dict['all'][0]]
         
-        stop_pts = price_list[stop_pt_dict['rise'][0]]
-        stop_times = time_proxy_list[stop_pt_dict['rise'][0]]
+        stop_pts = price_list[stop_pt_dict['all'][0]]
+        stop_times = time_proxy_list[stop_pt_dict['all'][0]]
     else:
         raise ValueError('Direction has to be either Buy, Sell, or Neutral.')
     
