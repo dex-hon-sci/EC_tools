@@ -21,7 +21,7 @@ import EC_tools.base.read as read
 
 from crudeoil_future_const import DAILY_MINUTE_DATA_INDI_PKL, DAILY_APC_PKL, \
                                   APC_LENGTH, RESULT_FILEPATH, \
-                                  WRONG_OPEN_HR_DICT, CLOSE_HR_DICT
+                                  WRONG_OPEN_HR_DICT, CLOSE_HR_DICT, ARGUS_OBOS_PKL\
 
 DEFAULT_KWARGS = {'subplot': SubPlot(1, 1, [1], [1], (10,4)),
                   'axis_limit': AxisLimit(),
@@ -255,6 +255,16 @@ def make_plot(symbol, date_interest, direction):
     # Get the history data on the date of interest
     interest = history_data[history_data['Date']  == date_interest_dt]
     
+    # Get the OBOS level
+    OBOS_data = util.load_pkl(ARGUS_OBOS_PKL)
+    OBOS_data = read.OBOS_filter(OBOS_data[symbol])
+    
+    OBOS_this_date = OBOS_data[OBOS_data['PERIOD']==date_interest_dt]
+    print(OBOS_this_date)
+    # Calculate OBOS values
+    OB = (float(OBOS_this_date['OB_high'].iloc[0]) + float(OBOS_this_date['OB_low'].iloc[0]))/2
+    OS = (float(OBOS_this_date['OS_high'].iloc[0]) + float(OBOS_this_date['OS_low'].iloc[0]))/2
+
     # Get the APC data 
     APC_time_str = 'PERIOD'
     curve = util.load_pkl(DAILY_APC_PKL)[symbol]
@@ -286,8 +296,8 @@ def make_plot(symbol, date_interest, direction):
     # Define the Dynamic EES time and prices
     #buy_range = ([0.25,0.4],[0.65,0.75],0.05) # (-0.1,0.1,-0.45)
     #sell_range = ([0.6,0.75],[0.25,0.35],0.95) # (0.1,-0.1,0.45)
-    buy_range = (0.9,1.0,0.8)
-    sell_range =(0.1,0.0,0.2)
+    buy_range = (0.4,0.6,0.05)
+    sell_range =(0.6,0.4,0.95)
 
     TE_time = [datetime.time(3,30,0), datetime.time(16,0,0)]
     TP_time = [datetime.time(3,30,0), datetime.time(19,59,0)]
@@ -324,14 +334,14 @@ def make_plot(symbol, date_interest, direction):
     dSL_p.sort()
     
     if direction == "Buy":
-        TE_price = curve_spline(buy_range[0]) #curve_spline(buy_range[0][1])
-        TP_price = curve_spline(buy_range[1]) #curve_spline(buy_range[1][0])
+        TE_price = OS #curve_spline(buy_range[0]) #curve_spline(buy_range[0][1])
+        TP_price = OB #curve_spline(buy_range[1]) #curve_spline(buy_range[1][0])
         SL_price = curve_spline(buy_range[2])
         SL_price_list = [curve_spline(buy_range[2]+ele) for ele in dSL_p]
         
     elif direction == "Sell":
-        TE_price = curve_spline(sell_range[0]) # curve_spline(sell_range[0][0])
-        TP_price = curve_spline(sell_range[1]) # curve_spline(sell_range[1][1])
+        TE_price = OB #curve_spline(sell_range[0]) # curve_spline(sell_range[0][0])
+        TP_price = OS#curve_spline(sell_range[1]) # curve_spline(sell_range[1][1])
         SL_price = curve_spline(sell_range[2])
         SL_price_list = [curve_spline(sell_range[2]-ele) for ele in dSL_p]
     else:
@@ -356,7 +366,8 @@ def make_plot(symbol, date_interest, direction):
     # Get the data from Trade files and define Entry and Exit points
     
     #TRADE_FILENAME = RESULT_FILEPATH +'/MR_signal_study/SLD4/test_master_pnl_SLD4_.xlsx'
-    TRADE_FILENAME = RESULT_FILEPATH +'/ArgusTailStrangle/20240814_argutailstrangle_cross_TE20SL10_0330_entry_PNL_full_.xlsx'
+    #TRADE_FILENAME = RESULT_FILEPATH +'/ArgusTailStrangle/20240814_argutailstrangle_cross_TE20SL10_0330_entry_PNL_full_.xlsx'
+    TRADE_FILENAME = RESULT_FILEPATH +'/ArgusIQRSKW/20240814_argusIQRSKW_cross_WIQR38WSKW22_TETPOBOSSL45_0330_entry_PNL_full_.xlsx'
     XL_df = read.read_xl_file(TRADE_FILENAME, sheet_name = symbol)
     XL_date_interest = XL_df[XL_df['Entry_Date'] == date_interest]
     print('XL_date_interest', date_interest, XL_date_interest)
@@ -423,7 +434,7 @@ def make_plot(symbol, date_interest, direction):
 if __name__ == "__main__":
     #make_plot('HOc2', '2022-01-31', 'Buy') #'2022-11-18'
     #make_plot('RBc1', '2023-03-16', 'Buy') #"2022-11-30' clearly wrong
-    make_plot('HOc1', '2021-02-26', 'Sell')
+    make_plot('CLc2', '2024-05-15', 'Buy')
     
 
 # =============================================================================

@@ -540,7 +540,7 @@ if __name__=='__main__':
                       sub_col_list = strategy_col_list, 
                       sub_line_list =strategy_line_list)
         
-    if True:
+    if False:
         MR_curve = RESULT_FILEPATH + "/ArgusTailStrangle/original/20240814_argusexact_cross_P25S35_0330_entry_PNL_full_.xlsx"
         TS_curve = RESULT_FILEPATH + "/ArgusTailStrangle/20240814_argutailstrangle_cross_TE45SL35_0330_entry_PNL_full_.xlsx"
         sub_TS_PNL = RESULT_FILEPATH + "/ArgusTailStrangle/Hybrid/sub_PNL2_.xlsx"
@@ -566,6 +566,32 @@ if __name__=='__main__':
  
         twopanel_plot([], [], [], label='',
                       plot_title = 'MR+TS Hybrid Strategy',
+                      sub_x_list=strategy_date_list,
+                      sub_y1_list=strategy_data_list,
+                      sub_label_list = strategy_label_list,
+                      sub_col_list = strategy_col_list, 
+                      sub_line_list =strategy_line_list)
+    if True:
+        curve2210 = RESULT_FILEPATH + "/ArgusIQRSKW/20240814_argusIQRSKW_cross_WIQR22WSKW10_TETPOBOSSL45_0330_entry_PNL_full_.xlsx"
+        curve3810 = RESULT_FILEPATH + "/ArgusIQRSKW/20240814_argusIQRSKW_cross_WIQR38WSKW10_TETPOBOSSL45_0330_entry_PNL_full_.xlsx"
+        curve3822 = RESULT_FILEPATH + "/ArgusIQRSKW/20240814_argusIQRSKW_cross_WIQR38WSKW22_TETPOBOSSL45_0330_entry_PNL_full_.xlsx"
+        
+        strategy_filename_list = [curve2210, curve3810, curve3822]
+        strategy_label_list = ['WIQR22WSKW10','WIQR38WSKW10', 'WIQR38WSKW22']
+        strategy_col_list = ['green', 'r', 'w']
+        strategy_line_list = ['solid', 'solid', 'solid']   
+        
+        strategy_result_list = [extract_PNLplot_input(ele, 
+                                        date_col="Entry_Date",
+                                        sheet_name='Total',
+                                        val_col='cumulative P&L from trades')
+                                for ele in strategy_filename_list]
+        
+        strategy_date_list = [ele[0] for ele in strategy_result_list]
+        strategy_data_list = [ele[1] for ele in strategy_result_list]
+        
+        twopanel_plot([], [], [], label='',
+                      plot_title = 'Argus IQR_SKW Strategy (Preliminary)',
                       sub_x_list=strategy_date_list,
                       sub_y1_list=strategy_data_list,
                       sub_label_list = strategy_label_list,

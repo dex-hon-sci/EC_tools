@@ -30,13 +30,19 @@ from dotenv import load_dotenv
 argus_IQRSKW_format = ['Date', 'Price_Code', 'Direction', 'Commodity_name',
                         'Contract_Month','Timezone', 
                         'Valid_From_localtz_timestr', 'Valid_To_localtz_timestr', 
-                        'CONS',	'Signal_CONS',	
-                        'Q0.05', 'Q0.1','Q0.25', 'Q0.4', 'Q0.5', 
+                        'IQR_CON', 'CRT_SKW_CON', 'Signal_IQR', 'Signal_CRT_SKW', # Conditions stats
+                        'IQR_MA', 'CRT_SKW_MA', 'window_IQR', 'window_SKW',
+                        'Q0.05', 'Q0.1','Q0.25', 'Q0.4', 'Q0.5', #quantiles
                         'Q0.6', 'Q0.75', 'Q0.9', 'Q0.95',
-                        'Entry_Price', 'Exit_Price', 'StopLoss_Price',
+                        'Entry_Price', 'Exit_Price', 'StopLoss_Price', # EES
                         'strategy_name']
+# data =  cond_info + strategy_info_list + \
+#        quantile_info + EES_val + [self.strategy_name]
+
 #extract_lag_data
-def gen_apc_stat(apc_curve_data:pd.DataFrame):
+def gen_apc_stat(apc_curve_data:pd.DataFrame,
+                 window_IQR: int = 10,
+                 window_SKW: int = 10):
     # operate on the dataframe, use this before the signal generation loop
     apc_curve_data_c = apc_curve_data.copy()
     
@@ -55,11 +61,18 @@ def gen_apc_stat(apc_curve_data:pd.DataFrame):
     ### Stat 5: Upside tail risk
     apc_curve_data_c["Upside_Tail_Risk"] = apc_curve_data_c["0.9975"]-apc_curve_data_c["0.5"]      
     
+    ### Gen MA for 
+    IQR_MA = apc_curve_data_c['IQR'].rolling(window=window_IQR).mean()
+    CRT_SKW_MA = apc_curve_data_c['CRT_SKW'].rolling(window=window_SKW).mean()
+
+    apc_curve_data_c['IQR_MA'] = IQR_MA
+    apc_curve_data_c['CRT_SKW_MA'] = CRT_SKW_MA
+    
     apc_curve_data_c = apc_curve_data_c[['PUBLICATION_DATE', 'PERIOD', 'CATEGORY', 
                                          'CONTINUOUS_FORWARD','TIMESTAMP', 
                                          'PRICE_UNIT', 'symbol', 'IQR', 'CRT_SKW',
                                          'Tail_SKW', 'Downside_Tail_Risk', 
-                                         'Upside_Tail_Risk']]
+                                         'Upside_Tail_Risk', 'IQR_MA', 'CRT_SKW_MA']]
     return apc_curve_data_c
 
 def cal_apc_stat(apc_spline):
@@ -176,24 +189,26 @@ class ArgusIQRStrategy(Strategy):
             
     def gen_data(self, 
                  apc_stat_data: pd.DataFrame, 
-                 Window_IQR: int =10,
-                 Window_SKW: int = 10,
+                 window_IQR: int =10,
+                 window_SKW: int = 10,
                  quantile: list = [0.25,0.4,0.6,0.75]):
         
         IQR_MA = apc_stat_data['IQR_MA']
         CRT_SKW_MA = apc_stat_data['CRT_SKW_MA']
         #IQR_MA = apc_stat_data[:, 'IQR'].rolling(window=Window_IQR).mean()
         #CRT_SKW_MA = apc_stat_data.loc[:, 'CRT_SKW'].rolling(window=Window_SKW).mean()
-
-        strategy_info = {'IQR_MA': float(IQR_MA),
-                         'CRT_SKW_MA': float(CRT_SKW_MA), 
-                         'Window_IQR': Window_IQR, # Window size for IQR
-                         'Window_SKW': Window_SKW, # Window size for SKW
-                         'stat': [float(apc_stat_data['IQR']), 
-                                  float(apc_stat_data['CRT_SKW']), 
-                                  float(apc_stat_data['TAIL_SKW']), 
-                                  float(apc_stat_data['Down_tail_risk']), 
-                                  float(apc_stat_data['Up_tail_risk'])]}
+        print('gen_data')
+        print(list(apc_stat_data.columns))
+        print(apc_stat_data.iloc[0])
+        strategy_info = {'IQR_MA': float(IQR_MA.iloc[0]),
+                         'CRT_SKW_MA': float(CRT_SKW_MA.iloc[0]), 
+                         'window_IQR': window_IQR, # Window size for IQR
+                         'window_SKW': window_SKW, # Window size for SKW
+                         'stat': [float(apc_stat_data['IQR'].iloc[0]), 
+                                  float(apc_stat_data['CRT_SKW'].iloc[0]), 
+                                  float(apc_stat_data['Tail_SKW'].iloc[0]), 
+                                  float(apc_stat_data['Downside_Tail_Risk'].iloc[0]), 
+                                  float(apc_stat_data['Upside_Tail_Risk'].iloc[0])]}
         
         qunatile_info = list(self._curve_today_spline(quantile))
         
@@ -267,12 +282,12 @@ class ArgusIQRStrategy(Strategy):
             
         match self.direction:
             case SignalType.BUY:
-                entry_price = OB
-                exit_price = OS
-                stop_loss = self._curve_today_spline(buy_range[2])
-            case SignalType.SELL:
                 entry_price = OS
                 exit_price = OB
+                stop_loss = self._curve_today_spline(buy_range[2])
+            case SignalType.SELL:
+                entry_price = OB
+                exit_price = OS
                 stop_loss = self._curve_today_spline(sell_range[2])
 
             case SignalType.NEUTRAL:
@@ -287,21 +302,20 @@ class ArgusIQRStrategy(Strategy):
     
     def apply_strategy(self, 
                        apc_stat_data: pd.DataFrame, 
-                       apc_curve_data: pd.DataFrame,          
                        OB: float, 
                        OS: float,
                        buy_range: tuple[list|tuple,float] = 
                                    ([0.25,0.4],[0.6,0.75],0.05), 
                        sell_range: tuple[list|tuple,float] = 
                                    ([0.6,0.75],[0.25,0.4],0.95),
-                       #quantile: list[float] = [0.25,0.4,0.6,0.75],
-                       Window_IQR: int = 38,
-                       Window_SKW: int = 22):
+                       quantile: list[float] = [0.25,0.4,0.6,0.75],
+                       window_IQR: int = 38,
+                       window_SKW: int = 22):
 
         strategy_info, quantile_info = self.gen_data(apc_stat_data, 
-                                                Window_IQR = Window_IQR, 
-                                                Window_SKW = Window_SKW,
-                                                quantile = [0.25,0.4,0.6,0.75])
+                                                window_IQR = window_IQR, 
+                                                window_SKW = window_SKW,
+                                                quantile = quantile)
         
         direction, cond_info = self.run_cond(strategy_info)
         
@@ -313,7 +327,10 @@ class ArgusIQRStrategy(Strategy):
         EES_val = [entry_price, exit_price, stop_loss]
         
         # Turn strategy_info from dict to list
-        strategy_info_list = strategy_info['lag_list'] + [strategy_info['rollingaverage']]
+        strategy_info_list = [strategy_info['IQR_MA']] + \
+                             [strategy_info['CRT_SKW_MA']] +\
+                             [strategy_info['window_IQR']] +\
+                             [strategy_info['window_SKW']]
         
         # put all the data in a singular list. This is to be added in the 
         # data list in the loop

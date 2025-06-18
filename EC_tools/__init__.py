@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Jun 11 16:33:24 2025
+
+@author: dexter
+"""
+
 """
 A tool for finacial analytics.
 
@@ -25,3 +33,4 @@ Modules include:
 
 :mod: 'read'
 """
+#__all__ = []

@@ -18,6 +18,7 @@ RESULT_FILEPATH = os.environ.get("RESULT_FILEPATH")
 DAILY_DATA_PKL = DATA_FILEPATH +"/pkl_vault/crudeoil_future_daily_full.pkl"
 DAILY_MINUTE_DATA_PKL = DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_full.pkl"
 DAILY_APC_PKL = DATA_FILEPATH +"/pkl_vault/crudeoil_future_APC_full.pkl"
+ARGUS_OBOS_PKL = DATA_FILEPATH +"/pkl_vault/crudeoil_future_argus_OBOS_full.pkl"
 
 DAILY_MINUTE_DATA_INDI_PKL = {'CLc1': DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_CLc1.pkl",
                               'CLc2': DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_CLc2.pkl",

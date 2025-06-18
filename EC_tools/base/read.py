@@ -640,8 +640,8 @@ def read_reformat_dateNtime(filename: str,
     return data
 
 def read_reformat_APC_data(filename: str, 
-                           time_proxies: list[str] = 
-                           ['PUBLICATION_DATE', 'PERIOD']) -> pd.DataFrame:
+                           time_proxies: list[str] = ['PERIOD']) -> pd.DataFrame:
+                           #['PUBLICATION_DATE', 'PERIOD']) -> pd.DataFrame:
     """
     Read and reformat APC data
 
@@ -1983,3 +1983,21 @@ def find_closest_price_generic(data: pd.DataFrame,
             print(target_time_dt, target_time_dt.time(), target_price)
 
     return target_time, target_price
+
+def OBOS_filter(OBOS_data:pd.DataFrame, lvl:list = ['OB2','OB1','OS2','OS1']):
+    # lvl has to be OB_high, OB_low, OS_high, OS_low
+    cols = list(OBOS_data.columns)
+    hash_table = {'OB1': cols[-6], 'OB2':cols[-5], 'OB3':cols[-4], 
+                  'OS1':cols[-3], 'OS2':cols[-2], 'OS3':cols[-1]}
+    # choose the OBOS level of interest and make a distilled version of it.
+    OBOS_data_c = OBOS_data.copy()
+    
+    OBOS_data_c['OB_high'] = OBOS_data_c[hash_table[lvl[0]]]
+    OBOS_data_c['OB_low'] = OBOS_data_c[hash_table[lvl[1]]]
+    OBOS_data_c['OS_high'] = OBOS_data_c[hash_table[lvl[2]]]
+    OBOS_data_c['OS_low'] = OBOS_data_c[hash_table[lvl[3]]]
+    
+    OBOS_data_c = OBOS_data_c[['PERIOD','OB_high','OB_low','OS_high','OS_low']]
+    
+    print('OBOS_data_c', OBOS_data_c)
+    return OBOS_data_c

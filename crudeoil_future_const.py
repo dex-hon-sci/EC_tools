@@ -18,6 +18,7 @@ RESULT_FILEPATH = os.environ.get("RESULT_FILEPATH")
 DAILY_DATA_PKL = DATA_FILEPATH +"/pkl_vault/crudeoil_future_daily_full.pkl"
 DAILY_MINUTE_DATA_PKL = DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_full.pkl"
 DAILY_APC_PKL = DATA_FILEPATH +"/pkl_vault/crudeoil_future_APC_full.pkl"
+ARGUS_OBOS_PKL = DATA_FILEPATH +"/pkl_vault/crudeoil_future_argus_OBOS_full.pkl"
 
 DAILY_MINUTE_DATA_INDI_PKL = {'CLc1': DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_CLc1.pkl",
                               'CLc2': DATA_FILEPATH +"/pkl_vault/crudeoil_future_minute_CLc2.pkl",
@@ -435,6 +436,19 @@ APC_FILE_LOC = {
     "QOc2": DATA_FILEPATH + "/APC_latest/APC_latest_QOc2.csv",
     "QPc1": DATA_FILEPATH + "/APC_latest/APC_latest_QPc1.csv",
     "QPc2": DATA_FILEPATH + "/APC_latest/APC_latest_QPc2.csv"
+    }
+
+ARGUS_OBOS_FILE_LOC = {
+    "CLc1": DATA_FILEPATH + "/Argus_OBOS/CLc1_Argus_OBOS.csv",
+    "CLc2": DATA_FILEPATH + "/Argus_OBOS/CLc2_Argus_OBOS.csv",
+    "HOc1": DATA_FILEPATH + "/Argus_OBOS/HOc1_Argus_OBOS.csv",
+    "HOc2": DATA_FILEPATH + "/Argus_OBOS/HOc2_Argus_OBOS.csv",
+    "RBc1": DATA_FILEPATH + "/Argus_OBOS/RBc1_Argus_OBOS.csv",
+    "RBc2": DATA_FILEPATH + "/Argus_OBOS/RBc2_Argus_OBOS.csv",
+    "QOc1": DATA_FILEPATH + "/Argus_OBOS/QOc1_Argus_OBOS.csv",
+    "QOc2": DATA_FILEPATH + "/Argus_OBOS/QOc2_Argus_OBOS.csv",
+    "QPc1": DATA_FILEPATH + "/Argus_OBOS/QPc1_Argus_OBOS.csv",
+    "QPc2": DATA_FILEPATH + "/Argus_OBOS/QPc2_Argus_OBOS.csv"
     }
 
 HISTORY_DAILY_FILE_LOC = {
