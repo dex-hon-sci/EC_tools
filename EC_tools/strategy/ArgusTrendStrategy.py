@@ -215,7 +215,7 @@ class ArgusTrendStrategy(Strategy):
                          'Sell':[sum(self._sub_sell_cond_dict[key],[]) 
                                  for key in self._sub_buy_cond_dict]}
         
-        # flatten the sub-conditoion list and sotre them in the condition list
+        # flatten the sub-conditoion list and store them in the condition list
         self.flatten_sub_cond_dict()
 
         # Create the condtion info for bookkeeping

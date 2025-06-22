@@ -37,7 +37,7 @@ from crudeoil_future_const import DAILY_DATA_PKL, DAILY_APC_PKL,\
                                   ARGUS_EXACT_SIGNAL_AMB3_FILE_LOC,\
                                   ARGUS_EXACT_SIGNAL_MODE_FILE_LOC,\
                                   RESULT_FILEPATH, DATA_FILEPATH, \
-                                  TEST_FILE_LOC
+                                  TEST_FILE_LOC, ARGUS_OBOS_PKL
 
 
 __all__ = ['loop_signal',
@@ -50,6 +50,7 @@ DEFAULT_KWARGS= {'signal_list': list(APC_FILE_LOC.values()),
                  'history_minute_list': list(HISTORY_MINTUE_FILE_LOC.values()),
                  'signal_pkl': DAILY_APC_PKL,
                  'history_daily_pkl': DAILY_DATA_PKL,
+                 'argus_OBOS_pkl': ARGUS_OBOS_PKL,
                  #'history_minute_pkl':DAILY_MINUTE_DATA_INDI_PKL,
                  'open_hr_dict': OPEN_HR_DICT, 
                  'close_hr_dict': CLOSE_HR_DICT, 
@@ -65,13 +66,33 @@ DEFAULT_KWARGS= {'signal_list': list(APC_FILE_LOC.values()),
                  'open_hr': '', 
                  'close_hr': '',
                  'asset_name':'', 
-                 'Timezone': ""}
+                 'Timezone': "",
+                 'lvl': ['OB2','OB2','OS2','OS2']}
+
+def OBOS_filter(OBOS_data:pd.DataFrame, lvl:list = ['OB2','OB2','OS2','OS2']):
+    # lvl has to be OB_high, OB_low, OS_high, OS_low
+    cols = list(OBOS_data.columns)
+    hash_table = {'OB1': cols[-6], 'OB2':cols[-5], 'OB3':cols[-4], 
+                  'OS1':cols[-3], 'OS2':cols[-2], 'OS3':cols[-1]}
+    # choose the OBOS level of interest and make a distilled version of it.
+    OBOS_data_c = OBOS_data.copy()
+    
+    OBOS_data_c['OB_high'] = OBOS_data_c[hash_table[lvl[0]]]
+    OBOS_data_c['OB_low'] = OBOS_data_c[hash_table[lvl[1]]]
+    OBOS_data_c['OS_high'] = OBOS_data_c[hash_table[lvl[2]]]
+    OBOS_data_c['OS_low'] = OBOS_data_c[hash_table[lvl[3]]]
+    
+    OBOS_data_c = OBOS_data_c[['PERIOD','OB_high','OB_low','OS_high','OS_low']]
+    
+    print('OBOS_data_c', OBOS_data_c)
+    return OBOS_data_c
 
 def loop_signal(strategy: type[Strategy], 
                 book: type[Bookkeep], 
                 apc_data: pd.DataFrame, 
                 history_data: pd.DataFrame, 
                 history_data_minute: pd.DataFrame, 
+                OBOS_data: pd.DataFrame,
                 start_date: datetime.datetime, 
                 end_date: datetime.datetime,
                 buy_range: tuple = (0.95, 1.0, 0.9), 
@@ -105,6 +126,12 @@ def loop_signal(strategy: type[Strategy],
         APCs_this_date = apc_data[(apc_data['PERIOD']==this_date)]
 #                                  & (APCs_dat['symbol']== this_symbol)] #<-- here add a condition matching the symbols
         
+        OBOS_this_date = OBOS_data[(OBOS_data['PERIOD']==this_date)]
+        
+        
+        OB = (float(OBOS_this_date['OB_high'].iloc[0]) + float(OBOS_this_date['OB_low'].iloc[0]))/2
+        OS = (float(OBOS_this_date['OS_high'].iloc[0]) + float(OBOS_this_date['OS_low'].iloc[0]))/2
+
         if len(APCs_this_date) == 0:
             print("APC data of {} from the date {} is missing".\
                                           format(this_symbol, this_date.date()))
@@ -130,11 +157,12 @@ def loop_signal(strategy: type[Strategy],
             print('breakout_quant', kwargs['breakout_quant'])
             # Apply the strategy, The Strategy is variable
             strategy_output = strategy(curve_this_date).\
-                                        apply_strategy(history_intraday_data, 
+                                        apply_strategy(history_intraday_data,
+                                                       OB, OS,
                                                        buy_range=buy_range, 
                                                        sell_range=sell_range,   
-                                                       quantile = kwargs['quantile'],
-                                                       breakout_quant = kwargs['breakout_quant'])
+                                                       quantile = kwargs['quantile'])
+                                                       #breakout_quant = kwargs['breakout_quant'])
 
             print('====================================')
             print(forecast_date, full_contract_symbol,'MR signal generated!', 
@@ -166,6 +194,7 @@ def loop_signal(strategy: type[Strategy],
 def run_gen_MR_signals_preloaded(strategy: Strategy, 
                                  signal_pkl: dict, 
                                  history_daily_pkl: dict, 
+                                 argus_OBOS_pkl: dict,
                                  #history_minute_pkl: dict,
                                  start_date: str, end_date: str,
                                  buy_range: tuple[float] = (0.95,1.0,0.9), 
@@ -203,12 +232,18 @@ def run_gen_MR_signals_preloaded(strategy: Strategy,
             open_hr = kwargs['open_hr_dict'][symbol]
             close_hr = kwargs['close_hr_dict'][symbol]
             Timezone= kwargs['timezone_dict'][symbol]
+            OBOS = argus_OBOS_pkl[symbol] #kwargs['argus_OBOS_pkl'][symbol]
             
+            # Transform OBOS into a simplified form 
+            # output - > PERIOD, OB_high, OB_low, OS_high, OS_low
+            OBOS_simple = OBOS_filter(OBOS, kwargs['lvl'])
+
             # The strategy will be ran in loop_signal decorator
             dict_contracts_quant_signals = loop_signal(strategy, book, 
                                                        signal_file, 
                                                        history_daily_data, # Daily data
                                                        history_minute_data, # minute data
+                                                       OBOS_simple,
                                                        start_date, end_date,
                                                        buy_range=buy_range,
                                                        sell_range=sell_range,
@@ -242,11 +277,13 @@ def run_gen_signal_bulk(strategy: type[Strategy],
         # Fixed input filename from constant variables
         SIGNAL_PKL = util.load_pkl(kwargs['signal_pkl'])
         HISTORY_DAILY_PKL = util.load_pkl(kwargs['history_daily_pkl'])
-        
+        ARGUS_OBOS_PKL = util.load_pkl(kwargs['argus_OBOS_pkl'])
+
         # Run signal generation in a preloaded format
         run_gen_MR_signals_preloaded(strategy, 
                                      SIGNAL_PKL, 
                                      HISTORY_DAILY_PKL, 
+                                     ARGUS_OBOS_PKL,
                                      start_date, end_date,
                                      buy_range = buy_range, 
                                      sell_range = sell_range,

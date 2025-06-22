@@ -30,7 +30,8 @@ from crudeoil_future_const import RESULT_FILEPATH
 #xl_filename = RESULT_FILEPATH +'/MR_signal_study/SLD4/test_master_pnl_SLD4_.xlsx'
 #xl_filename = RESULT_FILEPATH +'/ArgusTailStrangle/20240814_argutailstrangle_cross_TE20SL10_0330_entry_PNL_full_.xlsx'
 #xl_filename = RESULT_FILEPATH +'/ArgusTailStrangle/20240814_argutailstrangle_cross_TE45SL35_0330_entry_PNL_full_.xlsx'
-xl_filename = RESULT_FILEPATH +'/ArgusIQRSKW/20240814_argusIQRSKW_cross_WIQR22WSKW10_TETPOBOSSL45_0330_entry_PNL_full_.xlsx'
+#xl_filename = RESULT_FILEPATH +'/ArgusIQRSKW/20240814_argusIQRSKW_cross_WIQR22WSKW10_TETPOBOSSL45_0330_entry_PNL_full_.xlsx'
+xl_filename = RESULT_FILEPATH + "/ArgusTailPButterfly/Hybrid/TailStrangel_PButterfly_.xlsx"
 
 wb_obj = openpyxl.load_workbook(xl_filename, keep_vba=True)
 

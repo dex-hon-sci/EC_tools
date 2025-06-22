@@ -540,19 +540,24 @@ if __name__=='__main__':
                       sub_col_list = strategy_col_list, 
                       sub_line_list =strategy_line_list)
         
-    if False:
+    if True:
         MR_curve = RESULT_FILEPATH + "/ArgusTailStrangle/original/20240814_argusexact_cross_P25S35_0330_entry_PNL_full_.xlsx"
         TS_curve = RESULT_FILEPATH + "/ArgusTailStrangle/20240814_argutailstrangle_cross_TE45SL35_0330_entry_PNL_full_.xlsx"
         sub_TS_PNL = RESULT_FILEPATH + "/ArgusTailStrangle/Hybrid/sub_PNL2_.xlsx"
         hybrid_select = RESULT_FILEPATH + "/ArgusTailStrangle/Hybrid/hybrid_select2_.xlsx"
         hybrid_full = RESULT_FILEPATH + "/ArgusTailStrangle/Hybrid/hybrid_full_.xlsx"
+        TPB_curve_OBOS = RESULT_FILEPATH + "/ArgusTailPButterfly/test_PNL3_.xlsx"
+        IQRSKW_curve = RESULT_FILEPATH + "/ArgusIQRSKW/20240814_argusIQRSKW_cross_WIQR22WSKW10_TETPOBOSSL45_0330_entry_PNL_full_.xlsx"
+        TS_TPB = RESULT_FILEPATH +"/ArgusTailPButterfly/Hybrid/TailStrangel_PButterfly_.xlsx"
         
         strategy_filename_list = [MR_curve, TS_curve, sub_TS_PNL,
-                                  hybrid_select, hybrid_full]
+                                  hybrid_select, hybrid_full, TPB_curve_OBOS,
+                                  IQRSKW_curve, TS_TPB]
         strategy_label_list = ['Original_MR','TailStrangle', 'sub_TS_PNL',
-                               'Hybrid_select', 'hybrid_full']
-        strategy_col_list = ['green', 'yellow', 'r', 'w','purple']
-        strategy_line_list = ['solid', 'solid', 'solid','solid','solid']   
+                               'Hybrid_select', 'hybrid_full', 'Tail-Pseudo-Butterfly',
+                               'IQR_SKW', "TS+TPB"]
+        strategy_col_list = ['green', 'yellow', 'r', 'w','purple', 'blue','grey','cyan']
+        strategy_line_list = ['solid', 'solid', 'solid','solid','solid', 'solid','solid','solid']   
         
         strategy_result_list = [extract_PNLplot_input(ele, 
                                         date_col="Entry_Date",
@@ -571,7 +576,7 @@ if __name__=='__main__':
                       sub_label_list = strategy_label_list,
                       sub_col_list = strategy_col_list, 
                       sub_line_list =strategy_line_list)
-    if True:
+    if False:
         curve2210 = RESULT_FILEPATH + "/ArgusIQRSKW/20240814_argusIQRSKW_cross_WIQR22WSKW10_TETPOBOSSL45_0330_entry_PNL_full_.xlsx"
         curve3810 = RESULT_FILEPATH + "/ArgusIQRSKW/20240814_argusIQRSKW_cross_WIQR38WSKW10_TETPOBOSSL45_0330_entry_PNL_full_.xlsx"
         curve3822 = RESULT_FILEPATH + "/ArgusIQRSKW/20240814_argusIQRSKW_cross_WIQR38WSKW22_TETPOBOSSL45_0330_entry_PNL_full_.xlsx"

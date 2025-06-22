@@ -454,6 +454,7 @@ class OneTradePerDay(Trade):
                 ExecuteOrder(exit_pos).cancel_pos(void_time=trade_close[0])
         
         # change the price for the open position
+        #print('opening_pos', opening_pos)
         opening_pos.price = entry_pt[1]
         
         #print('entry_pt[1]', entry_pt[1])

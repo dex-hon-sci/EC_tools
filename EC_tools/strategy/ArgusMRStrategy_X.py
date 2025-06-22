@@ -197,16 +197,16 @@ class ArgusMRStrategy(Strategy):
         
         # save the condtion boolean value to the sub-condition dictionary
         self._sub_buy_cond_dict = {'NCONS': [cond_buy_list_1],	
-                             'NROLL': [cond_buy_list_2]}
+                                   'NROLL': [cond_buy_list_2]}
                              #'OP_WITHIN': [cond_buy_list_3]}
         self._sub_sell_cond_dict = {'NCONS': [cond_sell_list_1],	
-                             'NROLL': [cond_sell_list_2]}
+                                    'NROLL': [cond_sell_list_2]}
                              #'OP_WITHIN': [cond_sell_list_3]}
         
         # Store all sub-conditions into 
         self.sub_cond_dict = {'Buy':[sum(self._sub_buy_cond_dict[key],[]) 
                                 for key in self._sub_buy_cond_dict], 
-                         'Sell':[sum(self._sub_sell_cond_dict[key],[]) 
+                              'Sell':[sum(self._sub_sell_cond_dict[key],[]) 
                                  for key in self._sub_buy_cond_dict]}
         
         # flatten the sub-conditoion list and sotre them in the condition list

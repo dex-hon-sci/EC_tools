@@ -25,7 +25,7 @@ argus_tailstrangle_format = ['Date', 'Price_Code', 'Direction', 'Commodity_name'
                             'Entry_Price', 'Exit_Price', 'StopLoss_Price',
                             'strategy_name']
 
-class ArgusTailStrangleStrategy(Strategy):
+class ArgusTailPButterflyStrategy(Strategy):
     """
     """
     def __init__(self, 
@@ -43,7 +43,7 @@ class ArgusTailStrangleStrategy(Strategy):
         self._sub_sell_cond_dict = dict()
         self.sub_cond_dict = {'Buy':[], 'Sell':[], 'Neutral': []}
 
-        self.strategy_name = 'argus_tailstrangle'
+        self.strategy_name = 'argus_tailpbutterfly'
         
     def flatten_sub_cond_dict(self) -> None:
         """
@@ -73,42 +73,73 @@ class ArgusTailStrangleStrategy(Strategy):
     def gen_data(self, 
                  historic_intraday_data: pd.DataFrame, 
                  price_proxy: str = 'Settle', 
+                 time_proxy: str='Time',
                  quantile: list = [0.25,0.4,0.6,0.75])-> tuple[list|list]:
         
         price_data = historic_intraday_data[price_proxy].to_list()
+        time_data = historic_intraday_data[time_proxy].to_list()
         
         qunatile_info = list(self._curve_today_spline(quantile))
         
-        return price_data, qunatile_info
+        return price_data, time_data, qunatile_info
 
     
     def run_cond(self, 
                  price_data: list[float], 
+                 time_data: list[float],
                  OB, OS,
-                 breakout_quant: dict[str|float] = \
-                                 {'Buy': 0.95, 'Sell':0.05}): 
-        #print(self._curve_today_spline(breakout_quant['Buy']))
-        #print('length',len(price_data),self._curve_today_spline(
-        #                                    breakout_quant['Buy']),
-        #    type(self._curve_today_spline(float(breakout_quant['Buy']))),
-        #    type(price_data))
-        #print(breakout_quant['Buy'], breakout_quant['Sell'])
+                 inversion_quant: dict[str|float] = \
+                                 {'Buy': 0.05, 'Sell':0.95},
+                 mid_pt_target: float = 0.5): 
         
-        threshold_low = self._curve_today_spline(float(breakout_quant['Sell']))
-        threshold_high = self._curve_today_spline(float(breakout_quant['Buy']))
+        threshold_low = self._curve_today_spline(float(inversion_quant['Buy']))
+        threshold_high = self._curve_today_spline(float(inversion_quant['Sell']))
         
+        mid_pt_target_price = self._curve_today_spline(mid_pt_target)
+        
+        delta = float(self._curve_today_spline(0.6)-self._curve_today_spline(0.4))
         #print(type(threshold_low), type(threshold_high), threshold_low, threshold_high)
         
-        lower_breach_index = find_crossover(price_data, float(threshold_low))
-        higher_breach_index = find_crossover(price_data, float(threshold_high))
+        # Define the target entry for this strategy
+        buy_entry = OS #self._curve_today_spline(inversion_quant['Buy']) #OS
+        sell_entry = OB #self._curve_today_spline(inversion_quant['Sell']) #OB
 
+        lower_breach_index = find_crossover(price_data, float(buy_entry))
+        higher_breach_index = find_crossover(price_data, float(sell_entry))
+        
+        price_data = np.array(price_data)
+        time_data = np.array(time_data)
+        
+        # Check the time of the lower and higher breach 
+        lower_breach_time = time_data[lower_breach_index['all'][0]]
+        higher_breach_time = time_data[higher_breach_index['all'][0]]
+        
+        cond2 = "Neutral"
+        if len(lower_breach_time)>0 and len(higher_breach_time)>0:
+            # In the case of both lower and higher points are breached, 
+            if lower_breach_time[0] < higher_breach_time[0]:
+                cond2 = "Buy"
+            elif lower_breach_time[0] > higher_breach_time[0]:
+                cond2 = "Sell"
+        elif len(lower_breach_time)==0 and len(higher_breach_time)>0:
+            cond2 = "Sell"
+        elif len(lower_breach_time)>0 and len(higher_breach_time)==0:
+            cond2 = "Buy"
+        elif len(lower_breach_time)==0 and len(higher_breach_time)==0:
+            cond2 = "Neutral"
+            
         # Run conditions to determine direction
         # Buy direction
-        cond_buy_list_1 = [(len(higher_breach_index['all'][0]) > 0)]
-        cond_buy_list_2 = [(threshold_high < OB)]
+        cond_buy_list_1 = [(len(lower_breach_index['all'][0]) > 0)]
+        cond_buy_list_2 = [(cond2=="Buy")]
+        cond_buy_list_3 = [(OS < mid_pt_target_price) and (OS-delta<OS)]
+        cond_buy_list_4 = [(threshold_high < OS)]
         # Sell direction
-        cond_sell_list_1 = [(len(lower_breach_index['all'][0]) > 0)]
-        cond_sell_list_2 = [(threshold_low > OS)]
+        
+        cond_sell_list_1 = [(len(higher_breach_index['all'][0]) > 0)]
+        cond_sell_list_2 = [(cond2=="Sell")]
+        cond_sell_list_3 = [(OB > mid_pt_target_price) and (OB+delta>OB)]
+        cond_sell_list_4 = [(threshold_low > OB)]
         
         print(len(higher_breach_index['all'][0]), 
               len(lower_breach_index['all'][0]))
@@ -117,17 +148,19 @@ class ArgusTailStrangleStrategy(Strategy):
         
         # save the condtion boolean value to the sub-condition dictionary
         self._sub_buy_cond_dict = {'CONS': [cond_buy_list_1],
-                                   'CONS2': [cond_buy_list_2]}
+                                   'CONS2': [cond_buy_list_2],
+                                   'CONS3': [cond_buy_list_3]}
         self._sub_sell_cond_dict = {'CONS': [cond_sell_list_1],
-                                    'CONS2': [cond_sell_list_2]}
+                                    'CONS2': [cond_sell_list_2],
+                                    'CONS3': [cond_sell_list_3]}
         
         # Store all sub-conditions 
         self.sub_cond_dict = {'Buy':[sum(self._sub_buy_cond_dict[key],[]) 
                                 for key in self._sub_buy_cond_dict], 
                               'Sell':[sum(self._sub_sell_cond_dict[key],[]) 
-                                 for key in self._sub_sell_cond_dict]}
+                                for key in self._sub_sell_cond_dict]}
         
-        # flatten the sub-conditoion list and sotre them in the condition list
+        # flatten the sub-conditoion list and store them in the condition list
         self.flatten_sub_cond_dict()
 
         # Create the condtion info for bookkeeping
@@ -165,17 +198,21 @@ class ArgusTailStrangleStrategy(Strategy):
         return self.direction, cond_info
     
     def set_EES(self, 
-                buy_range: tuple = (0.95,1.0,0.9), 
-                sell_range: tuple = (0.05,0.0,0.1)):
+                OB, OS,
+                buy_range: tuple = (0.1,0.5,0.05), 
+                sell_range: tuple = (0.9,0.5,0.95)):
+        print("OB:", OB, "OS:", OS)
+        delta = float(self._curve_today_spline(0.6)-self._curve_today_spline(0.41))
+        print("Delta", delta)
         # set EES prices
         match self.direction:
             case SignalType.BUY:
                 # (A) Entry price
-                entry_price = float(self._curve_today_spline(buy_range[0]))
+                entry_price = OS #float(self._curve_today_spline(buy_range[0])) #OS 
                 # (B) Exit price
-                exit_price = float(self._curve_today_spline(buy_range[1]))
+                exit_price = float(self._curve_today_spline(0.5)) #float(self._curve_today_spline(buy_range[1])) #float(self._curve_today_spline(0.5))
                 # (C) Stop loss at APC p=0.1
-                stop_loss = float(self._curve_today_spline(buy_range[2]))
+                stop_loss = OS - 2*delta   #float(self._curve_today_spline(buy_range[2])) #OS - delta  
                 print("Buy Direction!")
                 print("entry:",buy_range[0], entry_price)
                 print("exit:",buy_range[1], exit_price)
@@ -183,11 +220,13 @@ class ArgusTailStrangleStrategy(Strategy):
                 
             case SignalType.SELL:
                 # (A) Entry price
-                entry_price = float(self._curve_today_spline(sell_range[0]))
+                entry_price = OB #float(self._curve_today_spline(sell_range[0])) #OB 
                 # (B) Exit price
-                exit_price = float(self._curve_today_spline(sell_range[1]))
+                exit_price = float(self._curve_today_spline(0.5)) #float(self._curve_today_spline(sell_range[1])) #float(self._curve_today_spline(0.5))
                 # (C) Stop loss at APC p=0.9
-                stop_loss = float(self._curve_today_spline(sell_range[2]))
+                stop_loss = OB + 2*delta #float(self._curve_today_spline(sell_range[2])) #OB + delta
+                
+                #float(self._curve_today_spline(sell_range[2]))
                 print("Sell Direction!")
                 print("entry:",sell_range[0], entry_price)
                 print("exit:",sell_range[1], exit_price)
@@ -215,17 +254,19 @@ class ArgusTailStrangleStrategy(Strategy):
                        buy_range: tuple[float] = (0.95,1.0,0.9), 
                        sell_range: tuple[float] = (0.05,0.0,0.1),
                        quantile: list[float] = [0.25,0.4,0.6,0.75],
-                       breakout_quant: dict[str|float] = {'Buy':0.95, 'Sell':0.05}):
+                       inversion_quant: dict[str|float] = {'Buy':0.1, 'Sell':0.9}):
                     
-        price_data, quantile_info = self.gen_data(history_intraday,
-                                                  quantile = quantile)
+        price_data, time_data, quantile_info = self.gen_data(history_intraday,
+                                                             quantile = quantile)
         
         direction, cond_info = self.run_cond(price_data,
+                                             time_data,
                                              OB, OS,
-                                             breakout_quant = breakout_quant)
+                                             inversion_quant = inversion_quant)
                                              
         
-        entry_price, exit_price, stop_loss = self.set_EES(buy_range=buy_range, 
+        entry_price, exit_price, stop_loss = self.set_EES(OB,OS,
+                                                          buy_range=buy_range, 
                                                           sell_range=sell_range)
 
 
