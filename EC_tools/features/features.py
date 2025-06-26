@@ -4,123 +4,72 @@
 Created on Tue Aug 20 11:36:29 2024
 
 @author: dexter
+
+This module contains simple fucntions that generate dervied quantity from a 
+base data set.
+
+For example, time, prices, and volume are base data set (Independent variables).
+VWAP, BollingerBand, and etc. are the derived quantity, 
+hence features (Dependent varaiables).
 """
+import datetime
 import numpy as np
 import pandas as pd
 import EC_tools.math_func as mfunc
 
-class GenHistoryStratData(object):
-    """
-    A class that contains a collection of method that generate data for 
-    strategies base on history data
+
+def resample(df: pd.DataFrame, time_interval = "15Min") -> pd.DataFrame:
+    ohlc_dict = {'Date':'first',
+                 #'Time': '',
+                'Open': 'first',
+                'High': 'max',
+                'Low': 'min',
+                'Settle': 'last',
+                'Volume': 'sum'  # Include if volume data is present
+                }
+
+    new_df = df.resample(time_interval).apply(ohlc_dict)
+    new_df['Datetime'] = new_df.index
+
+    return new_df
+
+
+def cal_VWAP(df:pd.DataFrame) -> pd.DataFrame:
+    # high + low + close
+    TPrice = (df['High'] + df['Low'] + df['Settle'])/3
+    TPVolume_cumsum = (TPrice*df['Volume']).cumsum() #vwapsum
+    TP2Volume_cumsum = (TPrice*TPrice*df['Volume']).cumsum() #v2sum
+    volume_cumsum = df['Volume'].cumsum()
     
-    """
-    def __init__(self, history):
-        self._history = history
-        return
-    
-    def gen_lag_data(self, 
-                     history_data_lag: pd.DataFrame, 
-                     apc_curve_lag: pd.DataFrame, 
-                     price_proxy: str = 'Settle', 
-                     qunatile: list[float] = [0.25,0.4,0.6,0.75]) ->\
-                     tuple[dict,list]: 
-        """
-        A method that generate all the data needed for the strategy. The ouput
-        of this functions contain all the quantity that will be and can be used 
-        in creating variation of this strategy.
-        
+    # Calculate the VWAP value
+    vwap = TPVolume_cumsum/volume_cumsum
+    # Calculate the std of the vwap
+    dev = np.sqrt((TP2Volume_cumsum/volume_cumsum-vwap*vwap))
+    print('vwap',vwap, 'dev',dev)
+    df['VWAP'] = vwap
+    df['VWAP_DEV'] = dev
+    return df
 
-        Parameters
-        ----------
-        history_data_lag : DataFrame
-            The history data of the lag days.
-        apc_curve_lag : DataFrame
-            The APC curve of the lag days.
-        price_proxy : str, optional
-            The column name to call for price approximation. 
-            It can be either "Open", "High", "Low", or "Settle".
-            The default is 'Settle'.
-        qunatile : list, optional
-            1D list that contains the quantile desitred. 
-            This function pass it into the APC of the day and calculate the 
-            relevant price.
-            The default is [0.25,0.4,0.6,0.75].
+def add_VWAP2df(df: pd.DataFrame, 
+                unique_date: list[datetime.datetime]) -> pd.DataFrame:
+    # Add VWAP and STD to a dataframe
+    # Generate daily VWAP, add it to the dataframe
+    #unique_date = list(set([df["Date"].iloc[i] for i,_ in enumerate(df["Date"].to_list())]))
+    #unique_date.sort()
 
-        Returns
-        -------
-        strategy_info : dict
-            A dictionary containing two key-value pairs.
-            'lag_list' is a list of quantiles of the lag days. The size of the 
-            list depends on the input size of history_data_lag and apc_curve_lag.
-            'rollingaverage' is the average of the quantiles in lag_list. It 
-            contain a singular float value.
-            
-        qunatile_info : list
-            A list of prices calculating using qunatile input into the APC
-            of the date of interest.
+    new_df = pd.DataFrame()
+    for date in unique_date[1:2]:
+        print(date, type(date))
+        start_date = date + datetime.timedelta(hours=3,minutes=30)
+        end_date = date + datetime.timedelta(hours=22,minutes=0)
+        
+        # Select for a sub-dataframe to calculate the vwap of the day
+        sub_df = df[(df['Datetime'] >= start_date) &(df['Datetime'] <end_date)]
 
-        """
-        # use the history data to call a column using either OHLC                      
-        lag_price = history_data_lag[price_proxy]
+        print("sub_df", sub_df)
+        new_sub_df = cal_VWAP(sub_df)
         
-        # Find the quantile number for the lag APC at the Lag Prices 
-        lag_list = [mfunc.find_quant(apc_curve_lag.iloc[i].to_numpy()[1:-1], 
-                                     self._quant_list, lag_price.iloc[i]) for 
-                                    i in range(len(apc_curve_lag))]
-        lag_list.reverse()
-        # Note that the list goes like this [lag1q,lag2q,...]
+        # Plot the daily chart to check if the VWAP range is reasonable
+        new_df = pd.concat([new_df, new_sub_df])
+    return new_df
         
-        # calculate the rolling average
-        rollingaverage_q = np.average(lag_list)
-        
-        # Storage
-        strategy_info = {'lag_list': lag_list, 
-                         'rollingaverage': rollingaverage_q}
-        # The price of the quantile of interest, mostly for bookkeeping
-        qunatile_info = list(self._curve_today_spline(qunatile))
-        
-        return strategy_info, qunatile_info
-
-    def gen_lag_data_mode(self, 
-                          history_data_lag: pd.DataFrame, 
-                          apc_curve_lag: pd.DataFrame, 
-                          price_proxy: str = 'Settle', 
-                          quantile_delta: list = [-0.1, 0.0, +0.1])->\
-                          tuple[dict,list]: 
-        
-        lag_price = history_data_lag[price_proxy]
-        lag_list = [mfunc.find_quant(apc_curve_lag.iloc[i].to_numpy()[1:-1], 
-                                     self._quant_list, lag_price.iloc[i]) for 
-                                    i in range(len(apc_curve_lag))]
-        lag_list.reverse()
-        # Note that the list goes like this [lag1q,lag2q,...]
-        # calculate the rolling average
-        rollingaverage_q = np.average(lag_list)
-        
-        # turn the APC (cdf) to pdf in a list
-        lag_pdf_list = [mfunc.cal_pdf(self._quant_list, 
-                                      apc_curve_lag.iloc[i].to_numpy()[1:-1]) 
-                                            for i in range(len(apc_curve_lag))]
-        # Calculate the price of the mode in these apc
-        mode_Q_list = [mfunc.find_pdf_quant(lag_pdf_list[i][0], lag_pdf_list[i][1])
-                                        for i in range(len(apc_curve_lag))]
-        mode_Q_list.reverse()
-        
-        # calculate the rolling average for the mode
-        rollingaverage_mode_q = np.average(mode_Q_list)
-        
-
-        strategy_info = {'lag_list': lag_list, 
-                         'rollingaverage': rollingaverage_q,
-                         'mode_Q_list': mode_Q_list,
-                         'rollingaverage_mode': rollingaverage_mode_q
-                         }
-
-        # Find the quantile in the CDF (NOT THE PDF! important) from the mode_price
-        quantile = [quant + self._curve_today_reverse_spline(self.mode_price) 
-                                                for quant in quantile_delta]
-
-        qunatile_info = list(self._curve_today_spline(quantile))
- 
-        return strategy_info, qunatile_info 
