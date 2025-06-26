@@ -62,9 +62,11 @@ class Portfolio(object):
         self._master_table: pd.DataFrame = None
         self._zeropoint: float = 0.0  # The zero point value for the portfolio
         self._remainder_limiter: bool = True  # Controls the limitation
+        
         # A dict that contains the remainder for each assets
         self._remainder_dict: dict = dict()
-        
+        # latest value
+        self._latest_vals: dict = dict()
         self.wipe_debt_or_not: bool = False
 
     @property
