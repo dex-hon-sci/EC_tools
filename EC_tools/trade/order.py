@@ -15,6 +15,7 @@ import datetime as datetime
 from attrs import setters
 
 # EC_tools import
+from EC_tools.trade.enums import OrderSide, OrderStatus, OrderType
 from EC_tools.portfolio import Portfolio
 import EC_tools.utility as util  
     
@@ -22,30 +23,6 @@ import EC_tools.utility as util
 __all__=['OrderStatus', 'OrderType', 'Order', 'ExecuteOrder']
 __author__="Dexter S.-H. Hon"
 
-class OrderStatus(Enum):
-    """
-    A set of possible status for orders.
-    
-    """
-    PENDING = "Pending" # When the order is added but not filled
-    FILLED = "Filled" # When the order is executed
-    VOID = "Cancelled" # When the order is cancelled
-
-    
-class OrderType(Enum):
-    """
-    A set of possible types of orders
-    """
-    LONG_BUY = 'Long-Buy'
-    LONG_SELL = 'Long-Sell'
-    SHORT_BORROW = 'Short-Borrow'
-    SHORT_BUYBACK = 'Short-Buyback'
-    #CALL_BUY = 'Call-Buy'
-    #CALL_SELL = 'Call-Sell'
-    #PUT_BUY = 'Put-Buy'
-    #PUT_SELL = 'Put-Sell'
-    
-    
 @dataclass
 class Order(object):
     """
@@ -330,3 +307,39 @@ class ExecuteOrder(object):
             
         self.order.status = OrderStatus.VOID
         self.order.void_time = void_time
+
+# =============================================================================
+# class OrderStatus(Enum):
+#     """
+#     A set of possible status for orders.
+#     
+#     """
+#     PENDING = "Pending" # When the order is added but not filled
+#     FILLED = "Filled" # When the order is executed
+#     VOID = "Cancelled" # When the order is cancelled
+#     
+#     
+# class OrderSide(Enum):
+#     BUY ="Buy"
+#     SELL = "Sell"
+#     
+# class OrderType(Enum):
+#     
+#     # Market order, buy or sell by the best available opposite price.
+#     ORDER_TYPE_MKT = 1
+# 
+#     # Limit order, buy or sell by price that is the same or better then 
+#     #specified limit price.
+#     ORDER_TYPE_LMT = 2
+# 
+#     # Stop order, Order becomes a Market when market reaches 
+#     # order's stop price (which is on opposite side of market).
+#     ORDER_TYPE_STP = 3
+# 
+#     # Stop-limit order, Order becomes a Limit when market 
+#     #reaches order's stop price.
+#     ORDER_TYPE_STL = 4
+# 
+#     # Cross order type. See also CrossOrderParameters message.
+#     ORDER_TYPE_CROSS = 5
+# =============================================================================
