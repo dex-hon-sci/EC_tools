@@ -4,7 +4,6 @@
 Created on Thu Jun 26 13:06:00 2025
 
 @author: dexter
-"""
 
 # New Backtest
 # Save in object format, make function to redner it to 
@@ -36,13 +35,15 @@ Created on Thu Jun 26 13:06:00 2025
 # 4) Use the exit_point of Trade method, check if the signal in siganl_list comes after it
 # If not, pop it. (garbage_signals)
 
-# Concurrent
+# Concurrent:
 # Group all assets signals and price data by date (or any time interval)
 # Process all signals simultaneously
 # Run crossover point check, align all cross-over points of all asset in
 # one sequence sorted by time.
 # Process each cross-over point one-by-one and after each step, calculate if 
 # there is any factor changes if the strategy relies on aggegrated feedbacks
+"""
+
 import pandas as pd
 from EC_tools.portfolio import Portfolio
 
