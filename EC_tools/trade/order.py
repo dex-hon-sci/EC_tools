@@ -42,6 +42,7 @@ class Order(object):
     size: float = 1 # contract lots
     fee: dict = None
     order_type: str = 'Long-Buy'
+    order_type2: str = "LMT"
     
     # order attribute adjustable
     open_time: datetime = datetime.datetime.now() 
@@ -59,7 +60,8 @@ class Order(object):
         If it is not. the order is voided.
         
         """
-        # check if the quantity of both assets are 
+        # check if the correct ratio of quantity between the two assets 
+        # agrees with the given price.
         #correct_ratio = self.give_obj.quantity / (self.get_obj.quantity*self.size)
         # reminder: give is cash, get is asset (usually)
         correct_ratio =  self.give_obj['quantity'] / (self.get_obj['quantity']*self.size)
@@ -200,13 +202,13 @@ class ExecuteOrder(object):
             
             # Pay pre-existing asset
             self.order.portfolio.sub(self.order.give_obj, 
-                                        datetime= fill_time)
+                                     datetime= fill_time)
             
             #print(self.order.give_obj)
             
             # Get the desired asset
             self.order.portfolio.add(self.order.get_obj, 
-                                        datetime = fill_time + delay_time)
+                                     datetime = fill_time + delay_time)
             #print(self.order.get_obj)
 
             
@@ -215,12 +217,12 @@ class ExecuteOrder(object):
 
             # Pay pre-existing asset
             self.order.portfolio.sub(self.order.get_obj, 
-                                        datetime= fill_time)
+                                     datetime= fill_time)
             #print(self.order.get_obj)
 
             # Get the desired asset
             self.order.portfolio.add(self.order.give_obj, 
-                                        datetime = fill_time + delay_time) 
+                                     datetime = fill_time + delay_time) 
 
             #print(self.order.give_obj)
 
@@ -238,18 +240,18 @@ class ExecuteOrder(object):
             
             # The "Borrow" action
             self.order.portfolio.add(self.order.get_obj, 
-                                        datetime= fill_time) #actual asset
+                                     datetime= fill_time) #actual asset
             
             # sell the asset here
             self.order.portfolio.sub(self.order.get_obj,
-                                        datetime = fill_time + delay_time)
+                                     datetime = fill_time + delay_time)
             # earn the cash here
             self.order.portfolio.add(self.order.give_obj, 
-                                        datetime = fill_time + delay_time*2)
+                                     datetime = fill_time + delay_time*2)
             
             # Issue a debt object for recording the borrowingaction
             self.order.portfolio.add(debt_obj, datetime = 
-                                        fill_time + delay_time*3) # debt object
+                                     fill_time + delay_time*3) # debt object
 
         elif order_type == 'Short-Buyback':
             #print('Execute Short-Buyback order.')
@@ -260,11 +262,11 @@ class ExecuteOrder(object):
             # normal long
             # subtract the cash here to buy back the asset
             self.order.portfolio.sub(self.order.give_obj, 
-                                        datetime = fill_time)
+                                     datetime = fill_time)
             # Get the desired asset the set balance out the debt object
             # Buyback the debt object to settle the debt automatically
             self.order.portfolio.add(payback_debt_obj, 
-                                        datetime = fill_time + delay_time)
+                                     datetime = fill_time + delay_time)
 
 
         # charge a fee if it exits
@@ -272,7 +274,7 @@ class ExecuteOrder(object):
             payment_time = fill_time+ delay_time*10
             # Fees are calculated per contracts                                
             self.order.portfolio.sub(self.order.fee, 
-                                        datetime= payment_time)
+                                     datetime= payment_time)
 
         # change the order status and fill time
         self.order.status = OrderStatus.FILLED
@@ -308,38 +310,3 @@ class ExecuteOrder(object):
         self.order.status = OrderStatus.VOID
         self.order.void_time = void_time
 
-# =============================================================================
-# class OrderStatus(Enum):
-#     """
-#     A set of possible status for orders.
-#     
-#     """
-#     PENDING = "Pending" # When the order is added but not filled
-#     FILLED = "Filled" # When the order is executed
-#     VOID = "Cancelled" # When the order is cancelled
-#     
-#     
-# class OrderSide(Enum):
-#     BUY ="Buy"
-#     SELL = "Sell"
-#     
-# class OrderType(Enum):
-#     
-#     # Market order, buy or sell by the best available opposite price.
-#     ORDER_TYPE_MKT = 1
-# 
-#     # Limit order, buy or sell by price that is the same or better then 
-#     #specified limit price.
-#     ORDER_TYPE_LMT = 2
-# 
-#     # Stop order, Order becomes a Market when market reaches 
-#     # order's stop price (which is on opposite side of market).
-#     ORDER_TYPE_STP = 3
-# 
-#     # Stop-limit order, Order becomes a Limit when market 
-#     #reaches order's stop price.
-#     ORDER_TYPE_STL = 4
-# 
-#     # Cross order type. See also CrossOrderParameters message.
-#     ORDER_TYPE_CROSS = 5
-# =============================================================================

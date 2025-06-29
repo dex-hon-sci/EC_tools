@@ -27,3 +27,4 @@ class CQGOrder(object):
     type_: OrderType
     qty: int
     duration: OrderDuration
+    
