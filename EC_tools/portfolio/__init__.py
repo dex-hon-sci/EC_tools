@@ -14,7 +14,6 @@ from dataclasses import dataclass, field
 from functools import cached_property
 import datetime as datetime
 import re
-import inspect
 # package import
 import pandas as pd
 import numpy as np
