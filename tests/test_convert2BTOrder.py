@@ -8,7 +8,7 @@ Created on Sun Jun 29 15:28:50 2025
 A test script for convert2BTorder function.
 
 """
-
+import datetime
 from EC_tools.order.convert2BTorder import convert2BTorder
 from EC_tools.order.order import Order
 from EC_tools.order.cqg_order import CQGOrder
@@ -18,31 +18,36 @@ from EC_tools.order.enums import OrderStatus, OrderSide, OrderSideExtend, OrderT
 
 ASSET_NAME = "CLc1"#"CLM25"
 ASSET_TYPE = "future"
+MKT_TIME = datetime.datetime.now
 # Setup test orders
 c_order_MKT_BUY_open = CQGOrder(ASSET_NAME, c_OrderSide.SIDE_BUY, 
                                 c_OrderType.ORDER_TYPE_MKT, 10, 
-                                open_= True, close_= False)
+                                open_= True, close_= False,
+                                kwargs = {"MKT_time": MKT_TIME})
 c_order_LMT_BUY_open = CQGOrder(ASSET_NAME, c_OrderSide.SIDE_BUY, 
                                 c_OrderType.ORDER_TYPE_LMT, 10, 
                                 open_= True, close_= False, 
                                 kwargs = {"LMT_price":60})
 c_order_MKT_BUY_close = CQGOrder(ASSET_NAME, c_OrderSide.SIDE_BUY, 
                                  c_OrderType.ORDER_TYPE_MKT, 10, 
-                                 open_= False, close_= True)
+                                 open_= False, close_= True,
+                                 kwargs = {"MKT_time": MKT_TIME})
 c_order_LMT_BUY_close  = CQGOrder(ASSET_NAME, c_OrderSide.SIDE_BUY, 
                                   c_OrderType.ORDER_TYPE_LMT, 10, 
                                   open_= False, close_= True, 
                                   kwargs = {"LMT_price":60})
 c_order_MKT_SELL_open = CQGOrder(ASSET_NAME, c_OrderSide.SIDE_SELL, 
                                  c_OrderType.ORDER_TYPE_MKT, 10, 
-                                 open_= True, close_= False)
+                                 open_= True, close_= False,
+                                 kwargs = {"MKT_time": MKT_TIME})
 c_order_LMT_SELL_open = CQGOrder(ASSET_NAME, c_OrderSide.SIDE_SELL, 
                                  c_OrderType.ORDER_TYPE_LMT, 10, 
                                  open_= True, close_= False, 
                                  kwargs = {"LMT_price":60})
 c_order_MKT_SELL_close = CQGOrder(ASSET_NAME, c_OrderSide.SIDE_SELL, 
                                   c_OrderType.ORDER_TYPE_MKT, 10, 
-                                  open_= False, close_= True)
+                                  open_= False, close_= True,
+                                  kwargs = {"MKT_time": MKT_TIME})
 c_order_LMT_SELL_close = CQGOrder(ASSET_NAME, c_OrderSide.SIDE_SELL, 
                                   c_OrderType.ORDER_TYPE_LMT, 10, 
                                   open_= False, close_= True, 
@@ -96,7 +101,7 @@ def test_type()-> None:
                  c_order_MKT_SELL_open, c_order_LMT_SELL_open, 
                  c_order_MKT_SELL_close, c_order_LMT_SELL_close]
     for ele in all_orders:
-        check_convert2BTorder_type(ele, MKT_price = 70)
+        check_convert2BTorder_type(ele, MKT_price =71)
         
 def test_pending()-> None:
     all_orders = [c_order_MKT_BUY_open, c_order_LMT_BUY_open, 
@@ -104,39 +109,39 @@ def test_pending()-> None:
                  c_order_MKT_SELL_open, c_order_LMT_SELL_open, 
                  c_order_MKT_SELL_close, c_order_LMT_SELL_close]
     for ele in all_orders:
-        check_convert2BTorder_pending(ele, MKT_price = 70)
+        check_convert2BTorder_pending(ele)
         
 def test_MKT()-> None:
     MKT_orders= [c_order_MKT_BUY_open, c_order_MKT_BUY_close, 
                 c_order_MKT_SELL_open, c_order_MKT_SELL_close]
     for ele in MKT_orders:
-        check_convert2BTorder_MKT(ele, MKT_price = 70)
+        check_convert2BTorder_MKT(ele, MKT_price =71)
         
 def test_LMT()-> None:
     MKT_orders= [c_order_LMT_BUY_open, c_order_LMT_BUY_close, 
                  c_order_LMT_SELL_open, c_order_LMT_SELL_close]
     for ele in MKT_orders:
-        check_convert2BTorder_LMT(ele, MKT_price = 70)
+        check_convert2BTorder_LMT(ele, MKT_price =71)
 
 def test_LONG_BUY()-> None:
     LONG_BUY_orders = [c_order_LMT_BUY_open, c_order_MKT_BUY_open]
     for ele in LONG_BUY_orders:
-        check_convert2BTorder_LONG_BUY(ele, MKT_price = 70)
+        check_convert2BTorder_LONG_BUY(ele, MKT_price =71)
         
 def test_LONG_SELL()-> None:
     LONG_SELL_orders = [c_order_LMT_SELL_close, c_order_MKT_SELL_close]
     for ele in LONG_SELL_orders:
-        check_convert2BTorder_LONG_SELL(ele, MKT_price = 70)
+        check_convert2BTorder_LONG_SELL(ele, MKT_price =71)
         
 def test_SHORT_BORROW()-> None:
     SHORT_BORROW_orders = [c_order_LMT_SELL_open, c_order_MKT_SELL_open]
     for ele in SHORT_BORROW_orders:
-        check_convert2BTorder_SHORT_BORROW(ele, MKT_price = 70)
+        check_convert2BTorder_SHORT_BORROW(ele, MKT_price =71)
         
 def test_SHORT_BUYBACK()-> None:
     SHORT_BUYBACK_orders = [c_order_LMT_BUY_close, c_order_MKT_BUY_close]
     for ele in SHORT_BUYBACK_orders:
-        check_convert2BTorder_LONG_BUYBACK(ele, MKT_price = 70)
+        check_convert2BTorder_LONG_BUYBACK(ele, MKT_price =71)
 
 test_type()
 test_LMT()
