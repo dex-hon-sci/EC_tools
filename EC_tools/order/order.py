@@ -74,8 +74,8 @@ class Order(object):
         self._check = (self._price  < correct_ratio + epi) and \
                         (self._price > correct_ratio- epi)
            
-        print("Price", self._price, "correct_ratio", correct_ratio)
-        print('Order created. Check:', self._check)
+        #print("Price", self._price, "correct_ratio", correct_ratio)
+        #print('Order created. Check:', self._check)
         #If this value is false, the order is automatically voided.
         if self._check == False:
             self.status = OrderStatus.VOID

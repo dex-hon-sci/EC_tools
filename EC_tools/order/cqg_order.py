@@ -36,7 +36,9 @@ class CQGOrder(object):
     def __post_init__(self):
         if self.type_ == OrderType.ORDER_TYPE_LMT:
             self.LMT_price = self.kwargs['LMT_price']
-            
+        if self.type_ == OrderType.ORDER_TYPE_MKT:
+            self.MKT_time = self.kwargs['MKT_time']
+
     
 # =============================================================================
 # new_order_request(
