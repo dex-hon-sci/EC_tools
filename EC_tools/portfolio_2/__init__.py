@@ -183,8 +183,8 @@ class Portfolio(object):
             for right_pt in range(left_pt+1,len(self.__pool_asset)):
                 
                 next_asset = self.__pool_asset[right_pt]
-                cond1 = 
-                if :
+                cond1 = None
+                if True:
                     A = Position()
                 else:
         return
