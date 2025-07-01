@@ -315,7 +315,7 @@ class VWAPInversionStrategy(Strategy):
                 
                 S = Signal(SignalType.SELL, # Signal type
                            SignalSide.SELL, # Signal Side
-                           SignalStatus.ACTIVE, # Signal status
+                           SignalStatus.INACTIVE, # Signal status
                            TE_time, # start_time
                            CO_time, # end_time
                            actions) # Orders
@@ -396,7 +396,7 @@ class VWAPInversionStrategy(Strategy):
                 
                 S = Signal(SignalType.BUY, # Signal type
                            SignalSide.BUY, # Signal Side
-                           SignalStatus.ACTIVE, # Signal status
+                           SignalStatus.INACTIVE, # Signal status
                            TE_time, # start_time
                            CO_time, # end_time
                            actions) # Orders
@@ -417,6 +417,8 @@ class VWAPInversionStrategy(Strategy):
         mkup_x = [self._aggmin_data['Datetime'].iloc[i] for i in upbreach_indices]
         mkdown_y = [self._aggmin_data['Low'].iloc[i] for i in downbreach_indices]
         mkdown_x = [self._aggmin_data['Datetime'].iloc[i] for i in downbreach_indices]
+        
+        print("plot_print", self._aggmin_data['Datetime'])
         
         date = self._aggmin_data['Datetime'].iloc[0]
         
@@ -455,20 +457,24 @@ class VWAPInversionStrategy(Strategy):
 
 # Loop daily and find
 def loop_signal(df: pd.DataFrame, 
-                unique_date: list[datetime.datetime], 
+                unique_date: list, 
                 asset_name: str, qty: int,
+                open_hr: str, close_hr: str,
                 **kwargs):
     
     master_signal_df = pd.DataFrame()
-    
-    for date in unique_date:
-        #self._N_sigma = N_sigma # mulitplying factor for sigma
-        #self._TP_multiplier = TP_multiplier
-        #self._SL_multiplier = SL_multiplier
-        #self._segment_barmulitplier = segment_barmulitplier
+    for i, date in enumerate(unique_date):
+        start_date = date + datetime.timedelta(hours = int(open_hr[0:2]),
+                                               minutes = int(open_hr[2:4]))
+        end_date = date + datetime.timedelta(hours = int(close_hr[0:2]),
+                                             minutes = int(close_hr[2:4]))
+        print(f"=========={i}, {start_date} to {end_date}========")
 
+        # Select for a sub-dataframe to calculate the vwap of the day
+        sub_df = df[(df['Datetime'] >= start_date) &(df['Datetime'] <end_date)]
+        # Create
         signal_df = VWAPInversionStrategy(asset_name, qty, 
-                                          df, 
+                                          sub_df, 
                                           kwargs['N_sigma'],
                                           TP_multiplier = kwargs['TP_multiplier'],
                                           SL_multiplier = kwargs['SL_multiplier'],
@@ -477,36 +483,48 @@ def loop_signal(df: pd.DataFrame,
 
         master_signal_df = pd.concat([master_signal_df, signal_df])
         
-    master_signal_df = master_signal_df.sort_value(by=["signal_datetime"], 
+    master_signal_df = master_signal_df.sort_values(by=["signal_datetime"], 
                                                    ascending=True)
+    #master_signal_df = 
     return master_signal_df
 
-from crudeoil_future_const import WRONG_OPEN_HR_DICT, CLOSE_HR_DICT, TIMEZONE_DICT,TEST_FILE_LOC
-
+from crudeoil_future_const import WRONG_OPEN_HR_DICT, CLOSE_HR_DICT,\
+                                  TIMEZONE_DICT, TEST_FILE_LOC,\
+                                  VWAP_SIGNAL_PKL_LOC
 DEFAULT_KWARGS= {#'history_daily_list': list(HISTORY_DAILY_FILE_LOC.values()),
                  #'history_minute_list': list(HISTORY_MINTUE_FILE_LOC.values()),
                  #'history_daily_pkl': DAILY_DATA_PKL,
                  'open_hr_dict': WRONG_OPEN_HR_DICT, 
                  'close_hr_dict': CLOSE_HR_DICT, 
                  'timezone_dict': TIMEZONE_DICT,
-                 'save_filenames_loc':TEST_FILE_LOC,
+                 'save_filenames_loc':VWAP_SIGNAL_PKL_LOC,
                  'quantile': [0.05,0.1,0.25,0.4,0.5,0.6,0.75,0.9,0.95],
                  'master_signal_filename': "master_signal.csv",
-                 'save_or_not': False,
+                 'save_or_not': True,
                  'merge_or_not': True,
                  'contract_symbol_condse': False,
                  'loop_symbol': None,
-                 'open_hr': '', 
-                 'close_hr': '',
-                 'asset_name':'', 
+                 #'open_hr': '', 
+                 #'close_hr': '',
+                 #'asset_name':'', 
                  'Timezone': "",
-                 'qty':1,
+                 #'qty':1,
                  'N_sigma':2,
                  'TP_multiplier':2, 
                  'SL_multiplier':1,
                  'segment_barmulitplier':4,
                  'time_interval':'15Min'}
-
+EXCHANGE = {'CLc1': "NYSE",
+            'CLc2': "NYSE",
+            'HOc1': "NYSE",
+            'HOc2': "NYSE",
+            'RBc1': "NYSE",
+            'RBc2': "NYSE",
+            'QOc1': "ICE",
+            'QOc2': "ICE",
+            'QPc1': "ICE",
+            'QPc2': "ICE",
+                        }
 # =============================================================================
 # (strategy: type[Strategy], 
 # #filename_list: list[str], 
@@ -524,7 +542,11 @@ def run_gen_signals(#strategy: Strategy,
                        start_date: datetime.datetime, 
                        end_date: datetime.datetime, 
                        **kwargs):
-    
+    # Run_gen process signals from different assets one-by-one
+    # Run_gen function consist of two parts
+    # 1) Define "feature" inputs (Depends on the strategy)
+    # 2) loop_signal: Go through each days (or some time interval), and 
+    #    run the features over the strategy (that make a df if signal objects)
     default_kwargs = DEFAULT_KWARGS
     kwargs = dict(default_kwargs,**kwargs)
 
@@ -534,6 +556,7 @@ def run_gen_signals(#strategy: Strategy,
         # Load Historical data
         HISTORY_MINUTE_PKL = load_source_data_bt([daily_minute_data_pkl[symbol]])
 
+        #### 
         # reindexing with time
         HISTORY_MINUTE_PKL[symbol] = reindex_dt(HISTORY_MINUTE_PKL[symbol])
         print(HISTORY_MINUTE_PKL[symbol])
@@ -548,32 +571,43 @@ def run_gen_signals(#strategy: Strategy,
                         (new_df['Datetime'] <= end_date)]
 
         # Define unique trading date for the script to loop through
-        unique_date = list(set([new_df["Date"].iloc[i] 
-                           for i,_ in enumerate(new_df["Date"].to_list())]))[1:]
-        unique_date.sort()
+        #unique_date = list(set([new_df["Date"].iloc[i] 
+        #                   for i,_ in enumerate(new_df["Date"].to_list())]))[1:]
+        #unique_date.sort()
+        #print("unique_date", unique_date)
         
-        ####Make Features (Can turn this into another changable function later)
+        unique_dates = util.get_trading_date(start_date,end_date,
+                                             exchange=EXCHANGE[symbol])
+        #### Feature Extraction Layer 
+        #### (Can turn this into another changable function later)
         open_hr, close_hr = kwargs['open_hr_dict'][symbol], kwargs['close_hr_dict'][symbol]
         
         # Calculate VWAP, save it in the dataframe as a new column.
-        new_df = add_VWAP2df(new_df, unique_date, open_hr, close_hr)
-
+        new_df = add_VWAP2df(new_df, unique_dates, open_hr, close_hr)
+        
+        #plot_VWAP(new_df)
+       
         asset_name = symbol
         QTY =1 
         print("new_df",new_df)
-        print("unique_date",unique_date)
+        print("unique_date",unique_dates)
         print("asset_name", asset_name)
         print("QTY", QTY)
         filename = kwargs['save_filenames_loc'][symbol]
         @util.pickle_save("{}".format(filename), save_or_not=kwargs['save_or_not'])
         def run_gen_MR_indi():
             master_signal_df = loop_signal(new_df, 
-                                           unique_date, 
+                                           unique_dates, 
                                            asset_name, QTY, 
+                                           open_hr, close_hr,
                                            **kwargs)
+            print("master_signal_df", master_signal_df)
             return master_signal_df
         
         master_dict[symbol] = run_gen_MR_indi()
+        
+    print("master_dict", master_dict)
+    return master_dict
 
 
 # =============================================================================
@@ -618,13 +652,13 @@ def main():
     print(new_df)
     
     # Define unique trading date for the script to loop through
-    unique_date = list(set([new_df["Date"].iloc[i] 
-                       for i,_ in enumerate(new_df["Date"].to_list())]))
-    unique_date.sort()
-    
+    #unique_date = list(set([new_df["Date"].iloc[i] 
+    #                   for i,_ in enumerate(new_df["Date"].to_list())]))
+    #unique_date.sort()
+    unique_dates = 0
     # Calculate VWAP, save it in the dataframe as a new column.
     # Plot them if needed
-    new_df = add_VWAP2df(new_df, unique_date)
+    new_df = add_VWAP2df(new_df, unique_dates)
     
     print("new_df", new_df, len(new_df))
     
@@ -634,7 +668,8 @@ def main():
     print(signal_df)
     
     
-#main()
-start_date = datetime.datetime(2024,10,4)
-end_date = datetime.datetime(2024,10,8)
-run_gen_signals(DAILY_MINUTE_DATA_INDI_PKL, start_date, end_date )
+if __name__ == "__main__":
+
+    start_date = datetime.datetime(2024,10,4,0,0,0)
+    end_date = datetime.datetime(2024,10,10,23,59,59)
+    run_gen_signals(DAILY_MINUTE_DATA_INDI_PKL, start_date, end_date)

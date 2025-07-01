@@ -782,7 +782,18 @@ ARGUS_EXACT_PNL_SHORT_LOC = {
     'QPc1': RESULT_FILEPATH + "/argus_exact_PNL_short/argus_exact_PNL_QPc1_short.csv",
     'QPc2': RESULT_FILEPATH + "/argus_exact_PNL_short/argus_exact_PNL_QPc2_short.csv" 
     }
-
+VWAP_SIGNAL_PKL_LOC = {
+    'CLc1': RESULT_FILEPATH + '/VWAP_Inversion/VWAP_Inversion_signal_CLc1_full.pkl',
+    'CLc2': RESULT_FILEPATH + '/VWAP_Inversion/VWAP_Inversion_signal_CLc2_full.pkl',
+    'HOc1': RESULT_FILEPATH + '/VWAP_Inversion/VWAP_Inversion_signal_HOc1_full.pkl',
+    'HOc2': RESULT_FILEPATH + '/VWAP_Inversion/VWAP_Inversion_signal_HOc2_full.pkl',
+    'RBc1': RESULT_FILEPATH + '/VWAP_Inversion/VWAP_Inversion_signal_RBc1_full.pkl',
+    'RBc2': RESULT_FILEPATH + '/VWAP_Inversion/VWAP_Inversion_signal_RBc2_full.pkl',
+    'QOc1': RESULT_FILEPATH + '/VWAP_Inversion/VWAP_Inversion_signal_QOc1_full.pkl',
+    'QOc2': RESULT_FILEPATH + '/VWAP_Inversion/VWAP_Inversion_signal_QOc2_full.pkl',
+    'QPc1': RESULT_FILEPATH + '/VWAP_Inversion/VWAP_Inversion_signal_QPc1_full.pkl',
+    'QPc2': RESULT_FILEPATH + '/VWAP_Inversion/VWAP_Inversion_signal_QPc2_full.pkl'
+    }
 TEST_FILE_LOC = {
     'CLc1': RESULT_FILEPATH + '/test_results/test_CLc1_full.csv',
     'CLc2': RESULT_FILEPATH + '/test_results/test_CLc2_full.csv',
@@ -795,6 +806,7 @@ TEST_FILE_LOC = {
     'QPc1': RESULT_FILEPATH + '/test_results/test_QPc1_full.csv',
     'QPc2': RESULT_FILEPATH + '/test_results/test_QPc2_full.csv'
 }
+
 
 TEST_FILE_LOC_SHORT = {
     'CLc1': RESULT_FILEPATH + '/test_results/test_CLc1_full.csv',
