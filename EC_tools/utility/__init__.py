@@ -11,6 +11,7 @@ General utility functions
 import time
 import datetime
 import numpy as np
+import pandas as pd
 import random
 import pickle
 import pandas_market_calendars as mcal
@@ -234,3 +235,18 @@ def market_is_open(date, exchange="NYSE"):
                                                   end_date=date)
     return result.empty == False
 
+def get_trading_date(start_date: datetime.datetime, 
+                     end_date: datetime.datetime, 
+                     exchange: str = "NYSE", 
+                     just_date: bool = True)->\
+                     list|pd.DataFrame:
+    # Get unique trading date
+    calendar = mcal.get_calendar(exchange).schedule(start_date=start_date, 
+                                                    end_date=end_date)
+    if just_date:
+        #calendar['market_open']
+        calendar_list = [datetime.datetime.combine(dt, datetime.time(0,0,0)) 
+                         for dt in calendar['market_open'].to_list()]
+        return calendar_list
+    elif not just_date:
+        return calendar
