@@ -25,7 +25,7 @@ import numpy as np
 import pandas as pd
 
 # import EC_tools
-from EC_tools.portfolio_2 import Portfolio
+from EC_tools.portfolio import Portfolio
 from EC_tools.trade.order import Order, ExecuteOrder
 import EC_tools.base.read as read
 import EC_tools.utility as util
@@ -41,12 +41,12 @@ class Trade(Protocol):
     
     
     """
-    def  __init__(self, portfolio: Portfolio, 
+    def  __init__(self, #portfolio: Portfolio, 
                  close_exit_or_not: bool = True, 
                  save_only_exec_pos: bool = False,
                  auto_unload_all: bool = False):
         
-        self._portfolio = portfolio # the portfolio we operate on
+        #self._portfolio = portfolio # the portfolio we operate on
         self._auto_unload_all = auto_unload_all
         
     @property

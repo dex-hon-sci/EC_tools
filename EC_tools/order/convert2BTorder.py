@@ -100,7 +100,7 @@ def convert2BTorder(order_: CQGOrder,
     # create a new Backtest compatiable Order object
     new_bt_order = Order(give_obj, get_obj, price, 
                          order_type = order_type, # This is side, temporary name
-                         order_type2 = order_type2, 
+                         order_type2 = order_type2, # This is typr, MKT/LMT
                          size = size,
                          fee = fee)
 
