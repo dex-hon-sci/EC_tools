@@ -540,7 +540,7 @@ if __name__=='__main__':
                       sub_col_list = strategy_col_list, 
                       sub_line_list =strategy_line_list)
         
-    if True:
+    if False:
         MR_curve = RESULT_FILEPATH + "/ArgusTailStrangle/original/20240814_argusexact_cross_P25S35_0330_entry_PNL_full_.xlsx"
         TS_curve = RESULT_FILEPATH + "/ArgusTailStrangle/20240814_argutailstrangle_cross_TE45SL35_0330_entry_PNL_full_.xlsx"
         sub_TS_PNL = RESULT_FILEPATH + "/ArgusTailStrangle/Hybrid/sub_PNL2_.xlsx"
@@ -597,6 +597,37 @@ if __name__=='__main__':
         
         twopanel_plot([], [], [], label='',
                       plot_title = 'Argus IQR_SKW Strategy (Preliminary)',
+                      sub_x_list=strategy_date_list,
+                      sub_y1_list=strategy_data_list,
+                      sub_label_list = strategy_label_list,
+                      sub_col_list = strategy_col_list, 
+                      sub_line_list =strategy_line_list)
+        
+    if True:
+        curve_1_0sigma = RESULT_FILEPATH + "/VWAP_Inversion/VWAP_Inversion_sigma_1_0_PNL_CLc1_.xlsx"
+        curve_1_5sigma = RESULT_FILEPATH + "/VWAP_Inversion/VWAP_Inversion_sigma_1_5_PNL_CLc1_.xlsx"      
+        curve_2_0sigma = RESULT_FILEPATH + "/VWAP_Inversion/VWAP_Inversion_sigma_2_0_PNL_CLc1_.xlsx"
+        curve2021_2SL_2signa = RESULT_FILEPATH + "/VWAP_Inversion/VWAP_Inversion_sigma_2_0_PNL_CLc1_2021_SL2_.xlsx"
+        test_curve = RESULT_FILEPATH+ "/VWAP_Inversion/VWAP_Inversion_sigma_0_68_PNL_CLc1_2021_TP1_5_SL3_.xlsx"
+        strategy_filename_list = [curve_1_0sigma, curve_1_5sigma, curve_2_0sigma,
+                                  curve2021_2SL_2signa,test_curve]
+        strategy_label_list = ['sigma = 1.0','sigma = 1.5', 
+                               'sigma = 2.0','2021_ssigma=2, SL2',
+                               'test_curve']
+        strategy_col_list = ['green', 'r', 'w', 'b','w']
+        strategy_line_list = ['solid', 'solid', 'solid', 'solid', 'dashed']   
+        
+        strategy_result_list = [extract_PNLplot_input(ele, 
+                                        date_col="Entry_Date",
+                                        sheet_name='Total',
+                                        val_col='cumulative P&L from trades')
+                                for ele in strategy_filename_list]
+        
+        strategy_date_list = [ele[0] for ele in strategy_result_list]
+        strategy_data_list = [ele[1] for ele in strategy_result_list]
+        
+        twopanel_plot([], [], [], label='',
+                      plot_title = 'VWAP Inversion Strategy (Preliminary)',
                       sub_x_list=strategy_date_list,
                       sub_y1_list=strategy_data_list,
                       sub_label_list = strategy_label_list,

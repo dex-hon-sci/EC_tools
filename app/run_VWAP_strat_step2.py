@@ -47,12 +47,16 @@ import sys
 sys.path.insert(0, "/home/dexter/Euler_Capital_codes/EC_tools")
 
 import datetime
+import copy
 
+import pickle
 import pandas as pd
 import numpy as np
-from EC_tools.portfolio import Portfolio
+
+from EC_tools.portfolio import Portfolio, PortfolioLog
 import EC_tools.utility as util
 #from EC_tools.trade_2 import Trade
+
 def load_source_data_bt(filenames_loc: list) -> dict:
     master_dict = {}
     for filename in filenames_loc:
@@ -60,6 +64,18 @@ def load_source_data_bt(filenames_loc: list) -> dict:
         master_dict = dict(master_dict, **temp_dict)
         
     return master_dict
+
+def to_datetime(date64:np.datetime64):
+    """
+    Converts a numpy datetime64 object to a python datetime object 
+    Input:
+      date64 - a np.datetime64 object
+    Output:
+      DATE - a python datetime object
+    """
+    timestamp = ((date64 - np.datetime64('1970-01-01T00:00:00'))
+                 / np.timedelta64(1, 's'))
+    return datetime.datetime.utcfromtimestamp(timestamp)
 
 def reindex_dt(df:pd.DataFrame):
     # Add Datetime column into the dataframe
@@ -108,15 +124,96 @@ def find_closest_price(history_data: pd.DataFrame,
             
     return target_dt, target_price[0]
 
+
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+
+def plot_VWAP(df, title='', 
+              upmakersx=[],upmakersy=[],
+              downmakersx=[],downmakersy=[],
+              artists=[],
+              open_times =[],open_prices=[], 
+              close_times=[], close_prices=[],
+              txts = []):
+    fig, axs = plt.subplots(1, 1, figsize=(10, 4), layout='constrained')
+    fmt = mdates.DateFormatter("%H:%M:%S")
+
+    axs.plot(df['Datetime'].to_list(), df['VWAP'].to_list(), 'o-', 
+             color= 'grey', ms=1)
+    axs.plot(df['Datetime'].to_list(), (df['VWAP']+1.28*df['VWAP_DEV']).to_list(), 
+             '-', lw=1,color="#c5486a")
+    axs.plot(df['Datetime'].to_list(), (df['VWAP']-1.28*df['VWAP_DEV']).to_list(), 
+             '-', lw=1, color="#c5486a")
+    axs.plot(df['Datetime'].to_list(), (df['VWAP']+2.01*df['VWAP_DEV']).to_list(), 
+             '-', lw=1, color="#c5486a")
+    axs.plot(df['Datetime'].to_list(), (df['VWAP']-2.01*df['VWAP_DEV']).to_list(), 
+             '-', lw=1,color="#c5486a")
+    axs.plot(df['Datetime'].to_list(), (df['VWAP']+2.51*df['VWAP_DEV']).to_list(), 
+             '--', lw=1,color="#c5486a")
+    axs.plot(df['Datetime'].to_list(), (df['VWAP']-2.51*df['VWAP_DEV']).to_list(), 
+             '--', lw=1, color="#c5486a")
+    axs.plot(df['Datetime'].to_list(), (df['VWAP']+3.09*df['VWAP_DEV']).to_list(), 
+             '--', lw=1,color="#c5486a")
+    axs.plot(df['Datetime'].to_list(), (df['VWAP']-3.09*df['VWAP_DEV']).to_list(), 
+             '--', lw=1, color="#c5486a")
+    axs.plot(df['Datetime'].to_list(), (df['VWAP']+4.01*df['VWAP_DEV']).to_list(), 
+             '--', lw=1, color="#c5486a")
+    axs.plot(df['Datetime'].to_list(), (df['VWAP']-4.01*df['VWAP_DEV']).to_list(), 
+             '--', lw=1,color="#c5486a")
+    
+    # Plot raw OHLC data
+    axs.plot(df['Datetime'].to_list(), df['Open'].to_list(), 'o-', 
+             color='r',ms=1,lw=1)
+    axs.plot(df['Datetime'].to_list(), df['Settle'].to_list(), 'o-', 
+             color='b',ms=1,lw=1)
+    axs.plot(df['Datetime'].to_list(), df['High'].to_list(), '-')
+    axs.plot(df['Datetime'].to_list(), df['Low'].to_list(), '-')
+    axs.fill_between(df['Datetime'].to_list(), df['Low'].to_list(), 
+                     df['High'].to_list(), color='g',alpha=0.3)
+    # draw boxes
+    for art in artists:
+        axs.add_patch(art)
+        
+    date_str = df['Datetime'].to_list()[0].strftime('%Y-%m-%d')
+    
+    # Add all the open and close pt to the plot
+    for opentime, openprice, closetime, closeprice in \
+        zip(open_times,open_prices, close_times, close_prices):
+        
+        entryexitpoints(axs, entry_time=opentime, 
+                            exit_time=closetime, 
+                            entry_price= openprice,
+                            exit_price= closeprice)
+    # Draw the PNL on the topleft of the 
+    for x,y,z,colour in txts:
+        axs.text(x,y+0.05,z,color=colour, fontsize =8, fontweight='bold', zorder =40)
+        
+
+    axs.plot(upmakersx, upmakersy,'+',color="green", ms=15)
+    axs.plot(downmakersx, downmakersy,'_',color="green",ms=15)
+    
+    axs.xaxis.set_major_formatter(fmt)
+    axs.grid()
+    axs.set_title(title)
+    axs.set_ylabel('Price')
+    axs.set_xlabel('Time')
+    #plt.legend()
+    plt.show()
+    #plt.savefig(RESULT_FILEPATH+f"/VWAP_Inversion/plot_PNL/VWAP_{date_str}.png", 
+    #            dpi=150)
+
+
 class Trade(object):
     def __init__(self):
         #self.open_pt = (np.nan,np.nan)
         #self.close_pt = (np.nan,np.nan)
         pass
     
-from EC_tools.strategy_2.signal import SignalStatus, Signal
+from EC_tools.strategy_2.signal import SignalStatus, Signal, SignalType
 from EC_tools.order.cqg_enums import OrderType
 from EC_tools.order.cqg_order import CQGOrder
+from EC_tools.order.enums import OrderSideExtend
 from EC_tools.order.order import ExecuteOrder
 from EC_tools.order.convert2BTorder import convert2BTorder
 import EC_tools.base.read as read
@@ -168,9 +265,12 @@ class OneTradePerSeg(Trade):
                 # Hit points candidates
                 hit_cand = read.find_crossover(price_list, float(target_price))
                 
-                hit_times = time_list[hit_cand['all'][0]]
-                hit_prices = price_list[hit_cand['all'][0]]
-                   
+                hit_times = list(time_list[hit_cand['all'][0]])
+                hit_prices = list(price_list[hit_cand['all'][0]])
+                #print("LMT hittime", hit_times)
+                # Convert numpy datetime64 to datetime
+                hit_times = [to_datetime(dt64) for dt64 in hit_times]
+
                 # Select for the earliest one that is after the open.
                 hit_pts = [(time, price) for time, price in zip(hit_times, hit_prices)]
                 print("LMT order, hit_pts", hit_pts)
@@ -178,6 +278,7 @@ class OneTradePerSeg(Trade):
         return hit_pts
         
     def choose_hit_pts(self)->list: # WIP
+        print('----choose_hit_pts------')
         # Get the list of hit pts
         # Go through the actions list
         open_hit_pts = [] # a list of points hit by the open orders
@@ -194,29 +295,33 @@ class OneTradePerSeg(Trade):
                                            MKT_seek_direction = seek_direction)
                 
                 open_hit_pts += ht_pts
-                open_orders += [action]*len(open_hit_pts)
+                open_orders += [action]*len(ht_pts)
                 
+                assert len(open_hit_pts) == len(open_orders)
+
             elif action.close_:
                 seek_direction = 'backward'
                 ht_pts = self.find_hit_pts(action, 
                                            MKT_seek_direction = seek_direction)
                 close_hit_pts += ht_pts
-                close_orders += [action]*len(open_hit_pts)
+                close_orders += [action]*len(ht_pts)
+                print("length", len(close_hit_pts) , len(close_orders))
+                assert len(close_hit_pts) == len(close_orders)
         print('==========================')
 
         print("open_hit_pts", open_hit_pts)
         print("open_orders", open_orders)
         # Find open_pt and open_order. Choose the Earliest one
         open_dt_list = [dt for dt,_ in open_hit_pts]
-        min_val = open_dt_list[0] # First guess
-        min_index = 0
+        min_open_val = open_dt_list[0] # First guess
+        min_open_index = 0
         for i in range(len(open_dt_list)):
-            if open_dt_list[i] < min_val:
-                min_val = open_dt_list[i]
-                min_index = i
+            if open_dt_list[i] < min_open_val:
+                min_open_val = open_dt_list[i]
+                min_open_index = i
         # Save the open_pt and open_order
-        self.open_pt = open_hit_pts[min_index]
-        self.open_order = open_orders[min_index]
+        self.open_pt = open_hit_pts[min_open_index]
+        self.open_order = open_orders[min_open_index]
         print('Defacto open', self.open_pt, self.open_order)
         print('--------------')
         print("close_hit_pts", close_hit_pts)
@@ -225,37 +330,63 @@ class OneTradePerSeg(Trade):
         # Find close_pt and close_order. Choose the Earliest one that comes
         # after the de facto open_pt
         close_dt_list = [dt for dt,_ in close_hit_pts]
-        min_val = close_dt_list[0] # First guess
-        min_index = 0
-        for i in range(len(open_dt_list)):
-            if open_dt_list[i] < min_val and self.open_pt[0]< open_dt_list[i]:
-                min_val = open_dt_list[i]
-                min_index = i
-        self.close_pt = close_hit_pts[min_index]
-        self.close_order = close_orders[min_index]
+        min_close_val = close_dt_list[0] # First guess
+        min_close_index = 0
+        #print("close_dt_list!!", close_dt_list)
+        for i in range(len(close_dt_list)):
+            if close_dt_list[i] < min_close_val and self.open_pt[0]< close_dt_list[i]:
+                min_close_val = close_dt_list[i]
+                min_close_index = i
+        self.close_pt = close_hit_pts[min_close_index]
+        self.close_order = close_orders[min_close_index]
         print('Defacto close',self.close_pt, self.close_order)
         print('==========================')
     
     def open_positions(self):
         # Add Order (BT format) to class attribute
         # convert2BTorder() here
-        self.open_order = convert2BTorder()
+        # 
+        MKT_price_open, MKT_price_close = np.nan , np.nan
+        if self.open_order.type_ == OrderType.ORDER_TYPE_MKT:
+            MKT_price_open = self.open_pt[1]
+        # Convert De facto open_order to Backtest order format
+        self.open_order = convert2BTorder(self.open_order, 'future', 
+                                          MKT_price = MKT_price_open)
+        
+        if self.close_order.type_ == OrderType.ORDER_TYPE_MKT:
+            MKT_price_close = self.close_pt[1]
+        # Convert De facto close_order to Backtest order format
+        self.close_order = convert2BTorder(self.close_order, 'future', 
+                                          MKT_price = MKT_price_close)
+        # Add the same trade_id to the open and close orders
+        self.open_order.order_id = self.trade_id
+        self.close_order.order_id = self.trade_id
+        print("BTORDER_OPEN", self.open_order)
+        print("BTORDER_CLOSE", self.close_order)
         return 
     
-    def execute_positions(self, order_type: str = "Long"):
+    def execute_positions(self):
         
+        long_cond = (self.open_order.order_type == OrderSideExtend.LONG_BUY)\
+                and (self.close_order.order_type == OrderSideExtend.LONG_SELL)
+        short_cond = (self.open_order.order_type == OrderSideExtend.SHORT_BORROW)\
+                 and (self.close_order.order_type == OrderSideExtend.SHORT_BUYBACK)
 
-        if order_type == 'Long':
+        if long_cond:
             order_type1 = 'Long-Buy' #OrderSideExtend.LONG_BUY
             order_type2 = 'Long-Sell' #OrderSideExtend.LONG_SELL
 
-        elif order_type == 'Short':
+        elif short_cond:
             order_type1 = 'Short-Borrow' #OrderSideExtend.SHORT_BORROW
             order_type2 = 'Short-Buyback' #OrderSideExtend.SHORT_BUYBACK
             
-        self.open_order.price = self.entry_pt[1]
+        self.open_order.price = self.open_pt[1]
         self.close_order.price = round(self.close_pt[1],9)
-
+        print('----------------------------')
+        print('open_pt', self.open_pt, 'close_pt', self.close_pt)
+        # Put the orders in the portfolio
+        self.open_order.portfolio =self.portfolio
+        self.close_order.portfolio =self.portfolio
         #print('entry_pt[1]', entry_pt[1])
         #print('exit_pt[1]', exit_pt[1])
         #print('stop_pt[1]', stop_pt[1])
@@ -268,6 +399,13 @@ class OneTradePerSeg(Trade):
         
         ExecuteOrder(self.close_order).fill_pos(fill_time = self.close_pt[0], 
                                               order_type=order_type2)
+        print('---------After Order Execution------')
+        print('open_order', self.open_order.status, self.open_order.fill_time)
+        print('close_order',self.close_order.status, self.close_order.fill_time)
+        
+        # Store order to order_pool
+        self.portfolio._order_pool.append(copy.copy(self.open_order))
+        self.portfolio._order_pool.append(copy.copy(self.close_order))
         
     def run_trade(self):
         
@@ -277,14 +415,15 @@ class OneTradePerSeg(Trade):
         self.open_positions()
         
         # Execute only the open_order and close_order 
-
-        #self.execute_positions()
+        self.execute_positions()
         
-        # Compare the time order of things
+        print("---Trde Done, Check Portfolio-----")
+        #print(self.portfolio.pool)
         
-        return self.portfolio
+        #return self.portfolio
     
 def activate_signal(signal, latest_datetime):
+    print('------------------------------------------')
     print("activate_signal func", signal.status, signal.start_time)
     print("latest_datetime", latest_datetime)
     print("signal.start_time > latest_datetime", signal.start_time > latest_datetime)
@@ -308,6 +447,8 @@ def backtest_engine(trade_method: Trade,
     # Initiate latest_dateime
     latest_datetime = datetime.datetime(2020,12,31,0,0,0)
     
+    active_signals = pd.DataFrame()
+
     # Loop through a list of time-ordered signals
     # This method assumes signals Independent backtest
     for i, signal in enumerate(signal_list):
@@ -331,7 +472,10 @@ def backtest_engine(trade_method: Trade,
         #### Trading layer
         # Check if the signal is active
         if signal.status == SignalStatus.ACTIVE:
+            # For plot_check
+            active_signal_row ={'Datetime':signal.start_time,'signal':signal}
             
+            print(f"======{active_signal_row}======")
             # Segmentation: isolate price data segment
             seg_start_dt = signal.start_time
             seg_end_dt = signal.end_time
@@ -346,11 +490,136 @@ def backtest_engine(trade_method: Trade,
             # Update the latest_datetime based on the closing trade 
             # of the Trade object for this signal
             latest_datetime = T.close_pt[0]
+            
+            active_signals = pd.concat([active_signals, 
+                                        pd.DataFrame([active_signal_row])])
         
-    return portfo
+    return portfo, active_signals
+
+
+def entryexitpoints(ax, 
+                    entry_time: datetime.datetime = datetime.datetime.today(), 
+                    exit_time: datetime.datetime = datetime.datetime.today(), 
+                    entry_price: float =  86.05,
+                    exit_price: float = 85.70):
+    
+    print(entry_time, entry_price)
+    print(exit_time, exit_price)
+    ax.scatter(entry_time, entry_price, s=80, facecolors='none', 
+               edgecolors='b', zorder=50)
+    ax.plot(entry_time, entry_price, 'x', ms=16, c='blue', zorder=50, 
+            label = 'Entry_Point')
+
+    ax.scatter(exit_time, exit_price, s=80, facecolors='none', 
+               edgecolors='g', zorder=50)
+    ax.plot(exit_time, exit_price, 'x', ms=16, c='green', zorder=50,
+            label = 'Exit_Point')
+    
+def add_text(ax, x, y, s, fontsize=8, color ='g'):
+    ax.text(x, y, s, )
+    return 
+
+def plot_check(history_data, signals_df, PNL_df):
+    DT = PNL_df['Entry_Datetime'].to_list()
+    DT = [datetime.datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S") 
+                    for date_str in DT]
+    PNL_df['Datetime'] = DT
+
+    
+    unique_dates = list(set([datetime.datetime.combine(dt.date(),
+                        datetime.time(0,0,0)) for dt in DT]))
+    print(unique_dates)
+
+    # Loop everyday in the xlsx file
+    for date in unique_dates:
+        print(f"========={date}=========")
+        start_dt = datetime.datetime.combine(date.date(), 
+                                             datetime.time(hour =3, minute=30))
+        end_dt = datetime.datetime.combine(date.date(), 
+                                           datetime.time(hour =19, minute=59))
+        
+        # Isolate the day for plot
+        sub_history_data = history_data[(history_data['Datetime'] >=start_dt) &
+                                        (history_data['Datetime'] <=end_dt)]
+        
+        # Isolate the Signals of this day
+        sub_signals_df = signals_df[(signals_df['Datetime']>=start_dt)&
+                                    (signals_df['Datetime']<=end_dt)]
+        sub_signals = sub_signals_df['signal'].to_list()\
+
+        # Draw signal range Box ()
+        artists, topleft_coord= [], []
+        for S in sub_signals:
+            print(S.start_time, S.type_)
+            time_width = S.end_time-S.start_time
+            price_width = S.actions[1].kwargs['LMT_price'] - S.actions[2].kwargs['LMT_price']
+            print('price_width', price_width)
+            box_origin_pt = (S.start_time, S.actions[2].kwargs['LMT_price'])
+            
+            openline_origin_pt = (S.start_time, S.actions[0].kwargs['MKT_price'])
+            openprice_width = 0.01
+            
+            Long_colour, Short_colour = "cyan", "#e1b865"
+            
+            if S.type_ == SignalType.BUY:
+                Edge_colour = Long_colour
+            elif  S.type_ == SignalType.SELL:
+                Edge_colour = Short_colour
+                
+            # Define top-left coordinate (for texts later)
+            coord = (S.start_time, max(S.actions[1].kwargs['LMT_price'],
+                                      S.actions[2].kwargs['LMT_price']))
+            topleft_coord.append(coord)
+
+            # Add signal effective range
+            artists.append(mpatches.Rectangle(box_origin_pt, 
+                                              time_width,  price_width,
+                                              ec=Edge_colour, facecolor='None',lw=1.5,
+                                              zorder =30))
+            # Add open order line
+            artists.append(mpatches.Rectangle(openline_origin_pt, 
+                                              time_width,  openprice_width,
+                                              ec=Edge_colour, facecolor='None', lw=1.5,
+                                              zorder =30))
+
+
+        # Isolate the Trades of this day
+        sub_PNL_df = PNL_df[(PNL_df['Datetime'] >=start_dt)&
+                            (PNL_df['Datetime'] <=end_dt)]
+        
+        # Get open and close points
+        open_times = sub_PNL_df['Entry_Datetime'].to_list()
+        open_times = [datetime.datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S") 
+                      for date_str in open_times]
+        close_times = sub_PNL_df['Exit_Datetime'].to_list()
+        close_times = [datetime.datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S") 
+                      for date_str in close_times]
+
+        open_prices = sub_PNL_df['Entry_Price'].to_list()
+        close_prices = sub_PNL_df['Exit_Price'].to_list()
+        PNLs = sub_PNL_df['scaled returns from trades'].to_list()
+        # Generate PNL text
+        topleft_coord
+        txt_list = []
+        for (x, y), s in zip(topleft_coord, PNLs):
+            if s > 0:
+                colour = '#b0fe83'
+            elif s<0:
+                colour = '#fc7878'
+            txt = (x,y, f'PNL: {round(s,1)}', colour)
+            txt_list.append(txt)
+            
+        # Plotting
+        plot_VWAP(sub_history_data,
+                  title=f'{date.strftime("%Y-%m-%d")}', 
+                  artists = artists,
+                  open_times=open_times, open_prices=open_prices, 
+                  close_times=close_times, close_prices=close_prices,
+                  txts = txt_list)
+    return 
 
 def run_backtest(TradeMethod, signals, 
-                 daily_minute_data_pkl, start_date, end_date):
+                 daily_minute_data_pkl, start_date, end_date, **kwargs):
     start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
     end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
 
@@ -367,194 +636,80 @@ def run_backtest(TradeMethod, signals,
         HISTORY_MINUTE_PKL = load_source_data_bt([daily_minute_data_pkl[symbol]])
         # reindexing with time
         histroy_data = reindex_dt(HISTORY_MINUTE_PKL[symbol])
-        print(histroy_data)
+        #print(histroy_data)
         # No resample, run the backtest in 1Min intervals
         histroy_data = histroy_data[(histroy_data['Datetime'] >=start_date) &
                                     (histroy_data['Datetime'] <=end_date)]
         
         signals = signals[(signals['signal_datetime'] >=start_date) &
                           (signals['signal_datetime'] <=end_date)]
-        P1 = backtest_engine(TradeMethod, P1, signals, histroy_data)
-    return P1
+        
+        P1, active_signals = backtest_engine(TradeMethod, P1, signals, histroy_data)
+                
+        # Save the portfolio
+        if kwargs['save_or_not']: # save pkl portfolio
+            file = open(kwargs['master_pnl_filename'], 'wb')
+            pickle.dump(P1, file)
+
+    return P1,active_signals
 
 if __name__ == "__main__":
-    from crudeoil_future_const import DAILY_MINUTE_DATA_INDI_PKL
+    from crudeoil_future_const import DAILY_MINUTE_DATA_INDI_PKL, RESULT_FILEPATH
 
     #start_date = datetime.datetime(2024,10,4,0,0,0)
     #end_date = datetime.datetime(2024,10,10,23,59,59)
-    start_date = "2023-10-04"
-    end_date = "2023-10-10"
+    start_date = "2021-01-01"
+    end_date = "2021-01-06"
+
+    #end_date = "2021-12-31"
 
     # Load signals
-    Q = util.load_pkl("/home/dexter/Euler_Capital_codes/EC_tools/results/VWAP_Inversion/VWAP_Inversion_signal_CLc1_full.pkl")
+    Q = util.load_pkl(RESULT_FILEPATH+"/VWAP_Inversion/VWAP_Inversion_sigma_0_68_signal_CLc1_2021_TP1_5_SL3_full.pkl")
+    MASTER_PNL_FILENAME = RESULT_FILEPATH + "/VWAP_Inversion/VWAP_Inversion_sigma_0_68_PNL_CLc1_2021_TP1_5_SL3.pkl"
 
-    run_backtest(OneTradePerSeg, Q, DAILY_MINUTE_DATA_INDI_PKL, 
-                 start_date, end_date)
-# =============================================================================
-# def loop_portfolio_preloaded_dSL(portfo: Portfolio, 
-#                                  trade_method,
-#                                  signal_table: pd.DataFrame, 
-#                                  histroy_intraday_data_pkl: dict[str, pd.DataFrame], 
-#                                  **kwargs):
-#     # Loop through signal master table and execute trade in the intraday data
-#     # Within this custom loop, there is another loop that go through a series of
-#     # sections and calculate entry point and exit point individually.
-#     default_kwargs = DEFAULT_KWARGS
-#     kwargs = dict(default_kwargs,**kwargs)
-# 
-#     for i in range(len(signal_table)):
-# 
-#         # setup trade inputs ###########
-#         item = signal_table.iloc[i]
-#                 
-#         symbol = item['Price_Code']
-#         date_interest = item['Date']
-#         get_obj_name = item['Price_Code']
-# 
-#         open_hr = kwargs['open_hr_dict'][symbol]
-#         close_hr = kwargs['close_hr_dict'][symbol]
-#         
-#         histroy_intraday_data = histroy_intraday_data_pkl[symbol]
-#         
-#         day = backtest.extract_intraday_minute_data(histroy_intraday_data, 
-#                                                     date_interest, 
-#                                                     open_hr=open_hr, 
-#                                                     close_hr=close_hr)
-#         
-#         open_hr_dt, open_price = read.find_closest_price(day,
-#                                                          target_hr= open_hr,
-#                                                          direction='forward')
-#         
-#         close_hr_dt, close_price = read.find_closest_price(day,
-#                                                            target_hr= close_hr,
-#                                                            direction='backward')
-#             
-#         # The time to open all positions
-#         pos_open_dt = datetime.datetime.combine(date_interest.date(), open_hr_dt)
-#         
-#         print('===============================')
-#         print(i, pos_open_dt, symbol)
-#         #print('day', day)
-#         #print('Time', day['Time'].iloc[0], type(day['Time'].iloc[0]))
-#         # Target EES global (the initial targets)
-#         global_target_entry = item['Entry_Price']
-#         global_target_exit = item['Exit_Price']
-#         global_stop_exit = item['StopLoss_Price']
-# 
-#         # Build up sections, the output is a dict containing the EES for each 
-#         # section
-#         sections = load_EES_from_signal_dynamic(item)
-#         #print('sections', sections)
-#         # Setup trade ##########
-#         trade_id = i #direction + str(i)
-#         direction = sections['0']['direction'][1]
-#         # Make a list of SL for universal access
-#         dyn_list = item[['StopLoss_Price_1', 'StopLoss_Price_2', 
-#                          'StopLoss_Price_3','StopLoss_Price_4']].to_list()
-# 
-#         # Initialise trade 
-#         T = trade_method(portfo, trade_id, 
-#                          trail_price_delta=kwargs['trail_price_delta'], 
-#                          direction=direction,
-#                          cross_decision=kwargs['cross_decision'],
-#                          dyn_list = dyn_list)
-#         
-#         # Setup the close hour exit point (remember to change the close_hr_dt 
-#         # from time to datetime)
-#         T._close_pt = (datetime.datetime.combine(date_interest, close_hr_dt), close_price)
-#         
-#         # Loop Through each section to find the suitable EES point, 
-#         # Store them in the class variable in the Trade object
-#         for num in sections:
-#             # Isolate day_section from day data according to the time range
-#             # of the EES
-#             start_time = datetime.datetime.strptime(sections[num]['stop_exit'][0][0], 
-#                                                     '%H:%M:%S').time()
-#             end_time = datetime.datetime.strptime(sections[num]['stop_exit'][0][1], 
-#                                                   '%H:%M:%S').time()
-#             
-#             day_section = day[(day['Time']>=start_time) & (day['Time']<=end_time)]
-#             #print('day_section', day_section)
-#             
-#             if len(day_section) == 0:
-#                 print('day_section is empty!')
-#                 break
-#             
-#             # The EES for this section
-#             target_entry = sections[num]['target_entry'][1]
-#             target_exit = sections[num]['target_exit'][1]
-#             stop_exit = sections[num]['stop_exit'][1]
-#             
-#             print_SL_price = T._dyn_list[int(num)]
-#             
-#             print(f'--------section {num}: {start_time} to {end_time}, "{direction}"--------')
-#             print(f'TE: {target_entry}, TP: {target_exit}, SL: {print_SL_price}')
-#             print('------------------------------------------------------')
-# 
-#             # set the open_hr to the time specific to this section
-#             open_hr_dt, close_hr_dt = start_time, end_time
-# 
-#             # Generate truncation dictionary in this section of the day
-#             trunc_dict, target_entry, \
-#             target_exit, stop_exit = backtest.gen_trunc_dict(LoopType.CROSSOVER,
-#                                                              day_section, 
-#                                                              target_entry, 
-#                                                              target_exit, 
-#                                                              print_SL_price, 
-#                                                              open_hr_dt, 
-#                                                              close_hr_dt, 
-#                                                              direction)
-#             #print(trunc_dict)
-#             
-#             
-#             # Choose the earliest EES for this section
-#             T.choose_EES_values(trunc_dict, dyn_list, int(num),
-#                                 trail_price_delta = TRAIL_PRICE_DELTA[symbol],
-#                                 direction=direction)
-#             print('------------------------------------------------------')
-#         print('------------------------------------------------------')
-# 
-#         # Export the trade object defacto EES points
-#         # A list of initial target prices for opening position, it will be 
-#         # changed during execute_order based on EES_pt_list
-#         EES_target_price_list = [global_target_entry, global_target_exit, 
-#                                  global_stop_exit, close_price]
-#         
-#         # A list of final EES points
-#         EES_pt_list = [T._TE_pt, T._TP_pt, T._SL_pt, T._close_pt]
-#         
-#         ORDER_TYPE = {'Buy': 'Long', 'Sell':'Short'}
-#         #print('EES_target_list', EES_target_price_list)
-#         print('EES_pt_list', EES_pt_list)
-#         
-#         # Open position and add them in the portfolio
-#         pos_list = T.open_positions(kwargs['give_obj_name'], 
-#                                     get_obj_name, 
-#                                     kwargs['get_obj_quantity'],
-#                                     EES_target_price_list, 
-#                                     ORDER_TYPE[direction],
-#                                     size=SIZE_DICT[get_obj_name],
-#                                     fee=OIL_FUTURES_FEE, 
-#                                     open_time = open_hr_dt)
-#         #print('pos_list', pos_list)
-#         print('------------------------------------------------------')
-# 
-#         # Execute and exit position in the portfolio
-#         trade_open, trade_close, \
-#         pos_list, exec_pos_list = T.execute_positions(EES_pt_list, 
-#                                                       pos_list, 
-#                                                       order_type = \
-#                                                       ORDER_TYPE[direction])
-#         
-#         #print('pos_list', pos_list)
-#         #print(exec_pos_list)
-#         print('------------------------------------------------------')
-# 
-#         #backtest.plot_in_backtest(date_interest,get_obj_name, trunc_dict, direction, 
-#         #                          plot_or_not=kwargs['plot_or_not'])
-#                                                  
-# 
-#     return portfo
-# =============================================================================
+    # run backtest
+    P, AS = run_backtest(OneTradePerSeg, Q, DAILY_MINUTE_DATA_INDI_PKL, 
+                    start_date, end_date,
+                    master_pnl_filename = MASTER_PNL_FILENAME,
+                    save_or_not = True)
+    
+    P = read.open_portfolio(MASTER_PNL_FILENAME)
+    PL = PortfolioLog(P)
+    PL.tradebook_filename = RESULT_FILEPATH + "/VWAP_Inversion/VWAP_Inversion_sigma_0_68_PNL_CLc1_2021_TP1_5_SL3.csv"
+    
+    PL.render_tradebook()
+    PL.render_tradebook_xlsx()
+    ################
+    from app.run_VWAP_strat_step1 import add_VWAP2df, add_ATR
 
+    EXCHANGE = {'CLc1': "NYSE",
+                'CLc2': "NYSE",
+                'HOc1': "NYSE",
+                'HOc2': "NYSE",
+                'RBc1': "NYSE",
+                'RBc2': "NYSE",
+                'QOc1': "ICE",
+                'QOc2': "ICE",
+                'QPc1': "ICE",
+                'QPc2': "ICE",
+                            }
+    #Plot_check
+    symbol = "CLc1"
+    open_hr, close_hr = '0330','1959'
+    XL_filename = RESULT_FILEPATH + "/VWAP_Inversion/VWAP_Inversion_sigma_0_68_PNL_CLc1_2021_TP1_5_SL3_.xlsx"
+    
+    XL_df = read.read_xl_file(XL_filename, sheet_name = symbol)
+
+    # plot check
+    HISTORY_MINUTE_PKL = load_source_data_bt([DAILY_MINUTE_DATA_INDI_PKL[symbol]])
+    unique_dates = util.get_trading_date(datetime.datetime.strptime(start_date, "%Y-%m-%d"),
+                                         datetime.datetime.strptime(end_date, "%Y-%m-%d"), 
+                                         exchange=EXCHANGE[symbol])
+
+    # reindexing with time
+    history_data = reindex_dt(HISTORY_MINUTE_PKL[symbol])
+    history_data = add_VWAP2df(history_data, unique_dates, open_hr, close_hr)
+    history_data = add_ATR(history_data)
+
+    plot_check(history_data, AS, XL_df)
 

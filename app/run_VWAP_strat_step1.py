@@ -12,7 +12,7 @@ import pandas as pd
 import numpy as np
 
 import EC_tools.utility as util
-from crudeoil_future_const import DAILY_MINUTE_DATA_INDI_PKL
+from crudeoil_future_const import DAILY_MINUTE_DATA_INDI_PKL, RESULT_FILEPATH
 
 def load_source_data_bt(filenames_loc: list) -> dict:
     master_dict = {}
@@ -122,7 +122,8 @@ def plot_VWAP(df, title='',
     axs.set_xlabel('Time')
     plt.legend()
     #plt.show()
-    plt.savefig(f"/home/dexter/Euler_Capital_codes/EC_tools/results/VWAP_Inversion/plots/VWAP_{date_str}.png", dpi=150)
+    plt.savefig(RESULT_FILEPATH+f"/VWAP_Inversion/plots_2_0sigma/VWAP_{date_str}.png", 
+                dpi=150)
 
 def add_VWAP2df(df:pd.DataFrame, 
                 unique_date:list[datetime.datetime], 
@@ -151,10 +152,34 @@ def add_VWAP2df(df:pd.DataFrame,
         # Plot the daily chart to check if the VWAP range is reasonable
         new_df = pd.concat([new_df, new_sub_df])
     return new_df
-        
-        
 
-from EC_tools.strategy_2.VWAPInversionStrategy import VWAPInversionStrategy, loop_signal
+from ta.volatility import AverageTrueRange
+
+#def add_ATR(df):
+#    
+#    # Calculate ATR using the ta library
+#    # window specifies the lookback period (e.g., 14 for 14-period ATR)
+#    atr_indicator = AverageTrueRange(df["High"], df["Low"], df["Settle"], window=14)
+#    df['ATR'] = atr_indicator.average_true_range()
+#    return df
+
+def add_ATR(df,period=14):
+    df['high_low'] = df['High'] - df['Low']
+    df['high_prev_close'] = abs(df['High'] - df['Settle'].shift(1))
+    df['low_prev_close'] = abs(df['Low'] - df['Settle'].shift(1))
+    df['True_Range'] = df[['high_low', 'high_prev_close', 'low_prev_close']].max(axis=1)
+
+    # Calculate ATR using Exponential Moving Average (EMA) of True Range
+    # The standard ATR calculation uses a modified EMA where the smoothing factor
+    # is 1/period for the first ATR value, and then (previous_ATR * (period - 1) + current_TR) / period
+    # for subsequent values. Pandas ewm with adjust=False approximates this.
+    df['ATR'] = df['True_Range'].ewm(span=period, adjust=False).mean()
+
+    # Clean up intermediate columns
+    df = df.drop(columns=['high_low', 'high_prev_close', 'low_prev_close', 'True_Range'])
+    return df
+
+from EC_tools.strategy_2.VWAPInversionStrategy import loop_signal
 from crudeoil_future_const import WRONG_OPEN_HR_DICT, CLOSE_HR_DICT,\
                                   TIMEZONE_DICT, TEST_FILE_LOC,\
                                   VWAP_SIGNAL_PKL_LOC
@@ -229,7 +254,9 @@ def run_gen_signals(daily_minute_data_pkl: dict[pd.DataFrame],
     
         # Calculate VWAP, save it in the dataframe as a new column.
         new_df = add_VWAP2df(new_df, unique_dates, open_hr, close_hr)
+        new_df = add_ATR(new_df)
         
+        print(new_df)
         #plot_VWAP(new_df)
        
         asset_name = symbol
@@ -258,7 +285,28 @@ def run_gen_signals(daily_minute_data_pkl: dict[pd.DataFrame],
 
     
 if __name__ == "__main__":
+    VWAP_SIGNAL_PKL_LOC_C = {
+    'CLc1': RESULT_FILEPATH + '/VWAP_Inversion/VWAP_Inversion_sigma_0_68_signal_CLc1_2021_TP1_5_SL3_full.pkl',
+    'CLc2': RESULT_FILEPATH + '/VWAP_Inversion/VWAP_Inversion_signal_CLc2_full.pkl',
+    'HOc1': RESULT_FILEPATH + '/VWAP_Inversion/VWAP_Inversion_signal_HOc1_full.pkl',
+    'HOc2': RESULT_FILEPATH + '/VWAP_Inversion/VWAP_Inversion_signal_HOc2_full.pkl',
+    'RBc1': RESULT_FILEPATH + '/VWAP_Inversion/VWAP_Inversion_signal_RBc1_full.pkl',
+    'RBc2': RESULT_FILEPATH + '/VWAP_Inversion/VWAP_Inversion_signal_RBc2_full.pkl',
+    'QOc1': RESULT_FILEPATH + '/VWAP_Inversion/VWAP_Inversion_signal_QOc1_full.pkl',
+    'QOc2': RESULT_FILEPATH + '/VWAP_Inversion/VWAP_Inversion_signal_QOc2_full.pkl',
+    'QPc1': RESULT_FILEPATH + '/VWAP_Inversion/VWAP_Inversion_signal_QPc1_full.pkl',
+    'QPc2': RESULT_FILEPATH + '/VWAP_Inversion/VWAP_Inversion_signal_QPc2_full.pkl'
+    }
+    
+    start_date = datetime.datetime(2021,1,1,0,0,0)
+    end_date = datetime.datetime(2021,12,31,23,59,59)
 
-    start_date = datetime.datetime(2023,1,1,0,0,0)
-    end_date = datetime.datetime(2023,12,31,23,59,59)
-    run_gen_signals(DAILY_MINUTE_DATA_INDI_PKL, start_date, end_date)
+    #end_date = datetime.datetime(2021,1,9,23,59,59)
+    #end_date = datetime.datetime(2023,1,5,23,59,59)
+    run_gen_signals(DAILY_MINUTE_DATA_INDI_PKL, start_date, end_date,
+                    save_filenames_loc=VWAP_SIGNAL_PKL_LOC_C,
+                    N_sigma=1.5, #0.68
+                    TP_multiplier = 2,
+                    SL_multiplier = 1,
+                    segment_barmulitplier=4,
+                    barclose_threshold_factor = 0.75)
