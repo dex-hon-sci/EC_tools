@@ -455,12 +455,12 @@ class SubComponents(object):
         print(exit_time, exit_price)
         ax.scatter(entry_time, entry_price, s=80, facecolors='none', 
                    edgecolors='b', zorder=10)
-        ax.plot(entry_time, entry_price, '+', ms=16, c='blue', zorder=10, 
+        ax.plot(entry_time, entry_price, 'x', ms=16, c='blue', zorder=10, 
                 label = 'Entry_Point')
 
         ax.scatter(exit_time, exit_price, s=80, facecolors='none', 
                    edgecolors='g', zorder=10)
-        ax.plot(exit_time, exit_price, '+', ms=16, c='green', zorder=10,
+        ax.plot(exit_time, exit_price, 'x', ms=16, c='green', zorder=10,
                 label = 'Exit_Point')
 
 
@@ -853,7 +853,7 @@ if __name__ == "__main__":
     
     symbol = 'CLc1'
 
-    date_interest = "2024-10-08"
+    date_interest = "2023-05-08"
     first = datetime.datetime.combine(datetime.datetime(2025,2,4).date(), datetime.time(hour=6,minute=9))
     #plot_minute(HISTORY_MINTUE_FILE_LOC[symbol], APC_FILE_LOC[symbol], 
     #            date_interest = date_interest, title=symbol, direction="Buy",

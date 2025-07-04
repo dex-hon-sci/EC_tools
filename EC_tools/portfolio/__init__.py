@@ -772,6 +772,7 @@ class PortfolioLog(Portfolio):
                         'Trade_Return', 'Trade_Return_Fraction']
 
         order_pool = self.portfolio.order_pool
+        #print("Order_pool", order_pool)
         book = Bookkeep(bucket_type='backtest', custom_keywords_list=custom_list0)
 
         #, 'Scaled_Return']  # , 'Risk_Reward_Ratio', 'strategy_name']
@@ -788,7 +789,7 @@ class PortfolioLog(Portfolio):
         for i, ele in enumerate(PP):
             #print(i)
             trade_id = ele[0].order_id
-            direction = re.sub(r'\-(.*)', '', ele[0].order_type)
+            direction = re.sub(r'\-(.*)', '', ele[0].order_type.value)
             symbol = ele[0].get_obj['name']
             commodity_name = SYMBOL_KEYWORDS_DICT[symbol]
             entry_date = ele[0].fill_time.date()

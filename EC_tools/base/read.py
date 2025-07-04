@@ -1560,7 +1560,7 @@ def group_trade(position_pool: list,
     # First sort the pool by trade_id.
     pos_pool = position_pool.copy()
     pos_pool.sort(key=lambda x : x.order_id)
-    
+    #print(pos_pool)
     bucket, temp = [], []
     trade_id_now = pos_pool[0].order_id
     
