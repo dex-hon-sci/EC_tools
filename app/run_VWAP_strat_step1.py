@@ -176,7 +176,8 @@ def add_ATR(df,period=14):
     df['ATR'] = df['True_Range'].ewm(span=period, adjust=False).mean()
 
     # Clean up intermediate columns
-    df = df.drop(columns=['high_low', 'high_prev_close', 'low_prev_close', 'True_Range'])
+    df = df.drop(columns=['high_low', 'high_prev_close', 
+                          'low_prev_close', 'True_Range'])
     return df
 
 from EC_tools.strategy_2.VWAPInversionStrategy import loop_signal
@@ -286,7 +287,7 @@ def run_gen_signals(daily_minute_data_pkl: dict[pd.DataFrame],
     
 if __name__ == "__main__":
     VWAP_SIGNAL_PKL_LOC_C = {
-    'CLc1': RESULT_FILEPATH + '/VWAP_Inversion/VWAP_Inversion_sigma_0_68_signal_CLc1_2021_TP1_5_SL3_full.pkl',
+    'CLc1': RESULT_FILEPATH + '/VWAP_Inversion/test_signal.pkl', #VWAP_Inversion_sigma_0_68_signal_CLc1_2021_TP1_5_SL3_full.pkl
     'CLc2': RESULT_FILEPATH + '/VWAP_Inversion/VWAP_Inversion_signal_CLc2_full.pkl',
     'HOc1': RESULT_FILEPATH + '/VWAP_Inversion/VWAP_Inversion_signal_HOc1_full.pkl',
     'HOc2': RESULT_FILEPATH + '/VWAP_Inversion/VWAP_Inversion_signal_HOc2_full.pkl',
@@ -298,15 +299,16 @@ if __name__ == "__main__":
     'QPc2': RESULT_FILEPATH + '/VWAP_Inversion/VWAP_Inversion_signal_QPc2_full.pkl'
     }
     
-    start_date = datetime.datetime(2021,1,1,0,0,0)
-    end_date = datetime.datetime(2021,12,31,23,59,59)
+    start_date = datetime.datetime(2025,2,1,0,0,0)
+    end_date = datetime.datetime(2025,6,16,23,59,59)
 
-    #end_date = datetime.datetime(2021,1,9,23,59,59)
+    #end_date = datetime.datetime(2021,1,5,23,59,59)
     #end_date = datetime.datetime(2023,1,5,23,59,59)
     run_gen_signals(DAILY_MINUTE_DATA_INDI_PKL, start_date, end_date,
                     save_filenames_loc=VWAP_SIGNAL_PKL_LOC_C,
-                    N_sigma=1.5, #0.68
-                    TP_multiplier = 2,
-                    SL_multiplier = 1,
+                    N_sigma=1.28, #1.5
+                    TP_multiplier = 2, # Level 2 exit take-profit
+                    SL_multiplier = 1, # Level 1 +/- ATR exit stop-loss
                     segment_barmulitplier=4,
-                    barclose_threshold_factor = 0.75)
+                    reversal_factor_long = 0.75, # Reversal 75% 
+                    reversal_factor_short = 0.25)

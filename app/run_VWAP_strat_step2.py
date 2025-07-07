@@ -136,8 +136,11 @@ def plot_VWAP(df, title='',
               open_times =[],open_prices=[], 
               close_times=[], close_prices=[],
               txts = []):
+    plt.style.use('dark_background')
+
     fig, axs = plt.subplots(1, 1, figsize=(10, 4), layout='constrained')
     fmt = mdates.DateFormatter("%H:%M:%S")
+    
 
     axs.plot(df['Datetime'].to_list(), df['VWAP'].to_list(), 'o-', 
              color= 'grey', ms=1)
@@ -174,6 +177,7 @@ def plot_VWAP(df, title='',
     # draw boxes
     for art in artists:
         axs.add_patch(art)
+
         
     date_str = df['Datetime'].to_list()[0].strftime('%Y-%m-%d')
     
@@ -189,19 +193,33 @@ def plot_VWAP(df, title='',
     for x,y,z,colour in txts:
         axs.text(x,y+0.05,z,color=colour, fontsize =8, fontweight='bold', zorder =40)
         
+    # manage the legend
+    twin0=axs.twinx()
+    twin0.plot([],[], '-',label=r"$Signal Range (Long)$", color ='cyan')
+    twin0.plot([], [], '-', label=r"$\rm Signal Range (Short)$", color ='#e1b865')
+    twin0.scatter([],[], label=r"$Open Order$", color ='green', 
+               marker ="X",s=50)
+    twin0.scatter([],[],label=r"$Close Order$", color ='blue', 
+               marker ="X",s=50)
 
-    axs.plot(upmakersx, upmakersy,'+',color="green", ms=15)
-    axs.plot(downmakersx, downmakersy,'_',color="green",ms=15)
+    twin0.legend(loc='upper center',fontsize=13, bbox_to_anchor=(0.5, 1.4),
+                 fancybox=True, shadow=False, ncol=3)
+    #twin0.set_yscale('log')
+    
+    #axs.plot(upmakersx, upmakersy,'+',color="green", ms=15)
+    #axs.plot(downmakersx, downmakersy,'_',color="green",ms=15)
     
     axs.xaxis.set_major_formatter(fmt)
     axs.grid()
     axs.set_title(title)
     axs.set_ylabel('Price')
     axs.set_xlabel('Time')
+    plt.setp(twin0.get_yticklabels(), visible=False)
+
     #plt.legend()
-    plt.show()
-    #plt.savefig(RESULT_FILEPATH+f"/VWAP_Inversion/plot_PNL/VWAP_{date_str}.png", 
-    #            dpi=150)
+    #plt.show()
+    plt.savefig(RESULT_FILEPATH+f"/VWAP_Inversion/plot_PNL/VWAP_{date_str}.png", 
+                dpi=150)
 
 
 class Trade(object):
@@ -649,7 +667,10 @@ def run_backtest(TradeMethod, signals,
         # Save the portfolio
         if kwargs['save_or_not']: # save pkl portfolio
             file = open(kwargs['master_pnl_filename'], 'wb')
+            file2 = open(kwargs['active_signal_filename'], 'wb')
             pickle.dump(P1, file)
+            pickle.dump(active_signals, file2)
+            
 
     return P1,active_signals
 
@@ -658,24 +679,27 @@ if __name__ == "__main__":
 
     #start_date = datetime.datetime(2024,10,4,0,0,0)
     #end_date = datetime.datetime(2024,10,10,23,59,59)
-    start_date = "2021-01-01"
-    end_date = "2021-01-06"
+    start_date = "2025-02-03"
+    #end_date = "2021-01-06"
 
-    #end_date = "2021-12-31"
+    end_date = "2025-06-16"
 
     # Load signals
-    Q = util.load_pkl(RESULT_FILEPATH+"/VWAP_Inversion/VWAP_Inversion_sigma_0_68_signal_CLc1_2021_TP1_5_SL3_full.pkl")
-    MASTER_PNL_FILENAME = RESULT_FILEPATH + "/VWAP_Inversion/VWAP_Inversion_sigma_0_68_PNL_CLc1_2021_TP1_5_SL3.pkl"
-
+    #Q = util.load_pkl(RESULT_FILEPATH+"/VWAP_Inversion/VWAP_Inversion_sigma_0_68_signal_CLc1_2021_TP1_5_SL3_full.pkl")
+    #MASTER_PNL_FILENAME = RESULT_FILEPATH + "/VWAP_Inversion/VWAP_Inversion_sigma_0_68_PNL_CLc1_2021_TP1_5_SL3.pkl"
+    Q = util.load_pkl(RESULT_FILEPATH+"/VWAP_Inversion/test_signal.pkl")
+    MASTER_PNL_FILENAME = RESULT_FILEPATH + "/VWAP_Inversion/test_PNL.pkl"
+    MASTER_AS_FILENAME = RESULT_FILEPATH + "/VWAP_Inversion/test_ActiveSignals.pkl"
     # run backtest
     P, AS = run_backtest(OneTradePerSeg, Q, DAILY_MINUTE_DATA_INDI_PKL, 
                     start_date, end_date,
                     master_pnl_filename = MASTER_PNL_FILENAME,
+                    active_signal_filename = MASTER_PNL_FILENAME,
                     save_or_not = True)
     
-    P = read.open_portfolio(MASTER_PNL_FILENAME)
+    #P = read.open_portfolio(MASTER_PNL_FILENAME)
     PL = PortfolioLog(P)
-    PL.tradebook_filename = RESULT_FILEPATH + "/VWAP_Inversion/VWAP_Inversion_sigma_0_68_PNL_CLc1_2021_TP1_5_SL3.csv"
+    PL.tradebook_filename = RESULT_FILEPATH + "/VWAP_Inversion/test_PNL.csv"
     
     PL.render_tradebook()
     PL.render_tradebook_xlsx()
@@ -696,10 +720,11 @@ if __name__ == "__main__":
     #Plot_check
     symbol = "CLc1"
     open_hr, close_hr = '0330','1959'
-    XL_filename = RESULT_FILEPATH + "/VWAP_Inversion/VWAP_Inversion_sigma_0_68_PNL_CLc1_2021_TP1_5_SL3_.xlsx"
+    XL_filename = RESULT_FILEPATH + "/VWAP_Inversion/test_PNL_.xlsx"
     
     XL_df = read.read_xl_file(XL_filename, sheet_name = symbol)
-
+    XL_df = XL_df.sort_values(by=["Entry_Datetime"], 
+                                     ascending=True)
     # plot check
     HISTORY_MINUTE_PKL = load_source_data_bt([DAILY_MINUTE_DATA_INDI_PKL[symbol]])
     unique_dates = util.get_trading_date(datetime.datetime.strptime(start_date, "%Y-%m-%d"),
