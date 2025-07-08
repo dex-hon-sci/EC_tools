@@ -65,17 +65,6 @@ def load_source_data_bt(filenames_loc: list) -> dict:
         
     return master_dict
 
-def to_datetime(date64:np.datetime64):
-    """
-    Converts a numpy datetime64 object to a python datetime object 
-    Input:
-      date64 - a np.datetime64 object
-    Output:
-      DATE - a python datetime object
-    """
-    timestamp = ((date64 - np.datetime64('1970-01-01T00:00:00'))
-                 / np.timedelta64(1, 's'))
-    return datetime.datetime.utcfromtimestamp(timestamp)
 
 def reindex_dt(df:pd.DataFrame):
     # Add Datetime column into the dataframe
@@ -90,40 +79,6 @@ def reindex_dt(df:pd.DataFrame):
     df['Datetime'] = df.index
 
     return df
-
-def find_closest_price(history_data: pd.DataFrame, 
-                       target_dt: datetime.datetime, 
-                       direction: str ='forward', 
-                       price_proxy: str = 'Open',
-                       time_proxy: str = 'Datetime',
-                       step: int = 1, 
-                       search_time: int = 1000) -> \
-                       tuple[datetime.datetime, float]:    
-    # If the input is forward, the loop search forward a unit of minute (step)
-    if direction == 'forward':
-        step = 1.* step
-    # If the input is backward, the loop search back a unit of minute (step)
-    elif direction == 'backward':
-        step = -1* step
-
-    #initial estimation of the target price
-    target_price = history_data[history_data[time_proxy] == target_dt][price_proxy]
-    #loop through the next 30 minutes to find the opening price    
-    for i in range(search_time):    
-        if len(target_price) == 0:
-            delta = datetime.timedelta(minutes = step)
-            target_dt += delta
-
-            target_price = history_data[history_data[time_proxy] == target_dt][price_proxy]
-            #print('target_price', target_price)
-    print('target_hr_after', target_dt)
-
-    #print(day_minute_data[day_minute_data[time_proxy] == target_hr_dt])
-    print('target_price', target_price)
-    target_price = [float(target_price.iloc[0])] # make sure that this is float
-            
-    return target_dt, target_price[0]
-
 
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
@@ -222,224 +177,14 @@ def plot_VWAP(df, title='',
                 dpi=150)
 
 
-class Trade(object):
-    def __init__(self):
-        #self.open_pt = (np.nan,np.nan)
-        #self.close_pt = (np.nan,np.nan)
-        pass
-    
-from EC_tools.strategy_2.signal import SignalStatus, Signal, SignalType
-from EC_tools.order.cqg_enums import OrderType
-from EC_tools.order.cqg_order import CQGOrder
-from EC_tools.order.enums import OrderSideExtend
-from EC_tools.order.order import ExecuteOrder
-from EC_tools.order.convert2BTorder import convert2BTorder
+
+from EC_tools.strategy_2.signal import SignalStatus, SignalType
+from EC_tools.trade_2.onetradeperseg import OneTradePerSeg
+from EC_tools.trade_2 import Trade
 import EC_tools.base.read as read
 
-class OneTradePerSeg(Trade):
-    # One trde per Segment
-    def __init__(self, portfolio: Portfolio, 
-                 signal: Signal,
-                 history_data: pd.DataFrame,
-                 trade_id:int):
-        super().__init__()
-        self.portfolio = portfolio
-        self.signal = signal
-        self.history_data = history_data
-        self.trade_id = trade_id
-        self.open_pt = (np.nan,np.nan)
-        self.close_pt = (np.nan,np.nan)
-        
-        # Note taht the order here is the BT Order, not Signal Order
-        self.open_order = None 
-        self.close_order = None 
-        # Check if the signal is active
-        if signal.status is not SignalStatus.ACTIVE:
-            raise Exception("The given signal is not active.")
-        
-    def find_hit_pts(self, action: CQGOrder, 
-                     MKT_seek_direction='forward')->\
-                     list[tuple[datetime.datetime| float]]:
-        # A function that find the hit pts based on the order type
-        # MKT order based on time, LMT order based on price
-        match action.type_:
-            case OrderType.ORDER_TYPE_MKT:
-                # Find hit_pt based in MKT_time
-                hit_pts = [find_closest_price(self.history_data,
-                                            action.kwargs['MKT_time'],
-                                            direction=MKT_seek_direction)]
-                print("MKT order, hit_pts", hit_pts)
-                
-                
-            case OrderType.ORDER_TYPE_LMT:
-                
-                price_proxy = 'Open'
-                time_proxy = 'Datetime'
-                price_list = self.history_data[price_proxy].to_numpy()
-                time_list = self.history_data[time_proxy].to_numpy()
-                
-                target_price = action.kwargs['LMT_price']
 
-                # Hit points candidates
-                hit_cand = read.find_crossover(price_list, float(target_price))
-                
-                hit_times = list(time_list[hit_cand['all'][0]])
-                hit_prices = list(price_list[hit_cand['all'][0]])
-                #print("LMT hittime", hit_times)
-                # Convert numpy datetime64 to datetime
-                hit_times = [to_datetime(dt64) for dt64 in hit_times]
 
-                # Select for the earliest one that is after the open.
-                hit_pts = [(time, price) for time, price in zip(hit_times, hit_prices)]
-                print("LMT order, hit_pts", hit_pts)
-
-        return hit_pts
-        
-    def choose_hit_pts(self)->list: # WIP
-        print('----choose_hit_pts------')
-        # Get the list of hit pts
-        # Go through the actions list
-        open_hit_pts = [] # a list of points hit by the open orders
-        close_hit_pts = [] # a list of points hit by the close orders
-        open_orders = [] # a list of open orders matching open_hit_pts
-        close_orders = [] # a list of open orders matching close_hit_pts
-
-        # Extract hit pts for each order
-        for i, action in enumerate(self.signal.actions):
-            if action.open_:
-                seek_direction = 'forward'
-                
-                ht_pts = self.find_hit_pts(action, 
-                                           MKT_seek_direction = seek_direction)
-                
-                open_hit_pts += ht_pts
-                open_orders += [action]*len(ht_pts)
-                
-                assert len(open_hit_pts) == len(open_orders)
-
-            elif action.close_:
-                seek_direction = 'backward'
-                ht_pts = self.find_hit_pts(action, 
-                                           MKT_seek_direction = seek_direction)
-                close_hit_pts += ht_pts
-                close_orders += [action]*len(ht_pts)
-                print("length", len(close_hit_pts) , len(close_orders))
-                assert len(close_hit_pts) == len(close_orders)
-        print('==========================')
-
-        print("open_hit_pts", open_hit_pts)
-        print("open_orders", open_orders)
-        # Find open_pt and open_order. Choose the Earliest one
-        open_dt_list = [dt for dt,_ in open_hit_pts]
-        min_open_val = open_dt_list[0] # First guess
-        min_open_index = 0
-        for i in range(len(open_dt_list)):
-            if open_dt_list[i] < min_open_val:
-                min_open_val = open_dt_list[i]
-                min_open_index = i
-        # Save the open_pt and open_order
-        self.open_pt = open_hit_pts[min_open_index]
-        self.open_order = open_orders[min_open_index]
-        print('Defacto open', self.open_pt, self.open_order)
-        print('--------------')
-        print("close_hit_pts", close_hit_pts)
-        print("close_orders", close_orders)
-
-        # Find close_pt and close_order. Choose the Earliest one that comes
-        # after the de facto open_pt
-        close_dt_list = [dt for dt,_ in close_hit_pts]
-        min_close_val = close_dt_list[0] # First guess
-        min_close_index = 0
-        #print("close_dt_list!!", close_dt_list)
-        for i in range(len(close_dt_list)):
-            if close_dt_list[i] < min_close_val and self.open_pt[0]< close_dt_list[i]:
-                min_close_val = close_dt_list[i]
-                min_close_index = i
-        self.close_pt = close_hit_pts[min_close_index]
-        self.close_order = close_orders[min_close_index]
-        print('Defacto close',self.close_pt, self.close_order)
-        print('==========================')
-    
-    def open_positions(self):
-        # Add Order (BT format) to class attribute
-        # convert2BTorder() here
-        # 
-        MKT_price_open, MKT_price_close = np.nan , np.nan
-        if self.open_order.type_ == OrderType.ORDER_TYPE_MKT:
-            MKT_price_open = self.open_pt[1]
-        # Convert De facto open_order to Backtest order format
-        self.open_order = convert2BTorder(self.open_order, 'future', 
-                                          MKT_price = MKT_price_open)
-        
-        if self.close_order.type_ == OrderType.ORDER_TYPE_MKT:
-            MKT_price_close = self.close_pt[1]
-        # Convert De facto close_order to Backtest order format
-        self.close_order = convert2BTorder(self.close_order, 'future', 
-                                          MKT_price = MKT_price_close)
-        # Add the same trade_id to the open and close orders
-        self.open_order.order_id = self.trade_id
-        self.close_order.order_id = self.trade_id
-        print("BTORDER_OPEN", self.open_order)
-        print("BTORDER_CLOSE", self.close_order)
-        return 
-    
-    def execute_positions(self):
-        
-        long_cond = (self.open_order.order_type == OrderSideExtend.LONG_BUY)\
-                and (self.close_order.order_type == OrderSideExtend.LONG_SELL)
-        short_cond = (self.open_order.order_type == OrderSideExtend.SHORT_BORROW)\
-                 and (self.close_order.order_type == OrderSideExtend.SHORT_BUYBACK)
-
-        if long_cond:
-            order_type1 = 'Long-Buy' #OrderSideExtend.LONG_BUY
-            order_type2 = 'Long-Sell' #OrderSideExtend.LONG_SELL
-
-        elif short_cond:
-            order_type1 = 'Short-Borrow' #OrderSideExtend.SHORT_BORROW
-            order_type2 = 'Short-Buyback' #OrderSideExtend.SHORT_BUYBACK
-            
-        self.open_order.price = self.open_pt[1]
-        self.close_order.price = round(self.close_pt[1],9)
-        print('----------------------------')
-        print('open_pt', self.open_pt, 'close_pt', self.close_pt)
-        # Put the orders in the portfolio
-        self.open_order.portfolio =self.portfolio
-        self.close_order.portfolio =self.portfolio
-        #print('entry_pt[1]', entry_pt[1])
-        #print('exit_pt[1]', exit_pt[1])
-        #print('stop_pt[1]', stop_pt[1])
-        #print('close_pt[1]', close_pt[1])
-        #print("After price adjustment", opening_pos, closing_pos)
-
-        # Execute the positions
-        ExecuteOrder(self.open_order).fill_pos(fill_time = self.open_pt[0], 
-                                              order_type=order_type1)
-        
-        ExecuteOrder(self.close_order).fill_pos(fill_time = self.close_pt[0], 
-                                              order_type=order_type2)
-        print('---------After Order Execution------')
-        print('open_order', self.open_order.status, self.open_order.fill_time)
-        print('close_order',self.close_order.status, self.close_order.fill_time)
-        
-        # Store order to order_pool
-        self.portfolio._order_pool.append(copy.copy(self.open_order))
-        self.portfolio._order_pool.append(copy.copy(self.close_order))
-        
-    def run_trade(self):
-        
-        # Go through the actions list        
-        self.choose_hit_pts()
-        
-        self.open_positions()
-        
-        # Execute only the open_order and close_order 
-        self.execute_positions()
-        
-        print("---Trde Done, Check Portfolio-----")
-        #print(self.portfolio.pool)
-        
-        #return self.portfolio
-    
 def activate_signal(signal, latest_datetime):
     print('------------------------------------------')
     print("activate_signal func", signal.status, signal.start_time)
@@ -504,13 +249,18 @@ def backtest_engine(trade_method: Trade,
             # Run_trade
             T = trade_method(portfo, signal, sub_history_data, i)
             T.run_trade()
-
+            print("LATEST_DATE",latest_datetime)
             # Update the latest_datetime based on the closing trade 
             # of the Trade object for this signal
-            latest_datetime = T.close_pt[0]
+            print("T.close_pt[0]", T.close_pt[0], T.close_pt[0]==np.nan, type(T.close_pt[0]))
+            if np.nan not in T.close_pt:
+                print("Is not nan")
+                latest_datetime = T.close_pt[0]
             
-            active_signals = pd.concat([active_signals, 
+                active_signals = pd.concat([active_signals, 
                                         pd.DataFrame([active_signal_row])])
+            elif np.nan in T.close_pt:
+                print("WTGFGGG")
         
     return portfo, active_signals
 
@@ -574,7 +324,7 @@ def plot_check(history_data, signals_df, PNL_df):
             print('price_width', price_width)
             box_origin_pt = (S.start_time, S.actions[2].kwargs['LMT_price'])
             
-            openline_origin_pt = (S.start_time, S.actions[0].kwargs['MKT_price'])
+            openline_origin_pt = (S.start_time, S.actions[0].kwargs['LMT_price'])
             openprice_width = 0.01
             
             Long_colour, Short_colour = "cyan", "#e1b865"
@@ -694,7 +444,7 @@ if __name__ == "__main__":
     P, AS = run_backtest(OneTradePerSeg, Q, DAILY_MINUTE_DATA_INDI_PKL, 
                     start_date, end_date,
                     master_pnl_filename = MASTER_PNL_FILENAME,
-                    active_signal_filename = MASTER_PNL_FILENAME,
+                    active_signal_filename = MASTER_AS_FILENAME,
                     save_or_not = True)
     
     #P = read.open_portfolio(MASTER_PNL_FILENAME)
