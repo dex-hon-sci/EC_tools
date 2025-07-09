@@ -155,7 +155,7 @@ def run_preprocess() -> None:
     load_dotenv()
     DATA_FILEPATH = os.environ.get("DATA_FILEPATH")
     HISTORY_MINTUE_FILE_LOC2 = {
-        #"CLc1": DATA_FILEPATH + "/history_data/Minute/CL.001",
+        "CLc1": DATA_FILEPATH + "/history_data/Minute/CL.001",
         #"CLc2": DATA_FILEPATH + "/history_data/Minute/CL_d01.001",
         #"HOc1": DATA_FILEPATH + "/history_data/Minute/HO.001",
         #"HOc2": DATA_FILEPATH + "/history_data/Minute/HO_d01.001",
@@ -167,18 +167,18 @@ def run_preprocess() -> None:
         #"QPc2": DATA_FILEPATH + "/history_data/Minute/QP_d01.001"
         }
     
-    #PKL_NAME = DATA_FILEPATH + "/pkl_vault/crudeoil_future_minute_RBc2.pkl"
-    PKL_NAME = DATA_FILEPATH + "/pkl_vault/crudeoil_future_argus_OBOS_full.pkl"
+    PKL_NAME = DATA_FILEPATH + "/pkl_vault/crudeoil_future_minute_CLc1.pkl"
+    #PKL_NAME = DATA_FILEPATH + "/pkl_vault/crudeoil_future_argus_OBOS_full.pkl"
     
     # load all raw data into pkl format
     #create_aggegrate_pkl(APC_FILE_LOC, read.read_reformat_APC_data,
     #                     save_filename = DAILY_APC_PKL)
     #create_aggegrate_pkl(HISTORY_DAILY_FILE_LOC, read.read_reformat_Portara_daily_data,
     #                     save_filename = DAILY_DATA_PKL)
-    #create_aggegrate_pkl(HISTORY_MINTUE_FILE_LOC2, read.read_reformat_Portara_minute_data,
-    #                     save_filename = PKL_NAME,symbol_list=['RBc2'])
-    create_aggegrate_pkl(ARGUS_OBOS_FILE_LOC, read.read_reformat_APC_data,
-                         save_filename = PKL_NAME)
+    create_aggegrate_pkl(HISTORY_MINTUE_FILE_LOC2, read.read_reformat_Portara_minute_data,
+                         save_filename = PKL_NAME,symbol_list=['CLc1'])
+    #create_aggegrate_pkl(ARGUS_OBOS_FILE_LOC, read.read_reformat_APC_data,
+    #                     save_filename = PKL_NAME)
 
     # calculate and load the open price data into a pkl file
     #create_open_price_list(HISTORY_DAILY_FILE_LOC, HISTORY_MINTUE_FILE_LOC)

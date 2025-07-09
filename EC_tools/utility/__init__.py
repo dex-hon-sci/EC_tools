@@ -95,6 +95,19 @@ def load_pkl(filename): # test function
     output.close()
     return my_pkl
 
+def to_datetime(date64:np.datetime64):
+    """
+    Converts a numpy datetime64 object to a python datetime object 
+    Input:
+      date64 - a np.datetime64 object
+    Output:
+      DATE - a python datetime object
+    """
+    timestamp = ((date64 - np.datetime64('1970-01-01T00:00:00'))
+                 / np.timedelta64(1, 's'))
+    return datetime.datetime.utcfromtimestamp(timestamp)
+
+
 def date_matching(date1,date2):
     # A simple function that ensure the date from two data sources match
     if date1 == date2:

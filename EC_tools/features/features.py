@@ -15,7 +15,7 @@ hence features (Dependent varaiables).
 import datetime
 import numpy as np
 import pandas as pd
-import EC_tools.math_func as mfunc
+import EC_tools.utility.math_func as mfunc
 
 
 def resample(df: pd.DataFrame, time_interval = "15Min") -> pd.DataFrame:

@@ -555,6 +555,12 @@ def read_reformat_Portara_minute_data(filename: str,
 
     history_data['Time'] = bucket
     
+    # Make datetime column
+    dates = history_data['Date'].to_list()
+    times = history_data['Time'].to_list()
+    
+    datetimes = [datetime.datetime.combine(date,time) for date,time in zip(dates,times)]
+    history_data['Datetime'] = datetimes
 # =============================================================================
 #     if time_to_datetime:
 #         history_data['Time'] = [datetime.datetime.strptime(t, '%H%M') 
@@ -562,14 +568,14 @@ def read_reformat_Portara_minute_data(filename: str,
 #     
 # =============================================================================
     #history_data_reindex = history_data.set_index('Date',drop=False)
-    history_data_reindex = history_data
+    #history_data_reindex = history_data
 
     match add_col_data:
         case {} | [] | None:
             pass
         case _:
             for key in add_col_data:
-                history_data_reindex[key] = add_col_data[key] 
+                history_data[key] = add_col_data[key] 
                 
     return history_data#history_data_reindex
 
@@ -799,6 +805,41 @@ def find_closest_price(day_minute_data: pd.DataFrame,
     target_price = [float(target_price.iloc[0])] # make sure that this is float
             
     return target_hr_dt, target_price[0]
+
+
+def find_closest_price_dt(history_data: pd.DataFrame, 
+                          target_dt: datetime.datetime, 
+                          direction: str ='forward', 
+                          price_proxy: str = 'Open',
+                          time_proxy: str = 'Datetime',
+                          step: int = 1, 
+                          search_time: int = 1000) -> \
+                          tuple[datetime.datetime, float]:    
+    # If the input is forward, the loop search forward a unit of minute (step)
+    if direction == 'forward':
+        step = 1.* step
+    # If the input is backward, the loop search back a unit of minute (step)
+    elif direction == 'backward':
+        step = -1* step
+
+    #initial estimation of the target price
+    target_price = history_data[history_data[time_proxy] == target_dt][price_proxy]
+    #loop through the next 30 minutes to find the opening price    
+    for i in range(search_time):    
+        if len(target_price) == 0:
+            delta = datetime.timedelta(minutes = step)
+            target_dt += delta
+
+            target_price = history_data[history_data[time_proxy] == target_dt][price_proxy]
+            #print('target_price', target_price)
+    print('target_hr_after', target_dt)
+
+    #print(day_minute_data[day_minute_data[time_proxy] == target_hr_dt])
+    print('target_price', target_price)
+    target_price = [float(target_price.iloc[0])] # make sure that this is float
+            
+    return target_dt, target_price[0]
+
 
 @util.time_it
 def find_closest_price_datetime(day_minute_data: pd.DataFrame, 
