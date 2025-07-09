@@ -53,9 +53,14 @@ import pickle
 import pandas as pd
 import numpy as np
 
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+
 from EC_tools.portfolio import Portfolio, PortfolioLog
 import EC_tools.utility as util
 #from EC_tools.trade_2 import Trade
+from EC_tools.features.features import reindex_dt
 
 def load_source_data_bt(filenames_loc: list) -> dict:
     master_dict = {}
@@ -65,24 +70,6 @@ def load_source_data_bt(filenames_loc: list) -> dict:
         
     return master_dict
 
-
-def reindex_dt(df:pd.DataFrame):
-    # Add Datetime column into the dataframe
-    date_series = [ele.date() for ele in df['Date'].to_list()]
-    time_series = df['Time'].to_list()
-    datetime_series = [datetime.datetime.combine(date,time) 
-                       for date, time in zip(date_series, time_series)]
-    
-    df['Datetime'] = datetime_series
-    df = df.set_index('Datetime')
-    #df.reset_index(inplace=True)
-    df['Datetime'] = df.index
-
-    return df
-
-import matplotlib.dates as mdates
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 
 def plot_VWAP(df, title='', 
               upmakersx=[],upmakersy=[],
@@ -144,6 +131,7 @@ def plot_VWAP(df, title='',
                             exit_time=closetime, 
                             entry_price= openprice,
                             exit_price= closeprice)
+        
     # Draw the PNL on the topleft of the 
     for x,y,z,colour in txts:
         axs.text(x,y+0.05,z,color=colour, fontsize =8, fontweight='bold', zorder =40)
@@ -152,9 +140,9 @@ def plot_VWAP(df, title='',
     twin0=axs.twinx()
     twin0.plot([],[], '-',label=r"$Signal Range (Long)$", color ='cyan')
     twin0.plot([], [], '-', label=r"$\rm Signal Range (Short)$", color ='#e1b865')
-    twin0.scatter([],[], label=r"$Open Order$", color ='green', 
+    twin0.scatter([],[], label=r"$Close Order$", color ='green', 
                marker ="X",s=50)
-    twin0.scatter([],[],label=r"$Close Order$", color ='blue', 
+    twin0.scatter([],[],label=r"$Open Order$", color ='blue', 
                marker ="X",s=50)
 
     twin0.legend(loc='upper center',fontsize=13, bbox_to_anchor=(0.5, 1.4),
@@ -178,28 +166,19 @@ def plot_VWAP(df, title='',
 
 
 
-from EC_tools.strategy_2.signal import SignalStatus, SignalType
+from EC_tools.strategy_2.signal import SignalStatus, SignalType, Signal
 from EC_tools.trade_2.onetradeperseg import OneTradePerSeg
 from EC_tools.trade_2 import Trade
 import EC_tools.base.read as read
+from EC_tools.backtest_2 import activate_signal_1atatime
 
-
-
-def activate_signal(signal, latest_datetime):
-    print('------------------------------------------')
-    print("activate_signal func", signal.status, signal.start_time)
-    print("latest_datetime", latest_datetime)
-    print("signal.start_time > latest_datetime", signal.start_time > latest_datetime)
-    if signal.status == SignalStatus.INACTIVE and\
-       signal.start_time > latest_datetime:
-           signal.status = SignalStatus.ACTIVE
-    return signal
 
 def backtest_engine(trade_method: Trade,
                     portfo: Portfolio,
                     signals: pd.DataFrame,
                     histroy_data: pd.DataFrame, 
                     **kwargs):
+    # Signal Activation rules
     # The main loop for backtesting
 
     signal_datetime = signals['signal_datetime'].to_list()
@@ -211,7 +190,7 @@ def backtest_engine(trade_method: Trade,
     latest_datetime = datetime.datetime(2020,12,31,0,0,0)
     
     active_signals = pd.DataFrame()
-
+    print("signal_list", signal_list)
     # Loop through a list of time-ordered signals
     # This method assumes signals Independent backtest
     for i, signal in enumerate(signal_list):
@@ -229,7 +208,7 @@ def backtest_engine(trade_method: Trade,
         if signal.start_time.time() > datetime.time(hour=7,minute=30):
             print("Signal comes after 7:30. Try to activate Signal.")
             # only turn on the signal if the last signal is already resolved
-            signal = activate_signal(signal, latest_datetime) #Tested
+            signal = activate_signal_1atatime(signal, latest_datetime) #Tested
             print(signal.status)
 
         #### Trading layer
@@ -283,9 +262,6 @@ def entryexitpoints(ax,
     ax.plot(exit_time, exit_price, 'x', ms=16, c='green', zorder=50,
             label = 'Exit_Point')
     
-def add_text(ax, x, y, s, fontsize=8, color ='g'):
-    ax.text(x, y, s, )
-    return 
 
 def plot_check(history_data, signals_df, PNL_df):
     DT = PNL_df['Entry_Datetime'].to_list()
@@ -429,24 +405,27 @@ if __name__ == "__main__":
 
     #start_date = datetime.datetime(2024,10,4,0,0,0)
     #end_date = datetime.datetime(2024,10,10,23,59,59)
-    start_date = "2025-02-03"
-    #end_date = "2021-01-06"
-
-    end_date = "2025-06-16"
+    #start_date = "2025-02-03"
+    #end_date = "2025-06-16"
+    start_date = "2025-07-07"
+    end_date = "2025-07-08"
 
     # Load signals
     #Q = util.load_pkl(RESULT_FILEPATH+"/VWAP_Inversion/VWAP_Inversion_sigma_0_68_signal_CLc1_2021_TP1_5_SL3_full.pkl")
     #MASTER_PNL_FILENAME = RESULT_FILEPATH + "/VWAP_Inversion/VWAP_Inversion_sigma_0_68_PNL_CLc1_2021_TP1_5_SL3.pkl"
     Q = util.load_pkl(RESULT_FILEPATH+"/VWAP_Inversion/test_signal.pkl")
+    print("Q", Q)
     MASTER_PNL_FILENAME = RESULT_FILEPATH + "/VWAP_Inversion/test_PNL.pkl"
     MASTER_AS_FILENAME = RESULT_FILEPATH + "/VWAP_Inversion/test_ActiveSignals.pkl"
     # run backtest
-    P, AS = run_backtest(OneTradePerSeg, Q, DAILY_MINUTE_DATA_INDI_PKL, 
-                    start_date, end_date,
-                    master_pnl_filename = MASTER_PNL_FILENAME,
-                    active_signal_filename = MASTER_AS_FILENAME,
-                    save_or_not = True)
-    
+    P, AS = run_backtest(OneTradePerSeg, Q, 
+                         DAILY_MINUTE_DATA_INDI_PKL, 
+                         start_date, end_date,
+                         master_pnl_filename = MASTER_PNL_FILENAME,
+                         active_signal_filename = MASTER_AS_FILENAME,
+                         save_or_not = True)
+    print("P", P)
+
     #P = read.open_portfolio(MASTER_PNL_FILENAME)
     PL = PortfolioLog(P)
     PL.tradebook_filename = RESULT_FILEPATH + "/VWAP_Inversion/test_PNL.csv"
@@ -469,7 +448,7 @@ if __name__ == "__main__":
                             }
     #Plot_check
     symbol = "CLc1"
-    open_hr, close_hr = '0330','1959'
+    open_hr, close_hr = '0000','1959'
     XL_filename = RESULT_FILEPATH + "/VWAP_Inversion/test_PNL_.xlsx"
     
     XL_df = read.read_xl_file(XL_filename, sheet_name = symbol)
@@ -485,6 +464,5 @@ if __name__ == "__main__":
     history_data = reindex_dt(HISTORY_MINUTE_PKL[symbol])
     history_data = add_VWAP2df(history_data, unique_dates, open_hr, close_hr)
     history_data = add_ATR(history_data)
-
     plot_check(history_data, AS, XL_df)
 

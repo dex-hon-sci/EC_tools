@@ -10,8 +10,18 @@ sys.path.insert(0, "/home/dexter/Euler_Capital_codes/EC_tools")
 import datetime
 import pandas as pd
 import numpy as np
+from ta.volatility import AverageTrueRange
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
 
 import EC_tools.utility as util
+from EC_tools.strategy_2.VWAPInversionStrategy import loop_signal
+from EC_tools.features.features import add_VWAP2df, add_ATR, reindex_dt, resample
+
+from crudeoil_future_const import WRONG_OPEN_HR_DICT, CLOSE_HR_DICT,\
+                                  TIMEZONE_DICT, TEST_FILE_LOC,\
+                                  VWAP_SIGNAL_PKL_LOC, WRONGWRONG_OPEN_HR_DICT
+
 from crudeoil_future_const import DAILY_MINUTE_DATA_INDI_PKL, RESULT_FILEPATH
 
 def load_source_data_bt(filenames_loc: list) -> dict:
@@ -19,60 +29,8 @@ def load_source_data_bt(filenames_loc: list) -> dict:
     for filename in filenames_loc:
         temp_dict = util.load_pkl(filename)
         master_dict = dict(master_dict, **temp_dict)
-        
     return master_dict
 
-# =============================================================================
-# def reindex_dt(df:pd.DataFrame):
-#     # Add Datetime column into the dataframe
-#     date_series = [ele.date() for ele in df['Date'].to_list()]
-#     time_series = df['Time'].to_list()
-#     datetime_series = [datetime.datetime.combine(date,time) 
-#                        for date, time in zip(date_series, time_series)]
-#     
-#     df['Datetime'] = datetime_series
-#     df = df.set_index('Datetime')
-#     df['Datetime'] = df.index
-# 
-#     #df.reset_index(inplace=True)
-# 
-#     return df
-# 
-# def resample(df: pd.DataFrame, time_interval = "15Min"):
-#     ohlc_dict = {'Date':'first',
-#                  #'Time': '',
-#                 'Open': 'first',
-#                 'High': 'max',
-#                 'Low': 'min',
-#                 'Settle': 'last',
-#                 'Volume': 'sum'  # Include if volume data is present
-#                 }
-# 
-#     new_df = df.resample(time_interval).apply(ohlc_dict)
-#     new_df['Datetime'] = new_df.index
-# 
-#     return new_df
-# 
-# 
-# def cal_VWAP(df:pd.DataFrame):
-#     # high + low + close
-#     TPrice = (df['High'] + df['Low'] + df['Settle'])/3
-#     TPVolume_cumsum = (TPrice*df['Volume']).cumsum() #vwapsum
-#     TP2Volume_cumsum = (TPrice*TPrice*df['Volume']).cumsum() #v2sum
-#     volume_cumsum = df['Volume'].cumsum()
-#     
-#     # Calculate the VWAP value
-#     vwap = TPVolume_cumsum/volume_cumsum
-#     # Calculate the std of the vwap
-#     dev = np.sqrt((TP2Volume_cumsum/volume_cumsum-vwap*vwap))
-#     print('vwap',vwap, 'dev',dev)
-#     df['VWAP'] = vwap
-#     df['VWAP_DEV'] = dev
-#     return df
-# =============================================================================
-
-import matplotlib.dates as mdates
-import matplotlib.pyplot as plt
 
 def plot_VWAP(df, title='', 
               upmakersx=[],upmakersy=[],
@@ -127,71 +85,8 @@ def plot_VWAP(df, title='',
     plt.savefig(RESULT_FILEPATH+f"/VWAP_Inversion/plots_2_0sigma/VWAP_{date_str}.png", 
                 dpi=150)
 
-# =============================================================================
-# def add_VWAP2df(df:pd.DataFrame, 
-#                 unique_date:list[datetime.datetime], 
-#                 open_hr: str, close_hr:str)->pd.DataFrame:
-#     # Add VWAP and STD to a dataframe
-#     # Generate daily VWAP, add it to the dataframe
-#     #unique_date = list(set([df["Date"].iloc[i] for i,_ in enumerate(df["Date"].to_list())]))
-#     #unique_date.sort()
-# 
-#     new_df = pd.DataFrame()
-#     for date in unique_date:
-#         print(date, type(date))
-#         
-#         delta = datetime.timedelta(minutes=60*3)
-#         start_date = date + datetime.timedelta(hours = int(open_hr[0:2]),
-#                                                minutes = int(open_hr[2:4]))
-#         end_date = date + datetime.timedelta(hours = int(close_hr[0:2]),
-#                                              minutes = int(close_hr[2:4])) +delta
-#         
-#         # Select for a sub-dataframe to calculate the vwap of the day
-#         sub_df = df[(df['Datetime'] >= start_date) &(df['Datetime'] <=end_date)]
-# 
-#         print("sub_df", sub_df)
-#         new_sub_df = cal_VWAP(sub_df)
-#         
-#         # Plot the daily chart to check if the VWAP range is reasonable
-#         new_df = pd.concat([new_df, new_sub_df])
-#     return new_df
-# =============================================================================
-
-from ta.volatility import AverageTrueRange
-
-#def add_ATR(df):
-#    
-#    # Calculate ATR using the ta library
-#    # window specifies the lookback period (e.g., 14 for 14-period ATR)
-#    atr_indicator = AverageTrueRange(df["High"], df["Low"], df["Settle"], window=14)
-#    df['ATR'] = atr_indicator.average_true_range()
-#    return df
-# =============================================================================
-# 
-# def add_ATR(df,period=14):
-#     df['high_low'] = df['High'] - df['Low']
-#     df['high_prev_close'] = abs(df['High'] - df['Settle'].shift(1))
-#     df['low_prev_close'] = abs(df['Low'] - df['Settle'].shift(1))
-#     df['True_Range'] = df[['high_low', 'high_prev_close', 'low_prev_close']].max(axis=1)
-# 
-#     # Calculate ATR using Exponential Moving Average (EMA) of True Range
-#     # The standard ATR calculation uses a modified EMA where the smoothing factor
-#     # is 1/period for the first ATR value, and then (previous_ATR * (period - 1) + current_TR) / period
-#     # for subsequent values. Pandas ewm with adjust=False approximates this.
-#     df['ATR'] = df['True_Range'].ewm(span=period, adjust=False).mean()
-# 
-#     # Clean up intermediate columns
-#     df = df.drop(columns=['high_low', 'high_prev_close', 
-#                           'low_prev_close', 'True_Range'])
-#     return df
-# =============================================================================
-
-from EC_tools.strategy_2.VWAPInversionStrategy import loop_signal
-from crudeoil_future_const import WRONG_OPEN_HR_DICT, CLOSE_HR_DICT,\
-                                  TIMEZONE_DICT, TEST_FILE_LOC,\
-                                  VWAP_SIGNAL_PKL_LOC
-                                  
-DEFAULT_KWARGS= {'open_hr_dict': WRONG_OPEN_HR_DICT, 
+            
+DEFAULT_KWARGS= {'open_hr_dict': WRONGWRONG_OPEN_HR_DICT, 
                  'close_hr_dict': CLOSE_HR_DICT, 
                  'timezone_dict': TIMEZONE_DICT,
                  'save_filenames_loc':VWAP_SIGNAL_PKL_LOC,
@@ -218,11 +113,11 @@ EXCHANGE = {'CLc1': "NYSE",
             'QPc1': "ICE",
             'QPc2': "ICE",
                         }
-from EC_tools.features import add_VWAP2df, add_ATR, reindex_dt,resample
 
 def run_gen_signals(daily_minute_data_pkl: dict[pd.DataFrame], 
                     start_date: datetime.datetime, 
                     end_date: datetime.datetime, 
+                    symbol_list: list[str],
                     **kwargs):
     # Run_gen process signals from different assets one-by-one
     # Run_gen function consist of two parts
@@ -232,7 +127,7 @@ def run_gen_signals(daily_minute_data_pkl: dict[pd.DataFrame],
     default_kwargs = DEFAULT_KWARGS
     kwargs = dict(default_kwargs,**kwargs)
 
-    master_dict, symbol_list = dict(), ['CLc1']
+    master_dict  = dict()
 
     for symbol in symbol_list:
         # Load Historical data
@@ -290,8 +185,6 @@ def run_gen_signals(daily_minute_data_pkl: dict[pd.DataFrame],
     print("master_dict", master_dict)
     return master_dict
 
-
-
     
 if __name__ == "__main__":
     VWAP_SIGNAL_PKL_LOC_C = {
@@ -307,16 +200,21 @@ if __name__ == "__main__":
     'QPc2': RESULT_FILEPATH + '/VWAP_Inversion/VWAP_Inversion_signal_QPc2_full.pkl'
     }
     
-    start_date = datetime.datetime(2025,2,1,0,0,0)
-    end_date = datetime.datetime(2025,6,16,23,59,59)
+    #start_date = datetime.datetime(2025,2,1,0,0,0)
+    #end_date = datetime.datetime(2025,6,16,23,59,59)
+    start_date = datetime.datetime(2025,7,7,0,0,0)
+    end_date = datetime.datetime(2025,7,7,23,59,59)
 
     #end_date = datetime.datetime(2021,1,5,23,59,59)
     #end_date = datetime.datetime(2023,1,5,23,59,59)
-    run_gen_signals(DAILY_MINUTE_DATA_INDI_PKL, start_date, end_date,
+    run_gen_signals(DAILY_MINUTE_DATA_INDI_PKL, 
+                    start_date, end_date,
+                    ['CLc1'],
                     save_filenames_loc=VWAP_SIGNAL_PKL_LOC_C,
                     N_sigma=1.28, #1.5
-                    TP_multiplier = 2, # Level 2 exit take-profit
+                    TP_multiplier = 1,#0.618, # Level 2 exit take-profit
                     SL_multiplier = 1, # Level 1 +/- ATR exit stop-loss
                     segment_barmulitplier=4,
-                    reversal_factor_long = 0.75, # Reversal 75% 
-                    reversal_factor_short = 0.25)
+                    reversal_factor_long = 0.25, # Reversal 75% 
+                    reversal_factor_short = 0.25,
+                    startsignal_index = 2) # Execution start at +2 index 
