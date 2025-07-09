@@ -400,6 +400,19 @@ WRONG_OPEN_HR_DICT = {
     'QPc1':'0330', # UTC
     'QPc2':'0330'} # UTC
 
+WRONGWRONG_OPEN_HR_DICT = {
+    'CLc1':'0100', # UTC
+    'CLc2':'0100', # UTC
+    'HOc1':'0100', #0800 NY #1300 UTC
+    'HOc2':'0100', #0800 NY #1300 UTC
+    'RBc1':'0100', #0800 NY #1300 UTC
+    'RBc2':'0100', #0800 NY #1300 UTC
+    'QOc1':'0100', # UTC
+    'QOc2':'0100', # UTC
+    'QPc1':'0100', # UTC
+    'QPc2':'0100'} # UTC
+
+
 WRONG_CLOSE_HR_DICT = {
     'CLc1':'1959', #2000 UTC
     'CLc2':'1959', #2000 UTC

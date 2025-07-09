@@ -706,7 +706,8 @@ class PlotPricing(object):
         return None
     
         
-def plot_minute(filename_minute: str, signal_filename: str, 
+def plot_minute(filename_minute: str, 
+                signal_filename: str, 
                 price_approx: str = 'Open',
                 date_interest: str = "2022-05-19", 
                 direction: str = "Buy", 
