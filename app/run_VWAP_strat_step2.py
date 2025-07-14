@@ -300,7 +300,7 @@ def plot_check(history_data, signals_df, PNL_df):
             print('price_width', price_width)
             box_origin_pt = (S.start_time, S.actions[2].kwargs['LMT_price'])
             
-            openline_origin_pt = (S.start_time, S.actions[0].kwargs['LMT_price'])
+            openline_origin_pt = (S.start_time, S.actions[0].kwargs['MKT_price'])
             openprice_width = 0.01
             
             Long_colour, Short_colour = "cyan", "#e1b865"
@@ -406,17 +406,24 @@ if __name__ == "__main__":
     #start_date = datetime.datetime(2024,10,4,0,0,0)
     #end_date = datetime.datetime(2024,10,10,23,59,59)
     #start_date = "2025-02-03"
-    #end_date = "2025-06-16"
-    start_date = "2025-07-07"
-    end_date = "2025-07-08"
+    #start_date="2021-01-01"
+    #end_date = "2022-11-25" #2022-11-26 has problem
+    start_date = "2022-11-28"
+    end_date="2024-11-29" # 2024-11-30 has problem
+    #start_date = "2024-12-01"
+    #end_date = "2025-06-16" 
+    
+    
+    #start_date = "2025-07-07"
+    #end_date = "2025-07-08"
 
     # Load signals
     #Q = util.load_pkl(RESULT_FILEPATH+"/VWAP_Inversion/VWAP_Inversion_sigma_0_68_signal_CLc1_2021_TP1_5_SL3_full.pkl")
     #MASTER_PNL_FILENAME = RESULT_FILEPATH + "/VWAP_Inversion/VWAP_Inversion_sigma_0_68_PNL_CLc1_2021_TP1_5_SL3.pkl"
     Q = util.load_pkl(RESULT_FILEPATH+"/VWAP_Inversion/test_signal.pkl")
     print("Q", Q)
-    MASTER_PNL_FILENAME = RESULT_FILEPATH + "/VWAP_Inversion/test_PNL.pkl"
-    MASTER_AS_FILENAME = RESULT_FILEPATH + "/VWAP_Inversion/test_ActiveSignals.pkl"
+    MASTER_PNL_FILENAME = RESULT_FILEPATH + "/VWAP_Inversion/test_PNL2.pkl"
+    MASTER_AS_FILENAME = RESULT_FILEPATH + "/VWAP_Inversion/test_ActiveSignals2.pkl"
     # run backtest
     P, AS = run_backtest(OneTradePerSeg, Q, 
                          DAILY_MINUTE_DATA_INDI_PKL, 
@@ -428,7 +435,7 @@ if __name__ == "__main__":
 
     #P = read.open_portfolio(MASTER_PNL_FILENAME)
     PL = PortfolioLog(P)
-    PL.tradebook_filename = RESULT_FILEPATH + "/VWAP_Inversion/test_PNL.csv"
+    PL.tradebook_filename = RESULT_FILEPATH + "/VWAP_Inversion/test_PNL2.csv"
     
     PL.render_tradebook()
     PL.render_tradebook_xlsx()
@@ -449,7 +456,7 @@ if __name__ == "__main__":
     #Plot_check
     symbol = "CLc1"
     open_hr, close_hr = '0000','1959'
-    XL_filename = RESULT_FILEPATH + "/VWAP_Inversion/test_PNL_.xlsx"
+    XL_filename = RESULT_FILEPATH + "/VWAP_Inversion/test_PNL2_.xlsx"
     
     XL_df = read.read_xl_file(XL_filename, sheet_name = symbol)
     XL_df = XL_df.sort_values(by=["Entry_Datetime"], 

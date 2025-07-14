@@ -201,9 +201,10 @@ if __name__ == "__main__":
     }
     
     #start_date = datetime.datetime(2025,2,1,0,0,0)
-    #end_date = datetime.datetime(2025,6,16,23,59,59)
-    start_date = datetime.datetime(2025,7,7,0,0,0)
-    end_date = datetime.datetime(2025,7,7,23,59,59)
+    start_date = datetime.datetime(2021,1,1,0,0,0)
+    end_date = datetime.datetime(2025,6,16,23,59,59)
+    #start_date = datetime.datetime(2025,7,7,0,0,0)
+    #end_date = datetime.datetime(2025,7,7,23,59,59)
 
     #end_date = datetime.datetime(2021,1,5,23,59,59)
     #end_date = datetime.datetime(2023,1,5,23,59,59)
@@ -215,6 +216,6 @@ if __name__ == "__main__":
                     TP_multiplier = 1,#0.618, # Level 2 exit take-profit
                     SL_multiplier = 1, # Level 1 +/- ATR exit stop-loss
                     segment_barmulitplier=4,
-                    reversal_factor_long = 0.25, # Reversal 75% 
-                    reversal_factor_short = 0.25,
-                    startsignal_index = 2) # Execution start at +2 index 
+                    reversal_factor_long = 0.75, # Reversal 75% 
+                    reversal_factor_short = 0.75,
+                    startsignal_index = 1) # Execution start at +2 index 

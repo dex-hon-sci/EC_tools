@@ -612,14 +612,11 @@ if __name__=='__main__':
         test_curve2 = RESULT_FILEPATH+ "/VWAP_Inversion/VWAP_Idea1_endofday_signal_limit/test_PNL_.xlsx"
         test_curve3 = RESULT_FILEPATH+ "/VWAP_Inversion/test_PNL_.xlsx"
         
-        strategy_filename_list = [curve_1_0sigma, curve_1_5sigma, curve_2_0sigma,
-                                  curve2021_2SL_2signa,test_curve, test_curve2, test_curve3]
-        strategy_label_list = ['sigma = 1.0','sigma = 1.5', 
-                               'sigma = 2.0','2021_ssigma=2, SL2',
-                               'test_curve', 'test_curve2', 'test_curve3']
-        strategy_col_list = ['green', 'r', 'w', 'b','w','g','b']
-        strategy_line_list = ['solid', 'solid', 'solid', 'solid', 
-                              'dashed', 'dashed', 'dashed']   
+        strategy_filename_list = [test_curve, test_curve2, test_curve3]
+        strategy_label_list = ['test_curve', 'test_curve2', 'test_curve3']
+        strategy_col_list = ['green', 'r', 'w']#, 'b','w','g','b']
+        strategy_line_list = ['solid', 'solid', 'solid'] #'solid', 
+                              #o'dashed', 'dashed', 'dashed']   
         
         strategy_result_list = [extract_PNLplot_input(ele, 
                                         date_col="Entry_Date",
