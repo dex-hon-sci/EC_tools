@@ -42,41 +42,21 @@ def cal_VWAP(df:pd.DataFrame) -> pd.DataFrame:
     
     # Calculate the VWAP value
     vwap = TPVolume_cumsum/volume_cumsum
+    
+    # Make an array of integer
+    N = np.array([i+1 for i in range(len(vwap))])
     # Calculate the std of the vwap
     dev = np.sqrt((TP2Volume_cumsum/volume_cumsum-vwap*vwap))
+    #dev = np.sqrt(((TPrice - vwap)**2).cumsum()/N)
     print('vwap',vwap, 'dev',dev)
     df['VWAP'] = vwap
     df['VWAP_DEV'] = dev
     return df
-
-# =============================================================================
-# def add_VWAP2df(df: pd.DataFrame, 
-#                 unique_date: list[datetime.datetime]) -> pd.DataFrame:
-#     # Add VWAP and STD to a dataframe
-#     # Generate daily VWAP, add it to the dataframe
-#     #unique_date = list(set([df["Date"].iloc[i] for i,_ in enumerate(df["Date"].to_list())]))
-#     #unique_date.sort()
-# 
-#     new_df = pd.DataFrame()
-#     for date in unique_date[1:2]:
-#         print(date, type(date))
-#         start_date = date + datetime.timedelta(hours=3,minutes=30)
-#         end_date = date + datetime.timedelta(hours=22,minutes=0)
-#         
-#         # Select for a sub-dataframe to calculate the vwap of the day
-#         sub_df = df[(df['Datetime'] >= start_date) &(df['Datetime'] <end_date)]
-# 
-#         print("sub_df", sub_df)
-#         new_sub_df = cal_VWAP(sub_df)
-#         
-#         # Plot the daily chart to check if the VWAP range is reasonable
-#         new_df = pd.concat([new_df, new_sub_df])
-#     return new_df
-# =============================================================================
         
 def add_VWAP2df(df:pd.DataFrame, 
                 unique_date:list[datetime.datetime], 
                 open_hr: str, close_hr:str)->pd.DataFrame:
+    # open_hr and close_hr are in "HHmm" format
     # Add VWAP and STD to a dataframe
     # Generate daily VWAP, add it to the dataframe
     #unique_date = list(set([df["Date"].iloc[i] for i,_ in enumerate(df["Date"].to_list())]))
