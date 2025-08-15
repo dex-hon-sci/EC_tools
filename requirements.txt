@@ -1,3 +1,4 @@
+dotenv
 h5py
 linmix
 findiff
@@ -10,6 +11,7 @@ prometheus-client
 pickle
 openpyxl==3.0.10
 pandas==1.4.4
+prettytable
 pytest
 regex
 scipy

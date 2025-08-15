@@ -20,7 +20,7 @@ analytical ETL data processing pipelines that:
 | `base` | Contains file-reading and data extraction types of functions. |
 | `features` | Contains functions that derive additional *features* given<br>raw market data. |
 | `order` | Contains `Order` data class that are used in the backtesting<br>engine. The `Portfolio` objects rely on the mecahnsim in this<br>module to modify their states. |
-|`plot` | Contains plotting scripts. Intraday price action and Profolio PNL<br>are uses functions in this module. |
+| `plot` | Contains plotting scripts. Intraday price action and Profolio PNL<br>are uses functions in this module. |
 | `portfolio` | Contains data container `Portfolio` class. Backtesting engine<br>operate on the `Portfolio` object. It modifying its state and<br>add/subtract items in it. It also contains handy methods for<br>logging trades and calculating portfolio metrics. |
 | `signal` | Contains `Signal` data class object that serve as a universal<br>format for the output of any `Strategy` class objects.<br>All user-defined strategies must conform to this protocol and<br>produce `Signal`objects before supplying them to the backtesting<br>engine. `Signal` objects contains the effective period of the<br>signal and a list of `Order` objects associated with the<br>intended orders to be sent to the backtest engine. |
 | `strategy` | Contains `Strategy` Protocol class and the signal<br>generation logic, as well as the looping mechanism for<br>the signal generation process. |
@@ -28,8 +28,8 @@ analytical ETL data processing pipelines that:
 | `utility` | Contains the basic mathmatical or format related utility<br>functions. |
 
 ## Usage
-In this example, I will demonstrate the entire cycle of making and backtesting  
-a trading strategy using `EC_tools`.
+In this example, I will demonstrate the entire cycle of generating trading signals
+and backtesting a strategy using `EC_tools`.
 
 ### Feature Extraction
 ```python
@@ -37,24 +37,57 @@ import pandas as pd
 
 ```
 ### Signal Generation
-Defining a strategy
+
+Defining a strategy object
+### `simple_strat.py`
 ```python
 from datetime import datetime
 from EC_tools.strategy.base import Strategy
+from EC_tools.strategy_2.signal import Signal, SignalType, SignalSide, SignalStatus
+from EC_tools.order.cqg_enums import OrderSide, OrderType
+from EC_tools.order.cqg_order import CQGOrder # In this example, we use CQG orders for demonstration
 
-# First, you need to define a Strategy object 
-# containing the signal generation logic.
+# First, you need to define a Strategy object that contains the signal generation logic.
 class SimpleStrategy(Strategy): # Inherit by the `Strategy` Protocol class
     """
     This simple strategy does xxx
     """
-    def __init__():
+    def __init__(data1: pd.DataFrame, data2: pd.DataFrame):
         pass
         
     def gen_data():
         return
          
-    def make_signals():
+    def make_signals(up_threshold: float, down_threshold: float):
+        diff = data1 - data2
+        if diff > up_threshold:
+            # Target-Entry Order
+            action_TEO_SHORT = CQGOrder(asset_name,
+                                        OrderSide.SIDE_SELL,
+                                        OrderType.ORDER_TYPE_MKT,
+                                        QTY, open_=True, close_=False,
+                                        kwargs={'MKT_time': TE_time,
+                                                'MKT_price':TE_price})
+            # Target-Exit Order
+            action_TPO_SHORT = CQGOrder(asset_name,
+                                        OrderSide.SIDE_BUY,
+                                        OrderType.ORDER_TYPE_LMT,
+                                        QTY,  open_=False, close_=True,
+                                        kwargs={'LMT_price': TP_price})  
+                                                       
+            actions = [action_TEO_SHORT, action_TPO_SHORT, 
+                       action_SLO_SHORT, action_MCO_SHORT]
+            
+            S = Signal(SignalType.SELL, # Signal type
+                       SignalSide.SELL, # Signal Side
+                       SignalStatus.INACTIVE, # Signal status
+                       TE_time, # start_time
+                       CO_time, # end_time
+                       actions) # Orders
+
+        elif diff < down_threshold:
+            pass
+        
         return 
         
     def apply():
@@ -62,27 +95,27 @@ class SimpleStrategy(Strategy): # Inherit by the `Strategy` Protocol class
     
 # Second, you need to provide the looping
 # mechanism in running this strategy
-def loop_signal(df: pd.DataFrame, 
+def loop_signal(df1: pd.DataFrame, df2: pd.DataFrame, 
                 unique_dates: list[datetime], # A list of unique trading date
-                asset_name: str, qty: int,
+                asset_name_1: str, asset_name_2: str, 
+                qty: int,
                 open_hr: str, close_hr: str,
                 **kwargs)-> pd.DataFrame:
                 
     master_signal_df = pd.DataFrame()
     for i, date in enumerate(unique_dates):
-    
         signal_df = SimpleStrategy(...).apply()
-        
         # Updating the master signal dataframe
         master_signal_df = pd.concat([master_signal_df, signal_df])
-
+        
     master_signal_df = master_signal_df.sort_values(by=["signal_datetime"], 
                                                     ascending=True)
     return master_signal_df
     
 ```
-Run signal generation script.
-### `simple_start_sig_gen.py`
+
+Now make a run method for the signal generation process.
+### `run_sig_gen_SimpleStrat.py`
 ```python
 from EC_tools.strategy.simple_strategy import loop_signal
 
@@ -125,8 +158,9 @@ def run_gen_signals(daily_minute_data_pkl: dict[pd.DataFrame],
 ```
 
 ### Backtesting
+
 Define backtest engine and run method.
-### `simple_strat_backtest.py`
+### `run_backtest_SimpleStrat.py`
 ```python
 from EC_tools.strategy.signal import SignalStatus, SignalType, Signal
 from EC_tools.trade.onetradeperseg import OneTradePerSeg
@@ -139,8 +173,7 @@ from EC_tools.backtest import activate_signal_1atatime # Activate signal one-at-
 def backtest_engine(trade_method: Trade,
                     portfo: Portfolio,
                     signals: pd.DataFrame,
-                    histroy_data: pd.DataFrame, 
-                    **kwargs):
+                    histroy_data: pd.DataFrame):
     # Loop through the signal list,  
     # Only test for the ACTIVE signals
     signal_datetime = signals['signal_datetime'].to_list()
@@ -177,16 +210,15 @@ def backtest_engine(trade_method: Trade,
                 latest_datetime = T.close_pt[0]
                 active_signals = pd.concat([active_signals, 
                                             pd.DataFrame([active_signal_row])])
-            elif np.nan in T.close_pt:
-                print("WTGFGGG")
     return portfo, active_signals
     
-# Now define the run backtest function to handle input related operation before
+# Now define the run backtest function to handle input related operationa before
 # running the backtest engine.
 def run_backtest(TradeMethod, 
                  signals, 
                  daily_minute_data_pkl, 
-                 start_date: str, end_date: str, **kwargs):
+                 start_date: str, 
+                 end_date: str, **kwargs):
     start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
     end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
 
@@ -211,13 +243,11 @@ def run_backtest(TradeMethod,
                           (signals['signal_datetime'] <=end_date)]
         
         P1, active_signals = backtest_engine(TradeMethod, P1, signals, histroy_data)
-                
-        # Save the portfolio
         if kwargs['save_or_not']: # save pkl portfolio
             file = open(kwargs['master_pnl_filename'], 'wb')
             file2 = open(kwargs['active_signal_filename'], 'wb')
-            pickle.dump(P1, file)
-            pickle.dump(active_signals, file2)
+            pickle.dump(P1, file)  # Save the portfolio in pickle format
+            pickle.dump(active_signals, file2) # Save the active signals
     return P1, active_signals
     
 ```
@@ -239,8 +269,13 @@ additional conditions.
 
 An typical ETL pipeline will look like the following:
 ```python
+from run_sig_gen_SimpleStrat import run_gen_signals
+from run_backtest_SimpleStrat import run_backtest
 
 def main():
+    run_gen_signals()
+    run_backtest()
+    
     
 ```
 Example plots
