@@ -39,7 +39,7 @@ class SignalType(Enum): # WIP
     PLATYKURTIC = "Platykurtic" # Fat tail
     MESOKURTIC = "Mesokurtic" # For Neutral Foruth order signal
     
-class FirstOrderSignalType(Enum):
+class FirstOrderSignalType(Enum): #WIP, may be thrown out later.
     # First-Order Signals
     UP = "Up" # Good for Long Call 
     DOWN = "Down" # Good for Long Put

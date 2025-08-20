@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "EC_tools"
+version = "0.2.0"
+authors = [
+  { name="Dexter S.-H. HON", email="dex-hon-sci@outlook.com" },
+]
+description = "Analytic tools for strategy building."
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/dex-hon-sci/EC_tools"
+#Issues = "https://github.com/yourusername/my_package_name/issues"

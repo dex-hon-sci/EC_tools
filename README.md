@@ -259,7 +259,6 @@ backtest engine can be made using the framework provided by this package to incl
 additional conditions.
 
 ### Plotting/Evaluation script
-### `main.py`
 ```python
 # To define a backtest engine
 

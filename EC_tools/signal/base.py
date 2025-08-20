@@ -37,7 +37,7 @@ class Signal:
     For backtesting, the script should check and unpack the orders to calculate 
     the quantity of interest.
     
-    "actions" may contain Orders of different assets.
+    "actions" may contain Orders of different assets. (action should be a tree?)
     
     Changing orders. In backtest or live-trading, we often want to change the 
     order based on the newest information.
@@ -96,8 +96,8 @@ class CompositeSignal(object):
     
     For example, there are three signals for Asset A at the same time.
         Signal_1: type_ = UP, actions = [#BUY @low, #SELL @high] (Long Asset A)
-        Signal_2: type_ = CONVERGENCE, actions = [#Long Butterfly (...), #CLOSE Trade @mean] (Long Buttefly)
-        Signal_3: type_ = PLATYKURTIC, actions = [#Long Condor Asset ] (Tail Hedge)
+        Signal_2: type_ = CONVERGENCE, actions = [#Long Butterfly (...), #CLOSE Trade @some time] (Long Buttefly)
+        Signal_3: type_ = PLATYKURTIC, actions = [#Long Condor Asset, #CLOSE Trade @some time] (Tail Hedge)
 
     Functions in this class define the `policy` to pick the right action in
     this situation.
@@ -108,9 +108,10 @@ class CompositeSignal(object):
     action based on actions.
     
     """
-    def __init__(self, policy: Callable):
+    def __init__(self, policy: Callable, signals: list[Signal]):
         self.policy = policy
+        self.signals = signals
 
-    def assemble() -> Signal: 
+    def assemble(self) -> Signal: 
         # Produce a new signal objecy based on some policy
         return 
