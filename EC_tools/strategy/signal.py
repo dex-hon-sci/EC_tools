@@ -111,11 +111,11 @@ class Signal(object):
         # check coditions and actions dim
         
         # check if actions is empty
-        if len(self.actions) <0:
+        if len(self.actions) < 0:
             raise Exception("Action list cannot be empty. Each Signal has to \
                             be paired with an action.")
         # check if there is at least a pair of actions (entry order and exit order)
-        if len(self.actions) <2:
+        if len(self.actions) < 2 and len(self.actions) > 0:
             raise Exception("There should be at least two orders in the action\
                             list, one entry and one exit.")
                             
